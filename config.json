@@ -1,0 +1,19 @@
+{
+    "workspace_path": "/home/hck-ci/Prometheus/workspace",
+    "virthck_path": "/home/hck-ci/Prometheus/VirtHCK",
+    "images_path": "/home/hck-ci/Prometheus/Images",
+    "qemu_img": "qemu-img",
+    "qemu_bin": "qemu-kvm",
+    "ip_segment": "192.168.0.",
+    "dhcp_bridge": "br1",
+    "winrm_port": "5985",
+    "toolshck_path": "/home/hck-ci/Prometheus/toolsHCK/toolsHCK.ps1",
+    "studio_username": "Administrator",
+    "studio_password": "Qum5net.",
+    "repository": "daynix/kvm-guest-drivers-windows",
+    "github_credentials": {
+      "login": "",
+      "password": ""
+    },
+    "dropbox_token": ""
+}
