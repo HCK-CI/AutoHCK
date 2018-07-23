@@ -1,0 +1,452 @@
+[
+  {
+    "id": "2",
+    "name": "Win7x64",
+    "kit": "HCK",
+    "st_image": "HCK.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "4G",
+        "winrm_port": "4002",
+        "image": "HCK-c1-Win7x64.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "4G",
+        "winrm_port": "4003",
+        "image": "HCK-c2-Win7x64.qcow2"
+      }
+    }
+  },
+  {
+    "id": "3",
+    "name": "Win7x86",
+    "kit": "HCK",
+    "st_image": "HCK.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HCK-c1-Win7x86.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HCK-c2-Win7x86.qcow2"
+      }
+    }
+  },
+  {
+    "id": "4",
+    "name": "Win8x64",
+    "kit": "HCK",
+    "st_image": "HCK.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HCK-c1-Win8x64.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HCK-c2-Win8x64.qcow2"
+      }
+    }
+  },
+  {
+    "id": "5",
+    "name": "Win8x86",
+    "kit": "HCK",
+    "st_image": "HCK.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HCK-c1-Win8x86.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HCK-c2-Win8x86.qcow2"
+      }
+    }
+  },
+  {
+    "id": "6",
+    "name": "Win81x64",
+    "kit": "HCK",
+    "st_image": "HCK.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HCK-c1-Win81x64.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HCK-c2-Win81x64.qcow2"
+      }
+    }
+  },
+  {
+    "id": "7",
+    "name": "Win81x86",
+    "kit": "HCK",
+    "st_image": "HCK.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HCK-c1-Win81x86.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HCK-c2-Win81x86.qcow2"
+      }
+    }
+  },
+  {
+    "id": "8",
+    "name": "Win2008R2x64",
+    "kit": "HCK",
+    "st_image": "HCK.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HCK-c1-Win2008R2x64.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HCK-c2-Win2008R2x64.qcow2"
+      }
+    }
+  },
+  {
+    "id": "9",
+    "name": "Win2012x64",
+    "kit": "HCK",
+    "st_image": "HCK.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HCK-c1-Win2012x64.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HCK-c2-Win2012x64.qcow2"
+      }
+    }
+  },
+  {
+    "id": "10",
+    "name": "Win2012R2x64",
+    "kit": "HCK",
+    "st_image": "HCK.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HCK-c1-Win2012R2x64.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HCK-c2-Win2012R2x64.qcow2"
+      }
+    }
+  },
+  {
+    "id": "11",
+    "name": "Win2016x64",
+    "kit": "HLK1607",
+    "st_image": "HLK1607.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HLK1607-c1-Win2016x64.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HLK1607-c2-Win2016x64.qcow2"
+      }
+    }
+  },
+  {
+    "id": "12",
+    "name": "Win10_1607x64",
+    "kit": "HLK1703",
+    "st_image": "HLK1703.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HLK1703-c1-Win10_1607x64.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HLK1703-c2-Win10_1607x64.qcow2"
+      }
+    }
+  },
+  {
+    "id": "13",
+    "name": "Win10_1607x86",
+    "kit": "HLK1703",
+    "st_image": "HLK1703.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HLK1703-c1-Win10_1607x86.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HLK1703-c2-Win10_1607x86.qcow2"
+      }
+    }
+  },
+  {
+    "id": "14",
+    "name": "Win10_1703x64",
+    "kit": "HLK1703",
+    "st_image": "HLK1703.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HLK1703-c1-Win10_1703x64.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HLK1703-c2-Win10_1703x64.qcow2"
+      }
+    }
+  },
+  {
+    "id": "15",
+    "name": "Win10_1703x86",
+    "kit": "HLK1703",
+    "st_image": "HLK1703.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HLK1703-c1-Win10_1703x86.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HLK1703-c2-Win10_1703x86.qcow2"
+      }
+    }
+  },
+  {
+    "id": "16",
+    "name": "Win10_1709x64",
+    "kit": "HLK1709",
+    "st_image": "HLK1709.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HLK1709-c1-Win10_1709x64.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HLK1709-c2-Win10_1709x64.qcow2"
+      }
+    }
+  },
+  {
+    "id": "17",
+    "name": "Win10_1709x86",
+    "kit": "HLK1709",
+    "st_image": "HLK1709.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HLK1709-c1-Win10_1709x86.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HLK1709-c2-Win10_1709x86.qcow2"
+      }
+    }
+  },
+  {
+    "id": "18",
+    "name": "Win10_1803x64",
+    "kit": "HLK1803",
+    "st_image": "HLK1803.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HLK1803-c1-Win10_1803x64.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HLK1803-c2-Win10_1803x64.qcow2"
+      }
+    }
+  },
+  {
+    "id": "19",
+    "name": "Win10_1803x86",
+    "kit": "HLK1803",
+    "st_image": "HLK1803.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HLK1803-c1-Win10_1803x86.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HLK1803-c2-Win10_1803x86.qcow2"
+      }
+    }
+  }
+]

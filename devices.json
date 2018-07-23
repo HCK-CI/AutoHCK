@@ -1,0 +1,46 @@
+[
+  {
+    "name": "Red Hat VirtIO Ethernet Adapter",
+    "short": "NetKVM",
+    "device": { "type": "network", "name": "virtio-net-pci", "extra": "" },
+    "inf": "netkvm.inf",
+    "install_method": "PNP",
+    "support": true,
+    "blacklist": [
+      "NDISTest 6.0 - [2 Machine] - 2c_Mini6RSSSendRecv",
+      "NDISTest 6.5 - [2 Machine] - MPE_Ethernet.xml"
+    ]
+  },
+  {
+    "name": "Red Hat VirtIO SCSI pass-through controller",
+    "short": "vioscsi",
+    "device": { "type": "storage-scsi", "name": "virtio-scsi-pci", "extra": "" },
+    "inf": "vioscsi.inf",
+    "install_method": "PNP",
+    "support": false
+  },
+  {
+    "name": "VirtIO Balloon Driver",
+    "short": "Balloon",
+    "device": { "type": "balloon", "name": "virtio-balloon-pci", "extra": "" },
+    "inf": "balloon.inf",
+    "install_method": "PNP",
+    "support": false
+  },
+  {
+    "name": "VirtIO Input Driver",
+    "short": "vioinput",
+    "device": { "type": "vioinput", "name": "virtio-keyboard-pci", "extra": "" },
+    "inf": "vioinput.inf",
+    "install_method": "PNP",
+    "support": false
+  },
+  {
+    "name": "VirtIO Serial Driver",
+    "short": "vioserial",
+    "device": { "type": "serial", "name": "virtio-serial-pci", "extra": "" },
+    "inf": "vioser.inf",
+    "install_method": "PNP",
+    "support": false
+  }
+]
