@@ -1,5 +1,6 @@
 # Virthck class
 class VirtHCK
+  attr_reader :id
   def initialize(project)
     @project = project
     @logger = project.logger

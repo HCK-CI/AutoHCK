@@ -7,7 +7,8 @@ class Monitor
   LOCALHOST = 'localhost'.freeze
 
   def initialize(project, id)
-    client_id = 3 * project.platform['id'].to_i - 2 + id.to_i
+    @virthck_id = project.virthck.id
+    client_id = 3 * @virthck_id.to_i - 2 + id.to_i
     port = MONITOR_BASE_PORT + client_id
     @logger = project.logger
     @logger.info('Initiating qemu-monitor session')
