@@ -10,7 +10,7 @@ class Studio
     @project = project
     @logger = project.logger
     @virthck = project.virthck
-    @id = project.platform['id']
+    @id = project.virthck.id
     @ip = project.config['ip_segment'] + @id
     create_snapshot
   end
