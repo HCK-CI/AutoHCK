@@ -12,6 +12,14 @@
     ]
   },
   {
+    "name": "QEMU PVPanic Device",
+    "short": "pvpanic",
+    "device": { "type": "pvpanic", "name": "pvpanic", "extra": "" },
+    "inf": "pvpanic.inf",
+    "install_method": "PNP",
+    "support": false
+  },
+  {
     "name": "Red Hat VirtIO SCSI pass-through controller",
     "short": "vioscsi",
     "device": { "type": "storage-scsi", "name": "virtio-scsi-pci", "extra": "" },
