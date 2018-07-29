@@ -4,6 +4,7 @@ class VirtHCK
     @project = project
     @logger = project.logger
     @device = project.device['device']
+    @id = project.platform['id']
   end
 
   def studio_snapshot
@@ -18,7 +19,7 @@ class VirtHCK
 
   def base_cmd
     ["cd #{@project.config['virthck_path']} &&",
-     "sudo ./hck.sh ci_mode -id #{@project.platform['id']}",
+     "sudo ./hck.sh ci_mode -id #{@id}",
      "-world_bridge #{@project.config['dhcp_bridge']}",
      "-qemu_bin #{@project.config['qemu_bin']}",
      "-ctrl_net_device #{@project.platform['ctrl_net_device']}",
@@ -90,7 +91,7 @@ class VirtHCK
 
   def client_alive?(name)
     id = name[-1]
-    s_id = @project.platform['id'].to_s.rjust(4, '0')
+    s_id = @id.to_s.rjust(4, '0')
     `ps -A -o cmd | grep '[\-]name HCK-Client#{id}_#{s_id}'`.split("\n").any?
   end
 end
