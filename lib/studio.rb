@@ -11,8 +11,6 @@ class Studio
     @project = project
     @logger = project.logger
     @virthck = project.virthck
-    @id = project.virthck.id
-    @ip = project.config['ip_segment'] + @id
     create_snapshot
   end
 
@@ -52,8 +50,14 @@ class Studio
     @tools = Tools.new(@project, @ip)
   end
 
+  def assign_id
+    @virthck.assign_id
+    @ip = @project.config['ip_segment'] + @virthck.id
+  end
+
   def run
     @logger.info('Starting studio')
+    assign_id
     @virthck.run(@name, true)
     sleep 2 until up?
   end
