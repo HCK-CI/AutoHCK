@@ -38,6 +38,8 @@ rescue StandardError => e
   puts "Backtrace:\n\t#{e.backtrace.join("\n\t")}"
 end
 client1.shutdown_machine if client1
-client2.shutdown_machine if project.support?
-studio.shutdown if studio
-studio.close
+client2.shutdown_machine if client2
+if studio
+  studio.shutdown
+  studio.close
+end
