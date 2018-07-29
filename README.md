@@ -38,6 +38,10 @@ Use a dhcp server tool like [OpenDHCP](http://dhcpserver.sourceforge.net) or [No
 56:00:XX:00:XX:dd > 192.168.0.XX
 ```
 
+
+### Microsoft HLK playlists
+To run HLK tests with latest Microsoft compatibility playlist clone [HLK Playlists](https://github.com/daynix/hlkplaylists) inside auto_hck and rename the directory to playlists, once it's there auto_hck will look for the right xml playlist file and apply it to the tests.
+
 ### Sudoer with no passwod
 To run auto_hck correctly the runnig user should have permission to run sudo commands without prompting his password, do this by adding the following line to sudoers file /etc/sudoers
 __This might be dangerous to your computer security, do this at your own risk__
