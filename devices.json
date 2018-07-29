@@ -28,6 +28,14 @@
     "support": false
   },
   {
+    "name": "VirtIO RNG Device",
+    "short": "viorng",
+    "device": { "type": "rng", "name": "virtio-rng-pci", "extra": "" },
+    "inf": "viorng.inf",
+    "install_method": "PNP",
+    "support": false
+  },
+  {
     "name": "Red Hat VirtIO SCSI pass-through controller",
     "short": "vioscsi",
     "device": { "type": "storage-scsi", "name": "virtio-scsi-pci", "extra": "" },
