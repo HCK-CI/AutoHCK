@@ -4,8 +4,20 @@ class VirtHCK
   def initialize(project)
     @project = project
     @logger = project.logger
+    @config = project.config
     @device = project.device['device']
     @id = project.platform['id']
+  end
+
+  def assign_id
+    id_range = [*@config['id_range'].first..@config['id_range'].last]
+    available_ids = id_range - alive_ids
+    if available_ids.empty?
+      @logger.fatal('No available ID, wait for a test session to end')
+      exit 1
+    end
+    @logger.info("Assinged ID: #{available_ids.first}")
+    @id = available_ids.first.to_s
   end
 
   def alive_ids

@@ -5,6 +5,7 @@
     "qemu_img": "qemu-img",
     "qemu_bin": "qemu-kvm",
     "ip_segment": "192.168.0.",
+    "id_range": [ 2, 90 ],
     "dhcp_bridge": "br1",
     "winrm_port": "5985",
     "toolshck_path": "/home/hck-ci/Prometheus/toolsHCK/toolsHCK.ps1",
