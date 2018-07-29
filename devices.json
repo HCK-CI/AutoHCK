@@ -20,6 +20,14 @@
     "support": false
   },
   {
+    "name": "IVSHMEM Device",
+    "short": "ivshmem",
+    "device": { "type": "ivshmem", "name": "ivshmem-doorbell", "extra": "" },
+    "inf": "ivshmem.inf",
+    "install_method": "PNP",
+    "support": false
+  },
+  {
     "name": "QEMU PVPanic Device",
     "short": "pvpanic",
     "device": { "type": "pvpanic", "name": "pvpanic", "extra": "" },
