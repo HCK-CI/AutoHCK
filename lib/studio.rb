@@ -47,7 +47,7 @@ class Studio
 
   def run
     @logger.info('Starting studio')
-    @virthck.run(@name)
+    @virthck.run(@name, true)
     sleep 2 until up?
   end
 
