@@ -8,6 +8,12 @@ class VirtHCK
     @id = project.platform['id']
   end
 
+  def alive_ids
+    bash_command = "sudo ps aux | grep ' [\-]name HCK' | "\
+                   "grep -o ' [\-]uuid 00[0-9]\\{2\\}' | grep -o '..$'"
+    `#{bash_command}`.split(/\n/).map(&:to_i)
+  end
+
   def studio_snapshot
     filename = File.basename(@project.platform['st_image'], '.*')
     @project.workspace_path + '/' + filename + '-snapshot.qcow2'
