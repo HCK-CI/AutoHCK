@@ -12,6 +12,14 @@
     ]
   },
   {
+    "name": "Red Hat VirtIO SCSI Disk Device",
+    "short": "viostor",
+    "device": { "type": "storage-blk", "name": "virtio-blk-pci", "extra": "" },
+    "inf": "viostor.inf",
+    "install_method": "PNP",
+    "support": false
+  },
+  {
     "name": "QEMU PVPanic Device",
     "short": "pvpanic",
     "device": { "type": "pvpanic", "name": "pvpanic", "extra": "" },
