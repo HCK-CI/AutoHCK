@@ -67,7 +67,7 @@ InQueue: #{stats['inqueue']}")
     res = @tools.get_test_results(test['id'], @target['key'],
                                   @client.machine['name'], @tag)
     @logger.info('Test archive successfully created')
-    update_remote(res['hostlogzippath'], test['name'])
+    update_remote(res['hostlogzippath'], res['result'] + ': ' + test['name'])
   end
 
   def update_remote(test_logs_path, test_name)
