@@ -71,9 +71,9 @@ Optional:
 ```
 ### Examples
 ```
-ruby autoHCK.rb -t Balloon-Win10x86 -p /home/hck-ci/balloon/win10/x86
-ruby autoHCK.rb -t NetKVM-Win10x64 -d /home/hck-ci/workspace -d diff_list_file.txt
-ruby autoHCK.rb -t viostor-Win10x64 -d /home/hck-ci/viostor -d diff_list_file.txt -c ec3da560827922e5a82486cf19cd9c27e95455a9
+ruby auto_hck.rb -t Balloon-Win10x86 -p /home/hck-ci/balloon/win10/x86
+ruby auto_hck.rb -t NetKVM-Win10x64 -d /home/hck-ci/workspace -d diff_list_file.txt
+ruby auto_hck.rb -t viostor-Win10x64 -d /home/hck-ci/viostor -d diff_list_file.txt -c ec3da560827922e5a82486cf19cd9c27e95455a9
 ```
 
 ## Author
