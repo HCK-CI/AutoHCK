@@ -52,6 +52,20 @@ hck-ci ALL=(ALL) NOPASSWD:ALL
 ### Images preperation
 This is similar to making regular HLK/HCK studio and clients images with with few additionals configurations, detailed instrutions available at [HLK-Setup-Scripts](https://github.com/daynix/HLK-Setup-Scripts)
 
+### Dropbox integration
+auto_hck allows integration with Dropbox, automatically uploading results and logs to specific location.
+to do that you will need to create auth2 token
+1. go to https://www.dropbox.com/developers/apps and click on 'Create app'
+2. select 'Dropbox API', 'Full Dropbox' access type and give it a unique name.
+3. click on 'Generated access token' and copy the token to config.json file.
+
+### Github integration
+when specifing a pull request auto_hck can mark test results on github and link to dropbox logs folder.
+to do that you will need to create a personal access token.
+1. go to https://github.com/settings/tokens and click on 'Generate new token'
+2. give it a name, select: repo:status and click 'Generate token'
+3. copy the token to the config.json file.
+
 ### Configuration
 There are 3 diffrenet JSON files for configurations, examples included in the files:
 * `config.json` is the general configuration file which holds the paths to the dependencies stated above.
