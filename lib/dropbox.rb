@@ -1,4 +1,4 @@
-require 'dropbox_api'
+require './lib/dropbox_api'
 
 # dropbox class
 class Dropbox
@@ -8,41 +8,26 @@ class Dropbox
     @logger = project.logger
     @timestamp = project.timestamp
     @tag = project.tag
-    @dropbox = DropboxApi::Client.new(token)
-    validate_login
+    token ? @dropbox = DropboxAPI.new(token) : return
+    @logger.error('Dropbox authentication failure') unless @dropbox.connected?
     create_shared_folder
   end
 
-  def validate_login
-    @dropbox.get_current_account
-  rescue DropboxApi::Errors::HttpError
-    @logger.error('Dropbox authentication failure')
-    @dropbox = nil
-  end
-
   def create_shared_folder
-    return if @dropbox.nil?
-    @path = "/#{@tag}-#{@timestamp}"
-    @dropbox.create_folder(@path)
-    @dropbox.share_folder(@path)
-    @url = @dropbox.create_shared_link_with_settings(@path).url + '&lst='
-    @logger.info("Dropbox shared folder: #{@url}")
+    return unless @dropbox && @dropbox.connected?
+    @dropbox.create_folder("#{@tag}-#{@timestamp}")
+    @logger.info("Dropbox shared folder: #{@dropbox.url}")
   end
 
   def upload(file_path, file_name = nil)
-    return if @dropbox.nil?
-    file_name = file_path.split('/').last if file_name.nil?
-    ext = file_path.split('.').last
-    file_content = IO.read(file_path)
-    remote_path = @path + '/' + file_name + '.' + ext
-    @dropbox.upload(remote_path, file_content)
+    return unless @dropbox && @dropbox.connected?
+    @dropbox.upload_file(file_path, file_name)
     @logger.info('File uploaded to dropbox shared folder')
   end
 
   def upload_text(content, file_name)
-    return if @dropbox.nil?
-    remote_path = @path + '/' + file_name
-    @dropbox.upload(remote_path, content, mode: 'overwrite')
+    return unless @dropbox && @dropbox.connected?
+    @dropbox.upload_text(content, file_name)
     @logger.info('Logs uploaded to dropbox shared folder')
   end
 end
