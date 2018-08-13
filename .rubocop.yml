@@ -1,5 +1,8 @@
 inherit_from: .rubocop_todo.yml
 
+Metrics/MethodLength:
+  Max: 20
+
 # Excluding spec files
 AllCops:
   Exclude:
