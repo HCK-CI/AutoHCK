@@ -4,6 +4,7 @@ require 'logger'
 require './lib/github'
 require './lib/dropbox'
 require './lib/virthck'
+require './lib/multi_delegator'
 
 # Kit project class
 class Project
@@ -20,6 +21,13 @@ class Project
     validate_paths
     init_workspace
     init_virthck
+    init_multilog
+  end
+
+  def init_multilog
+    log = File.open("#{workspace_path}/#{tag}.log", 'a')
+    @logger = Logger.new MultiDelegator.delegate(:write, :close).to(STDOUT, log)
+    @logger.datetime_format = '%Y-%m-%d %H:%M:%S'
   end
 
   def init_virthck
