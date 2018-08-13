@@ -76,7 +76,7 @@ class Tools < RToolsHCK
   end
 
   def set_machine_ready(machine, pool)
-    handle_results(@tools.set_machine_state(machine, pool, 'ready', :json))
+    handle_results(@tools.set_machine_state(machine, pool, 'ready', nil, :json))
   rescue StandardError => e
     @logger.error("#{e.class}: #{e}")
   end
