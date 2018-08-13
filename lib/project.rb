@@ -21,13 +21,14 @@ class Project
     validate_paths
     init_workspace
     init_virthck
-    init_multilog
+    init_multilog(options.debug)
   end
 
-  def init_multilog
+  def init_multilog(debug)
     log = File.open("#{workspace_path}/#{tag}.log", 'a')
     @logger = Logger.new MultiDelegator.delegate(:write, :close).to(STDOUT, log)
     @logger.datetime_format = '%Y-%m-%d %H:%M:%S'
+    @logger.level = debug ? 'DEBUG' : 'INFO'
   end
 
   def init_virthck
