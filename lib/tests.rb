@@ -1,6 +1,7 @@
 require './lib/playlist'
 # Tests class
 class Tests
+  HANDLE_TESTS_POLLING_INTERVAL = 10
   def initialize(client, support, project, target, tools)
     @client = client
     @project = project
@@ -50,9 +51,8 @@ class Tests
   end
 
   def print_test_info(running)
-    @logger.info("Test (#{tests_stats['currentcount']}/#{@total}):"\
-                 " #{running['name']} [#{running['estimatedruntime']}]")
-    @logger.info(info_page(running))
+    @logger.info('currently running: '\
+                 "#{running['name']} [#{running['estimatedruntime']}]")
   end
 
   def print_tests_stats
@@ -63,7 +63,12 @@ InQueue: #{stats['inqueue']}")
 
   def print_test_results(test)
     results = @tests.find { |t| t['id'] == test['id'] }
-    @logger.info("The test ended ; Test results: #{results['status']}")
+    @logger.info(results['status'] + ': ' + test['name'])
+    @logger.info(info_page(test))
+  end
+
+  def print_test_info_when_start(test)
+    @logger.info('Now running: ' + test['name'] + test['estimatedruntime'])
   end
 
   def archive_test_results(test)
@@ -82,13 +87,15 @@ InQueue: #{stats['inqueue']}")
   end
 
   def all_tests_finished?
-    tests_stats['inqueue'].zero? && tests_stats['current'].nil?
+    status_count('InQueue').zero? && current_test.nil?
   end
 
-  def handle_finished_test(test)
-    @project.github.update(tests_stats) if @project.github.up?
-    print_test_results(test)
-    archive_test_results(test)
+  def handle_finished_tests(tests)
+    tests.each do |test|
+      @project.github.update(tests_stats) if @project.github.up?
+      print_test_results(test)
+      archive_test_results(test)
+    end
     print_tests_stats
   end
 
@@ -97,14 +104,22 @@ InQueue: #{stats['inqueue']}")
     @support.keep_alive if @support
   end
 
-  def handle_test_running(running = nil)
+  def check_new_finished_tests(last_done)
+    new_done = done_tests - last_done
+    handle_finished_tests(new_done) if new_done.any?
+  end
+
+  def handle_test_running(last_done = [], running = nil)
     until all_tests_finished?
       keep_clients_alive
       list_tests
-      next if tests_stats['current'] == running
-      handle_finished_test(running) if running
-      running = tests_stats['current']
-      print_test_info_when_start(running) if running
+      check_new_finished_tests(last_done)
+      if current_test != running
+        running = current_test
+        print_test_info_when_start(running) if running
+      end
+      last_done = done_tests
+      sleep HANDLE_TESTS_POLLING_INTERVAL
     end
   end
 
