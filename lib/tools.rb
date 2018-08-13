@@ -99,9 +99,10 @@ class Tools < RToolsHCK
                                      :json))
   end
 
-  def get_test_results(test_id, target_key, machine, tag)
-    handle_results(@tools.get_test_results(test_id, target_key, tag, machine,
-                                           tag, :json))
+  def zip_test_result_logs(test_id, target_key, machine, tag)
+    test_index = -1
+    handle_results(@tools.zip_test_result_logs(test_index, test_id, target_key,
+                                               tag, machine, tag, :json))
   rescue StandardError
     @logger.info('Archiving tests results failed, trying again.')
     sleep 10

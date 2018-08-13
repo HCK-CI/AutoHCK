@@ -50,9 +50,9 @@ class Tests
     "Test information page: #{url}#{test['id']}"
   end
 
-  def print_test_info(running)
-    @logger.info('currently running: '\
-                 "#{running['name']} [#{running['estimatedruntime']}]")
+  def print_test_info_when_start(test)
+    @logger.info('Currently running: '\
+                 "#{test['name']} [#{test['estimatedruntime']}]")
   end
 
   def print_tests_stats
@@ -67,15 +67,12 @@ InQueue: #{stats['inqueue']}")
     @logger.info(info_page(test))
   end
 
-  def print_test_info_when_start(test)
-    @logger.info('Now running: ' + test['name'] + test['estimatedruntime'])
-  end
-
   def archive_test_results(test)
-    res = @tools.get_test_results(test['id'], @target['key'],
-                                  @client.machine['name'], @tag)
+    res = @tools.zip_test_result_logs(test['id'], @target['key'],
+                                      @client.machine['name'], @tag)
     @logger.info('Test archive successfully created')
-    update_remote(res['hostlogzippath'], res['result'] + ': ' + test['name'])
+    new_filename = res['status'] + ': ' + res['testname']
+    update_remote(res['hostlogszippath'], new_filename)
   end
 
   def update_remote(test_logs_path, test_name)
