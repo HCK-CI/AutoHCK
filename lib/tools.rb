@@ -5,21 +5,18 @@ require 'nori/parser/rexml'
 class Tools < RToolsHCK
   def initialize(project, ip_addr)
     @logger = project.logger
-    connect('ip' => ip_addr,
-            'user' => project.config['studio_username'],
-            'pass' => project.config['studio_password'],
-            'winrm_ports' => config_winrm_ports(project),
-            'logs_path' => project.workspace_path,
-            'toolshck_path' => project.config['toolshck_path'])
+    config = project.config
+    connect(addr: ip_addr,
+            user: config['studio_username'],
+            pass: config['studio_password'],
+            winrm_ports: config_winrm_ports(project),
+            logger: @logger,
+            outp_dir: project.workspace_path,
+            script_file: config['toolshck_path'])
   end
 
   def connect(conn)
-    @tools = RToolsHCK.new(conn['ip'],
-                           conn['user'],
-                           conn['pass'],
-                           conn['winrm_ports'],
-                           conn['logs_path'],
-                           conn['toolshck_path'])
+    @tools = RToolsHCK.new(conn)
   end
 
   def config_winrm_ports(project)
