@@ -82,23 +82,26 @@ InQueue: #{stats['inqueue']}")
     tests_stats['inqueue'].zero? && tests_stats['current'].nil?
   end
 
-  def handle_tests(test)
+  def handle_finished_test(test)
     @project.github.update(tests_stats) if @project.github.up?
     print_test_results(test)
     archive_test_results(test)
     print_tests_stats
   end
 
-  def handle_test_running
-    running = nil
+  def keep_clients_alive
+    @client.keep_alive
+    @support.keep_alive if @support
+  end
+
+  def handle_test_running(running = nil)
     until all_tests_finished?
-      @client.keep_alive
-      @support.keep_alive if @support
+      keep_clients_alive
       list_tests
       next if tests_stats['current'] == running
-      handle_tests(running) if running
+      handle_finished_test(running) if running
       running = tests_stats['current']
-      print_test_info(running) if running
+      print_test_info_when_start(running) if running
     end
   end
 
