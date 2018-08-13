@@ -4,13 +4,12 @@ require 'optparse'
 class CLI
   # class ScriptOptions
   class ScriptOptions
-    attr_accessor :tag, :path, :diff, :commit
+    attr_accessor :tag, :path, :diff, :commit, :debug
     def define_options(parser)
+      self.debug = false
       parser.banner = 'Usage: auto_hck.rb [options]'
       parser.separator ''
-      parser.separator ' Mandatory:'
       mandatory_options(parser)
-      parser.separator 'Optional:'
       optional_options(parser)
       parser.on_tail('-h', '--help', 'Show this message') do
         puts parser
@@ -19,13 +18,16 @@ class CLI
     end
 
     def mandatory_options(parser)
+      parser.separator 'Mandatory:'
       tag_option(parser)
       path_option(parser)
     end
 
     def optional_options(parser)
+      parser.separator 'Optional:'
       commit_option(parser)
       diff_option(parser)
+      debug_option(parser)
     end
 
     def commit_option(parser)
@@ -55,6 +57,13 @@ class CLI
                 'Path to the location of the driver wanted to be '\
                 'tested') do |path|
         self.path = path
+      end
+    end
+
+    def debug_option(parser)
+      parser.on('--debug',
+                'Printing debug information') do |debug|
+        self.debug = debug
       end
     end
   end
