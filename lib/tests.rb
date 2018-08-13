@@ -37,8 +37,11 @@ class Tests
   def tests_stats
     { 'current' => current_test, 'passed' => status_count('Passed'),
       'failed' => status_count('Failed'), 'inqueue' => status_count('InQueue'),
-      'currentcount' => status_count('Passed') + status_count('Failed') + 1,
-      'total' => @total }
+      'currentcount' => done_tests.count + 1, 'total' => @total }
+  end
+
+  def done_tests
+    @tests.select { |test| %w[Passed Failed].include? test['status'] }
   end
 
   def info_page(test)
