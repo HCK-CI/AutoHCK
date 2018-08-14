@@ -22,12 +22,10 @@ class Dropbox
   def upload(file_path, file_name = nil)
     return unless @dropbox && @dropbox.connected?
     @dropbox.upload_file(file_path, file_name)
-    @logger.info('File uploaded to dropbox shared folder')
   end
 
   def upload_text(content, file_name)
     return unless @dropbox && @dropbox.connected?
     @dropbox.upload_text(content, file_name)
-    @logger.info('Logs uploaded to dropbox shared folder')
   end
 end
