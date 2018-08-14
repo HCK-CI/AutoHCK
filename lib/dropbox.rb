@@ -15,8 +15,8 @@ class Dropbox
 
   def create_shared_folder
     return unless @dropbox && @dropbox.connected?
-    @dropbox.create_folder("#{@tag}-#{@timestamp}")
-    @logger.info("Dropbox shared folder: #{@dropbox.url}")
+    @url = @dropbox.create_folder("#{@tag}-#{@timestamp}")
+    @logger.info("Dropbox shared folder: #{@url}")
   end
 
   def upload(file_path, file_name = nil)
