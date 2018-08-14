@@ -73,6 +73,7 @@ InQueue: #{stats['inqueue']}")
     @logger.info('Test archive successfully created')
     new_filename = res['status'] + ': ' + res['testname']
     update_remote(res['hostlogszippath'], new_filename)
+    @logger.info('Test archive uploaded to dropbox shared folder')
   end
 
   def update_remote(test_logs_path, test_name)
@@ -80,6 +81,7 @@ InQueue: #{stats['inqueue']}")
     logs = @tests.reduce('') do |sum, test|
       sum + "#{test['name']}: #{test['status']}\n"
     end
+    @logger.info('Tests results logs updated in dropbox shared folder')
     @project.dropbox.upload_text(logs, 'logs.txt')
   end
 
