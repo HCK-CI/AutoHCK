@@ -79,7 +79,7 @@ InQueue: #{stats['inqueue']}")
   def update_remote(test_logs_path, test_name)
     @project.dropbox.upload(test_logs_path, test_name)
     logs = @tests.reduce('') do |sum, test|
-      sum + "#{test['name']}: #{test['status']}\n"
+      sum + "#{test['status']}: #{test['name']}\n"
     end
     @logger.info('Tests results logs updated in dropbox shared folder')
     @project.dropbox.upload_text(logs, 'logs.txt')
