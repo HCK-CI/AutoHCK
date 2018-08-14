@@ -38,6 +38,9 @@ Use a dhcp server tool like [OpenDHCP](http://dhcpserver.sourceforge.net) or [No
 56:00:XX:00:XX:dd > 192.168.0.XX
 ```
 
+### Microsoft HCK filters
+Filters are fixes for problematic tests, read more at: [Microsoft HLK Filters](https://docs.microsoft.com/en-us/windows-hardware/test/hlk/user/windows-hardware-lab-kit-filters)
+To run tests with applied filters automatically, get a copy of `UpdateFilters.sql` form [Daynix/hckfilters](https://github.com/daynix/hckfilters) and place them inside auto_hck at `filters/UpdateFilters.sql`.
 
 ### Microsoft HLK playlists
 To run HLK tests with latest Microsoft compatibility playlist clone [HLK Playlists](https://github.com/daynix/hlkplaylists) inside auto_hck and rename the directory to playlists, once it's there auto_hck will look for the right xml playlist file and apply it to the tests.
