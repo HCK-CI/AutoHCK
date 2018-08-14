@@ -82,6 +82,7 @@ Required:
 Optional:
 -d, --diff <DIFF-LIST-FILE>      The location of the driver
 -c, --commit <COMMIT-HASH>       Commit hash for updating github status
+-D, --debug                      Printing debug information
 ```
 ### Examples
 ```
