@@ -54,6 +54,7 @@ class Project
     @github = Github.new(@config, self, commit)
     return unless @github.up?
     @github.find_pr
+    @github.create_status('pending', 'Tests session initiated')
     @github
   end
 
