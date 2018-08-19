@@ -5,6 +5,7 @@ require './lib/tools'
 # Studio class
 class Studio
   attr_reader :tools
+  HCK_FILTERS_PATH = 'filters/UpdateFilters.sql'.freeze
   def initialize(project, name)
     @name = name
     @project = project
@@ -38,6 +39,12 @@ class Studio
 
   def list_pools
     @tools.list_pools
+  end
+
+  def update_filters
+    return unless File.file?(HCK_FILTERS_PATH)
+    @logger.info('Updating HCK filters')
+    @tools.update_filters(HCK_FILTERS_PATH)
   end
 
   def connect

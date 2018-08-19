@@ -22,6 +22,7 @@ begin
   Filelock '/var/tmp/virthck.lock', timeout: 0 do
     studio.run
     studio.connect
+    studio.update_filters
     studio.create_pool
     studio.create_project
     client1.run
