@@ -150,7 +150,5 @@ InQueue: #{stats['inqueue']}")
     @tests.each { |test| queue_test(test) }
     list_tests(true)
     handle_test_running
-    @logger.info('All tests finished running.')
-    create_project_package
   end
 end

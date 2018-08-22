@@ -34,9 +34,13 @@ class Client
   end
 
   def run_tests
-    tests = Tests.new(self, @support, @project, @target, @tools)
-    tests.list_tests
-    tests.run
+    @tests = Tests.new(self, @support, @project, @target, @tools)
+    @tests.list_tests
+    @tests.run
+  end
+
+  def create_package
+    @tests.create_project_package
   end
 
   def setup_driver

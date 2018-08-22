@@ -33,6 +33,7 @@ begin
   client1.add_target_to_project
   client1.add_support(client2) if project.support?
   client1.run_tests
+  client1.create_package
 rescue StandardError => e
   puts "Error during processing: #{$ERROR_INFO}"
   puts "Exception class: #{e.class}"
