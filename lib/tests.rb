@@ -18,9 +18,12 @@ class Tests
     @tests = @playlist.list_tests(log)
   end
 
+  def support_needed?(test)
+    (test['scheduleoptions'] & %w[6 RequiresMultipleMachines]) != []
+  end
+
   def test_support(test)
-    multiple = (test['scheduleoptions'] & %w[6 RequiresMultipleMachines]) != []
-    @support.machine['name'] if multiple
+    @support.machine['name'] if support_needed?(test)
   end
 
   def queue_test(test)
