@@ -100,6 +100,10 @@ class Tools < RToolsHCK
     handle_results(@tools.update_filters(filters_path))
   end
 
+  def apply_project_filters(project)
+    handle_results(@tools.apply_project_filters(project))
+  end
+
   def zip_test_result_logs(test_id, target_key, machine, tag)
     test_index = -1
     handle_results(@tools.zip_test_result_logs(test_index, test_id, target_key,

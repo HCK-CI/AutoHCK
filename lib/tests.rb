@@ -2,6 +2,7 @@ require './lib/playlist'
 # Tests class
 class Tests
   HANDLE_TESTS_POLLING_INTERVAL = 10
+  APPLYING_FILTERS_INTERVAL = 50
   def initialize(client, support, project, target, tools)
     @client = client
     @project = project
@@ -103,21 +104,33 @@ InQueue: #{stats['inqueue']}")
     @support.keep_alive if @support
   end
 
-  def check_new_finished_tests(last_done)
-    new_done = done_tests - last_done
-    handle_finished_tests(new_done) if new_done.any?
+  def new_done
+    list_tests
+    done_tests - @last_done
   end
 
-  def handle_test_running(last_done = [], running = nil)
+  def apply_filters
+    @logger.info('Applying filters on finished tests')
+    @tools.apply_project_filters(@tag)
+    sleep APPLYING_FILTERS_INTERVAL
+  end
+
+  def check_new_finished_tests
+    return unless new_done.any?
+    apply_filters
+    handle_finished_tests(new_done)
+  end
+
+  def handle_test_running(running = nil)
+    @last_done = []
     until all_tests_finished?
       keep_clients_alive
-      list_tests
-      check_new_finished_tests(last_done)
+      check_new_finished_tests
       if current_test != running
         running = current_test
         print_test_info_when_start(running) if running
       end
-      last_done = done_tests
+      @last_done = done_tests
       sleep HANDLE_TESTS_POLLING_INTERVAL
     end
   end
