@@ -10,12 +10,17 @@ class Tests
     @target = target
     @tools = tools
     @support = support
+    @last_done = []
     @logger = project.logger
     @playlist = Playlist.new(client, project, target, tools)
   end
 
   def list_tests(log = false)
     @tests = @playlist.list_tests(log)
+  end
+
+  def add_support(support)
+    @support = support
   end
 
   def support_needed?(test)
@@ -42,7 +47,7 @@ class Tests
   def tests_stats
     { 'current' => current_test, 'passed' => status_count('Passed'),
       'failed' => status_count('Failed'), 'inqueue' => status_count('InQueue'),
-      'currentcount' => done_tests.count + 1, 'total' => @total }
+      'currentcount' => done_tests.count + 1, 'total' => @tests.count }
   end
 
   def done_tests
@@ -125,7 +130,7 @@ InQueue: #{stats['inqueue']}")
   end
 
   def handle_test_running(running = nil)
-    @last_done = []
+    list_tests(true)
     until all_tests_finished?
       keep_clients_alive
       check_new_finished_tests
@@ -144,11 +149,18 @@ InQueue: #{stats['inqueue']}")
     @project.dropbox.upload(res['hostprojectpackagepath'], @tag)
   end
 
-  def run
-    @total = @tests.count
+  def single_machine_tests
+    @tests.reject { |test| support_needed?(test) }
+  end
+
+  def multiple_machines_tests
+    @tests.select { |test| support_needed?(test) }
+  end
+
+  def run_tests(single_machines = true, multiple_machines = true)
     @logger.info('Adding tests to queue')
-    @tests.each { |test| queue_test(test) }
-    list_tests(true)
+    single_machine_tests.each { |t| queue_test(t) } if single_machines
+    multiple_machines_tests.each { |t| queue_test(t) } if multiple_machines
     handle_test_running
   end
 end
