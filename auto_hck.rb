@@ -26,14 +26,19 @@ begin
     studio.create_pool
     studio.create_project
     client1.run
-    client2.run if project.support?
     client1.setup_driver
-    client2.setup_driver if project.support?
   end
   client1.add_target_to_project
-  client1.add_support(client2) if project.support?
+  client1.prepare_tests
   client1.run_single_machine_tests
-  client1.run_multiple_machines_tests
+  if project.support?
+    Filelock '/var/tmp/virthck.lock', timeout: 0 do
+      client2.run
+      client2.setup_driver
+    end
+    client1.add_support(client2)
+    client1.run_multiple_machines_tests
+  end
   client1.create_package
 rescue StandardError => e
   puts "Error during processing: #{$ERROR_INFO}"
