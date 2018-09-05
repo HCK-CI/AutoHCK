@@ -17,10 +17,10 @@ class Project
 
   def initialize(options)
     init_class_variables(options)
+    validate_paths
     diff_checker(options.diff)
     dropbox_handling
     github_handling(options.commit)
-    validate_paths
     init_workspace
     init_virthck
     init_multilog(options.debug)
