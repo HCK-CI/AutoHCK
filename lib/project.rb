@@ -72,6 +72,10 @@ class Project
   def validate_paths
     normalize_paths
     validate_images
+    unless File.exist?(@config['toolshck_path'])
+      @logger.fatal('toolsHCK script path is not valid')
+      exit(1)
+    end
     unless File.exist?("#{@driver_path}/#{@device['inf']}")
       @logger.fatal('Driver path is not valid')
       exit(1)
