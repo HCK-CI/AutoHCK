@@ -60,13 +60,13 @@ class Tests
   end
 
   def print_test_info_when_start(test)
-    @logger.info('Currently running: '\
+    @logger.info('>>> Currently running: '\
                  "#{test['name']} [#{test['estimatedruntime']}]")
   end
 
   def print_tests_stats
     stats = tests_stats
-    @logger.info("Passed: #{stats['passed']} | Failed: #{stats['failed']} |\
+    @logger.info("<<< Passed: #{stats['passed']} | Failed: #{stats['failed']} |\
 InQueue: #{stats['inqueue']}")
   end
 
