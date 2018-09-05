@@ -3,6 +3,7 @@ require 'nori/parser/rexml'
 
 # Tools class
 class Tools < RToolsHCK
+  ARCHIVING_RETRIEVS = 3
   def initialize(project, ip_addr)
     @logger = project.logger
     config = project.config
@@ -106,13 +107,19 @@ class Tools < RToolsHCK
   end
 
   def zip_test_result_logs(test_id, target_key, machine, tag)
+    retries ||= 0
     test_index = -1
     handle_results(@tools.zip_test_result_logs(test_index, test_id, target_key,
                                                tag, machine, tag))
   rescue StandardError
-    @logger.info('Archiving tests results failed, trying again.')
-    sleep 10
-    retry
+    # Results archiving might fail because they requested before they are done
+    # or when the test itself didn't run and there are no results.
+    @logger.info('Archiving tests results failed')
+    if (retries += 1) < ARCHIVING_RETRIES
+      sleep 10
+      @logger.info('Trying again to archive tests results')
+      retry
+    end
   end
 
   def create_project_package(project, handler = nil)
