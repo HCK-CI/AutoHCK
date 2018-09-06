@@ -5,6 +5,7 @@ require './lib/github'
 require './lib/dropbox'
 require './lib/virthck'
 require './lib/multi_delegator'
+require './lib/diff_checker'
 
 # Kit project class
 class Project
@@ -16,12 +17,20 @@ class Project
 
   def initialize(options)
     init_class_variables(options)
+    diff_checker(options.diff)
     dropbox_handling
     github_handling(options.commit)
     validate_paths
     init_workspace
     init_virthck
     init_multilog(options.debug)
+  end
+
+  def diff_checker(diff)
+    diff_checker = DiffChecker.new(@logger, @device, @driver_path, diff)
+    return if diff_checker.trigger?
+    @logger.info("Driver isn't changed, not running tests")
+    exit(0)
   end
 
   def init_multilog(debug)
