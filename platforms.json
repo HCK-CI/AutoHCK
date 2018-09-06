@@ -1,6 +1,5 @@
 [
   {
-    "id": "2",
     "name": "Win7x64",
     "kit": "HCK",
     "st_image": "HCK.qcow2",
@@ -25,7 +24,6 @@
     }
   },
   {
-    "id": "3",
     "name": "Win7x86",
     "kit": "HCK",
     "st_image": "HCK.qcow2",
@@ -50,7 +48,6 @@
     }
   },
   {
-    "id": "4",
     "name": "Win8x64",
     "kit": "HCK",
     "st_image": "HCK.qcow2",
@@ -75,7 +72,6 @@
     }
   },
   {
-    "id": "5",
     "name": "Win8x86",
     "kit": "HCK",
     "st_image": "HCK.qcow2",
@@ -100,7 +96,6 @@
     }
   },
   {
-    "id": "6",
     "name": "Win81x64",
     "kit": "HCK",
     "st_image": "HCK.qcow2",
@@ -125,7 +120,6 @@
     }
   },
   {
-    "id": "7",
     "name": "Win81x86",
     "kit": "HCK",
     "st_image": "HCK.qcow2",
@@ -150,7 +144,6 @@
     }
   },
   {
-    "id": "8",
     "name": "Win2008R2x64",
     "kit": "HCK",
     "st_image": "HCK.qcow2",
@@ -175,7 +168,6 @@
     }
   },
   {
-    "id": "9",
     "name": "Win2012x64",
     "kit": "HCK",
     "st_image": "HCK.qcow2",
@@ -200,7 +192,6 @@
     }
   },
   {
-    "id": "10",
     "name": "Win2012R2x64",
     "kit": "HCK",
     "st_image": "HCK.qcow2",
@@ -225,7 +216,6 @@
     }
   },
   {
-    "id": "11",
     "name": "Win2016x64",
     "kit": "HLK1607",
     "st_image": "HLK1607.qcow2",
@@ -250,7 +240,6 @@
     }
   },
   {
-    "id": "12",
     "name": "Win10_1607x64",
     "kit": "HLK1703",
     "st_image": "HLK1703.qcow2",
@@ -275,7 +264,6 @@
     }
   },
   {
-    "id": "13",
     "name": "Win10_1607x86",
     "kit": "HLK1703",
     "st_image": "HLK1703.qcow2",
@@ -300,7 +288,6 @@
     }
   },
   {
-    "id": "14",
     "name": "Win10_1703x64",
     "kit": "HLK1703",
     "st_image": "HLK1703.qcow2",
@@ -325,7 +312,6 @@
     }
   },
   {
-    "id": "15",
     "name": "Win10_1703x86",
     "kit": "HLK1703",
     "st_image": "HLK1703.qcow2",
@@ -350,7 +336,6 @@
     }
   },
   {
-    "id": "16",
     "name": "Win10_1709x64",
     "kit": "HLK1709",
     "st_image": "HLK1709.qcow2",
@@ -375,7 +360,6 @@
     }
   },
   {
-    "id": "17",
     "name": "Win10_1709x86",
     "kit": "HLK1709",
     "st_image": "HLK1709.qcow2",
@@ -400,7 +384,6 @@
     }
   },
   {
-    "id": "18",
     "name": "Win10_1803x64",
     "kit": "HLK1803",
     "st_image": "HLK1803.qcow2",
@@ -425,7 +408,6 @@
     }
   },
   {
-    "id": "19",
     "name": "Win10_1803x86",
     "kit": "HLK1803",
     "st_image": "HLK1803.qcow2",
