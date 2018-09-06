@@ -1,0 +1,36 @@
+#Example file for repository virtio-win/kvm-guest-drivers-windows
+# https://github.com/virtio-win/kvm-guest-drivers-windows
+Balloon:
+  - 'Balloon'
+Documentation:
+NetKVM:
+  - 'NetKVM'
+Q35:
+Tools:
+  - '*'
+VirtIO:
+  - '*'
+fwcfg:
+fwcfg64:
+  - 'fwcfg64'
+ivshmem:
+  - 'ivshmem'
+packaging:
+  - '*'
+pciserial:
+pvpanic:
+  - 'pvpanic'
+viocrypt:
+  - 'viocrypt'
+vioinput:
+  - 'vioinput'
+viorng:
+  - 'viorng'
+vioscsi:
+  - 'vioscsi'
+vioserial:
+  - 'vioserial'
+viostor:
+  - 'viostor'
+/:
+  - '*'
