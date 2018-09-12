@@ -83,15 +83,15 @@ Required:
 -t, --tag [PROJECT]-[OS][ARCH]   The driver name and architecture
 -p, --path [PATH-TO-DRIVER]      The location of the driver
 Optional:
--d, --diff <DIFF-LIST-FILE>      The location of the driver
+-d, --diff <DIFF-LIST-FILE>      Poth to text file containing a list of changed source files
 -c, --commit <COMMIT-HASH>       Commit hash for updating github status
 -D, --debug                      Printing debug information
 ```
 ### Examples
 ```
 ruby auto_hck.rb -t Balloon-Win10x86 -p /home/hck-ci/balloon/win10/x86
-ruby auto_hck.rb -t NetKVM-Win10x64 -d /home/hck-ci/workspace -d diff_list_file.txt
-ruby auto_hck.rb -t viostor-Win10x64 -d /home/hck-ci/viostor -d diff_list_file.txt -c ec3da560827922e5a82486cf19cd9c27e95455a9
+ruby auto_hck.rb -t NetKVM-Win10x64 -d /home/hck-ci/workspace -d /path/to/diff.txt
+ruby auto_hck.rb -t viostor-Win10x64 -d /home/hck-ci/viostor -d /path/to/diff.txt -c ec3da560827922e5a82486cf19cd9c27e95455a9
 ```
 
 ## Author

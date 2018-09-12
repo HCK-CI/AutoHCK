@@ -39,7 +39,8 @@ class CLI
 
     def diff_option(parser)
       parser.on('-d', '--diff <DIFFFILE>',
-                'Text file containing a list of files changed') do |diff|
+                'Path to text file containing a list of changed source '\
+                'files') do |diff|
         self.diff = diff
       end
     end
