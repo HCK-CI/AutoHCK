@@ -22,11 +22,13 @@ class DropboxAPI
 
   def url
     return @url if @url
+
     nil
   end
 
   def upload_file(local_path, rename = nil)
     return unless @url
+
     file_name = if rename.nil?
                   File.basename(local_path)
                 else
@@ -39,6 +41,7 @@ class DropboxAPI
 
   def upload_text(content, file_name)
     return unless @url
+
     remote_path = @path + '/' + file_name
     @dropbox.upload(remote_path, content, mode: 'overwrite')
   end

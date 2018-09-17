@@ -21,6 +21,7 @@ class Playlist
     kit = @project.platform['kit']
     file = kit[0..2] == 'HLK' ? "./playlists/#{kit[3..-1]}.xml" : nil
     return nil if file.nil? || !File.exist?("./#{file}")
+
     @logger.info("Applying microsoft's playlist") if log
     file
   end
@@ -40,6 +41,7 @@ class Playlist
   def custom_playlist(log)
     playlist = @project.device['playlist']
     return unless playlist
+
     @tests.select! { |test| playlist.include?(test['name']) }
     count = @tests.count
     @logger.info("Applying custom playlist, #{count} tests.") if log

@@ -29,6 +29,7 @@ class Tools < RToolsHCK
 
   def handle_results(results)
     return results['content'] unless results['result'] == 'Failure'
+
     @logger.error(results['message'])
     raise results['message']
   end

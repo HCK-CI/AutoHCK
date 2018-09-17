@@ -125,6 +125,7 @@ InQueue: #{stats['inqueue']}")
 
   def check_new_finished_tests
     return unless new_done.any?
+
     apply_filters
     handle_finished_tests(new_done)
   end

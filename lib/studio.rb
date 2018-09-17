@@ -41,6 +41,7 @@ class Studio
 
   def update_filters
     return unless File.file?(HCK_FILTERS_PATH)
+
     @logger.info('Updating HCK filters')
     @tools.update_filters(HCK_FILTERS_PATH)
   end
