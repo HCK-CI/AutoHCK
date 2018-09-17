@@ -29,6 +29,7 @@ class Project
   def diff_checker(diff)
     diff_checker = DiffChecker.new(@logger, @device, @driver_path, diff)
     return if diff_checker.trigger?
+
     @logger.info("Driver isn't changed, not running tests")
     exit(0)
   end
@@ -62,6 +63,7 @@ class Project
   def github_handling(commit)
     @github = Github.new(@config, self, commit)
     return unless @github.up?
+
     @github.find_pr
     @github.create_status('pending', 'Tests session initiated')
     @github
@@ -75,6 +77,7 @@ class Project
       exit(1)
     end
     return if File.exist?("#{@config['virthck_path']}/hck.sh")
+
     @logger.fatal('VirtHCK path is not valid')
     exit(1)
   end
