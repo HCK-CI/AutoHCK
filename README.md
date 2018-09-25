@@ -33,10 +33,11 @@ Install the following gems using bundler with `bundler install` or `gem install 
 * [octokit](https://rubygems.org/gems/octokit)
 
 ### DHCP SERVER
-Use a dhcp server tool like [OpenDHCP](http://dhcpserver.sourceforge.net) or [Node-DHCP](https://github.com/infusion/node-dhcp) to assign static ip to mac-address with the following rule:
+In order to connect to the Studio machine in each HLK/HCK setup, we need to set up a DHCP server that will provide each studio with a predefined unique IP address. The server will assign the IP address according to the machine network adapter mac address with the following rule:
 ```
 56:00:XX:00:XX:dd > 192.168.0.XX
 ```
+Use the following script [OpenDHCPServerSetup](https://github.com/HCK-CI/OpenDHCPServerSetup) to install and configure OpenDHCPServer.
 
 ### Microsoft HCK filters
 Filters are fixes for problematic tests, read more at: [Microsoft HLK Filters](https://docs.microsoft.com/en-us/windows-hardware/test/hlk/user/windows-hardware-lab-kit-filters)
