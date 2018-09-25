@@ -1,6 +1,6 @@
 # auto_hck
 
-[![CircleCI](https://circleci.com/gh/20lives/auto_hck.svg?style=svg)](https://circleci.com/gh/20lives/auto_hck)
+[![CircleCI](https://circleci.com/gh/daynix/auto_hck.svg?style=svg)](https://circleci.com/gh/20lives/auto_hck)
 
 auto_hck is a tool for automating HCK/HLK testing, doing all the boilerplate steps in the process leaving you with simply choosing which driver you want to test on what os.
 
