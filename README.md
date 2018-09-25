@@ -15,10 +15,10 @@ Use your package manager to install QEMU or build it from [source](https://githu
 Clone [VirtHCK](https://github.com/daynix/VirtHCK), auto_hck will use it as a dependency.
 
 ### toolsHCK
-Get a copy of the powershel script file in [rtoolsHCK](https://github.com/daynix/toolsHCK)
+Get a copy of the powershel script file in [rtoolsHCK](https://github.com/HCK-CI/toolsHCK)
 
 ### rtoolsHCK
-Get a clone of [rtoolsHCK](https://github.com/daynix/rtoolsHCK), execute the follwing to build and install as a gem:
+Get a clone of [rtoolsHCK](https://github.com/HCK-CI/rtoolsHCK), execute the follwing to build and install as a gem:
 ```
 rake build
 rake install
@@ -40,10 +40,10 @@ Use a dhcp server tool like [OpenDHCP](http://dhcpserver.sourceforge.net) or [No
 
 ### Microsoft HCK filters
 Filters are fixes for problematic tests, read more at: [Microsoft HLK Filters](https://docs.microsoft.com/en-us/windows-hardware/test/hlk/user/windows-hardware-lab-kit-filters)
-To run tests with applied filters automatically, get a copy of `UpdateFilters.sql` form [Daynix/hckfilters](https://github.com/daynix/hckfilters) and place them inside auto_hck at `filters/UpdateFilters.sql`.
+To run tests with applied filters automatically, get a copy of `UpdateFilters.sql` form [HCK-CI/hckfilters](https://github.com/HCK-CI/hckfilters) and place them inside auto_hck at `filters/UpdateFilters.sql`.
 
 ### Microsoft HLK playlists
-To run HLK tests with latest Microsoft compatibility playlist clone [HLK Playlists](https://github.com/daynix/hlkplaylists) inside auto_hck and rename the directory to playlists, once it's there auto_hck will look for the right xml playlist file and apply it to the tests.
+To run HLK tests with latest Microsoft compatibility playlist clone [HLK Playlists](https://github.com/HCK-CI/hlkplaylists) inside auto_hck and rename the directory to playlists, once it's there auto_hck will look for the right xml playlist file and apply it to the tests.
 
 ### Sudoer with no passwod
 To run auto_hck correctly the runnig user should have permission to run sudo commands without prompting his password, do this by adding the following line to sudoers file /etc/sudoers
@@ -53,7 +53,7 @@ hck-ci ALL=(ALL) NOPASSWD:ALL
 ```
 
 ### Images preperation
-This is similar to making regular HLK/HCK studio and clients images with with few additionals configurations, detailed instrutions available at [HLK-Setup-Scripts](https://github.com/daynix/HLK-Setup-Scripts)
+This is similar to making regular HLK/HCK studio and clients images with with few additionals configurations, detailed instrutions available at [HLK-Setup-Scripts](https://github.com/HCK-CI/HLK-Setup-Scripts)
 
 ### Dropbox integration
 auto_hck allows integration with Dropbox, automatically uploading results and logs to specific location.
