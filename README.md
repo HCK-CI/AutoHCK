@@ -6,13 +6,13 @@ AutoHCK is a tool for automating HCK/HLK testing, doing all the boilerplate step
 
 ## Getting Started
 
-There are not so few steps needed to install and set up auto_hck, First of all clone auto_hck and follow the instruction below:
+There are not so few steps needed to install and set up AutoHCK, First of all clone AutoHCK and follow the instruction below:
 
 ### QEMU
 Use your package manager to install QEMU or build it from [source](https://github.com/qemu/qemu)
 
 ### VirtHCK
-Clone [VirtHCK](https://github.com/daynix/VirtHCK), auto_hck will use it as a dependency.
+Clone [VirtHCK](https://github.com/daynix/VirtHCK), AutoHCK will use it as a dependency.
 
 ### toolsHCK
 Get a copy of the powershel script file in [rtoolsHCK](https://github.com/HCK-CI/toolsHCK)
@@ -41,13 +41,13 @@ Use the following script [OpenDHCPServerSetup](https://github.com/HCK-CI/OpenDHC
 
 ### Microsoft HCK filters
 Filters are fixes for problematic tests, read more at: [Microsoft HLK Filters](https://docs.microsoft.com/en-us/windows-hardware/test/hlk/user/windows-hardware-lab-kit-filters)
-To run tests with applied filters automatically, get a copy of `UpdateFilters.sql` form [HCK-CI/hckfilters](https://github.com/HCK-CI/hckfilters) and place them inside auto_hck at `filters/UpdateFilters.sql`.
+To run tests with applied filters automatically, get a copy of `UpdateFilters.sql` form [HCK-CI/hckfilters](https://github.com/HCK-CI/hckfilters) and place them inside AutoHCK at `filters/UpdateFilters.sql`.
 
 ### Microsoft HLK playlists
-To run HLK tests with latest Microsoft compatibility playlist clone [HLK Playlists](https://github.com/HCK-CI/hlkplaylists) inside auto_hck and rename the directory to playlists, once it's there auto_hck will look for the right xml playlist file and apply it to the tests.
+To run HLK tests with latest Microsoft compatibility playlist clone [HLK Playlists](https://github.com/HCK-CI/hlkplaylists) inside AutoHCK and rename the directory to playlists, once it's there AutoHCK will look for the right xml playlist file and apply it to the tests.
 
 ### Sudoer with no passwod
-To run auto_hck correctly the runnig user should have permission to run sudo commands without prompting his password, do this by adding the following line to sudoers file /etc/sudoers
+To run AutoHCK correctly the runnig user should have permission to run sudo commands without prompting his password, do this by adding the following line to sudoers file /etc/sudoers
 __This might be dangerous to your computer security, do this at your own risk__
 ```
 hck-ci ALL=(ALL) NOPASSWD:ALL
@@ -57,14 +57,14 @@ hck-ci ALL=(ALL) NOPASSWD:ALL
 This is similar to making regular HLK/HCK studio and clients images with with few additionals configurations, detailed instrutions available at [HLK-Setup-Scripts](https://github.com/HCK-CI/HLK-Setup-Scripts)
 
 ### Dropbox integration
-auto_hck allows integration with Dropbox, automatically uploading results and logs to specific location.
+AutoHCK allows integration with Dropbox, automatically uploading results and logs to specific location.
 to do that you will need to create auth2 token
 1. go to https://www.dropbox.com/developers/apps and click on 'Create app'
 2. select 'Dropbox API', 'Full Dropbox' access type and give it a unique name.
 3. click on 'Generated access token' and copy the token to config.json file.
 
 ### Github integration
-when specifing a pull request auto_hck can mark test results on github and link to dropbox logs folder.
+When specifing a pull request AutoHCK can mark test results on github and link to dropbox logs folder.
 to do that you will need to create a personal access token.
 1. go to https://github.com/settings/tokens and click on 'Generate new token'
 2. give it a name, select: repo:status and click 'Generate token'
