@@ -46,7 +46,7 @@ To run tests with applied filters automatically, get a copy of `UpdateFilters.sq
 ### Microsoft HLK playlists
 To run HLK tests with latest Microsoft compatibility playlist clone [HLK Playlists](https://github.com/HCK-CI/hlkplaylists) inside AutoHCK and rename the directory to playlists, once it's there AutoHCK will look for the right xml playlist file and apply it to the tests.
 
-### Sudoer with no passwod
+### Sudoer with no password
 To run AutoHCK correctly the runnig user should have permission to run sudo commands without prompting his password, do this by adding the following line to sudoers file /etc/sudoers
 __This might be dangerous to your computer security, do this at your own risk__
 ```
@@ -84,7 +84,7 @@ Required:
 -t, --tag [PROJECT]-[OS][ARCH]   The driver name and architecture
 -p, --path [PATH-TO-DRIVER]      The location of the driver
 Optional:
--d, --diff <DIFF-LIST-FILE>      Poth to text file containing a list of changed source files
+-d, --diff <DIFF-LIST-FILE>      Path to text file containing a list of changed source files
 -c, --commit <COMMIT-HASH>       Commit hash for updating github status
 -D, --debug                      Printing debug information
 ```
