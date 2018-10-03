@@ -78,7 +78,7 @@ There are 3 diffrenet JSON files for configurations, examples included in the fi
 
 ## Usage
 
-Once everything is installed and configured, run `ruby auto_hck.rb` with these parameters:
+Once everything is installed and configured, run `./bin/auto_hck` with these parameters:
 ```
 Required:
 -t, --tag [PROJECT]-[OS][ARCH]   The driver name and architecture
@@ -90,9 +90,9 @@ Optional:
 ```
 ### Examples
 ```
-ruby auto_hck.rb -t Balloon-Win10x86 -p /home/hck-ci/balloon/win10/x86
-ruby auto_hck.rb -t NetKVM-Win10x64 -d /home/hck-ci/workspace -d /path/to/diff.txt
-ruby auto_hck.rb -t viostor-Win10x64 -d /home/hck-ci/viostor -d /path/to/diff.txt -c ec3da560827922e5a82486cf19cd9c27e95455a9
+ruby ./bin/auto_hck -t Balloon-Win10x86 -p /home/hck-ci/balloon/win10/x86
+ruby ./bin/auto_hck -t NetKVM-Win10x64 -d /home/hck-ci/workspace -d /path/to/diff.txt
+ruby ./bin/auto_hck -t viostor-Win10x64 -d /home/hck-ci/viostor -d /path/to/diff.txt -c ec3da560827922e5a82486cf19cd9c27e95455a9
 ```
 
 ## Author
