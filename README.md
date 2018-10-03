@@ -94,6 +94,13 @@ ruby ./bin/auto_hck -t Balloon-Win10x86 -p /home/hck-ci/balloon/win10/x86
 ruby ./bin/auto_hck -t NetKVM-Win10x64 -d /home/hck-ci/workspace -d /path/to/diff.txt
 ruby ./bin/auto_hck -t viostor-Win10x64 -d /home/hck-ci/viostor -d /path/to/diff.txt -c ec3da560827922e5a82486cf19cd9c27e95455a9
 ```
+### Workspace
+When starting AutoHCK session a workspace will be created inside the workspace directory configured in `config.json` at the path: `workspace/[device-short]/[platform]/[timestamp]/`
+Inside AutoHCK will save the following files:
+* qcow2 snapshots of the backing setup images
+* AutoHCK log file
+* Executables: `st.sh` `c1.sh` `c2.sh` to rerun test setup machines manually.
+* HLKX/HCKX file after tests session ended.
 
 ## Author
 
