@@ -31,21 +31,12 @@ class Client
 
   def add_support(support)
     @support = support
-    @tests.add_support(support)
   end
 
-  def prepare_tests
+  def run_tests
     @tests = Tests.new(self, @support, @project, @target, @tools)
-  end
-
-  def run_single_machine_tests
     @tests.list_tests
-    @tests.run_tests(true, false)
-  end
-
-  def run_multiple_machines_tests
-    @tests.list_tests
-    @tests.run_tests(false, true)
+    @tests.run
   end
 
   def create_package
