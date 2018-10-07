@@ -25,7 +25,7 @@ rake install
 ```
 
 ### RubyGems
-Install the following gems using bundler with `bundler install` or `gem install gemname`:
+Install the following gems using bundler with `bundler install` or `gem install <gem_name>`:
 * [dropbox_api](https://rubygems.org/gems/dropbox_api)
 * [faraday](https://rubygems.org/gems/faraday) (version 0.12.2)
 * [net-ping](https://rubygems.org/gems/net-ping)
