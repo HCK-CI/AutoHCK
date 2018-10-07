@@ -3,7 +3,7 @@ require 'octokit'
 # github class
 class Github
   def initialize(config, project, commit)
-    @up = false
+    @api_connected = false
     @logger = project.logger
     @target_url = project.dropbox.url
     @repo = config['repository']
@@ -18,21 +18,21 @@ class Github
     password = @credentials['password']
     @github = Octokit::Client.new(login: login, password: password)
     @logger.info("Connected to github with: #{@github.user.login}")
-    @up = true
+    @api_connected = true
   rescue Octokit::Unauthorized
     @logger.error('Github authentication failed')
     nil
   end
 
-  def up?
-    @up
+  def connected?
+    @api_connected
   end
 
   def find_pr
     pr = @github.pulls(@repo).find { |x| x['head']['sha'] == @commit }
     if pr.nil?
-      @logger.error('Pull request commit hash not valid')
-      @up = false
+      @logger.error('Pull request commit hash not valid, disconnecting github.')
+      @api_connected = false
       return nil
     end
     unless pr.nil?
