@@ -32,6 +32,7 @@ class Github
     pr = @github.pulls(@repo).find { |x| x['head']['sha'] == @commit }
     if pr.nil?
       @logger.error('Pull request commit hash not valid')
+      @up = false
       return nil
     end
     unless pr.nil?
