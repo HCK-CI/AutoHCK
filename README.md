@@ -15,7 +15,7 @@ Use your package manager to install QEMU or build it from [source](https://githu
 Clone [VirtHCK](https://github.com/daynix/VirtHCK), AutoHCK will use it as a dependency.
 
 ### toolsHCK
-Get a copy of the powershel script file in [rtoolsHCK](https://github.com/HCK-CI/toolsHCK)
+Get a copy of the powershell script file in [rtoolsHCK](https://github.com/HCK-CI/toolsHCK)
 
 ### rtoolsHCK
 Get a clone of [rtoolsHCK](https://github.com/HCK-CI/rtoolsHCK), execute the follwing to build and install as a gem:
@@ -25,7 +25,7 @@ rake install
 ```
 
 ### RubyGems
-Install the following gems using bundler with `bundler install` or `gem install gemname`:
+Install the following gems using bundler with `bundler install` or `gem install <gem_name>`:
 * [dropbox_api](https://rubygems.org/gems/dropbox_api)
 * [faraday](https://rubygems.org/gems/faraday) (version 0.12.2)
 * [net-ping](https://rubygems.org/gems/net-ping)
@@ -41,7 +41,7 @@ Use the following script [OpenDHCPServerSetup](https://github.com/HCK-CI/OpenDHC
 
 ### Microsoft HCK filters
 Filters are fixes for problematic tests, read more at: [Microsoft HLK Filters](https://docs.microsoft.com/en-us/windows-hardware/test/hlk/user/windows-hardware-lab-kit-filters)
-To run tests with applied filters automatically, get a copy of `UpdateFilters.sql` form [HCK-CI/hckfilters](https://github.com/HCK-CI/hckfilters) and place them inside AutoHCK at `filters/UpdateFilters.sql`.
+To run tests with applied filters automatically, get a copy of `UpdateFilters.sql` from [HCK-CI/hckfilters](https://github.com/HCK-CI/hckfilters) and place them inside AutoHCK at `filters/UpdateFilters.sql`.
 
 ### Microsoft HLK playlists
 To run HLK tests with latest Microsoft compatibility playlist clone [HLK Playlists](https://github.com/HCK-CI/hlkplaylists) inside AutoHCK and rename the directory to playlists, once it's there AutoHCK will look for the right xml playlist file and apply it to the tests.
@@ -54,7 +54,8 @@ hck-ci ALL=(ALL) NOPASSWD:ALL
 ```
 
 ### Images preperation
-This is similar to making regular HLK/HCK studio and clients images with with few additionals configurations, detailed instrutions available at [HLK-Setup-Scripts](https://github.com/HCK-CI/HLK-Setup-Scripts)
+This is similar to making regular HLK/HCK studio and clients images with with few additionals configurations, detailed instrutions available at [HLK-Setup-Scripts](https://github.com/HCK-CI/HLK-Setup-Scripts).
+Images will be placeed at the images folder as configured in `config.json` file
 
 ### Dropbox integration
 AutoHCK allows integration with Dropbox, automatically uploading results and logs to specific location.
@@ -68,7 +69,7 @@ When specifing a pull request AutoHCK can mark test results on github and link t
 to do that you will need to create a personal access token.
 1. go to https://github.com/settings/tokens and click on 'Generate new token'
 2. give it a name, select: repo:status and click 'Generate token'
-3. copy the token to the config.json file.
+3. update your GitHub credendials in the `config.json` file, username and the generated token as password.
 
 ### Configuration
 There are 3 diffrenet JSON files for configurations, examples included in the files:
