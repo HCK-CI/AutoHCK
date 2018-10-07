@@ -65,7 +65,7 @@ class Project
     return unless @github.up?
 
     @github.find_pr
-    @github.create_status('pending', 'Tests session initiated')
+    @github.create_status('pending', 'Tests session initiated') if @github.up?
     @github
   end
 
