@@ -15,7 +15,7 @@ Use your package manager to install QEMU or build it from [source](https://githu
 Clone [VirtHCK](https://github.com/daynix/VirtHCK), AutoHCK will use it as a dependency.
 
 ### toolsHCK
-Get a copy of the powershel script file in [rtoolsHCK](https://github.com/HCK-CI/toolsHCK)
+Get a copy of the powershell script file in [rtoolsHCK](https://github.com/HCK-CI/toolsHCK)
 
 ### rtoolsHCK
 Get a clone of [rtoolsHCK](https://github.com/HCK-CI/rtoolsHCK), execute the follwing to build and install as a gem:
@@ -41,7 +41,7 @@ Use the following script [OpenDHCPServerSetup](https://github.com/HCK-CI/OpenDHC
 
 ### Microsoft HCK filters
 Filters are fixes for problematic tests, read more at: [Microsoft HLK Filters](https://docs.microsoft.com/en-us/windows-hardware/test/hlk/user/windows-hardware-lab-kit-filters)
-To run tests with applied filters automatically, get a copy of `UpdateFilters.sql` form [HCK-CI/hckfilters](https://github.com/HCK-CI/hckfilters) and place them inside AutoHCK at `filters/UpdateFilters.sql`.
+To run tests with applied filters automatically, get a copy of `UpdateFilters.sql` from [HCK-CI/hckfilters](https://github.com/HCK-CI/hckfilters) and place them inside AutoHCK at `filters/UpdateFilters.sql`.
 
 ### Microsoft HLK playlists
 To run HLK tests with latest Microsoft compatibility playlist clone [HLK Playlists](https://github.com/HCK-CI/hlkplaylists) inside AutoHCK and rename the directory to playlists, once it's there AutoHCK will look for the right xml playlist file and apply it to the tests.
@@ -91,8 +91,8 @@ Optional:
 ### Examples
 ```
 ruby ./bin/auto_hck -t Balloon-Win10x86 -p /home/hck-ci/balloon/win10/x86
-ruby ./bin/auto_hck -t NetKVM-Win10x64 -d /home/hck-ci/workspace -d /path/to/diff.txt
-ruby ./bin/auto_hck -t viostor-Win10x64 -d /home/hck-ci/viostor -d /path/to/diff.txt -c ec3da560827922e5a82486cf19cd9c27e95455a9
+ruby ./bin/auto_hck -t NetKVM-Win10x64 -p /home/hck-ci/workspace -d /path/to/diff.txt
+ruby ./bin/auto_hck -t viostor-Win10x64 -p /home/hck-ci/viostor -d /path/to/diff.txt -c ec3da560827922e5a82486cf19cd9c27e95455a9
 ```
 ### Workspace
 When starting AutoHCK session a workspace will be created inside the workspace directory configured in `config.json` at the path: `workspace/[device-short]/[platform]/[timestamp]/`
