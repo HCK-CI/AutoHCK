@@ -62,7 +62,7 @@ class CLI
     end
 
     def debug_option(parser)
-      parser.on('--debug',
+      parser.on('-D', '--debug',
                 'Printing debug information') do |debug|
         self.debug = debug
       end
