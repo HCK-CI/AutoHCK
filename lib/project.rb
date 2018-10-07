@@ -62,11 +62,12 @@ class Project
 
   def github_handling(commit)
     @github = Github.new(@config, self, commit)
-    return unless @github.up?
+    return unless @github.connected?
 
     @github.find_pr
-    @github.create_status('pending', 'Tests session initiated') if @github.up?
-    @github
+    return unless @github.connected?
+
+    @github.create_status('pending', 'Tests session initiated')
   end
 
   def validate_paths
