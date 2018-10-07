@@ -68,7 +68,7 @@ When specifing a pull request AutoHCK can mark test results on github and link t
 to do that you will need to create a personal access token.
 1. go to https://github.com/settings/tokens and click on 'Generate new token'
 2. give it a name, select: repo:status and click 'Generate token'
-3. copy the token to the config.json file.
+3. update your GitHub credendials in the `config.json` file, username and the generated token as password.
 
 ### Configuration
 There are 3 diffrenet JSON files for configurations, examples included in the files:
