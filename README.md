@@ -54,7 +54,8 @@ hck-ci ALL=(ALL) NOPASSWD:ALL
 ```
 
 ### Images preperation
-This is similar to making regular HLK/HCK studio and clients images with with few additionals configurations, detailed instrutions available at [HLK-Setup-Scripts](https://github.com/HCK-CI/HLK-Setup-Scripts)
+This is similar to making regular HLK/HCK studio and clients images with with few additionals configurations, detailed instrutions available at [HLK-Setup-Scripts](https://github.com/HCK-CI/HLK-Setup-Scripts).
+Images will be placeed at the images folder as configured in `config.json` file
 
 ### Dropbox integration
 AutoHCK allows integration with Dropbox, automatically uploading results and logs to specific location.
