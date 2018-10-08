@@ -3,7 +3,7 @@ require 'nori/parser/rexml'
 
 # Tools class
 class Tools < RToolsHCK
-  ARCHIVING_RETRIEVS = 3
+  ARCHIVING_RETRIES = 3
   def initialize(project, ip_addr)
     @logger = project.logger
     config = project.config
