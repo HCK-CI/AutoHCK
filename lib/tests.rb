@@ -95,7 +95,7 @@ InQueue: #{stats['inqueue']}")
 
   def handle_finished_tests(tests)
     tests.each do |test|
-      @project.github.update(tests_stats) if @project.github.up?
+      @project.github.update(tests_stats) if @project.github.connected?
       print_test_results(test)
       archive_test_results(test)
     end
