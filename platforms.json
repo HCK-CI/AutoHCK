@@ -430,5 +430,77 @@
         "image": "HLK1803-c2-Win10_1803x86.qcow2"
       }
     }
+  },
+  {
+    "name": "Win10_1809x86",
+    "kit": "HLK1809",
+    "st_image": "HLK1809.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HLK1809-c1-Win10_1803x86.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HLK1809-c2-Win10_1803x86.qcow2"
+      }
+    }
+  },
+  {
+    "name": "Win10_1809x64",
+    "kit": "HLK1809",
+    "st_image": "HLK1809.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HLK1809-c1-Win10_1803x64.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HLK1809-c2-Win10_1803x64.qcow2"
+      }
+    }
+  },
+  {
+    "name": "Win2019x64",
+    "kit": "HLK1809",
+    "st_image": "HLK1809.qcow2",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "file_transfer_device": "e1000e",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4002",
+        "image": "HLK1809-c1-Win2019x64.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "2",
+        "memory": "2G",
+        "winrm_port": "4003",
+        "image": "HLK1809-c2-Win2019x64.qcow2"
+      }
+    }
   }
 ]
