@@ -36,14 +36,19 @@ class VirtHCK
     @project.workspace_path + '/' + filename + '-snapshot.qcow2'
   end
 
+  def platform_config(param)
+    default_value = @project.config['platforms_defaults'][param]
+    @project.platform[param] || default_value
+  end
+
   def base_cmd
     ["cd #{@project.config['virthck_path']} &&",
      "sudo ./hck.sh ci_mode -id #{@id}",
      "-world_bridge #{@project.config['dhcp_bridge']}",
      "-qemu_bin #{@project.config['qemu_bin']}",
-     "-ctrl_net_device #{@project.platform['ctrl_net_device']}",
-     "-world_net_device #{@project.platform['world_net_device']}",
-     "-file_transfer_device #{@project.platform['file_transfer_device']}",
+     "-ctrl_net_device #{platform_config('ctrl_net_device')}",
+     "-world_net_device #{platform_config('world_net_device')}",
+     "-file_transfer_device #{platform_config('file_transfer_device')}",
      "-st_image #{studio_snapshot}"]
   end
 
