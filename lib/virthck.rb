@@ -48,7 +48,11 @@ class VirtHCK
      "-qemu_bin #{@project.config['qemu_bin']}",
      "-ctrl_net_device #{platform_config('ctrl_net_device')}",
      "-world_net_device #{platform_config('world_net_device')}",
-     "-file_transfer_device #{platform_config('file_transfer_device')}",
+     "-machine_type #{platform_config('machine_type')}",
+     "-s3 #{platform_config('s3')}",
+     "-s4 #{platform_config('s4')}",
+     "-enlightenments_state #{platform_config('enlightenments_state')}",
+     "-vhost_state #{platform_config('vhost_state')}",
      "-st_image #{studio_snapshot}"]
   end
 
