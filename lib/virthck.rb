@@ -46,6 +46,8 @@ class VirtHCK
      "sudo ./hck.sh ci_mode -id #{@id}",
      "-world_bridge #{@project.config['dhcp_bridge']}",
      "-qemu_bin #{@project.config['qemu_bin']}",
+     "-ivshmem_server_bin #{@project.config['ivshmem_server_bin']}",
+     "-filesystem_tests_image #{@project.config['filesystem_tests_image']}",
      "-ctrl_net_device #{platform_config('ctrl_net_device')}",
      "-world_net_device #{platform_config('world_net_device')}",
      "-machine_type #{platform_config('machine_type')}",
