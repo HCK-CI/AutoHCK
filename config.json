@@ -11,7 +11,12 @@
     "platforms_defaults": {
       "world_net_device": "e1000e",
       "ctrl_net_device": "e1000e",
-      "file_transfer_device": "e1000e"
+      "file_transfer_device": "e1000e",
+      "machine_type": "pc",
+      "s3": "on",
+      "s4": "on",
+      "enlightenments_state": "off",
+      "vhost_state": "on"
     },
     "toolshck_path": "./toolsHCK.ps1",
     "studio_username": "Administrator",
