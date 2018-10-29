@@ -3,9 +3,6 @@
     "name": "Win7x64",
     "kit": "HCK",
     "st_image": "HCK.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -27,9 +24,6 @@
     "name": "Win7x86",
     "kit": "HCK",
     "st_image": "HCK.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -51,9 +45,6 @@
     "name": "Win8x64",
     "kit": "HCK",
     "st_image": "HCK.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -75,9 +66,6 @@
     "name": "Win8x86",
     "kit": "HCK",
     "st_image": "HCK.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -99,9 +87,6 @@
     "name": "Win81x64",
     "kit": "HCK",
     "st_image": "HCK.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -123,9 +108,6 @@
     "name": "Win81x86",
     "kit": "HCK",
     "st_image": "HCK.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -147,9 +129,6 @@
     "name": "Win2008R2x64",
     "kit": "HCK",
     "st_image": "HCK.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -171,9 +150,6 @@
     "name": "Win2012x64",
     "kit": "HCK",
     "st_image": "HCK.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -195,9 +171,6 @@
     "name": "Win2012R2x64",
     "kit": "HCK",
     "st_image": "HCK.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -219,9 +192,6 @@
     "name": "Win2016x64",
     "kit": "HLK1607",
     "st_image": "HLK1607.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -243,9 +213,6 @@
     "name": "Win10_1607x64",
     "kit": "HLK1703",
     "st_image": "HLK1703.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -267,9 +234,6 @@
     "name": "Win10_1607x86",
     "kit": "HLK1703",
     "st_image": "HLK1703.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -291,9 +255,6 @@
     "name": "Win10_1703x64",
     "kit": "HLK1703",
     "st_image": "HLK1703.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -315,9 +276,6 @@
     "name": "Win10_1703x86",
     "kit": "HLK1703",
     "st_image": "HLK1703.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -339,9 +297,6 @@
     "name": "Win10_1709x64",
     "kit": "HLK1709",
     "st_image": "HLK1709.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -363,9 +318,6 @@
     "name": "Win10_1709x86",
     "kit": "HLK1709",
     "st_image": "HLK1709.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -387,9 +339,6 @@
     "name": "Win10_1803x64",
     "kit": "HLK1803",
     "st_image": "HLK1803.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -411,9 +360,6 @@
     "name": "Win10_1803x86",
     "kit": "HLK1803",
     "st_image": "HLK1803.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -435,9 +381,6 @@
     "name": "Win10_1809x86",
     "kit": "HLK1809",
     "st_image": "HLK1809.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -459,9 +402,6 @@
     "name": "Win10_1809x64",
     "kit": "HLK1809",
     "st_image": "HLK1809.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
@@ -483,9 +423,6 @@
     "name": "Win2019x64",
     "kit": "HLK1809",
     "st_image": "HLK1809.qcow2",
-    "world_net_device": "e1000e",
-    "ctrl_net_device": "e1000e",
-    "file_transfer_device": "e1000e",
     "clients": {
       "c1": {
         "name": "CL1",
