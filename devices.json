@@ -8,7 +8,8 @@
     "support": true,
     "blacklist": [
       "NDISTest 6.0 - [2 Machine] - 2c_Mini6RSSSendRecv",
-      "NDISTest 6.5 - [2 Machine] - MPE_Ethernet.xml"
+      "NDISTest 6.5 - [2 Machine] - MPE_Ethernet.xml",
+      "Run RSC Tests"
     ]
   },
   {
