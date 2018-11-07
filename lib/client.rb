@@ -122,6 +122,10 @@ class Client
   end
 
   def keep_alive
-    @virthck.run(@virthck_name) unless @virthck.client_alive?(@virthck_name)
+    @virthck.run(@virthck_name) unless client_alive?
+  end
+
+  def client_alive?
+    @virthck.client_alive?(@virthck_name)
   end
 end
