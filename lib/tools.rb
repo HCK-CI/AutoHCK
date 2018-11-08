@@ -86,6 +86,10 @@ class Tools < RToolsHCK
   def install_machine_driver_package(machine, method, driver_path, file)
     handle_results(@tools.install_machine_driver_package(machine, driver_path,
                                                          method, file))
+  rescue RuntimeError
+	  @logger.fatal('Driver installation failed, make sure the driver'\
+			'is sigend and suitable for this platform')
+    raise 'InvalidDriver'
   end
 
   def list_tests(key, machine, tag, playlist)
