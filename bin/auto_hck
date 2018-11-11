@@ -48,7 +48,7 @@ if studio
   studio.close
 end
 
-Signal.trap("TERM") do
+Signal.trap('TERM') do
   client1.shutdown_machine if client1 && client1.client_alive?
   client2.shutdown_machine if client2 && client2.client_alive?
   unless studio.nil?
