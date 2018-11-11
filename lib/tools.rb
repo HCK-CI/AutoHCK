@@ -87,8 +87,8 @@ class Tools < RToolsHCK
     handle_results(@tools.install_machine_driver_package(machine, driver_path,
                                                          method, file))
   rescue RuntimeError
-	  @logger.fatal('Driver installation failed, make sure the driver'\
-			'is sigend and suitable for this platform')
+    @logger.fatal('Driver installation failed, make sure the driver'\
+                  'is sigend and suitable for this platform')
     raise 'InvalidDriver'
   end
 

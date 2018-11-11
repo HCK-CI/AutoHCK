@@ -50,18 +50,18 @@ class VirtHCK
      "-filesystem_tests_image #{@project.config['filesystem_tests_image']}",
      "-ctrl_net_device #{platform_config('ctrl_net_device')}",
      "-world_net_device #{platform_config('world_net_device')}",
-     "-machine_type #{platform_config('machine_type')}",
-     "-s3 #{platform_config('s3')}",
-     "-s4 #{platform_config('s4')}",
-     "-enlightenments_state #{platform_config('enlightenments_state')}",
-     "-vhost_state #{platform_config('vhost_state')}",
      "-st_image #{studio_snapshot}"]
   end
 
   def device_cmd
     ["-device_type #{@device['type']}",
      !@device['name'].empty? ? "-device_name #{@device['name']}" : '',
-     !@device['extra'].empty? ? "-device_extra #{@device['extra']}" : '']
+     !@device['extra'].empty? ? "-device_extra #{@device['extra']}" : '',
+     "-machine_type #{platform_config('machine_type')}",
+     "-s3 #{platform_config('s3')}",
+     "-s4 #{platform_config('s4')}",
+     "-enlightenments_state #{platform_config('enlightenments_state')}",
+     "-vhost_state #{platform_config('vhost_state')}"]
   end
 
   def client_cmd(name, client)
