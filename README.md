@@ -62,14 +62,14 @@ AutoHCK allows integration with Dropbox, automatically uploading results and log
 to do that you will need to create auth2 token
 1. go to https://www.dropbox.com/developers/apps and click on 'Create app'
 2. select 'Dropbox API', 'Full Dropbox' access type and give it a unique name.
-3. click on 'Generated access token' and copy the token to config.json file.
+3. click on 'Generated access token' and use it as environment variable with `export AUTOHCK_DROPBOX_TOKEN=<TOKEN>`
 
 ### Github integration
 When specifing a pull request AutoHCK can mark test results on github and link to dropbox logs folder.
 to do that you will need to create a personal access token.
 1. go to https://github.com/settings/tokens and click on 'Generate new token'
 2. give it a name, select: repo:status and click 'Generate token'
-3. update your GitHub credendials in the `config.json` file, username and the generated token as password.
+3. set new environment variable for your username and token with `export AUTOHCK_GITHUB_LOGIN=<LOGIN>` and `export AUTOHCK_GITHUB_TOKEN=<TOKEN>`
 
 ### Configuration
 There are 3 diffrenet JSON files for configurations, examples included in the files:

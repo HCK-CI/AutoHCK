@@ -22,11 +22,5 @@
     "toolshck_path": "./toolsHCK.ps1",
     "filesystem_tests_image": "/home/hck-ci/HCK-CI/images/filesystem_tests_image.qcow2",
     "studio_username": "Administrator",
-    "studio_password": "Qum5net.",
-    "repository": "daynix/kvm-guest-drivers-windows",
-    "github_credentials": {
-      "login": "",
-      "password": ""
-    },
-    "dropbox_token": ""
+    "studio_password": "Qum5net."
 }
