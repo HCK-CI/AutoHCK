@@ -4,7 +4,7 @@ require './lib/dropbox_api'
 class Dropbox
   attr_reader :url
   def initialize(project)
-    token = project.config['dropbox_token']
+    token = ENV['AUTOHCK_DROPBOX_TOKEN']
     @logger = project.logger
     @timestamp = project.timestamp
     @tag = project.tag

@@ -9,13 +9,12 @@ class Github
     @repo = config['repository']
     @commit = commit.to_s
     @context = "HCK-CI/#{project.tag}"
-    @credentials = config['github_credentials']
     connect unless @commit.empty?
   end
 
   def connect
-    login = @credentials['login']
-    password = @credentials['password']
+    login = ENV['AUTOHCK_GITHUB_LOGIN']
+    password = ENV['AUTOHCK_GITHUB_TOKEN']
     @github = Octokit::Client.new(login: login, password: password)
     @logger.info("Connected to github with: #{@github.user.login}")
     @api_connected = true
