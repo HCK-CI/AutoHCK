@@ -19,7 +19,7 @@ class Tests
   end
 
   def support_needed?(test)
-    (test['scheduleoptions'] & %w[6 RequiresMultipleMachines]) != []
+    test['scheduleoptions'].include?('RequiresMultipleMachines')
   end
 
   def test_support(test)
