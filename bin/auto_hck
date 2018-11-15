@@ -20,7 +20,7 @@ begin
   project = Project.new(options)
   studio = Studio.new(project, STUDIO)
   client1 = Client.new(project, studio, CLIENT1)
-  client2 = project.support? ? Client.new(project, studio, CLIENT2) : nil
+  client2 = Client.new(project, studio, CLIENT2)
   Filelock '/var/tmp/virthck.lock', timeout: 0 do
     studio.run
     studio.connect
@@ -28,9 +28,9 @@ begin
     studio.create_pool
     studio.create_project
     client1.run
-    client2.run if project.support?
+    client2.run
     client1.setup_driver
-    client2.setup_driver if project.support?
+    client2.setup_driver
   end
   client1.add_target_to_project
   client1.add_support(client2) if project.support?
