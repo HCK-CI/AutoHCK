@@ -96,12 +96,13 @@ ruby ./bin/auto_hck -t NetKVM-Win10x64 -p /home/hck-ci/workspace -d /path/to/dif
 ruby ./bin/auto_hck -t viostor-Win10x64 -p /home/hck-ci/viostor -d /path/to/diff.txt -c ec3da560827922e5a82486cf19cd9c27e95455a9
 ```
 ### Workspace
-When starting AutoHCK session a workspace will be created inside the workspace directory configured in `config.json` at the path: `workspace/[device-short]/[platform]/[timestamp]/`
+When starting AutoHCK a session workspace will be created inside the workspace directory configured in `config.json` at the path: `workspace/[device-short]/[platform]/[timestamp]/`
 Inside AutoHCK will save the following files:
-* qcow2 snapshots of the backing setup images
-* AutoHCK log file
+* qcow2 snapshots of the backing setup images: `[filename]-snapshot.qcow2`
+* AutoHCK log file: `[device-short]-[platform].log`
+* archived tests log files: `[timestamp]-[testid].zip`
 * Executables: `st.sh` `c1.sh` `c2.sh` to rerun test setup machines manually.
-* HLKX/HCKX file after tests session ended.
+* HLKX/HCKX file (after tests session ended): `[device-short]-[platform].hlkx`
 
 ## Author
 
