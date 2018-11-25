@@ -104,7 +104,7 @@ InQueue: #{stats['inqueue']}")
 
   def keep_clients_alive
     @client.keep_alive
-    @support.keep_alive if @support
+    @support.keep_alive
   end
 
   def new_done
