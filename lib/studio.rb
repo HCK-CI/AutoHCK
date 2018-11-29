@@ -63,6 +63,18 @@ class Studio
     sleep 2 until up?
   end
 
+  def poweroff
+    monitor = Monitor.new(@project,0)
+    monitor.powerdown
+  end
+
+  def abort
+    loop do
+      return unless @virthck.studio_alive?
+      self.poweroff
+    end
+  end
+
   def shutdown
     @logger.info('Shutting down studio')
     @tools.shutdown
