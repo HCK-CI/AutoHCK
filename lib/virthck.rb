@@ -119,9 +119,18 @@ class VirtHCK
     FileUtils.chmod('+x', path)
   end
 
+  def machine_alive?(name)
+    `ps -A -o cmd | grep '[\-]name #{name}'`.split("\n").any?
+  end
+
   def client_alive?(name)
     id = name[-1]
     s_id = @id.to_s.rjust(4, '0')
-    `ps -A -o cmd | grep '[\-]name HCK-Client#{id}_#{s_id}'`.split("\n").any?
+    machine_alive?("HCK-Client#{id}_#{s_id}")
+  end
+
+  def studio_alive?
+    s_id = @id.to_s.rjust(4, '0')
+    machine_alive?("HCK-Studio_#{s_id}")
   end
 end
