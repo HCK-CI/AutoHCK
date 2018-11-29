@@ -124,4 +124,9 @@ class VirtHCK
     s_id = @id.to_s.rjust(4, '0')
     `ps -A -o cmd | grep '[\-]name HCK-Client#{id}_#{s_id}'`.split("\n").any?
   end
+
+  def studio_alive?
+    s_id = @id.to_s.rjust(4, '0')
+    `ps -A -o cmd | grep '[\-]name HCK-Studio_#{s_id}'`.split("\n").any?
+  end
 end
