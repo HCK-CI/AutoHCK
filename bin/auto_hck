@@ -16,44 +16,46 @@ options = cli.parse(ARGV)
 
 ENV.store 'LC_ALL', 'en_US.UTF-8'
 
+@terminated = false
+Signal.trap('TERM') do
+  @terminated ? return : @terminated = true #ignore in case of a duplicate signal
+  @client1.abort if @client1
+  @client2.abort if @client2
+  unless @studio.nil?
+    @studio.abort
+    @studio.close
+  end
+  exit
+end
+
 begin
   project = Project.new(options)
-  studio = Studio.new(project, STUDIO)
-  client1 = Client.new(project, studio, CLIENT1)
-  client2 = Client.new(project, studio, CLIENT2)
+  @studio = Studio.new(project, STUDIO)
+  @client1 = Client.new(project, @studio, CLIENT1)
+  @client2 = Client.new(project, @studio, CLIENT2)
   Filelock '/var/tmp/virthck.lock', timeout: 0 do
-    studio.run
-    studio.connect
-    studio.update_filters
-    studio.create_pool
-    studio.create_project
-    client1.run
-    client2.run
-    client1.setup_driver
-    client2.setup_driver
+    @studio.run
+    @studio.connect
+    @studio.update_filters
+    @studio.create_pool
+    @studio.create_project
+    @client1.run
+    @client2.run
+    @client1.setup_driver
+    @client2.setup_driver
   end
-  client1.add_target_to_project
-  client1.add_support(client2) if project.support?
-  client1.run_tests
-  client1.create_package
+  @client1.add_target_to_project
+  @client1.add_support(@client2) if project.support?
+  @client1.run_tests
+  @client1.create_package
 rescue StandardError => e
   puts "Error during processing: #{$ERROR_INFO}"
   puts "Exception class: #{e.class}"
   puts "Backtrace:\n\t#{e.backtrace.join("\n\t")}"
 end
-client1.shutdown_machine if client1
-client2.shutdown_machine if client2
-if studio
-  studio.shutdown
-  studio.close
-end
-
-Signal.trap('TERM') do
-  client1.shutdown_machine if client1 && client1.client_alive?
-  client2.shutdown_machine if client2 && client2.client_alive?
-  unless studio.nil?
-    studio.shutdown
-    studio.close
-  end
-  abort
+@client1.shutdown_machine if @client1
+@client2.shutdown_machine if @client2
+if @studio
+  @studio.shutdown
+  @studio.close
 end
