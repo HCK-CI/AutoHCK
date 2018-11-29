@@ -71,6 +71,13 @@ class Client
     @monitor.powerdown
   end
 
+  def abort
+    loop do
+      return unless self.client_alive?
+      self.shutdown_machine
+    end
+  end
+
   def move_machine_to_pool
     @logger.info("Moving #{@machine['name']} to pool")
     @tools.move_machine(@machine['name'], @pool, @project.tag)
