@@ -30,5 +30,7 @@ class Monitor
 
   def cmd(cmd)
     @monitor.cmd(cmd)
+  rescue Net::ReadTimeout, Errno::ECONNRESET =>e
+    @logger.error('Monitor not responding')
   end
 end
