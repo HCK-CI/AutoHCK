@@ -9,14 +9,14 @@
         "cpus": "2",
         "memory": "4G",
         "winrm_port": "4002",
-        "image": "HCK-c1-Win7x64.qcow2"
+        "image": "HCK-C1-Win7x64.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "4G",
         "winrm_port": "4003",
-        "image": "HCK-c2-Win7x64.qcow2"
+        "image": "HCK-C2-Win7x64.qcow2"
       }
     }
   },
@@ -30,14 +30,14 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HCK-c1-Win7x86.qcow2"
+        "image": "HCK-C1-Win7x86.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HCK-c2-Win7x86.qcow2"
+        "image": "HCK-C2-Win7x86.qcow2"
       }
     }
   },
@@ -51,14 +51,14 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HCK-c1-Win8x64.qcow2"
+        "image": "HCK-C1-Win8x64.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HCK-c2-Win8x64.qcow2"
+        "image": "HCK-C2-Win8x64.qcow2"
       }
     }
   },
@@ -72,14 +72,14 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HCK-c1-Win8x86.qcow2"
+        "image": "HCK-C1-Win8x86.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HCK-c2-Win8x86.qcow2"
+        "image": "HCK-C2-Win8x86.qcow2"
       }
     }
   },
@@ -93,14 +93,14 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HCK-c1-Win81x64.qcow2"
+        "image": "HCK-C1-Win81x64.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HCK-c2-Win81x64.qcow2"
+        "image": "HCK-C2-Win81x64.qcow2"
       }
     }
   },
@@ -114,14 +114,14 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HCK-c1-Win81x86.qcow2"
+        "image": "HCK-C1-Win81x86.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HCK-c2-Win81x86.qcow2"
+        "image": "HCK-C2-Win81x86.qcow2"
       }
     }
   },
@@ -135,14 +135,14 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HCK-c1-Win2008R2x64.qcow2"
+        "image": "HCK-C1-Win2008R2x64.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HCK-c2-Win2008R2x64.qcow2"
+        "image": "HCK-C2-Win2008R2x64.qcow2"
       }
     }
   },
@@ -156,14 +156,14 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HCK-c1-Win2012x64.qcow2"
+        "image": "HCK-C1-Win2012x64.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HCK-c2-Win2012x64.qcow2"
+        "image": "HCK-C2-Win2012x64.qcow2"
       }
     }
   },
@@ -177,14 +177,14 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HCK-c1-Win2012R2x64.qcow2"
+        "image": "HCK-C1-Win2012R2x64.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HCK-c2-Win2012R2x64.qcow2"
+        "image": "HCK-C2-Win2012R2x64.qcow2"
       }
     }
   },
@@ -198,14 +198,14 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HLK1607-c1-Win2016x64.qcow2"
+        "image": "HLK1607-C1-Win2016x64.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HLK1607-c2-Win2016x64.qcow2"
+        "image": "HLK1607-C2-Win2016x64.qcow2"
       }
     }
   },
@@ -219,14 +219,14 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HLK1703-c1-Win10_1607x64.qcow2"
+        "image": "HLK1703-C1-Win10_1607x64.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HLK1703-c2-Win10_1607x64.qcow2"
+        "image": "HLK1703-C2-Win10_1607x64.qcow2"
       }
     }
   },
@@ -240,14 +240,14 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HLK1703-c1-Win10_1607x86.qcow2"
+        "image": "HLK1703-C1-Win10_1607x86.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HLK1703-c2-Win10_1607x86.qcow2"
+        "image": "HLK1703-C2-Win10_1607x86.qcow2"
       }
     }
   },
@@ -261,14 +261,14 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HLK1703-c1-Win10_1703x64.qcow2"
+        "image": "HLK1703-C1-Win10_1703x64.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HLK1703-c2-Win10_1703x64.qcow2"
+        "image": "HLK1703-C2-Win10_1703x64.qcow2"
       }
     }
   },
@@ -282,14 +282,14 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HLK1703-c1-Win10_1703x86.qcow2"
+        "image": "HLK1703-C1-Win10_1703x86.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HLK1703-c2-Win10_1703x86.qcow2"
+        "image": "HLK1703-C2-Win10_1703x86.qcow2"
       }
     }
   },
@@ -303,14 +303,14 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HLK1709-c1-Win10_1709x64.qcow2"
+        "image": "HLK1709-C1-Win10_1709x64.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HLK1709-c2-Win10_1709x64.qcow2"
+        "image": "HLK1709-C2-Win10_1709x64.qcow2"
       }
     }
   },
@@ -324,14 +324,14 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HLK1709-c1-Win10_1709x86.qcow2"
+        "image": "HLK1709-C1-Win10_1709x86.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HLK1709-c2-Win10_1709x86.qcow2"
+        "image": "HLK1709-C2-Win10_1709x86.qcow2"
       }
     }
   },
@@ -345,14 +345,14 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HLK1803-c1-Win10_1803x64.qcow2"
+        "image": "HLK1803-C1-Win10_1803x64.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HLK1803-c2-Win10_1803x64.qcow2"
+        "image": "HLK1803-C2-Win10_1803x64.qcow2"
       }
     }
   },
@@ -366,14 +366,14 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HLK1803-c1-Win10_1803x86.qcow2"
+        "image": "HLK1803-C1-Win10_1803x86.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HLK1803-c2-Win10_1803x86.qcow2"
+        "image": "HLK1803-C2-Win10_1803x86.qcow2"
       }
     }
   },
@@ -387,14 +387,14 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HLK1809-c1-Win10_1803x86.qcow2"
+        "image": "HLK1809-C1-Win10_1803x86.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HLK1809-c2-Win10_1803x86.qcow2"
+        "image": "HLK1809-C2-Win10_1803x86.qcow2"
       }
     }
   },
@@ -408,20 +408,20 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HLK1809-c1-Win10_1803x64.qcow2"
+        "image": "HLK1809-C1-Win10_1803x64.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HLK1809-c2-Win10_1803x64.qcow2"
+        "image": "HLK1809-C2-Win10_1803x64.qcow2"
       }
     }
   },
   {
     "name": "Win2019x64",
-    "kit": "HLK1809",
+    "kit": "HLK1809server",
     "st_image": "HLK1809.qcow2",
     "clients": {
       "c1": {
@@ -429,14 +429,14 @@
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4002",
-        "image": "HLK1809-c1-Win2019x64.qcow2"
+        "image": "HLK1809-C1-Win2019x64.qcow2"
       },
       "c2": {
         "name": "CL2",
         "cpus": "2",
         "memory": "2G",
         "winrm_port": "4003",
-        "image": "HLK1809-c2-Win2019x64.qcow2"
+        "image": "HLK1809-C2-Win2019x64.qcow2"
       }
     }
   }
