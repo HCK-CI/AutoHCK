@@ -27,6 +27,7 @@ Signal.trap('TERM') do
     @studio.abort
     @studio.close
   end
+  @project.abort if @project
   exit
 end
 
@@ -52,6 +53,7 @@ begin
   @client1.run_tests
   @client1.create_package
 rescue StandardError => e
+  @project.abort if @project
   puts "Error during processing: #{$ERROR_INFO}"
   puts "Exception class: #{e.class}"
   puts "Backtrace:\n\t#{e.backtrace.join("\n\t")}"

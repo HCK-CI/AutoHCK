@@ -83,4 +83,11 @@ class Github
     description = "Running tests (#{current}/#{total}): #{failed} tests failed"
     create_status(state, description)
   end
+
+  def handle_error
+    @logger.info('Updating github status regarding error')
+    state = 'error'
+    description = 'An error occurred while running HCK-CI'
+    create_status(state, description)
+  end
 end
