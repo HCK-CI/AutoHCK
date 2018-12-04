@@ -4,46 +4,57 @@ require 'dropbox_api'
 class Dropbox
   attr_reader :url
   def initialize(project)
-    token = ENV['AUTOHCK_DROPBOX_TOKEN']
-    @logger = project.logger
-    @timestamp = project.timestamp
     @tag = project.tag
-    @url = nil
-    token ? @dropbox = DropboxApi::Client.new(token) : return
-    @dropbox.get_current_account
-    @logger.error('Dropbox authentication failure') if @dropbox.nil?
-    create_shared_folder
-  rescue DropboxApi::Errors::HttpError
+    @timestamp = project.timestamp
+    @logger = project.logger
+    @token = ENV['AUTOHCK_DROPBOX_TOKEN']
     @dropbox = nil
+    @url = nil
   end
 
-  def create_shared_folder
-    return unless @dropbox && !@dropbox.nil?
+  def connect
+    if @token
+      @dropbox = DropboxApi::Client.new(@token)
+      @logger.error('Dropbox authentication failure') if @dropbox.nil?
+    else
+      @logger.info('Dropbox token missing')
+    end
+    @dropbox.nil? ? false : true
+  rescue DropboxApi::Errors::HttpError
+    @logger.error('Dropbox connection error')
+    false
+  end
+
+  def create_project_folder
+    return if @dropbox.nil?
 
     @path = '/' + @tag + '-' + @timestamp
     @dropbox.create_folder(@path)
     @dropbox.share_folder(@path)
     @url = @dropbox.create_shared_link_with_settings(@path).url + '&lst='
-    @logger.info("Dropbox shared folder: #{@url}")
+    @logger.info("Dropbox project folder created: #{@url}")
+  rescue
+    @logger.error('Dropbox create_project_folder error')
   end
 
-  def upload(local_path, rename = nil)
-    return unless @dropbox && !@dropbox.nil? && @url
+  def upload_file(l_path, r_name)
+    return if @dropbox.nil?
 
-    file_name = if rename.nil?
-                  File.basename(local_path)
-                else
-                  rename + File.extname(local_path)
-                end
-    file_content = IO.read(local_path)
-    remote_path = @path + '/' + file_name
-    @dropbox.upload(remote_path, file_content)
+    content = IO.read(l_path)
+    r_path = @path + '/' + r_name
+    @dropbox.upload(r_path, content)
+  rescue
+    @logger.error('Dropbox upload_file error')
   end
 
-  def upload_text(content, file_name)
-    return unless @dropbox && !@dropbox.nil? && @url
+  def update_file_content(content, r_name)
+    return if @dropbox.nil?
 
-    remote_path = @path + '/' + file_name
-    @dropbox.upload(remote_path, content, mode: 'overwrite')
+    r_path = @path + '/' + r_name
+    @dropbox.upload(r_path, content, mode: 'overwrite')
+  rescue
+    @logger.error('Dropbox update_file_content error')
   end
+
+  def close; end
 end

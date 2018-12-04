@@ -19,7 +19,7 @@ class Project
     init_class_variables(options)
     validate_paths
     diff_checker(options.diff)
-    dropbox_handling
+    configure_dropbox
     github_handling(options.commit)
     init_workspace
     init_virthck
@@ -56,8 +56,10 @@ class Project
     @platform = read_platform
   end
 
-  def dropbox_handling
+  def configure_dropbox
     @dropbox = Dropbox.new(self)
+    @dropbox.connect
+    @dropbox.create_project_folder
   end
 
   def github_handling(commit)
