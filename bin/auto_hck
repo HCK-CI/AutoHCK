@@ -45,9 +45,10 @@ begin
     @client2.run
     @client1.setup_driver
     @client2.setup_driver
+    @client1.add_target_to_project
+    @client2.add_target_to_project
   end
-  @client1.add_target_to_project
-  @client1.add_support(@client2) if project.support?
+  @client1.add_support(@client2)
   @client1.run_tests
   @client1.create_package
 rescue StandardError => e
