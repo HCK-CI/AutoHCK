@@ -5,7 +5,7 @@ class Github
   def initialize(config, project, commit)
     @api_connected = false
     @logger = project.logger
-    @target_url = project.dropbox.url
+    @target_url = project.result_uploader.url
     @repo = config['repository']
     @commit = commit.to_s
     @context = "HCK-CI/#{project.tag}"
