@@ -57,12 +57,21 @@ hck-ci ALL=(ALL) NOPASSWD:ALL
 This is similar to making regular HLK/HCK studio and clients images with with few additionals configurations, detailed instrutions available at [HLK-Setup-Scripts](https://github.com/HCK-CI/HLK-Setup-Scripts).
 Images will be placeed at the images folder as configured in `config.json` file
 
-### Dropbox integration
-AutoHCK allows integration with Dropbox, automatically uploading results and logs to specific location.
-to do that you will need to create auth2 token
+### Result uploading
+AutoHCK supports uploading the results of the tests, (logs, test results and the hckx\hlkx package file), using the supported uploaders by configuring the array field "result_uploader" in the `config.json` file to the desired uploaders for AutoHCK to use, for example, to use dropbox:
+```
+    "studio_username": "Administrator",
+    "studio_password": "Qum5net.",
+ -> "result_uploaders": [ "dropbox" ]
+}
+```
+#### Supported result uplaoders
+##### 1. Dropbox
+To use dropbox result uploading capabilities you will need to create auth2 token
 1. go to https://www.dropbox.com/developers/apps and click on 'Create app'
 2. select 'Dropbox API', 'Full Dropbox' access type and give it a unique name.
 3. click on 'Generated access token' and use it as environment variable with `export AUTOHCK_DROPBOX_TOKEN=<TOKEN>`
+##### 2. (Other result uploaders are in working progress)
 
 ### Github integration
 When specifing a pull request AutoHCK can mark test results on github and link to dropbox logs folder.

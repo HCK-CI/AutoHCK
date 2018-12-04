@@ -23,5 +23,6 @@
     "toolshck_path": "./toolsHCK.ps1",
     "filesystem_tests_image": "/home/hck-ci/HCK-CI/images/filesystem_tests_image.qcow2",
     "studio_username": "Administrator",
-    "studio_password": "Qum5net."
+    "studio_password": "Qum5net.",
+    "result_uploaders": [ "dropbox" ]
 }
