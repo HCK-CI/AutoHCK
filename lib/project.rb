@@ -2,7 +2,7 @@ require 'json'
 require 'fileutils'
 require 'logger'
 require './lib/github'
-require './lib/dropbox'
+require './lib/result_uploader'
 require './lib/virthck'
 require './lib/multi_delegator'
 require './lib/diff_checker'
@@ -10,7 +10,7 @@ require './lib/diff_checker'
 # Kit project class
 class Project
   attr_reader :config, :logger, :timestamp, :platform, :device, :tag,
-              :driver_path, :workspace_path, :github, :dropbox, :virthck
+              :driver_path, :workspace_path, :github, :result_uploader, :virthck
   PLATFORMS_JSON = 'platforms.json'.freeze
   DEVICES_JSON = 'devices.json'.freeze
   CONFIG_JSON = 'config.json'.freeze
@@ -19,7 +19,7 @@ class Project
     init_class_variables(options)
     validate_paths
     diff_checker(options.diff)
-    configure_dropbox
+    configure_result_uploader
     github_handling(options.commit)
     init_workspace
     init_virthck
@@ -56,10 +56,10 @@ class Project
     @platform = read_platform
   end
 
-  def configure_dropbox
-    @dropbox = Dropbox.new(self)
-    @dropbox.connect
-    @dropbox.create_project_folder
+  def configure_result_uploader
+    @result_uploader = ResultUploader.new(self)
+    @result_uploader.connect
+    @result_uploader.create_project_folder
   end
 
   def github_handling(commit)

@@ -77,17 +77,17 @@ InQueue: #{stats['inqueue']}")
     @logger.info('Test archive successfully created')
     new_filename = res['status'] + ': ' + res['testname']
     update_remote(res['hostlogszippath'], new_filename)
-    @logger.info('Test archive uploaded to dropbox project folder')
+    @logger.info('Test archive uploaded via the result uploader')
   end
 
   def update_remote(test_logs_path, test_name)
     r_name = test_name + File.extname(test_logs_path)
-    @project.dropbox.upload_file(test_logs_path, r_name)
+    @project.result_uploader.upload_file(test_logs_path, r_name)
     logs = @tests.reduce('') do |sum, test|
       sum + "#{test['status']}: #{test['name']}\n"
     end
-    @logger.info('Tests results logs updated in dropbox project folder')
-    @project.dropbox.update_file_content(logs, 'logs.txt')
+    @logger.info('Tests results logs updated via the result uploader')
+    @project.result_uploader.update_file_content(logs, 'logs.txt')
   end
 
   def all_tests_finished?
@@ -144,7 +144,7 @@ InQueue: #{stats['inqueue']}")
     res = @tools.create_project_package(@tag)
     @logger.info('Results package successfully created')
     r_name = @tag + File.extname(res['hostprojectpackagepath'])
-    @project.dropbox.upload_file(res['hostprojectpackagepath'], r_name)
+    @project.result_uploader.upload_file(res['hostprojectpackagepath'], r_name)
   end
 
   def run
