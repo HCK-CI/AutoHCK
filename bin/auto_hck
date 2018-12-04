@@ -21,6 +21,7 @@ Signal.trap('TERM') do
   return if @terminated # ignore in case of a duplicate signal
 
   @terminated = true
+  @project.abort if @project
   @client1.abort if @client1
   @client2.abort if @client2
   unless @studio.nil?
@@ -31,10 +32,10 @@ Signal.trap('TERM') do
 end
 
 begin
-  project = Project.new(options)
-  @studio = Studio.new(project, STUDIO)
-  @client1 = Client.new(project, @studio, CLIENT1)
-  @client2 = Client.new(project, @studio, CLIENT2)
+  @project = Project.new(options)
+  @studio = Studio.new(@project, STUDIO)
+  @client1 = Client.new(@project, @studio, CLIENT1)
+  @client2 = Client.new(@project, @studio, CLIENT2)
   Filelock '/var/tmp/virthck.lock', timeout: 0 do
     @studio.run
     @studio.connect
@@ -52,6 +53,7 @@ begin
   @client1.run_tests
   @client1.create_package
 rescue StandardError => e
+  @project.abort if @project
   puts "Error during processing: #{$ERROR_INFO}"
   puts "Exception class: #{e.class}"
   puts "Backtrace:\n\t#{e.backtrace.join("\n\t")}"

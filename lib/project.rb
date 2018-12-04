@@ -148,4 +148,8 @@ class Project
       @logger.warn('Workspace path already exists')
     end
   end
+
+  def abort
+    @github.handle_error if @github && @github.connected?
+  end
 end
