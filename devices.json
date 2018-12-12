@@ -7,6 +7,19 @@
     "install_method": "PNP",
     "support": true,
     "blacklists": {
+      "Win7x86": [
+        "NDISTest 6.5 - [2 Machine] - MPE_Ethernet.xml"
+      ],
+      "Win7x64": [
+        "NDISTest 6.5 - [2 Machine] - MPE_Ethernet.xml"
+      ],
+      "Win8x86": [
+        "NDISTest 6.5 - [2 Machine] - MPE_Ethernet.xml"
+      ],
+      "Win8x64": [
+        "NDISTest 6.0 - [2 Machine] - 2c_Mini6RSSSendRecv (Multi-Group Win8+)",
+        "NDISTest 6.5 - [2 Machine] - MPE_Ethernet.xml"
+      ]
     }
   },
   {
