@@ -39,7 +39,11 @@ class Playlist
   end
 
   def custom_playlist(log)
-    playlist = @project.device['playlist']
+    platform = @project.platform['name']
+    playlists = @project.device['playlists']
+    return unless playlists
+
+    playlist = playlists[platform]
     return unless playlist
 
     @tests.select! { |test| playlist.include?(test['name']) }
@@ -48,7 +52,13 @@ class Playlist
   end
 
   def custom_blacklist(log)
-    blacklist = @project.device['blacklist']
+    platform = @project.platform['name']
+    blacklists = @project.device['blacklists']
+    return unless blacklists
+
+    blacklist = blacklists[platform]
+    return unless blacklist
+
     @tests.reject! { |test| blacklist.include?(test['name']) } if blacklist
     @logger.info('Applying custom blacklist') if log && blacklist
   end
