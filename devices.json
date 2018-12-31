@@ -19,6 +19,9 @@
       "Win8x64": [
         "NDISTest 6.0 - [2 Machine] - 2c_Mini6RSSSendRecv (Multi-Group Win8+)",
         "NDISTest 6.5 - [2 Machine] - MPE_Ethernet.xml"
+      ],
+      "Win2019x64": [
+        "PrivateCloudSimulator - Device.Network.LAN.10GbOrGreater"
       ]
     }
   },
