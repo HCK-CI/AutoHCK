@@ -41,7 +41,10 @@
     "device": { "type": "storage-blk", "name": "virtio-blk-pci", "extra": "" },
     "inf": "viostor.inf",
     "install_method": "PNP",
-    "support": false
+    "support": false,
+    "blacklist": [
+      "Static Tools Logo Test"
+    ]
   },
   {
     "name": "IVSHMEM Device",
@@ -73,7 +76,10 @@
     "device": { "type": "storage-scsi", "name": "virtio-scsi-pci", "extra": "" },
     "inf": "vioscsi.inf",
     "install_method": "PNP",
-    "support": false
+    "support": false,
+    "blacklist": [
+      "Static Tools Logo Test"
+    ]
   },
   {
     "name": "VirtIO Balloon Driver",

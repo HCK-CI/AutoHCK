@@ -116,10 +116,20 @@ class Client
     @logger.info('Client initialized')
   end
 
+  # Client up timeout is seconds, to prevent hangs (30 minutes)
+  CLIENT_UP_TIMEOUT = 1800
+
   def return_client_when_up
-    recognize_client_wait
-    initialize_client_wait
-    default_pool_machines.last
+    Timeout.timeout(CLIENT_UP_TIMEOUT) do
+      recognize_client_wait
+      initialize_client_wait
+      default_pool_machines.last
+    end
+  rescue Timeout::Error
+    @logger.info('Timeout expired while waiting for client up,'\
+                 'restarting using client\'s QEMU monitor')
+    @monitor.reset
+    retry
   end
 
   def run

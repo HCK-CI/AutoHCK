@@ -65,7 +65,7 @@ AutoHCK supports uploading the results of the tests, (logs, test results and the
  -> "result_uploaders": [ "dropbox" ]
 }
 ```
-#### Supported result uplaoders
+#### Supported result uploaders
 ##### 1. Dropbox
 To use dropbox result uploading capabilities you will need to create auth2 token
 1. go to https://www.dropbox.com/developers/apps and click on 'Create app'
