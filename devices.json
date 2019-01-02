@@ -26,6 +26,10 @@
       "Win81x86": [
         "NDISTest 6.5 - [2 Machine] - MPE_Ethernet.xml"
       ],
+      "Win2012x64": [
+        "Multiple processor group device test",
+        "NDISTest 6.5 - [2 Machine] - MPE_Ethernet.xml"
+      ],
       "Win2019x64": [
         "PrivateCloudSimulator - Device.Network.LAN.10GbOrGreater"
       ]
