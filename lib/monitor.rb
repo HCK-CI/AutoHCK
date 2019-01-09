@@ -9,13 +9,9 @@ class Monitor
   def initialize(project, id)
     @virthck_id = project.virthck.id
     client_id = 3 * @virthck_id.to_i - 2 + id.to_i
-    port = MONITOR_BASE_PORT + client_id
+    @port = MONITOR_BASE_PORT + client_id
     @logger = project.logger
     @logger.info('Initiating qemu-monitor session')
-    @monitor = Net::Telnet.new('Host' => LOCALHOST,
-                               'Port' => port,
-                               'Timeout' => TIMEOUT,
-                               'Prompt' => /\(qemu\)/)
   end
 
   def powerdown
@@ -29,7 +25,12 @@ class Monitor
   end
 
   def cmd(cmd)
-    @monitor.cmd(cmd)
+    monitor = Net::Telnet.new('Host' => LOCALHOST,
+                              'Port' => @port,
+                              'Timeout' => TIMEOUT,
+                              'Prompt' => /\(qemu\)/)
+    monitor.cmd(cmd)
+    monitor.close
   rescue Net::ReadTimeout, Errno::ECONNRESET
     @logger.error('Monitor not responding')
   end

@@ -17,6 +17,7 @@ class Client
     @logger = project.logger
     @studio = studio
     @virthck = project.virthck
+    @monitor = Monitor.new(@project, @id)
     create_snapshot
   end
 
@@ -67,7 +68,6 @@ class Client
   end
 
   def shutdown_machine
-    @monitor = Monitor.new(@project, @id)
     @monitor.powerdown
   end
 
