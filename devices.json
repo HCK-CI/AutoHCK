@@ -59,7 +59,8 @@
     "install_method": "PNP",
     "support": false,
     "blacklist": [
-      "Static Tools Logo Test"
+      "Static Tools Logo Test",
+      "Flush Test"
     ]
   },
   {
