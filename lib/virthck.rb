@@ -90,7 +90,7 @@ class VirtHCK
   end
 
   def run_cmd(cmd)
-    system(cmd)
+    system(cmd.join(' '))
   end
 
   def create_client_snapshot(name)
