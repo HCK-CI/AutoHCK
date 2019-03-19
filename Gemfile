@@ -3,6 +3,7 @@ source 'https://rubygems.org'
 gem 'dropbox_api'
 gem 'faraday', '=0.12.2'
 gem 'filelock'
+gem 'mono_logger'
 gem 'net-ping'
 gem 'octokit'
 
