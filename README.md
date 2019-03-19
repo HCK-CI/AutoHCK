@@ -31,6 +31,7 @@ Install the following gems using bundler with `bundler install` or `gem install 
 * [net-ping](https://rubygems.org/gems/net-ping)
 * [filelock](https://rubygems.org/gems/filelock)
 * [octokit](https://rubygems.org/gems/octokit)
+* [mono_logger](https://rubygems.org/gems/mono_logger)
 
 ### DHCP SERVER
 In order to connect to the Studio machine in each HLK/HCK setup, we need to set up a DHCP server that will provide each studio with a predefined unique IP address. The server will assign the IP address according to the machine network adapter mac address with the following rule:

@@ -1,6 +1,6 @@
 require 'json'
 require 'fileutils'
-require 'logger'
+require 'mono_logger'
 require './lib/github'
 require './lib/result_uploader'
 require './lib/virthck'
@@ -36,7 +36,9 @@ class Project
 
   def init_multilog(debug)
     log = File.open("#{workspace_path}/#{tag}.log", 'a')
-    @logger = Logger.new MultiDelegator.delegate(:write, :close).to(STDOUT, log)
+    log.sync = true
+    @logger = MonoLogger.new MultiDelegator.delegate(:write, :close)\
+                                           .to(STDOUT, log)
     @logger.datetime_format = '%Y-%m-%d %H:%M:%S'
     @logger.level = debug ? 'DEBUG' : 'INFO'
   end
@@ -48,7 +50,7 @@ class Project
   def init_class_variables(options)
     @config = read_json(CONFIG_JSON)
     @timestamp = create_timestamp
-    @logger = Logger.new(STDOUT)
+    @logger = MonoLogger.new(STDOUT)
     @logger.datetime_format = '%Y-%m-%d %H:%M:%S'
     @tag = options.tag
     @driver_path = options.path
