@@ -11,6 +11,7 @@ class Tools < RToolsHCK
             user: config['studio_username'],
             pass: config['studio_password'],
             winrm_ports: config_winrm_ports(project),
+            timeout: 120,
             logger: @logger,
             outp_dir: project.workspace_path,
             script_file: config['toolshck_path'])
@@ -78,7 +79,7 @@ class Tools < RToolsHCK
   end
 
   def set_machine_ready(machine, pool)
-    handle_results(@tools.set_machine_state(machine, pool, 'ready'))
+    handle_results(@tools.set_machine_state(machine, pool, 'ready', -1))
   rescue StandardError => e
     @logger.error("#{e.class}: #{e}")
   end
