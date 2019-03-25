@@ -6,21 +6,23 @@ class Monitor
   TIMEOUT = 30
   LOCALHOST = 'localhost'.freeze
 
-  def initialize(project, id)
+  def initialize(project, machine)
+    @name = machine.name
+    @id = machine.id
     @virthck_id = project.virthck.id
-    client_id = 3 * @virthck_id.to_i - 2 + id.to_i
+    client_id = 3 * @virthck_id.to_i - 2 + @id.to_i
     @port = MONITOR_BASE_PORT + client_id
     @logger = project.logger
     @logger.info('Initiating qemu-monitor session')
   end
 
   def powerdown
-    @logger.info('Sending powerdown signal via qemu-monitor')
+    @logger.info("Sending powerdown signal to #{@name} via qemu-monitor")
     cmd('system_powerdown')
   end
 
   def reset
-    @logger.info('Sending reset signal via qemu-monitor')
+    @logger.info("Sending reset signal to #{@name} via qemu-monitor")
     cmd('system_reset')
   end
 

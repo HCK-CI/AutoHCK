@@ -17,7 +17,6 @@ class Client
     @logger = project.logger
     @studio = studio
     @virthck = project.virthck
-    @monitor = Monitor.new(@project, @id)
     create_snapshot
   end
 
@@ -136,6 +135,7 @@ class Client
     @tools = @studio.tools
     @logger.info('Starting client')
     @virthck.run(@name, true)
+    @monitor = Monitor.new(@project, self)
     @machine = return_client_when_up
   end
 
