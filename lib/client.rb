@@ -7,11 +7,11 @@ require './lib/virthck'
 
 # Client class
 class Client
-  attr_reader :machine
+  attr_reader :machine, :name, :id
 
   def initialize(project, studio, name)
+    @name = name
     @id = name[-1]
-    @virthck_name = name
     @pool = 'Default Pool'
     @project = project
     @logger = project.logger
@@ -22,7 +22,7 @@ class Client
   end
 
   def create_snapshot
-    @virthck.create_client_snapshot(@virthck_name)
+    @virthck.create_client_snapshot(@name)
   end
 
   def add_target_to_project
@@ -135,15 +135,15 @@ class Client
   def run
     @tools = @studio.tools
     @logger.info('Starting client')
-    @virthck.run(@virthck_name, true)
+    @virthck.run(@name, true)
     @machine = return_client_when_up
   end
 
   def keep_alive
-    @virthck.run(@virthck_name) unless client_alive?
+    @virthck.run(@name) unless client_alive?
   end
 
   def client_alive?
-    @virthck.client_alive?(@virthck_name)
+    @virthck.client_alive?(@name)
   end
 end
