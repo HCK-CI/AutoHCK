@@ -61,12 +61,12 @@ class Studio
     @logger.info('Starting studio')
     assign_id
     @virthck.run(@name, true)
+    @monitor = Monitor.new(@project, self)
     sleep 2 until up?
   end
 
   def poweroff
-    monitor = Monitor.new(@project, 0)
-    monitor.powerdown
+    @monitor.powerdown
   end
 
   def abort
