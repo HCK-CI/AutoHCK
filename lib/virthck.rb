@@ -6,7 +6,6 @@ class VirtHCK
     @logger = project.logger
     @config = project.config
     @device = project.device['device']
-    @id = project.platform['id']
   end
 
   def assign_id
