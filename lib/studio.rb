@@ -4,10 +4,11 @@ require './lib/tools'
 
 # Studio class
 class Studio
-  attr_reader :tools
+  attr_reader :tools, :name, :id
   HCK_FILTERS_PATH = 'filters/UpdateFilters.sql'.freeze
   def initialize(project, name)
     @name = name
+    @id = 0
     @project = project
     @logger = project.logger
     @virthck = project.virthck
