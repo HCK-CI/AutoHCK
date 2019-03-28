@@ -53,7 +53,6 @@ class Studio
   end
 
   def assign_id
-    @virthck.assign_id
     @ip = @project.config['ip_segment'] + @virthck.id
   end
 

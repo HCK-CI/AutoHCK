@@ -6,6 +6,7 @@ gem 'filelock'
 gem 'mono_logger'
 gem 'net-ping'
 gem 'octokit'
+gem 'sqlite3'
 
 group :test, :development do
   gem 'rake'
