@@ -65,7 +65,7 @@ class Studio
   end
 
   def poweroff
-    @monitor.powerdown
+    @monitor.powerdown if @monitor
   end
 
   def abort

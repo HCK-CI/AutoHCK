@@ -76,7 +76,7 @@ class Client
   end
 
   def shutdown_machine
-    @monitor.powerdown
+    @monitor.powerdown if @monitor
   end
 
   def abort
