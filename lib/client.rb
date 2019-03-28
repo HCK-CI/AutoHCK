@@ -9,6 +9,15 @@ require './lib/virthck'
 class Client
   attr_reader :machine, :name, :id
 
+  # A custom Client error exception
+  class FatalClientError < StandardError
+    attr_reader :where
+
+    def initialize(where)
+      @where = where
+    end
+  end
+
   def initialize(project, studio, name)
     @name = name
     @id = name[-1]
@@ -119,8 +128,11 @@ class Client
   CLIENT_UP_TIMEOUT = 1800
 
   def return_client_when_up
+    retries ||= 0
+    recognized = false
     Timeout.timeout(CLIENT_UP_TIMEOUT) do
-      recognize_client_wait
+      recognize_client_wait unless recognized
+      recognized = true
       initialize_client_wait
       default_pool_machines.last
     end
@@ -128,7 +140,8 @@ class Client
     @logger.info('Timeout expired while waiting for client up,'\
                  'restarting using client\'s QEMU monitor')
     @monitor.reset
-    retry
+    retry if (retries += 1) < 3
+    raise FatalClientError.new(name.to_s), 'Client is not recognized'
   end
 
   def run
