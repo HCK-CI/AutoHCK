@@ -1,3 +1,5 @@
+require './lib/id_gen.rb'
+
 # Virthck class
 class VirtHCK
   attr_reader :id
@@ -6,23 +8,22 @@ class VirtHCK
     @logger = project.logger
     @config = project.config
     @device = project.device['device']
+    @id_gen = Idgen.new(project)
+    @id = assign_id
   end
 
   def assign_id
-    id_range = [*@config['id_range'].first..@config['id_range'].last]
-    available_ids = id_range - alive_ids
-    if available_ids.empty?
+    @id = @id_gen.allocate
+    if @id < 0
       @logger.fatal('No available ID, wait for a test session to end')
       exit 1
     end
-    @logger.info("Assinged ID: #{available_ids.first}")
-    @id = available_ids.first.to_s
+    @logger.info("Assinged ID: #{@id}")
+    @id.to_s
   end
 
-  def alive_ids
-    bash_command = "sudo ps aux | grep ' [\-]name HCK' | "\
-                   "grep -o ' [\-]uuid 00[0-9]\\{2\\}' | grep -o '..$'"
-    `#{bash_command}`.split(/\n/).map(&:to_i)
+  def release_id
+    @id_gen.release(@id)
   end
 
   def studio_snapshot
@@ -84,6 +85,7 @@ class VirtHCK
   end
 
   def close
+    release_id
     cmd = base_cmd + ['end']
     run_cmd(cmd)
   end
