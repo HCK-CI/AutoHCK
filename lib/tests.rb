@@ -78,6 +78,8 @@ InQueue: #{stats['inqueue']}")
     new_filename = res['status'] + ': ' + res['testname']
     update_remote(res['hostlogszippath'], new_filename)
     @logger.info('Test archive uploaded via the result uploader')
+  rescue Tools::ZipTestResultLogsError
+    @logger.info('Skipping archiving test result logs')
   end
 
   def update_remote(test_logs_path, test_name)
