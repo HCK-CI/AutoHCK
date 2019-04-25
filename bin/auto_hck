@@ -16,19 +16,31 @@ options = cli.parse(ARGV)
 
 ENV.store 'LC_ALL', 'en_US.UTF-8'
 
-@terminated = false
-Signal.trap('TERM') do
-  return if @terminated # ignore in case of a duplicate signal
-
-  @terminated = true
+at_exit do
   @project.abort if @project
   @client1.abort if @client1
   @client2.abort if @client2
-  unless @studio.nil?
-    @studio.abort
-    @studio.close
+  @studio.abort if @studio
+  @project.close_virthck if @project
+end
+
+@sigterm = false
+Signal.trap('TERM') do
+  if @sigterm
+    @project.logger.warn('SIGTERM(2) received, aborting...')
+    Signal.trap('TERM') do
+      @project.logger.warn('SIGTERM(*) received, ignoring...')
+    end
+    exit
+  else
+    @sigterm = true
+    @project.logger.warn('SIGTERM(1) recieved, aborting if another SIGTERM is'\
+                         ' received in the span of the next one second')
+    Thread.new do
+      sleep 1
+      @sigterm = false
+    end
   end
-  exit
 end
 
 begin
@@ -55,11 +67,4 @@ begin
 rescue StandardError => e
   @project.log_exception(e, 'fatal') if @project
   raise e
-end
-@project.abort if @project
-@client1.shutdown_machine if @client1
-@client2.shutdown_machine if @client2
-if @studio
-  @studio.shutdown
-  @studio.close
 end

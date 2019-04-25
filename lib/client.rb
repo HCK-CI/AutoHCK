@@ -81,10 +81,12 @@ class Client
 
   def abort
     loop do
-      return unless client_alive?
+      break unless client_alive?
 
       shutdown_machine
+      sleep 5
     end
+    @logger.info("Client #{@name} is offline")
   end
 
   def move_machine_to_pool

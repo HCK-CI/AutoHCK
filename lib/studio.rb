@@ -70,18 +70,16 @@ class Studio
 
   def abort
     loop do
-      return unless @virthck.studio_alive?
+      break unless @virthck.studio_alive?
 
       poweroff
+      sleep 5
     end
+    @logger.info("Studio #{@name} is offline")
   end
 
   def shutdown
     @logger.info('Shutting down studio')
     @tools.shutdown
-  end
-
-  def close
-    @virthck.close
   end
 end
