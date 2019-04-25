@@ -171,6 +171,10 @@ class Project
     end
   end
 
+  def close_virthck
+    @virthck.close
+  end
+
   def abort
     @logger.remove_logger(@stdout_logger)
     @github.handle_error if @github && @github.connected?

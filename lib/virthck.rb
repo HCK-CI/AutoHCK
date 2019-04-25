@@ -23,6 +23,7 @@ class VirtHCK
   end
 
   def release_id
+    @logger.info("Releasing ID: #{@id}")
     @id_gen.release(@id)
   end
 
