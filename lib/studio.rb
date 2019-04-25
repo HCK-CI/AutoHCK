@@ -59,7 +59,12 @@ class Studio
   def run
     @logger.info('Starting studio')
     assign_id
-    @virthck.run(@name, true)
+    @pid = @virthck.run(@name, true)
+    if @pid
+      @logger.info("Studio PID is #{@pid}")
+    else
+      @logger.error('Studio PID could not be retrieved')
+    end
     @monitor = Monitor.new(@project, self)
     sleep 2 until up?
   end

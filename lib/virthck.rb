@@ -79,10 +79,31 @@ class VirtHCK
     clients
   end
 
+  def retrieve_pid(pid_file)
+    Timeout.timeout(5) do
+      sleep 1 while File.zero?(pid_file.path)
+    end
+    pid_file.read.strip
+  rescue Timeout::Error
+    nil
+  end
+
+  def temp_file
+    file = Tempfile.new('')
+    yield(file)
+  ensure
+    file.close
+    file.unlink
+  end
+
   def run(name, first_time = false)
-    cmd = base_cmd + clients_cmd + device_cmd + [name]
-    create_command_file(cmd.join(' '), name) if first_time
-    run_cmd(cmd)
+    temp_file do |pid|
+      cmd = base_cmd + clients_cmd + device_cmd +
+            ["-pidfile #{pid.path}", name]
+      create_command_file(cmd.join(' '), name) if first_time
+      run_cmd(cmd)
+      retrieve_pid(pid)
+    end
   end
 
   def close
@@ -91,8 +112,27 @@ class VirtHCK
     run_cmd(cmd)
   end
 
+  def prep_stream_for_log(stream)
+    stream.strip.lines.map { |line| "\n   -- #{line.rstrip}" }.join
+  end
+
+  def log_stdout_stderr(stdout, stderr)
+    unless stdout.empty?
+      @logger.info('Info dump:' + prep_stream_for_log(stdout))
+    end
+    return if stderr.empty?
+
+    @logger.error('Error dump:' + prep_stream_for_log(stderr))
+  end
+
   def run_cmd(cmd)
-    system(cmd.join(' '))
+    temp_file do |stdout|
+      temp_file do |stderr|
+        Process.wait(spawn(cmd.join(' '), out: stdout.path, err: stderr.path))
+        log_stdout_stderr(stdout.read, stderr.read)
+        raise "Failed to run: #{cmd}" unless $CHILD_STATUS.exitstatus.zero?
+      end
+    end
   end
 
   def create_client_snapshot(name)
