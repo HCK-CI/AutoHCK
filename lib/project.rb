@@ -4,7 +4,7 @@ require 'mono_logger'
 require './lib/github'
 require './lib/result_uploader'
 require './lib/virthck'
-require './lib/multi_delegator'
+require './lib/multi_logger'
 require './lib/diff_checker'
 
 # Kit project class
@@ -16,6 +16,7 @@ class Project
   CONFIG_JSON = 'config.json'.freeze
 
   def initialize(options)
+    init_multilog(options.debug)
     init_class_variables(options)
     validate_paths
     diff_checker(options.diff)
@@ -23,7 +24,7 @@ class Project
     github_handling(options.commit)
     init_workspace
     init_virthck
-    init_multilog(options.debug)
+    append_multilog
   end
 
   def diff_checker(diff)
@@ -35,12 +36,20 @@ class Project
   end
 
   def init_multilog(debug)
-    log = File.open("#{workspace_path}/#{tag}.log", 'a')
-    log.sync = true
-    @logger = MonoLogger.new MultiDelegator.delegate(:write, :close)\
-                                           .to(STDOUT, log)
-    @logger.datetime_format = '%Y-%m-%d %H:%M:%S'
+    @temp_pre_logger_file = Tempfile.new('')
+    @temp_pre_logger_file.sync = true
+    @pre_logger = MonoLogger.new(@temp_pre_logger_file)
+    @stdout_logger = MonoLogger.new(STDOUT)
+    @logger = MultiLogger.new(@pre_logger, @stdout_logger)
     @logger.level = debug ? 'DEBUG' : 'INFO'
+  end
+
+  def append_multilog
+    FileUtils.cp(@temp_pre_logger_file.path, "#{workspace_path}/#{tag}.log")
+    @pre_logger.close
+    @temp_pre_logger_file.unlink
+    @logger.remove_logger(@pre_logger)
+    @logger.add_logger(MonoLogger.new("#{workspace_path}/#{tag}.log"))
   end
 
   def init_virthck
@@ -50,8 +59,6 @@ class Project
   def init_class_variables(options)
     @config = read_json(CONFIG_JSON)
     @timestamp = create_timestamp
-    @logger = MonoLogger.new(STDOUT)
-    @logger.datetime_format = '%Y-%m-%d %H:%M:%S'
     @tag = options.tag
     @driver_path = options.path
     @device = find_device
@@ -154,6 +161,7 @@ class Project
   end
 
   def abort
+    @logger.remove_logger(@stdout_logger)
     @github.handle_error if @github && @github.connected?
   end
 end
