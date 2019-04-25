@@ -33,8 +33,8 @@ class Dropbox
     @dropbox.share_folder(@path)
     @url = @dropbox.create_shared_link_with_settings(@path).url + '&lst='
     @logger.info("Dropbox project folder created: #{@url}")
-  rescue StandardError
-    @logger.error('Dropbox create_project_folder error')
+  rescue StandardError => e
+    @logger.error("Dropbox create_project_folder error: #{e.message}")
   end
 
   def upload_file(l_path, r_name)
@@ -43,8 +43,8 @@ class Dropbox
     content = IO.read(l_path)
     r_path = @path + '/' + r_name
     @dropbox.upload(r_path, content)
-  rescue StandardError
-    @logger.error('Dropbox upload_file error')
+  rescue StandardError => e
+    @logger.error("Dropbox upload_file error: #{e.message}")
   end
 
   def update_file_content(content, r_name)
@@ -52,8 +52,8 @@ class Dropbox
 
     r_path = @path + '/' + r_name
     @dropbox.upload(r_path, content, mode: 'overwrite')
-  rescue StandardError
-    @logger.error('Dropbox update_file_content error')
+  rescue StandardError => e
+    @logger.error("Dropbox update_file_content error: #{e.message}")
   end
 
   def close; end
