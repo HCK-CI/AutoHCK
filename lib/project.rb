@@ -35,6 +35,17 @@ class Project
     exit(0)
   end
 
+  def prep_stream_for_log(stream)
+    stream.strip.lines.map { |line| "\n   -- #{line.rstrip}" }.join
+  end
+
+  def log_exception(exception, level)
+    eclass = exception.class
+    emessage = exception.message
+    estack = prep_stream_for_log(exception.backtrace.join)
+    @logger.public_send(level, "(#{eclass}) #{emessage}#{estack}")
+  end
+
   def pre_init_multilog(debug)
     @temp_pre_logger_file = Tempfile.new('')
     @temp_pre_logger_file.sync = true
