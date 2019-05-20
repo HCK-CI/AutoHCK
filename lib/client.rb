@@ -53,12 +53,14 @@ class Client
     @tests.create_project_package
   end
 
-  def setup_driver
-    install_driver
-    reconfigure_machine
+  def configure_machine
+    @logger.info("Configuring client #{@name}...")
+    move_machine_to_pool
+    set_machine_ready
   end
 
   def reconfigure_machine
+    @logger.info("Reconfiguring client #{@name}...")
     delete_machine
     restart_machine
     return_when_client_up
@@ -124,7 +126,6 @@ class Client
   def initialize_client_wait
     @logger.info("Waiting for client #{@name} initialization")
     sleep 5 while machine_in_default_pool['state'].eql?('Initializing')
-    sleep 80
     @logger.info("Client #{@name} initialized")
   end
 
@@ -155,7 +156,20 @@ class Client
       @logger.error('Client PID could not be retrieved')
     end
     @monitor = Monitor.new(@project, self)
-    return_when_client_up
+    raise "Could not start client #{@name}" unless client_alive?
+  end
+
+  def configure
+    @tools = @studio.tools
+    @cooldown_thread = Thread.new do
+      return_when_client_up
+      install_driver
+      configure_machine
+    end
+  end
+
+  def synchronize
+    @cooldown_thread.join if @cooldown_thread
   end
 
   def keep_alive
