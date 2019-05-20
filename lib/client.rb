@@ -7,7 +7,7 @@ require './lib/virthck'
 
 # Client class
 class Client
-  attr_reader :machine, :name, :id
+  attr_reader :name, :id
 
   # A custom Client error exception
   class FatalClientError < StandardError
@@ -18,19 +18,20 @@ class Client
     end
   end
 
-  def initialize(project, studio, name)
-    @name = name
-    @id = name[-1]
+  def initialize(project, studio, tag)
+    @tag = tag
+    @id = tag[-1]
     @pool = 'Default Pool'
     @project = project
     @logger = project.logger
+    @name = @project.platform['clients'][tag]['name']
     @studio = studio
     @virthck = project.virthck
     create_snapshot
   end
 
   def create_snapshot
-    @virthck.create_client_snapshot(@name)
+    @virthck.create_client_snapshot(@tag)
   end
 
   def add_target_to_project
@@ -60,19 +61,19 @@ class Client
   def reconfigure_machine
     delete_machine
     restart_machine
-    return_client_when_up
+    return_when_client_up
     move_machine_to_pool
     set_machine_ready
   end
 
   def delete_machine
-    @tools.delete_machine(@machine['name'], @pool)
+    @tools.delete_machine(@name, @pool)
     @pool = 'Default Pool'
   end
 
   def restart_machine
-    @logger.info("Restarting #{@machine['name']}")
-    @tools.restart_machine(@machine['name'])
+    @logger.info("Restarting #{@name}")
+    @tools.restart_machine(@name)
   end
 
   def shutdown_machine
@@ -90,22 +91,21 @@ class Client
   end
 
   def move_machine_to_pool
-    @logger.info("Moving #{@machine['name']} to pool")
-    @tools.move_machine(@machine['name'], @pool, @project.tag)
+    @logger.info("Moving #{@name} to pool")
+    @tools.move_machine(@name, @pool, @project.tag)
     @pool = @project.tag
   end
 
   def set_machine_ready
-    @tools.set_machine_ready(@machine['name'], @pool)
+    @tools.set_machine_ready(@name, @pool)
   end
 
   def install_driver
     method = @project.device['install_method']
-    name = @machine['name']
     path = @project.driver_path
     inf = @project.device['inf']
-    @logger.info("Installing #{method} driver #{inf} in #{name}")
-    @tools.install_machine_driver_package(name, path, method, inf)
+    @logger.info("Installing #{method} driver #{inf} in #{@name}")
+    @tools.install_machine_driver_package(@name, path, method, inf)
   end
 
   def default_pool_machines
@@ -123,46 +123,45 @@ class Client
     @logger.info('Waiting for client initialization')
     sleep 5 while default_pool_machines.last['state'] == 'Initializing'
     sleep 80
-    @logger.info('Client initialized')
+    @logger.info("Client #{@name} initialized")
   end
 
   # Client up timeout is seconds, to prevent hangs (30 minutes)
   CLIENT_UP_TIMEOUT = 1800
 
-  def return_client_when_up
+  def return_when_client_up
     retries ||= 0
     recognized = false
     Timeout.timeout(CLIENT_UP_TIMEOUT) do
       recognize_client_wait unless recognized
       recognized = true
       initialize_client_wait
-      default_pool_machines.last
     end
   rescue Timeout::Error
     @logger.info('Timeout expired while waiting for client up,'\
                  'restarting using client\'s QEMU monitor')
     @monitor.reset
     retry if (retries += 1) < 3
-    raise FatalClientError.new(name.to_s), 'Client is not recognized'
+    raise FatalClientError.new(@name), "Client #{@name} couldn't be recognized"
   end
 
   def run
     @tools = @studio.tools
     @logger.info('Starting client')
-    @pid = @virthck.run(@name, true)
+    @pid = @virthck.run(@tag, true)
     if @pid
       @logger.info("Client PID is #{@pid}")
     else
       @logger.error('Client PID could not be retrieved')
     end
     @monitor = Monitor.new(@project, self)
-    @machine = return_client_when_up
+    return_when_client_up
   end
 
   def keep_alive
     return if client_alive?
 
-    @pid = @virthck.run(@name)
+    @pid = @virthck.run(@tag)
     if @pid
       @logger.info("Client new PID is #{@pid}")
     else
@@ -171,6 +170,6 @@ class Client
   end
 
   def client_alive?
-    @virthck.client_alive?(@name)
+    @virthck.client_alive?(@tag)
   end
 end

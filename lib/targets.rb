@@ -1,7 +1,7 @@
 # targets class
 class Targets
   def initialize(client, project, tools, pool)
-    @machine = client.machine
+    @machine = client.name
     @client = client
     @project = project
     @tools = tools
@@ -11,10 +11,9 @@ class Targets
 
   def add_target_to_project
     tag = @project.tag
-    machine = @machine['name']
     target = search_target
     key = target['key']
-    @tools.create_project_target(key, tag, machine)
+    @tools.create_project_target(key, tag, @machine)
     target
   end
 
@@ -32,8 +31,7 @@ class Targets
   end
 
   def list_targets
-    name = @machine['name']
-    @logger.info("listing targets of #{name}")
-    @tools.list_machine_targets(name, @pool)
+    @logger.info("listing targets of #{@machine}")
+    @tools.list_machine_targets(@machine, @pool)
   end
 end

@@ -1,7 +1,7 @@
 # Playlist class
 class Playlist
   def initialize(client, project, target, tools)
-    @machine = client.machine['name']
+    @machine = client.name
     @project = project
     @target = target
     @tools = tools

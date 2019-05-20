@@ -23,12 +23,12 @@ class Tests
   end
 
   def test_support(test)
-    @support.machine['name'] if support_needed?(test)
+    @support.name if support_needed?(test)
   end
 
   def queue_test(test)
-    @tools.queue_test(test['id'], @target['key'], @client.machine['name'],
-                      @tag, test_support(test))
+    @tools.queue_test(test['id'], @target['key'], @client.name, @tag,
+                      test_support(test))
   end
 
   def current_test
@@ -72,8 +72,8 @@ InQueue: #{stats['inqueue']}")
   end
 
   def archive_test_results(test)
-    res = @tools.zip_test_result_logs(test['id'], @target['key'],
-                                      @client.machine['name'], @tag)
+    res = @tools.zip_test_result_logs(test['id'], @target['key'], @client.name,
+                                      @tag)
     @logger.info('Test archive successfully created')
     new_filename = res['status'] + ': ' + res['testname']
     update_remote(res['hostlogszippath'], new_filename)
