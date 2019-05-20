@@ -24,6 +24,12 @@ at_exit do
   @project.close_virthck if @project
 end
 
+def clean_threads
+  Thread.list.each do |thread|
+    thread.exit unless Thread.main.eql?(thread)
+  end
+end
+
 @sigterm = false
 Signal.trap('TERM') do
   if @sigterm
@@ -31,6 +37,7 @@ Signal.trap('TERM') do
     Signal.trap('TERM') do
       @project.logger.warn('SIGTERM(*) received, ignoring...')
     end
+    clean_threads
     exit
   else
     @sigterm = true
@@ -43,6 +50,8 @@ Signal.trap('TERM') do
   end
 end
 
+Thread.abort_on_exception = true
+
 begin
   @project = Project.new(options)
   @studio = Studio.new(@project, STUDIO)
@@ -50,21 +59,21 @@ begin
   @client2 = Client.new(@project, @studio, CLIENT2)
   Filelock '/var/tmp/virthck.lock', timeout: 0 do
     @studio.run
-    @studio.connect
-    @studio.update_filters
-    @studio.create_pool
-    @studio.create_project
     @client1.run
     @client2.run
-    @client1.setup_driver
-    @client2.setup_driver
-    @client1.add_target_to_project
-    @client2.add_target_to_project
   end
+  @studio.configure
+  @client1.configure
+  @client2.configure
+  @client1.synchronize
+  @client2.synchronize
   @client1.add_support(@client2)
+  @client1.add_target_to_project
+  @client2.add_target_to_project
   @client1.run_tests
   @client1.create_package
 rescue StandardError => e
   @project.log_exception(e, 'fatal') if @project
+  clean_threads
   raise e
 end

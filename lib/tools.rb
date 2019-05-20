@@ -30,8 +30,29 @@ class Tools < RToolsHCK
   # A custom InstallMachineDriverPackage error exception
   class InstallMachineDriverPackageError < StandardError; end
 
+  # A thread safe class that wraps an object instace with critical data
+  class ThreadSafe < BasicObject
+    def initialize(object)
+      @delegate = object
+    end
+
+    def method_missing(method, *args, &block)
+      if @delegate.respond_to?(method)
+        @delegate.mu_synchronize { @delegate.send(method, *args, &block) }
+      else
+        super
+      end
+    end
+
+    def respond_to_missing?(method, *args)
+      @delegate.respond_to?(method) || super
+    end
+  end
+
   def connect(conn)
-    @tools = RToolsHCK.new(conn)
+    tools = RToolsHCK.new(conn)
+    tools.extend(Mutex_m)
+    @tools = ThreadSafe.new(tools)
   end
 
   def config_winrm_ports(project)

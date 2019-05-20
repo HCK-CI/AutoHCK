@@ -66,7 +66,16 @@ class Studio
       @logger.error('Studio PID could not be retrieved')
     end
     @monitor = Monitor.new(@project, self)
-    sleep 2 until up?
+    raise 'Could not start studio' unless @virthck.studio_alive?
+  end
+
+  def configure
+    @logger.info('Waiting for studio to load...')
+    sleep 5 until up?
+    connect
+    update_filters
+    create_pool
+    create_project
   end
 
   def poweroff
