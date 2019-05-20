@@ -147,13 +147,12 @@ class Client
   end
 
   def run
-    @tools = @studio.tools
-    @logger.info('Starting client')
+    @logger.info("Starting client #{@name}")
     @pid = @virthck.run(@tag, true)
     if @pid
-      @logger.info("Client PID is #{@pid}")
+      @logger.info("Client #{@name} PID is #{@pid}")
     else
-      @logger.error('Client PID could not be retrieved')
+      @logger.error("Client #{@name} PID could not be retrieved")
     end
     @monitor = Monitor.new(@project, self)
     raise "Could not start client #{@name}" unless client_alive?
@@ -175,11 +174,12 @@ class Client
   def keep_alive
     return if client_alive?
 
+    @logger.info("Starting client #{@name}")
     @pid = @virthck.run(@tag)
     if @pid
-      @logger.info("Client new PID is #{@pid}")
+      @logger.info("Client #{@name} new PID is #{@pid}")
     else
-      @logger.error('Client new PID could not be retrieved')
+      @logger.error("Client #{@name} new PID could not be retrieved")
     end
   end
 
