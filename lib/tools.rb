@@ -3,7 +3,8 @@ require 'nori/parser/rexml'
 
 # Tools class
 class Tools < RToolsHCK
-  ARCHIVING_RETRIES = 2
+  ACTION_RETRIES = 2
+  ACTION_RETRY_SLEEP = 10
   def initialize(project, ip_addr)
     @logger = project.logger
     config = project.config
@@ -20,6 +21,15 @@ class Tools < RToolsHCK
   # A custom ZipTestResultLogs error exception
   class ZipTestResultLogsError < StandardError; end
 
+  # A custom RestartMachine error exception
+  class RestartMachineError < StandardError; end
+
+  # A custom ShutdownMachine error exception
+  class ShutdownMachineError < StandardError; end
+
+  # A custom InstallMachineDriverPackage error exception
+  class InstallMachineDriverPackageError < StandardError; end
+
   def connect(conn)
     @tools = RToolsHCK.new(conn)
   end
@@ -33,10 +43,12 @@ class Tools < RToolsHCK
   end
 
   def handle_results(results)
-    return results['content'] unless results['result'] == 'Failure'
-
-    @logger.error(results['message'])
-    raise results['message']
+    if results['result'] == 'Failure'
+      @logger.warn(results['message'])
+      false
+    else
+      results['content'] || true
+    end
   end
 
   def create_pool(tag)
@@ -64,11 +76,35 @@ class Tools < RToolsHCK
   end
 
   def restart_machine(machine)
-    handle_results(@tools.machine_shutdown(machine, :restart))
+    retries ||= 0
+    ret = handle_results(@tools.machine_shutdown(machine, :restart))
+
+    raise RestartMachineError unless ret
+
+    ret
+  rescue RestartMachineError
+    @logger.info("Restarting machine #{machine} failed")
+    raise unless (retries += 1) < ACTION_RETRIES
+
+    sleep ACTION_RETRY_SLEEP
+    @logger.info("Trying again to restart machine #{machine}")
+    retry
   end
 
   def shutdown_machine(machine)
-    handle_results(@tools.machine_shutdown(machine, :shutdown))
+    retries ||= 0
+    ret = handle_results(@tools.machine_shutdown(machine, :shutdown))
+
+    raise ShutdownMachineError unless ret
+
+    ret
+  rescue ShutdownMachineError
+    @logger.info("Shuting down machine #{machine} failed")
+    raise unless (retries += 1) < ACTION_RETRIES
+
+    sleep ACTION_RETRY_SLEEP
+    @logger.info("Trying again to shutdown machine #{machine}")
+    retry
   end
 
   def shutdown
@@ -88,12 +124,22 @@ class Tools < RToolsHCK
   end
 
   def install_machine_driver_package(machine, method, driver_path, file)
-    handle_results(@tools.install_machine_driver_package(machine, driver_path,
-                                                         method, file))
-  rescue RuntimeError
-    @logger.fatal('Driver installation failed, make sure the driver'\
-                  'is sigend and suitable for this platform')
-    raise 'InvalidDriver'
+    retries ||= 0
+    ret = handle_results(@tools.install_machine_driver_package(machine,
+                                                               driver_path,
+                                                               method, file))
+
+    raise InstallMachineDriverPackageError unless ret
+
+    ret
+  rescue InstallMachineDriverPackageError => e
+    @logger.info("Installing driver package on machine #{machine} failed")
+    message = 'Driver not signed or not platform suitable'
+    raise e, message unless (retries += 1) < ACTION_RETRIES
+
+    sleep ACTION_RETRY_SLEEP
+    @logger.info("Trying again to install driver package on machine #{machine}")
+    retry
   end
 
   def list_tests(key, machine, tag, playlist)
@@ -116,16 +162,18 @@ class Tools < RToolsHCK
 
   def zip_test_result_logs(test_id, target_key, machine, tag)
     retries ||= 0
-    test_index = -1
-    handle_results(@tools.zip_test_result_logs(test_index, test_id, target_key,
-                                               tag, machine, tag))
-  rescue StandardError
+    ret = handle_results(@tools.zip_test_result_logs(-1, test_id, target_key,
+                                                     tag, machine, tag))
+    raise ZipTestResultLogsError unless ret
+
+    ret
+  rescue ZipTestResultLogsError
     # Results archiving might fail because they requested before they are done
     # or when the test itself didn't run and there are no results.
     @logger.info('Archiving tests results failed')
-    raise ZipTestResultLogsError unless (retries += 1) < ARCHIVING_RETRIES
+    raise unless (retries += 1) < ACTION_RETRIES
 
-    sleep 10
+    sleep ACTION_RETRY_SLEEP
     @logger.info('Trying again to archive tests results')
     retry
   end
