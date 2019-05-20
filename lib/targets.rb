@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # targets class
 class Targets
   def initialize(client, project, tools, pool)

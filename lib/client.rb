@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'net/ping'
 require './lib/tests'
 require './lib/targets'
@@ -79,7 +81,7 @@ class Client
   end
 
   def shutdown_machine
-    @monitor.powerdown if @monitor
+    @monitor&.powerdown
   end
 
   # Client soft abort trials before force abort
@@ -99,7 +101,7 @@ class Client
   end
 
   def hard_abort
-    @monitor.quit if @monitor
+    @monitor&.quit
     sleep ABORT_SLEEP
     return true unless alive?
 
@@ -192,7 +194,7 @@ class Client
   end
 
   def synchronize
-    @cooldown_thread.join if @cooldown_thread
+    @cooldown_thread&.join
   end
 
   def alive?

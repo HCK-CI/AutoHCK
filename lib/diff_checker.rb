@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 require 'yaml'
 
 # selective trigger class
 class DiffChecker
-  DIFF_FILENAME = 'diff.txt'.freeze
-  TRIGGER_YAML = 'triggers.yml'.freeze
+  DIFF_FILENAME = 'diff.txt'
+  TRIGGER_YAML = 'triggers.yml'
 
   def initialize(logger, device, driver_path, diff)
     @logger = logger

@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 require 'net-telnet'
 
 # monitor class
 class Monitor
   MONITOR_BASE_PORT = 10_000
   TIMEOUT = 30
-  LOCALHOST = 'localhost'.freeze
+  LOCALHOST = 'localhost'
 
   def initialize(project, machine)
     @name = machine.name
