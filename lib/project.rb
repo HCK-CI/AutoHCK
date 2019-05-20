@@ -42,7 +42,7 @@ class Project
   def log_exception(exception, level)
     eclass = exception.class
     emessage = exception.message
-    estack = prep_stream_for_log(exception.backtrace.join)
+    estack = prep_stream_for_log(exception.backtrace.join("\n"))
     @logger.public_send(level, "(#{eclass}) #{emessage}#{estack}")
   end
 
