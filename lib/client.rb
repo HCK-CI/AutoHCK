@@ -108,20 +108,22 @@ class Client
     @tools.install_machine_driver_package(@name, path, method, inf)
   end
 
-  def default_pool_machines
-    @studio.list_pools.first['machines']
+  def machine_in_default_pool
+    default_pool = @studio.list_pools
+                          .detect { |pool| pool['name'].eql?('Default Pool') }
+
+    default_pool['machines'].detect { |machine| machine['name'].eql?(@name) }
   end
 
   def recognize_client_wait
-    count = default_pool_machines.count
-    @logger.info('Waiting for client to be recognized')
-    sleep 5 while default_pool_machines.count == count
-    @logger.info('Client recognized')
+    @logger.info("Waiting for client #{@name} to be recognized")
+    sleep 5 until machine_in_default_pool
+    @logger.info("Client #{@name} recognized")
   end
 
   def initialize_client_wait
-    @logger.info('Waiting for client initialization')
-    sleep 5 while default_pool_machines.last['state'] == 'Initializing'
+    @logger.info("Waiting for client #{@name} initialization")
+    sleep 5 while machine_in_default_pool['state'].eql?('Initializing')
     sleep 80
     @logger.info("Client #{@name} initialized")
   end
@@ -131,10 +133,8 @@ class Client
 
   def return_when_client_up
     retries ||= 0
-    recognized = false
     Timeout.timeout(CLIENT_UP_TIMEOUT) do
-      recognize_client_wait unless recognized
-      recognized = true
+      recognize_client_wait
       initialize_client_wait
     end
   rescue Timeout::Error
