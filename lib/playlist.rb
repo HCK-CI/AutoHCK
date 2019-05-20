@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Playlist class
 class Playlist
   def initialize(client, project, target, tools)

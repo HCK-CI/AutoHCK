@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rtoolsHCK'
 require 'net/ping'
 require './lib/tools'
@@ -5,7 +7,7 @@ require './lib/tools'
 # Studio class
 class Studio
   attr_reader :tools, :name, :id
-  HCK_FILTERS_PATH = 'filters/UpdateFilters.sql'.freeze
+  HCK_FILTERS_PATH = 'filters/UpdateFilters.sql'
   def initialize(project, name)
     @name = name
     @id = 0
@@ -79,7 +81,7 @@ class Studio
   end
 
   def poweroff
-    @monitor.powerdown if @monitor
+    @monitor&.powerdown
   end
 
   # Studio soft abort trials before force abort
@@ -99,7 +101,7 @@ class Studio
   end
 
   def hard_abort
-    @monitor.quit if @monitor
+    @monitor&.quit
     sleep ABORT_SLEEP
     return true unless alive?
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'sqlite3'
 require 'time'
 
@@ -33,7 +35,7 @@ class Idgen
 
   def allocate
     id = gen_id
-    return -1 if id < 0
+    return -1 if id.negative?
 
     time = Time.now.to_i
     @conn.execute "INSERT INTO ActiveIds VALUES(#{id},#{Process.pid},#{time})"
@@ -50,7 +52,7 @@ class Idgen
   rescue SQLite3::Exception
     -1
   ensure
-    @conn.close if @conn
+    @conn&.close
   end
 
   private

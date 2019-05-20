@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'json'
 require 'fileutils'
 require 'mono_logger'
@@ -11,9 +13,9 @@ require './lib/diff_checker'
 class Project
   attr_reader :config, :logger, :timestamp, :platform, :device, :tag,
               :driver_path, :workspace_path, :github, :result_uploader, :virthck
-  PLATFORMS_JSON = 'platforms.json'.freeze
-  DEVICES_JSON = 'devices.json'.freeze
-  CONFIG_JSON = 'config.json'.freeze
+  PLATFORMS_JSON = 'platforms.json'
+  DEVICES_JSON = 'devices.json'
+  CONFIG_JSON = 'config.json'
 
   def initialize(options)
     init_multilog(options.debug)
@@ -177,6 +179,6 @@ class Project
 
   def abort
     @logger.remove_logger(@stdout_logger)
-    @github.handle_error if @github && @github.connected?
+    @github.handle_error if @github&.connected?
   end
 end

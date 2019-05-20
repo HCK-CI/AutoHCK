@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require './lib/id_gen.rb'
 
 # Virthck class
@@ -14,7 +16,7 @@ class VirtHCK
 
   def assign_id
     @id = @id_gen.allocate
-    if @id < 0
+    if @id.negative?
       @logger.fatal('No available ID, wait for a test session to end')
       exit 1
     end

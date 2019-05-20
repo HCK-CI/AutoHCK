@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # MultiLogger class
 class MultiLogger
   attr_reader :level
