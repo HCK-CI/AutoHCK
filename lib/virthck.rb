@@ -83,7 +83,7 @@ class VirtHCK
     Timeout.timeout(5) do
       sleep 1 while File.zero?(pid_file.path)
     end
-    pid_file.read.strip
+    pid_file.read.strip.to_i
   rescue Timeout::Error
     nil
   end

@@ -82,14 +82,38 @@ class Client
     @monitor.powerdown if @monitor
   end
 
-  def abort
-    loop do
-      break unless client_alive?
+  # Client soft abort trials before force abort
+  ABORT_RETRIES = 10
+
+  # Client soft abort sleep for each trial
+  ABORT_SLEEP = 30
+
+  def soft_abort
+    ABORT_RETRIES.times do
+      return true unless client_alive?
 
       shutdown_machine
-      sleep 5
+      sleep ABORT_SLEEP
     end
-    @logger.info("Client #{@name} is offline")
+    false
+  end
+
+  def hard_abort
+    @monitor.quit if @monitor
+    sleep ABORT_SLEEP
+    return true unless client_alive?
+
+    false
+  end
+
+  def abort
+    return if soft_abort
+
+    @logger.info("Client #{@name} soft abort failed, hard aborting...")
+    return if hard_abort
+
+    @logger.info("Client #{@name} hard abort failed, force aborting...")
+    Process.kill('KILL', @pid)
   end
 
   def move_machine_to_pool

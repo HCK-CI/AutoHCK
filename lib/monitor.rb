@@ -16,6 +16,11 @@ class Monitor
     @logger.info('Initiating qemu-monitor session')
   end
 
+  def quit
+    @logger.info("Sending quit signal to #{@name} via qemu-monitor")
+    cmd('quit')
+  end
+
   def powerdown
     @logger.info("Sending powerdown signal to #{@name} via qemu-monitor")
     cmd('system_powerdown')
@@ -33,7 +38,7 @@ class Monitor
                               'Prompt' => /\(qemu\)/)
     monitor.cmd(cmd)
     monitor.close
-  rescue Net::ReadTimeout, Errno::ECONNRESET
+  rescue Net::ReadTimeout, Errno::ECONNRESET, Errno::ECONNREFUSED
     @logger.error('Monitor not responding')
   end
 end
