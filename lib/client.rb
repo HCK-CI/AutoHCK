@@ -90,7 +90,7 @@ class Client
 
   def soft_abort
     ABORT_RETRIES.times do
-      return true unless client_alive?
+      return true unless alive?
 
       shutdown_machine
       sleep ABORT_SLEEP
@@ -101,7 +101,7 @@ class Client
   def hard_abort
     @monitor.quit if @monitor
     sleep ABORT_SLEEP
-    return true unless client_alive?
+    return true unless alive?
 
     false
   end
@@ -179,7 +179,7 @@ class Client
       @logger.error("Client #{@name} PID could not be retrieved")
     end
     @monitor = Monitor.new(@project, self)
-    raise "Could not start client #{@name}" unless client_alive?
+    raise "Could not start client #{@name}" unless alive?
   end
 
   def configure
@@ -195,8 +195,18 @@ class Client
     @cooldown_thread.join if @cooldown_thread
   end
 
+  def alive?
+    return false unless @pid
+
+    Process.kill(0, @pid)
+    true
+  rescue Errno::ESRCH
+    @logger.info("Client #{@name} is not alive")
+    false
+  end
+
   def keep_alive
-    return if client_alive?
+    return if alive?
 
     @logger.info("Starting client #{@name}")
     @pid = @virthck.run(@tag)
@@ -205,9 +215,5 @@ class Client
     else
       @logger.error("Client #{@name} new PID could not be retrieved")
     end
-  end
-
-  def client_alive?
-    @virthck.client_alive?(@tag)
   end
 end

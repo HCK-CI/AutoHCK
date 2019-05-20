@@ -66,7 +66,7 @@ class Studio
       @logger.error('Studio PID could not be retrieved')
     end
     @monitor = Monitor.new(@project, self)
-    raise 'Could not start studio' unless @virthck.studio_alive?
+    raise 'Could not start studio' unless alive?
   end
 
   def configure
@@ -90,7 +90,7 @@ class Studio
 
   def soft_abort
     ABORT_RETRIES.times do
-      return true unless @virthck.studio_alive?
+      return true unless alive?
 
       poweroff
       sleep ABORT_SLEEP
@@ -101,7 +101,7 @@ class Studio
   def hard_abort
     @monitor.quit if @monitor
     sleep ABORT_SLEEP
-    return true unless @virthck.studio_alive?
+    return true unless alive?
 
     false
   end
@@ -119,5 +119,15 @@ class Studio
   def shutdown
     @logger.info('Shutting down studio')
     @tools.shutdown
+  end
+
+  def alive?
+    return false unless @pid
+
+    Process.kill(0, @pid)
+    true
+  rescue Errno::ESRCH
+    @logger.info('Studio is not alive')
+    false
   end
 end
