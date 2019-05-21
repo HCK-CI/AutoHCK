@@ -77,21 +77,29 @@ InQueue: #{stats['inqueue']}")
     res = @tools.zip_test_result_logs(test['id'], @target['key'], @client.name,
                                       @tag)
     @logger.info('Test archive successfully created')
-    new_filename = res['status'] + ': ' + res['testname']
-    update_remote(res['hostlogszippath'], new_filename)
+    update_remote(res['hostlogszippath'], res['status'], res['testname'])
     @logger.info('Test archive uploaded via the result uploader')
   rescue Tools::ZipTestResultLogsError
     @logger.info('Skipping archiving test result logs')
   end
 
-  def update_remote(test_logs_path, test_name)
-    r_name = test_name + File.extname(test_logs_path)
+  def update_remote(test_logs_path, status, testname)
+    delete_old_remote(testname)
+    new_filename = status + ': ' + testname
+    r_name = new_filename + File.extname(test_logs_path)
     @project.result_uploader.upload_file(test_logs_path, r_name)
     logs = @tests.reduce('') do |sum, test|
       sum + "#{test['status']}: #{test['name']}\n"
     end
     @logger.info('Tests results logs updated via the result uploader')
     @project.result_uploader.update_file_content(logs, 'logs.txt')
+  end
+
+  def delete_old_remote(test_name)
+    r_name = 'Failed: ' + test_name + '.zip'
+    @project.result_uploader.delete_file(r_name)
+    r_name = 'Passed: ' + test_name + '.zip'
+    @project.result_uploader.delete_file(r_name)
   end
 
   def all_tests_finished?
