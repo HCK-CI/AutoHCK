@@ -48,6 +48,12 @@ class ResultUploader
     @connected_uploaders.each_value(&:create_project_folder)
   end
 
+  def delete_file(r_name)
+    @connected_uploaders.each_value do |uploader|
+      uploader.delete_file(r_name)
+    end
+  end
+
   def upload_file(l_path, r_name)
     @connected_uploaders.each_value do |uploader|
       uploader.upload_file(l_path, r_name)
