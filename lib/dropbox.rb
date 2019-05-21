@@ -58,5 +58,16 @@ class Dropbox
     @logger.error("Dropbox update_file_content error: #{e.message}")
   end
 
+  def delete_file(r_name)
+    return false if @dropbox.nil?
+
+    r_path = @path + '/' + r_name
+    @dropbox.delete(r_path)
+    @logger.info("Dropbox file deleted: #{r_path}")
+    true
+  rescue DropboxApi::Errors::NotFoundError
+    false
+  end
+
   def close; end
 end
