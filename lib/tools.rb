@@ -65,9 +65,14 @@ class Tools < RToolsHCK
     winrm_ports
   end
 
+  def prep_stream_for_log(stream)
+    stream.strip.lines.map { |line| "\n   -- #{line.rstrip}" }.join
+  end
+
   def handle_results(results)
     if results['result'] == 'Failure'
-      @logger.warn(results['message'])
+      failure_message = prep_stream_for_log(results['message'])
+      @logger.warn("Tools action failure#{failure_message}")
       false
     else
       results['content'] || true
