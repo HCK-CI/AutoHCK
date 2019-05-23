@@ -115,6 +115,11 @@ InQueue: #{stats['inqueue']}")
     print_tests_stats
   end
 
+  def reset_clients_to_ready_state
+    @client.reset_to_ready_state
+    @support.reset_to_ready_state
+  end
+
   def keep_clients_alive
     @client.keep_alive
     @support.keep_alive
@@ -142,6 +147,7 @@ InQueue: #{stats['inqueue']}")
     @last_done = []
     until all_tests_finished?
       keep_clients_alive
+      reset_clients_to_ready_state
       check_new_finished_tests
       if current_test != running
         running = current_test
