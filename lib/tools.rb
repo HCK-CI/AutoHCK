@@ -5,7 +5,7 @@ require 'nori/parser/rexml'
 
 # Tools class
 class Tools < RToolsHCK
-  ACTION_RETRIES = 2
+  ACTION_RETRIES = 5
   ACTION_RETRY_SLEEP = 10
   def initialize(project, ip_addr)
     @logger = project.logger
