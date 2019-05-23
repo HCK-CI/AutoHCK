@@ -69,8 +69,6 @@ begin
   @client1.synchronize
   @client2.synchronize
   @client1.add_support(@client2)
-  @client1.add_target_to_project
-  @client2.add_target_to_project
   @client1.run_tests
   @client1.create_package
 rescue StandardError => e

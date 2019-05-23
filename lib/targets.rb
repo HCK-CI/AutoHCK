@@ -2,6 +2,7 @@
 
 # targets class
 class Targets
+  TARGET_RETIRES = 5
   def initialize(client, project, tools, pool)
     @machine = client.name
     @client = client
@@ -11,29 +12,35 @@ class Targets
     @logger = project.logger
   end
 
+  # A custom AddTargetToProjec error exception
+  class AddTargetToProjectError < StandardError; end
+
   def add_target_to_project
+    retries ||= 0
     tag = @project.tag
     target = search_target
-    key = target['key']
-    @tools.create_project_target(key, tag, @machine)
-    target
-  end
+    name = target['name']
+    @logger.info("Adding target #{name} on #{@machine} to project")
+    return target if @tools.create_project_target(target['key'], tag, @machine)
 
-  def search_target
-    target_name = @project.device['name']
-    @logger.info("Searching for target #{target_name}")
-    list_targets.each do |target|
-      return target if target['name'].include?(target_name)
-    end
-    @logger.fatal('Target not found')
-    raise 'target not found'
-  rescue StandardError
+    raise AddTargetToProjectError, "Adding target #{name} on #{@machine} "\
+                                   'to project failed'
+  rescue AddTargetToProjectError => e
+    @logger.warn(e.message)
+    raise unless (retries += 1) < TARGET_RETIRES
+
     @client.reconfigure_machine
+    @logger.info("Trying again to add target #{name} on #{@machine} to project")
     retry
   end
 
-  def list_targets
-    @logger.info("listing targets of #{@machine}")
-    @tools.list_machine_targets(@machine, @pool)
+  def search_target
+    name = @project.device['name']
+    @logger.info("Searching for target #{name} on #{@machine}")
+    @tools.list_machine_targets(@machine, @pool).each do |target|
+      return target if target['name'].eql?(name)
+    end
+
+    raise AddTargetToProjectError, "Target #{name} not found on #{@machine}"
   end
 end

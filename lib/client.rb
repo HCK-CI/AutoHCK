@@ -190,6 +190,7 @@ class Client
       return_when_client_up
       install_driver
       configure_machine
+      add_target_to_project
     end
   end
 
