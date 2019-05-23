@@ -198,6 +198,12 @@ class Client
     @cooldown_thread&.join
   end
 
+  def not_ready?
+    @studio.list_pools.detect { |pool| pool['name'].eql?(@pool) }['machines']\
+           .detect { |machine| machine['name'].eql?(@name) }['state']\
+           .eql?('NotReady')
+  end
+
   def alive?
     return false unless @pid
 
@@ -206,6 +212,13 @@ class Client
   rescue Errno::ESRCH
     @logger.info("Client #{@name} is not alive")
     false
+  end
+
+  def reset_to_ready_state
+    return unless not_ready?
+
+    @logger.info("Setting client #{@name} state to Ready")
+    set_machine_ready
   end
 
   def keep_alive
