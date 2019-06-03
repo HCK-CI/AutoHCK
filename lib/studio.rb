@@ -14,7 +14,6 @@ class Studio
     @project = project
     @logger = project.logger
     @virthck = project.virthck
-    create_snapshot
   end
 
   # A custom StudioConnect error exception
@@ -30,6 +29,10 @@ class Studio
 
   def create_snapshot
     @virthck.create_studio_snapshot
+  end
+
+  def delete_snapshot
+    @virthck.delete_studio_snapshot
   end
 
   def create_pool
@@ -80,6 +83,7 @@ class Studio
   end
 
   def run
+    create_snapshot
     @logger.info('Starting studio')
     assign_id
     @pid = @virthck.run(@name, true)
@@ -90,6 +94,13 @@ class Studio
     raise StudioRunError, 'Could not start studio' unless alive?
   rescue VirtHCK::CmdRunError
     raise StudioRunError, 'Could not start studio'
+  end
+
+  def clean_last_run
+    @logger.info('Cleaning last studio run')
+    @tools&.close
+    hard_abort
+    delete_snapshot
   end
 
   def configure
@@ -130,6 +141,7 @@ class Studio
   end
 
   def abort
+    @tools&.close
     return if soft_abort
 
     @logger.info('Studio soft abort failed, hard aborting...')

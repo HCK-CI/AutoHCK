@@ -10,16 +10,15 @@ require './lib/virthck'
 # Client class
 class Client
   attr_reader :name, :id
+  attr_writer :support
   def initialize(project, studio, tag)
     @tag = tag
     @id = tag[-1]
-    @pool = 'Default Pool'
     @project = project
     @logger = project.logger
     @name = @project.platform['clients'][tag]['name']
     @studio = studio
     @virthck = project.virthck
-    create_snapshot
   end
 
   # A custom ClientRun error exception
@@ -29,13 +28,12 @@ class Client
     @virthck.create_client_snapshot(@tag)
   end
 
-  def add_target_to_project
-    targets = Targets.new(self, @project, @tools, @pool)
-    @target = targets.add_target_to_project
+  def delete_snapshot
+    @virthck.delete_client_snapshot(@tag)
   end
 
-  def add_support(support)
-    @support = support
+  def add_target_to_project
+    @target = Targets.new(self, @project, @tools, @pool).add_target_to_project
   end
 
   def run_tests
@@ -49,19 +47,16 @@ class Client
   end
 
   def configure_machine
-    @logger.info("Configuring client #{@name}...")
     move_machine_to_pool
     set_machine_ready
     sleep CLIENT_COOLDOWN_SLEEP
   end
 
   def reconfigure_machine
-    @logger.info("Reconfiguring client #{@name}...")
     delete_machine
     restart_machine
     return_when_client_up
-    move_machine_to_pool
-    set_machine_ready
+    configure_machine
   end
 
   def delete_machine
@@ -156,6 +151,8 @@ class Client
   end
 
   def run
+    @pool = 'Default Pool'
+    create_snapshot
     @logger.info("Starting client #{@name}")
     @pid = @virthck.run(@tag, true)
     e_message = "Client #{@name} PID could not be retrieved"
@@ -166,6 +163,12 @@ class Client
     raise ClientRunError, "Could not start client #{@name}" unless alive?
   rescue VirtHCK::CmdRunError
     raise ClientRunError, "Could not start client #{@name}"
+  end
+
+  def clean_last_run
+    @logger.info("Cleaning last client #{@name} run")
+    hard_abort
+    delete_snapshot
   end
 
   # Client cooldown timeout in seconds, to prevent hangs (30 minutes)
@@ -185,11 +188,15 @@ class Client
     end
   end
 
-  def synchronize
-    return unless @cooldown_thread&.join(CLIENT_COOLDOWN_TIMEOUT).nil?
+  def synchronize(exit: false)
+    if exit
+      @cooldown_thread&.exit
+    else
+      return unless @cooldown_thread&.join(CLIENT_COOLDOWN_TIMEOUT).nil?
 
-    e_message = "Timeout expired for the cooldown thread of client #{@name}"
-    raise ClientRunError, e_message
+      e_message = "Timeout expired for the cooldown thread of client #{@name}"
+      raise ClientRunError, e_message
+    end
   end
 
   def not_ready?
