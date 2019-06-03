@@ -3,6 +3,7 @@
 
 require 'filelock'
 
+require './lib/exceptions'
 require './lib/project'
 require './lib/client'
 require './lib/studio'

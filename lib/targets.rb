@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require './lib/exceptions'
+
 # targets class
 class Targets
   TARGET_RETIRES = 5
@@ -13,7 +15,7 @@ class Targets
   end
 
   # A custom AddTargetToProjec error exception
-  class AddTargetToProjectError < StandardError; end
+  class AddTargetToProjectError < AutoHCKError; end
 
   def add_target_to_project
     retries ||= 0

@@ -12,7 +12,7 @@ class Client
   attr_reader :name, :id
 
   # A custom Client error exception
-  class FatalClientError < StandardError
+  class FatalClientError < AutoHCKError
     attr_reader :where
 
     def initialize(where)
