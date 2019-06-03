@@ -21,16 +21,16 @@ class Tools < RToolsHCK
   end
 
   # A custom ZipTestResultLogs error exception
-  class ZipTestResultLogsError < StandardError; end
+  class ZipTestResultLogsError < AutoHCKError; end
 
   # A custom RestartMachine error exception
-  class RestartMachineError < StandardError; end
+  class RestartMachineError < AutoHCKError; end
 
   # A custom ShutdownMachine error exception
-  class ShutdownMachineError < StandardError; end
+  class ShutdownMachineError < AutoHCKError; end
 
   # A custom InstallMachineDriverPackage error exception
-  class InstallMachineDriverPackageError < StandardError; end
+  class InstallMachineDriverPackageError < AutoHCKError; end
 
   # A thread safe class that wraps an object instace with critical data
   class ThreadSafe < BasicObject
