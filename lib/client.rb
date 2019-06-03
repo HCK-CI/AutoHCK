@@ -52,6 +52,7 @@ class Client
     @logger.info("Configuring client #{@name}...")
     move_machine_to_pool
     set_machine_ready
+    sleep CLIENT_COOLDOWN_SLEEP
   end
 
   def reconfigure_machine
@@ -149,21 +150,9 @@ class Client
     @logger.info("Client #{@name} initialized")
   end
 
-  # Client up timeout is seconds, to prevent hangs (30 minutes)
-  CLIENT_UP_TIMEOUT = 1800
-
   def return_when_client_up
-    retries ||= 0
-    Timeout.timeout(CLIENT_UP_TIMEOUT) do
-      recognize_client_wait
-      initialize_client_wait
-    end
-  rescue Timeout::Error
-    @logger.info('Timeout expired while waiting for client up,'\
-                 'restarting using client\'s QEMU monitor')
-    @monitor.reset
-    retry if (retries += 1) < 3
-    raise FatalClientError.new(@name), "Client #{@name} couldn't be recognized"
+    recognize_client_wait
+    initialize_client_wait
   end
 
   def run
@@ -179,6 +168,12 @@ class Client
     raise ClientRunError, "Could not start client #{@name}"
   end
 
+  # Client cooldown timeout in seconds, to prevent hangs (30 minutes)
+  CLIENT_COOLDOWN_TIMEOUT = 1800
+
+  # Client cooldown sleep after thread is joined in seconds
+  CLIENT_COOLDOWN_SLEEP = 60
+
   def configure
     @tools = @studio.tools
     @cooldown_thread = Thread.new do
@@ -191,7 +186,10 @@ class Client
   end
 
   def synchronize
-    @cooldown_thread&.join
+    return unless @cooldown_thread&.join(CLIENT_COOLDOWN_TIMEOUT).nil?
+
+    e_message = "Timeout expired for the cooldown thread of client #{@name}"
+    raise ClientRunError, e_message
   end
 
   def not_ready?
