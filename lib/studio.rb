@@ -17,6 +17,9 @@ class Studio
     create_snapshot
   end
 
+  # A custom StudioConnect error exception
+  class StudioConnectError < AutoHCKError; end
+
   # A custom StudioRun error exception
   class StudioRunError < AutoHCKError; end
 
@@ -52,9 +55,24 @@ class Studio
     @tools.update_filters(HCK_FILTERS_PATH)
   end
 
+  CONNECT_RETRIES = 5
+  CONNECT_RETRY_SLEEP = 5
+
   def connect
-    @logger.info('Initiating connection to studio')
-    @tools = Tools.new(@project, @ip)
+    retries ||= 0
+    begin
+      @logger.info('Initiating connection to studio')
+      @tools = Tools.new(@project, @ip)
+    rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
+      raise StudioConnectError, 'Initiating connection to studio failed'
+    end
+  rescue StudioConnectError => e
+    @logger.warn(e.message)
+    raise unless (retries + 1) < CONNECT_RETRIES
+
+    sleep CONNECT_RETRY_SLEEP
+    @logger.info('Trying again to initiate connection to studio')
+    retry
   end
 
   def assign_id
