@@ -208,4 +208,8 @@ class Tools < RToolsHCK
   def create_project_package(project, handler = nil)
     handle_results(@tools.create_project_package(project, handler))
   end
+
+  def close
+    @toolsi&.close
+  end
 end

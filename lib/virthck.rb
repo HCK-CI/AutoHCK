@@ -150,11 +150,24 @@ class VirtHCK
     create_snapshot_cmd(base, target)
   end
 
+  def delete_client_snapshot(name)
+    client = @project.platform['clients'][name]
+    @logger.info("Deleting #{client['name']} snapshot file")
+    target = client_snapshot(name)
+    FileUtils.rm_f(target)
+  end
+
   def create_studio_snapshot
     @logger.info('Creating studio snapshot file')
     base = "#{@project.config['images_path']}/#{@project.platform['st_image']}"
     target = studio_snapshot
     create_snapshot_cmd(base, target)
+  end
+
+  def delete_studio_snapshot
+    @logger.info('Deleting studio snapshot file')
+    target = studio_snapshot
+    FileUtils.rm_f(target)
   end
 
   def create_snapshot_cmd(base, target)
