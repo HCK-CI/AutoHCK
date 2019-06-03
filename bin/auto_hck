@@ -105,6 +105,9 @@ begin
   @client1.run_tests
   @client1.create_package
 rescue StandardError => e
+  Signal.trap('TERM') do
+    @project.logger.warn('SIGTERM(*) received, ignoring...')
+  end
   @project&.log_exception(e, 'fatal')
   clean_threads
   raise e
