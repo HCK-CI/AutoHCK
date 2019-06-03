@@ -125,6 +125,7 @@ class Client
   end
 
   def set_machine_ready
+    @logger.info("Setting #{@name} state to Ready")
     @tools.set_machine_ready(@name, @pool)
   end
 
@@ -189,6 +190,7 @@ class Client
     @cooldown_thread = Thread.new do
       return_when_client_up
       install_driver
+      @logger.info("Configuring client #{@name}...")
       configure_machine
       add_target_to_project
     end

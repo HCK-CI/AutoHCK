@@ -71,8 +71,10 @@ class Tools < RToolsHCK
 
   def handle_results(results)
     if results['result'] == 'Failure'
-      failure_message = prep_stream_for_log(results['message'])
-      @logger.warn("Tools action failure#{failure_message}")
+      if results['message']
+        failure_message = prep_stream_for_log(results['message'])
+        @logger.warn("Tools action failure#{failure_message}")
+      end
       false
     else
       results['content'] || true
@@ -107,11 +109,11 @@ class Tools < RToolsHCK
     retries ||= 0
     ret = handle_results(@tools.machine_shutdown(machine, :restart))
 
-    raise RestartMachineError unless ret
+    return ret if ret
 
-    ret
-  rescue RestartMachineError
-    @logger.info("Restarting machine #{machine} failed")
+    raise RestartMachineError, "Restarting machine #{machine} failed"
+  rescue RestartMachineError => e
+    @logger.warn(e.message)
     raise unless (retries += 1) < ACTION_RETRIES
 
     sleep ACTION_RETRY_SLEEP
@@ -123,11 +125,11 @@ class Tools < RToolsHCK
     retries ||= 0
     ret = handle_results(@tools.machine_shutdown(machine, :shutdown))
 
-    raise ShutdownMachineError unless ret
+    return ret if ret
 
-    ret
-  rescue ShutdownMachineError
-    @logger.info("Shuting down machine #{machine} failed")
+    raise ShutdownMachineError, "Shuting down machine #{machine} failed"
+  rescue ShutdownMachineError => e
+    @logger.warn(e.message)
     raise unless (retries += 1) < ACTION_RETRIES
 
     sleep ACTION_RETRY_SLEEP
@@ -141,14 +143,10 @@ class Tools < RToolsHCK
 
   def move_machine(machine, from, to)
     handle_results(@tools.move_machine(machine, from, to))
-  rescue StandardError => e
-    @logger.error("#{e.class}: #{e}")
   end
 
   def set_machine_ready(machine, pool)
     handle_results(@tools.set_machine_state(machine, pool, 'ready', -1))
-  rescue StandardError => e
-    @logger.error("#{e.class}: #{e}")
   end
 
   def install_machine_driver_package(machine, method, driver_path, file)
@@ -157,13 +155,13 @@ class Tools < RToolsHCK
                                                                driver_path,
                                                                method, file))
 
-    raise InstallMachineDriverPackageError unless ret
+    return ret if ret
 
-    ret
+    e_message = "Installing driver package on machine #{machine} failed"
+    raise InstallMachineDriverPackageError, e_message
   rescue InstallMachineDriverPackageError => e
-    @logger.info("Installing driver package on machine #{machine} failed")
-    message = 'Driver not signed or not platform suitable'
-    raise e, message unless (retries += 1) < ACTION_RETRIES
+    @logger.warn(e.message)
+    raise unless (retries += 1) < ACTION_RETRIES
 
     sleep ACTION_RETRY_SLEEP
     @logger.info("Trying again to install driver package on machine #{machine}")
@@ -192,13 +190,14 @@ class Tools < RToolsHCK
     retries ||= 0
     ret = handle_results(@tools.zip_test_result_logs(-1, test_id, target_key,
                                                      tag, machine, tag))
-    raise ZipTestResultLogsError unless ret
 
-    ret
-  rescue ZipTestResultLogsError
+    return ret if ret
+
+    raise ZipTestResultLogsError, 'Archiving tests results failed'
+  rescue ZipTestResultLogsError => e
     # Results archiving might fail because they requested before they are done
     # or when the test itself didn't run and there are no results.
-    @logger.info('Archiving tests results failed')
+    @logger.warn(e.message)
     raise unless (retries += 1) < ACTION_RETRIES
 
     sleep ACTION_RETRY_SLEEP

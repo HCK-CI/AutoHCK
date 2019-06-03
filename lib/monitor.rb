@@ -41,6 +41,6 @@ class Monitor
     monitor.cmd(cmd)
     monitor.close
   rescue Net::ReadTimeout, Errno::ECONNRESET, Errno::ECONNREFUSED
-    @logger.error('Monitor not responding')
+    @logger.warn("#{@name} qemu-monitor not responding")
   end
 end
