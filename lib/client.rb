@@ -10,16 +10,6 @@ require './lib/virthck'
 # Client class
 class Client
   attr_reader :name, :id
-
-  # A custom Client error exception
-  class FatalClientError < AutoHCKError
-    attr_reader :where
-
-    def initialize(where)
-      @where = where
-    end
-  end
-
   def initialize(project, studio, tag)
     @tag = tag
     @id = tag[-1]
@@ -31,6 +21,9 @@ class Client
     @virthck = project.virthck
     create_snapshot
   end
+
+  # A custom ClientRun error exception
+  class ClientRunError < AutoHCKError; end
 
   def create_snapshot
     @virthck.create_client_snapshot(@tag)
@@ -176,13 +169,14 @@ class Client
   def run
     @logger.info("Starting client #{@name}")
     @pid = @virthck.run(@tag, true)
-    if @pid
-      @logger.info("Client #{@name} PID is #{@pid}")
-    else
-      @logger.error("Client #{@name} PID could not be retrieved")
-    end
+    e_message = "Client #{@name} PID could not be retrieved"
+    raise ClientRunError, e_message unless @pid
+
+    @logger.info("Client #{@name} PID is #{@pid}")
     @monitor = Monitor.new(@project, self)
-    raise "Could not start client #{@name}" unless alive?
+    raise ClientRunError, "Could not start client #{@name}" unless alive?
+  rescue VirtHCK::CmdRunError
+    raise ClientRunError, "Could not start client #{@name}"
   end
 
   def configure
@@ -228,10 +222,12 @@ class Client
 
     @logger.info("Starting client #{@name}")
     @pid = @virthck.run(@tag)
-    if @pid
-      @logger.info("Client #{@name} new PID is #{@pid}")
-    else
-      @logger.error("Client #{@name} new PID could not be retrieved")
-    end
+    e_message = "Client #{@name} new PID could not be retrieved"
+    raise ClientRunError, e_message unless @pid
+
+    @logger.info("Client #{@name} new PID is #{@pid}")
+    raise ClientRunError, "Could not start client #{@name}" unless alive?
+  rescue VirtHCK::CmdRunError
+    raise ClientRunError, "Could not start client #{@name}"
   end
 end

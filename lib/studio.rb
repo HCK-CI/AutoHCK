@@ -17,6 +17,9 @@ class Studio
     create_snapshot
   end
 
+  # A custom StudioRun error exception
+  class StudioRunError < AutoHCKError; end
+
   def up?
     check = Net::Ping::External.new(@ip)
     check.ping?
@@ -62,13 +65,13 @@ class Studio
     @logger.info('Starting studio')
     assign_id
     @pid = @virthck.run(@name, true)
-    if @pid
-      @logger.info("Studio PID is #{@pid}")
-    else
-      @logger.error('Studio PID could not be retrieved')
-    end
+    raise StudioRunError, 'Studio PID could not be retrieved' unless @pid
+
+    @logger.info("Studio PID is #{@pid}")
     @monitor = Monitor.new(@project, self)
-    raise 'Could not start studio' unless alive?
+    raise StudioRunError, 'Could not start studio' unless alive?
+  rescue VirtHCK::CmdRunError
+    raise StudioRunError, 'Could not start studio'
   end
 
   def configure

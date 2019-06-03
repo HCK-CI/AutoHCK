@@ -14,6 +14,9 @@ class VirtHCK
     @id = assign_id
   end
 
+  # A custom CmdRun error exception
+  class CmdRunError < AutoHCKError; end
+
   def assign_id
     @id = @id_gen.allocate
     while @id.negative?
@@ -133,7 +136,8 @@ class VirtHCK
       temp_file do |stderr|
         Process.wait(spawn(cmd.join(' '), out: stdout.path, err: stderr.path))
         log_stdout_stderr(stdout.read, stderr.read)
-        raise "Failed to run: #{cmd}" unless $CHILD_STATUS.exitstatus.zero?
+        e_message = "Failed to run: #{cmd.join(' ')}"
+        raise CmdRunError, e_message unless $CHILD_STATUS.exitstatus.zero?
       end
     end
   end
