@@ -125,7 +125,7 @@ class VirtHCK
     end
     return if stderr.empty?
 
-    @logger.error('Error dump:' + prep_stream_for_log(stderr))
+    @logger.warn('Error dump:' + prep_stream_for_log(stderr))
   end
 
   def run_cmd(cmd)

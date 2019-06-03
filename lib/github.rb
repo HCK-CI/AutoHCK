@@ -21,7 +21,7 @@ class Github
     @logger.info("Connected to github with: #{@github.user.login}")
     @api_connected = true
   rescue Octokit::Unauthorized
-    @logger.error('Github authentication failed')
+    @logger.warn('Github authentication failed')
     nil
   end
 
@@ -32,7 +32,7 @@ class Github
   def find_pr
     pr = @github.pulls(@repo).find { |x| x['head']['sha'] == @commit }
     if pr.nil?
-      @logger.error('Pull request commit hash not valid, disconnecting github.')
+      @logger.warn('Pull request commit hash not valid, disconnecting github.')
       @api_connected = false
       return nil
     end
@@ -50,7 +50,7 @@ class Github
     begin
       @github.create_status(@repo, @commit, state, options)
     rescue Faraday::ConnectionFailed
-      @logger.error('Github server connection error')
+      @logger.warn('Github server connection error')
     end
     @logger.info('Github status updated')
   end

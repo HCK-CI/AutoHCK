@@ -53,6 +53,7 @@ Signal.trap('TERM') do
 end
 
 Thread.abort_on_exception = true
+Thread.report_on_exception = false
 
 begin
   @project = Project.new(options)
