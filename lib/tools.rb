@@ -26,6 +26,9 @@ class Tools < RToolsHCK
   # A custom RestartMachine error exception
   class RestartMachineError < AutoHCKError; end
 
+  # A custom RunOnMachine error exception
+  class RunOnMachineError < AutoHCKError; end
+
   # A custom ShutdownMachine error exception
   class ShutdownMachineError < AutoHCKError; end
 
@@ -103,6 +106,23 @@ class Tools < RToolsHCK
 
   def delete_machine(machine, pool)
     handle_results(@tools.delete_machine(machine, pool))
+  end
+
+  def run_on_machine(machine, desc, cmd)
+    retries ||= 0
+    ret = handle_results(@tools.run_on_machine(machine, cmd))
+
+    return ret if ret
+
+    e_message = "Running command (#{desc}) on machine #{machine} failed"
+    raise RunOnMachineError, e_message
+  rescue RunOnMachineError => e
+    @logger.warn(e.message)
+    raise unless (retries += 1) < ACTION_RETRIES
+
+    sleep ACTION_RETRY_SLEEP
+    @logger.inf("Trying again to run command (#{desc}) on machine #{machine}")
+    retry
   end
 
   def restart_machine(machine)
