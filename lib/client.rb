@@ -118,6 +118,16 @@ class Client
     @tools.set_machine_ready(@name, @pool)
   end
 
+  def run_pre_test_commands
+    @project.device['pretestcommands']&.each do |command|
+      desc = command['desc']
+      cmd = command['run']
+
+      @logger.info("Running command (#{desc}) on client #{@name}")
+      @tools.run_on_machine(@name, desc, cmd)
+    end
+  end
+
   def install_driver
     method = @project.device['install_method']
     path = @project.driver_path
@@ -184,6 +194,7 @@ class Client
       install_driver
       @logger.info("Configuring client #{@name}...")
       configure_machine
+      run_pre_test_commands
       add_target_to_project
     end
   end
