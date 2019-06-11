@@ -86,6 +86,13 @@ class Github
     create_status(state, description)
   end
 
+  def handle_cancel
+    @logger.info('Updating github status regarding cancel')
+    state = 'error'
+    description = 'HCK-CI run was canceled'
+    create_status(state, description)
+  end
+
   def handle_error
     @logger.info('Updating github status regarding error')
     state = 'error'

@@ -177,8 +177,15 @@ class Project
     @virthck.close
   end
 
+  def handle_cancel
+    @github.handle_cancel if @github&.connected?
+  end
+
+  def handle_error
+    @github.handle_error if @github&.connected?
+  end
+
   def abort
     @logger.remove_logger(@stdout_logger)
-    @github.handle_error if @github&.connected?
   end
 end

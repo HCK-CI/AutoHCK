@@ -41,6 +41,7 @@ Signal.trap('TERM') do
     Signal.trap('TERM') do
       @project.logger.warn('SIGTERM(*) received, ignoring...')
     end
+    @project&.handle_cancel
     clean_threads
     exit
   else
@@ -109,6 +110,7 @@ rescue StandardError => e
     @project.logger.warn('SIGTERM(*) received, ignoring...')
   end
   @project&.log_exception(e, 'fatal')
+  @project&.handle_error
   clean_threads
   raise e
 end
