@@ -99,6 +99,7 @@ class Studio
   def clean_last_run
     @logger.info('Cleaning last studio run')
     @tools&.close
+    @tools = nil
     unless hard_abort
       @logger.info('Studio hard abort failed, force aborting...')
       Process.kill('KILL', @pid)
