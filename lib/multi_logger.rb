@@ -30,8 +30,8 @@ class MultiLogger
   end
 
   Logger::Severity.constants.each do |level|
-    define_method(level.downcase) do |*args|
-      @loggers.each { |logger| logger.send(level.downcase, *args) }
+    define_method(level.downcase) do |*args, &block|
+      @loggers.each { |logger| logger.send(level.downcase, *args, &block) }
     end
 
     define_method("#{level.downcase}?".to_sym) do
