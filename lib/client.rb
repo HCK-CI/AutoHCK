@@ -177,7 +177,10 @@ class Client
 
   def clean_last_run
     @logger.info("Cleaning last client #{@name} run")
-    hard_abort
+    unless hard_abort
+      @logger.info("Client #{@name} hard abort failed, force aborting...")
+      Process.kill('KILL', @pid)
+    end
     delete_snapshot
   end
 
