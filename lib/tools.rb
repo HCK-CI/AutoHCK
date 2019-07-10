@@ -165,8 +165,14 @@ class Tools < RToolsHCK
     handle_results(@tools.move_machine(machine, from, to))
   end
 
+  # Timeout for setting a machine state to the Ready state
+  SET_MACHINE_READY_TIMEOUT = 120
+
   def set_machine_ready(machine, pool)
-    handle_results(@tools.set_machine_state(machine, pool, 'ready', -1))
+    handle_results(@tools.set_machine_state(machine,
+                                            pool,
+                                            'ready',
+                                            SET_MACHINE_READY_TIMEOUT))
   end
 
   def install_machine_driver_package(machine, method, driver_path, file)
