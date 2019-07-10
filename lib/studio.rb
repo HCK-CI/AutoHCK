@@ -66,7 +66,8 @@ class Studio
     begin
       @logger.info('Initiating connection to studio')
       @tools = Tools.new(@project, @ip)
-    rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
+    rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH,
+           RToolsHCK::RToolsHCKConnectionError
       raise StudioConnectError, 'Initiating connection to studio failed'
     end
   rescue StudioConnectError => e
