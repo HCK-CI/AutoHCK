@@ -115,7 +115,9 @@ class Client
 
   def set_machine_ready
     @logger.info("Setting #{@name} state to Ready")
-    @tools.set_machine_ready(@name, @pool)
+    return if @tools.set_machine_ready(@name, @pool)
+
+    raise ClientRunError, "Couldn't set #{@name} state to Ready"
   end
 
   def run_pre_test_commands
