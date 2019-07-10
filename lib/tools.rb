@@ -236,6 +236,6 @@ class Tools < RToolsHCK
   end
 
   def close
-    @toolsi&.close
+    @tools&.close
   end
 end
