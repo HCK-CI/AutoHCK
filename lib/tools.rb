@@ -17,7 +17,7 @@ class Tools < RToolsHCK
             timeout: 120,
             logger: @logger,
             outp_dir: project.workspace_path,
-            script_file: config['toolshck_path'])
+            l_script_file: config['toolshck_path'])
   end
 
   # A custom ZipTestResultLogs error exception
