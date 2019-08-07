@@ -37,13 +37,14 @@ class Tools < RToolsHCK
 
   # A thread safe class that wraps an object instace with critical data
   class ThreadSafe < BasicObject
-    def initialize(object)
+    def initialize(object, mutex)
       @delegate = object
+      @mutex = mutex
     end
 
     def method_missing(method, *args, &block)
       if @delegate.respond_to?(method)
-        @delegate.mu_synchronize { @delegate.send(method, *args, &block) }
+        @mutex.synchronize { @delegate.send(method, *args, &block) }
       else
         super
       end
@@ -55,9 +56,7 @@ class Tools < RToolsHCK
   end
 
   def connect(conn)
-    tools = RToolsHCK.new(conn)
-    tools.extend(Mutex_m)
-    @tools = ThreadSafe.new(tools)
+    @tools = ThreadSafe.new(RToolsHCK.new(conn), Mutex.new)
   end
 
   def config_winrm_ports(project)
