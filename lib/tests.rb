@@ -5,6 +5,8 @@ require './lib/playlist'
 class Tests
   HANDLE_TESTS_POLLING_INTERVAL = 10
   APPLYING_FILTERS_INTERVAL = 50
+  VERIFY_TARGET_RETRIES = 5
+  VERIFY_TARGET_SLEEP = 5
   def initialize(client, support, project, target, tools)
     @client = client
     @project = project
@@ -17,7 +19,35 @@ class Tests
   end
 
   def list_tests(log = false)
+    retries ||= 0
     @tests = @playlist.list_tests(log)
+  rescue Playlist::ListTestsError => e
+    @logger.warn(e.message)
+    @logger.info('Reconnecting tools...')
+    @tools.reconnect
+    raise unless (retries += 1) == 1 || verify_target
+
+    @logger.info('Trying again to list tests')
+    retry
+  end
+
+  def verify_target
+    retries ||= 0
+    @logger.info('Verifying target...')
+    target = Targets.new(@client, @project, @tools, @tag).search_target
+    return false if target.eql?(@target)
+
+    @logger.info('Target changed, updating...')
+    @target = target
+    @playlist.update_target(target)
+    true
+  rescue Targets::SearchTargetError => e
+    @logger.warn(e.message)
+    raise unless (retries += 1) < VERIFY_TARGET_RETRIES
+
+    sleep VERIFY_TARGET_SLEEP
+    @logger.info('Trying again to verify target')
+    retry
   end
 
   def support_needed?(test)

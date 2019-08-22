@@ -15,8 +15,14 @@ class Targets
     @logger = project.logger
   end
 
+  # A custom Target error exception
+  class TargetError < AutoHCKError; end
+
   # A custom AddTargetToProjec error exception
-  class AddTargetToProjectError < AutoHCKError; end
+  class AddTargetToProjectError < TargetError; end
+
+  # A custom SearchTarget error exception
+  class SearchTargetError < TargetError; end
 
   def add_target_to_project
     retries ||= 0
@@ -27,7 +33,7 @@ class Targets
 
     e_message = "Adding target #{@name} on #{@machine} to project #{tag} failed"
     raise AddTargetToProjectError, e_message
-  rescue AddTargetToProjectError => e
+  rescue TargetError => e
     @logger.warn(e.message)
     raise unless (retries += 1) < TARGET_RETIRES
 
@@ -44,6 +50,6 @@ class Targets
       return target if target['name'].eql?(@name)
     end
 
-    raise AddTargetToProjectError, "Target #{@name} not found on #{@machine}"
+    raise SearchTargetError, "Target #{@name} not found on #{@machine}"
   end
 end

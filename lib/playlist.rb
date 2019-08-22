@@ -11,12 +11,21 @@ class Playlist
     @ms_playlist = ms_playlist(true)
   end
 
+  # A custom ListTests error exception
+  class ListTestsError < AutoHCKError; end
+
   def list_tests(log)
     @tests = @tools.list_tests(@target['key'], @machine, @project.tag,
                                @ms_playlist)
+    raise ListTestsError, 'Failed to list tests' unless @tests
+
     custom_playlist(log)
     custom_blacklist(log)
     sort_by_duration
+  end
+
+  def update_target(target)
+    @target = target
   end
 
   def ms_playlist(log)
