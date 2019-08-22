@@ -120,7 +120,7 @@ class Tools < RToolsHCK
     raise unless (retries += 1) < ACTION_RETRIES
 
     sleep ACTION_RETRY_SLEEP
-    @logger.inf("Trying again to run command (#{desc}) on machine #{machine}")
+    @logger.info("Trying again to run command (#{desc}) on machine #{machine}")
     retry
   end
 
