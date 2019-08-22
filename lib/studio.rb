@@ -78,6 +78,12 @@ class Studio
     retry
   end
 
+  def verify_tools
+    return if @tools.connection_check
+
+    raise StudioConnectError, 'Tools did not pass the connection check'
+  end
+
   def assign_id
     @ip = @project.config['ip_segment'] + @virthck.id
   end
@@ -111,6 +117,7 @@ class Studio
     @logger.info('Waiting for studio to load...')
     sleep 5 until up?
     connect
+    verify_tools
     update_filters
     create_pool
     create_project
