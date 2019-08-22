@@ -234,6 +234,14 @@ class Tools < RToolsHCK
     handle_results(@tools.create_project_package(project, handler))
   end
 
+  def connection_check
+    handle_results(@tools.connection_check)
+  end
+
+  def reconnect
+    handle_results(@tools.reconnect)
+  end
+
   def close
     @tools&.close
   end
