@@ -119,8 +119,9 @@ Inside AutoHCK will save the following files:
 * Executables: `st.sh` `c1.sh` `c2.sh` to rerun test setup machines manually.
 * HLKX/HCKX file (after tests session ended): `[device-short]-[platform].hlkx`
 
-## Author
+## Authors
 
 * **Lior Haim** - *Development* - [Daynix Computing LTD](https://github.com/Daynix)
-
+* **Bishara AbuHattoum** - *Development* - [Daynix Computing LTD](https://github.com/Daynix)
+* **Basil Salman** - *Development* - [Daynix Computing LTD](https://github.com/Daynix)
 
