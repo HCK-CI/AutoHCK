@@ -88,6 +88,10 @@ There are 3 diffrenet JSON files for configurations, examples included in the fi
 * `platforms.json` list of configured opertaions systems images.
 * `devices.json` list of devices drivers information for testing
 
+### Utils
+#### Cleanup
+This script deletes logs and snapshots from HCK runs that are more than 1 month old, the script can be run as a cronjob in order to prevent autoHCK from filling the disk on the system.
+
 ## Usage
 
 Once everything is installed and configured, run `./bin/auto_hck` with these parameters:
