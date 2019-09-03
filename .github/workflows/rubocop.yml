@@ -13,6 +13,8 @@ jobs:
       uses: actions/setup-ruby@v1
       with:
         ruby-version: 2.6.x
+    - name: Setup sqlite-devel
+      run: yum install sqlite-devel
     - name: Setup dependencies
       run: |
         gem install bundler
