@@ -6,10 +6,17 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v1
-    - name: Install rubocop
-      run: gem install rubocop
-    - name: Execute rubocop
+    - name: Set up Ruby 2.6
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: 2.6.x
+    - name: Setup dependencies
+      run: |
+        gem install bundler
+        bundle install --jobs 4 --retry 3
+    - name: Test with rubocop
       run: rubocop
+
