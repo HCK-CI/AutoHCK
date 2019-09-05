@@ -16,7 +16,8 @@
       "NDISTest 6.0 - [2 Machine] - 2c_Mini6RSSSendRecv (Multi-Group Win8+)",
       "PrivateCloudSimulator - Device.Network.LAN.10GbOrGreater",
       "Run RSC Tests",
-      "Static Tools Logo Test"
+      "Static Tools Logo Test",
+      "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
   {
@@ -28,7 +29,8 @@
     "support": false,
     "blacklist": [
       "Static Tools Logo Test",
-      "Flush Test"
+      "Flush Test",
+      "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
   {
@@ -37,7 +39,10 @@
     "device": { "type": "ivshmem", "name": "ivshmem-doorbell", "extra": "" },
     "inf": "ivshmem.inf",
     "install_method": "PNP",
-    "support": false
+    "support": false,
+    "blacklist": [
+      "DF - Embedded Signature Verification Test (Certification)"
+    ]
   },
   {
     "name": "QEMU PVPanic Device",
@@ -45,7 +50,10 @@
     "device": { "type": "pvpanic", "name": "pvpanic", "extra": "" },
     "inf": "pvpanic.inf",
     "install_method": "PNP",
-    "support": false
+    "support": false,
+    "blacklist": [
+      "DF - Embedded Signature Verification Test (Certification)"
+    ]
   },
   {
     "name": "VirtIO RNG Device",
@@ -53,7 +61,10 @@
     "device": { "type": "rng", "name": "virtio-rng-pci", "extra": "" },
     "inf": "viorng.inf",
     "install_method": "PNP",
-    "support": false
+    "support": false,
+    "blacklist": [
+      "DF - Embedded Signature Verification Test (Certification)"
+    ]
   },
   {
     "name": "Red Hat VirtIO SCSI pass-through controller",
@@ -64,7 +75,8 @@
     "support": false,
     "blacklist": [
       "Static Tools Logo Test",
-      "Flush Test"
+      "Flush Test",
+      "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
   {
@@ -73,7 +85,10 @@
     "device": { "type": "balloon", "name": "virtio-balloon-pci", "extra": "" },
     "inf": "balloon.inf",
     "install_method": "PNP",
-    "support": false
+    "support": false,
+    "blacklist": [
+      "DF - Embedded Signature Verification Test (Certification)"
+    ]
   },
   {
     "name": "VirtIO Input Driver",
@@ -81,7 +96,10 @@
     "device": { "type": "vioinput", "name": "virtio-keyboard-pci", "extra": "" },
     "inf": "vioinput.inf",
     "install_method": "PNP",
-    "support": false
+    "support": false,
+    "blacklist": [
+      "DF - Embedded Signature Verification Test (Certification)"
+    ]
   },
   {
     "name": "VirtIO Serial Driver",
@@ -89,6 +107,9 @@
     "device": { "type": "serial", "name": "virtio-serial-pci", "extra": "" },
     "inf": "vioser.inf",
     "install_method": "PNP",
-    "support": false
+    "support": false,
+    "blacklist": [
+      "DF - Embedded Signature Verification Test (Certification)"
+    ]
   }
 ]
