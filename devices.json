@@ -27,6 +27,12 @@
     "inf": "viostor.inf",
     "install_method": "PNP",
     "support": false,
+    "pretestcommands": [
+      { "desc": "Set Disk Operational Status to Online",
+        "run": "Set-Disk -Number 1 -IsOffline $False" },
+      { "desc": "Make Disk Writable",
+        "run": "Set-Disk -Number 1 -IsReadonly $False" }
+    ],
     "blacklist": [
       "Static Tools Logo Test",
       "Flush Test",
@@ -73,6 +79,12 @@
     "inf": "vioscsi.inf",
     "install_method": "PNP",
     "support": false,
+    "pretestcommands": [
+      { "desc": "Set Disk Operational Status to Online",
+        "run": "Set-Disk -Number 1 -IsOffline $False" },
+      { "desc": "Make Disk Writable",
+        "run": "Set-Disk -Number 1 -IsReadonly $False" }
+    ],
     "blacklist": [
       "Static Tools Logo Test",
       "Flush Test",
