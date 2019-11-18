@@ -15,7 +15,7 @@ Use your package manager to install QEMU or build it from [source](https://githu
 Clone [VirtHCK](https://github.com/daynix/VirtHCK), AutoHCK will use it as a dependency.
 
 ### toolsHCK
-Get a copy of the powershell script file in [rtoolsHCK](https://github.com/HCK-CI/toolsHCK)
+Get a copy of the powershell script file in [toolsHCK](https://github.com/HCK-CI/toolsHCK)
 
 ### rtoolsHCK
 Get a clone of [rtoolsHCK](https://github.com/HCK-CI/rtoolsHCK), execute the follwing to build and install as a gem:
