@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'optparse'
+require './lib/version.rb'
 
 # class CLI
 class CLI
@@ -30,6 +31,7 @@ class CLI
       commit_option(parser)
       diff_option(parser)
       debug_option(parser)
+      version_option(parser)
     end
 
     def commit_option(parser)
@@ -67,6 +69,14 @@ class CLI
       parser.on('-D', '--debug',
                 'Printing debug information') do |debug|
         self.debug = debug
+      end
+    end
+
+    def version_option(parser)
+      parser.on('-V', '--version',
+                'Display version information and exit') do
+        puts "AutoHCK Version: #{AutoHCK::VERSION}"
+        exit
       end
     end
   end
