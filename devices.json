@@ -123,5 +123,16 @@
     "blacklist": [
       "DF - Embedded Signature Verification Test (Certification)"
     ]
+  },
+  {
+    "name": "VirtIO Socket Driver",
+    "short": "viosock",
+    "device": { "type": "vsock", "name": "vhost-vsock-pci", "extra": "" },
+    "inf": "viosock.inf",
+    "install_method": "PNP",
+    "support": false,
+    "blacklist": [
+      "DF - Embedded Signature Verification Test (Certification)"
+    ]
   }
 ]
