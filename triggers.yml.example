@@ -30,6 +30,8 @@ vioscsi:
   - 'vioscsi'
 vioserial:
   - 'vioserial'
+viosock
+  - 'viosock'
 viostor:
   - 'viostor'
 /:
