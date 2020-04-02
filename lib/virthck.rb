@@ -1,36 +1,17 @@
 # frozen_string_literal: true
 
-require './lib/id_gen.rb'
+require './lib/exceptions'
 
 # Virthck class
 class VirtHCK
-  attr_reader :id
-  def initialize(project)
+  def initialize(project, id)
     @project = project
     @logger = project.logger
     @config = project.config
     @device = project.device['device']
-    @id_gen = Idgen.new(project)
-    @id = assign_id
-  end
-
-  # A custom CmdRun error exception
-  class CmdRunError < AutoHCKError; end
-
-  def assign_id
-    @id = @id_gen.allocate
-    while @id.negative?
-      @logger.info('No available ID')
-      sleep 20
-      @id = @id_gen.allocate
-    end
-    @logger.info("Assinged ID: #{@id}")
-    @id.to_s
-  end
-
-  def release_id
-    @logger.info("Releasing ID: #{@id}")
-    @id_gen.release(@id)
+    @platform = project.platform
+    @id = id
+    validate_paths
   end
 
   def studio_snapshot
@@ -179,5 +160,32 @@ class VirtHCK
     path = "#{@project.workspace_path}/#{filename}.sh"
     File.open(path, 'w') { |file| file.write(cmd) }
     FileUtils.chmod('+x', path)
+  end
+
+  def normalize_paths
+    @config['images_path'].chomp!('/')
+    @config['virthck_path'].chomp!('/')
+  end
+
+  def validate_images
+    unless File.exist?("#{@config['images_path']}/#{@platform['st_image']}")
+      @logger.fatal('Studio image not found')
+      raise InvalidPathError
+    end
+    @platform['clients'].each_value do |client|
+      unless File.exist?("#{@config['images_path']}/#{client['image']}")
+        @logger.fatal("#{client['name']} image not found")
+        raise InvalidPathError
+      end
+    end
+  end
+
+  def validate_paths
+    normalize_paths
+    validate_images
+    return if File.exist?("#{@config['virthck_path']}/hck.sh")
+
+    @logger.fatal('VirtHCK path is not valid')
+    raise InvalidPathError
   end
 end

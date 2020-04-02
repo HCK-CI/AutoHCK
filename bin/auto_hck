@@ -25,7 +25,7 @@ at_exit do
   @client1&.abort
   @client2&.abort
   @studio&.abort
-  @project&.close_virthck
+  @project&.close_engine
 end
 
 def clean_threads
@@ -64,7 +64,7 @@ def run_machines
   @client2.run
 end
 
-def configure_virthck_and_synchronize
+def configure_engine_and_synchronize
   @studio.configure
   @client1.configure
   @client2.configure
@@ -79,21 +79,21 @@ def clean_last_run_machines
   @client2.clean_last_run
 end
 
-def run_and_configure_virthck
+def run_and_configure_engine
   retries ||= 0
   Filelock '/var/tmp/virthck.lock', timeout: 0 do
     run_machines
   end
-  configure_virthck_and_synchronize
+  configure_engine_and_synchronize
 rescue AutoHCKError => e
   @client1.synchronize(exit: true)
   @client2.synchronize(exit: true)
-  @project.logger.warn("Running and configuring VirtHCK failed: (#{e.class}) "\
+  @project.logger.warn("Running and configuring setup failed: (#{e.class}) "\
                        "#{e.message}")
   raise e unless (retries += 1) < AUTOHCK_RETRIES
 
   clean_last_run_machines
-  @project.logger.info('Trying again to run and configure VirtHCK')
+  @project.logger.info('Trying again to run and configure setup')
   retry
 end
 
@@ -102,7 +102,7 @@ begin
   @studio = Studio.new(@project, STUDIO)
   @client1 = Client.new(@project, @studio, CLIENT1)
   @client2 = Client.new(@project, @studio, CLIENT2)
-  run_and_configure_virthck
+  run_and_configure_engine
   @client1.run_tests
   @client1.create_package
 rescue StandardError => e
