@@ -5,7 +5,7 @@ require './lib/tests'
 require './lib/targets'
 require './lib/monitor'
 require './lib/github'
-require './lib/virthck'
+require './lib/engine'
 
 # Client class
 class Client
@@ -18,18 +18,18 @@ class Client
     @logger = project.logger
     @name = @project.platform['clients'][tag]['name']
     @studio = studio
-    @virthck = project.virthck
+    @engine = project.engine
   end
 
   # A custom ClientRun error exception
   class ClientRunError < AutoHCKError; end
 
   def create_snapshot
-    @virthck.create_client_snapshot(@tag)
+    @engine.create_client_snapshot(@tag)
   end
 
   def delete_snapshot
-    @virthck.delete_client_snapshot(@tag)
+    @engine.delete_client_snapshot(@tag)
   end
 
   def add_target_to_project
@@ -166,14 +166,14 @@ class Client
     @pool = 'Default Pool'
     create_snapshot
     @logger.info("Starting client #{@name}")
-    @pid = @virthck.run(@tag, true)
+    @pid = @engine.run(@tag, true)
     e_message = "Client #{@name} PID could not be retrieved"
     raise ClientRunError, e_message unless @pid
 
     @logger.info("Client #{@name} PID is #{@pid}")
     @monitor = Monitor.new(@project, self)
     raise ClientRunError, "Could not start client #{@name}" unless alive?
-  rescue VirtHCK::CmdRunError
+  rescue CmdRunError
     raise ClientRunError, "Could not start client #{@name}"
   end
 
@@ -242,13 +242,13 @@ class Client
     return if alive?
 
     @logger.info("Starting client #{@name}")
-    @pid = @virthck.run(@tag)
+    @pid = @engine.run(@tag)
     e_message = "Client #{@name} new PID could not be retrieved"
     raise ClientRunError, e_message unless @pid
 
     @logger.info("Client #{@name} new PID is #{@pid}")
     raise ClientRunError, "Could not start client #{@name}" unless alive?
-  rescue VirtHCK::CmdRunError
+  rescue CmdRunError
     raise ClientRunError, "Could not start client #{@name}"
   end
 end

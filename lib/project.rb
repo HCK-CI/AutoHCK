@@ -5,14 +5,14 @@ require 'fileutils'
 require 'mono_logger'
 require './lib/github'
 require './lib/result_uploader'
-require './lib/virthck'
+require './lib/engine'
 require './lib/multi_logger'
 require './lib/diff_checker'
 
 # Kit project class
 class Project
   attr_reader :config, :logger, :timestamp, :platform, :device, :tag,
-              :driver_path, :workspace_path, :github, :result_uploader, :virthck
+              :driver_path, :workspace_path, :github, :result_uploader, :engine
   PLATFORMS_JSON = 'platforms.json'
   DEVICES_JSON = 'devices.json'
   CONFIG_JSON = 'config.json'
@@ -25,7 +25,7 @@ class Project
     configure_result_uploader
     github_handling(options.commit)
     init_workspace
-    init_virthck
+    init_engine
     append_multilog
   end
 
@@ -65,8 +65,8 @@ class Project
     @logger.add_logger(MonoLogger.new("#{workspace_path}/#{tag}.log"))
   end
 
-  def init_virthck
-    @virthck = VirtHCK.new(self)
+  def init_engine
+    @engine = Engine.new(self)
   end
 
   def init_class_variables(options)
@@ -96,18 +96,13 @@ class Project
 
   def validate_paths
     normalize_paths
-    validate_images
     unless File.exist?(@config['toolshck_path'])
       @logger.fatal('toolsHCK script path is not valid')
       exit(1)
     end
-    unless File.exist?("#{@driver_path}/#{@device['inf']}")
-      @logger.fatal('Driver path is not valid')
-      exit(1)
-    end
-    return if File.exist?("#{@config['virthck_path']}/hck.sh")
+    return if File.exist?("#{@driver_path}/#{@device['inf']}")
 
-    @logger.fatal('VirtHCK path is not valid')
+    @logger.fatal('Driver path is not valid')
     exit(1)
   end
 
@@ -115,19 +110,6 @@ class Project
     @driver_path.chomp!('/')
     @config['images_path'].chomp!('/')
     @config['virthck_path'].chomp!('/')
-  end
-
-  def validate_images
-    unless File.exist?("#{@config['images_path']}/#{@platform['st_image']}")
-      @logger.fatal('Studio image not found')
-      exit(1)
-    end
-    @platform['clients'].each_value do |client|
-      unless File.exist?("#{@config['images_path']}/#{client['image']}")
-        @logger.fatal("#{client['name']} image not found")
-        exit(1)
-      end
-    end
   end
 
   def read_platform
@@ -173,8 +155,8 @@ class Project
     end
   end
 
-  def close_virthck
-    @virthck.close
+  def close_engine
+    @engine.close
   end
 
   def handle_cancel

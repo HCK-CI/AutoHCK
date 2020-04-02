@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'optparse'
-require './lib/version.rb'
+require './lib/version'
 
 # class CLI
 class CLI

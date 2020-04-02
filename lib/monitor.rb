@@ -11,8 +11,8 @@ class Monitor
   def initialize(project, machine)
     @name = machine.name
     @id = machine.id
-    @virthck_id = project.virthck.id
-    client_id = 3 * @virthck_id.to_i - 2 + @id.to_i
+    @engine_id = project.engine.id
+    client_id = 3 * @engine_id.to_i - 2 + @id.to_i
     @port = MONITOR_BASE_PORT + client_id
     @logger = project.logger
     @logger.info('Initiating qemu-monitor session')

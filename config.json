@@ -25,5 +25,6 @@
     "studio_username": "Administrator",
     "studio_password": "Qum5net.",
     "result_uploaders": [ "dropbox" ],
+    "engine": "virthck",
     "time_out": "9"
 }

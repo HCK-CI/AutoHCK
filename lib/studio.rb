@@ -3,7 +3,7 @@
 require 'rtoolsHCK'
 require 'net/ping'
 require './lib/tools'
-
+require './lib/exceptions'
 # Studio class
 class Studio
   attr_reader :tools, :name, :id
@@ -13,7 +13,7 @@ class Studio
     @id = 0
     @project = project
     @logger = project.logger
-    @virthck = project.virthck
+    @engine = project.engine
   end
 
   # A custom StudioConnect error exception
@@ -28,11 +28,11 @@ class Studio
   end
 
   def create_snapshot
-    @virthck.create_studio_snapshot
+    @engine.create_studio_snapshot
   end
 
   def delete_snapshot
-    @virthck.delete_studio_snapshot
+    @engine.delete_studio_snapshot
   end
 
   def create_pool
@@ -85,20 +85,20 @@ class Studio
   end
 
   def assign_id
-    @ip = @project.config['ip_segment'] + @virthck.id
+    @ip = @project.config['ip_segment'] + @engine.id
   end
 
   def run
     create_snapshot
     @logger.info('Starting studio')
     assign_id
-    @pid = @virthck.run(@name, true)
+    @pid = @engine.run(@name, true)
     raise StudioRunError, 'Studio PID could not be retrieved' unless @pid
 
     @logger.info("Studio PID is #{@pid}")
     @monitor = Monitor.new(@project, self)
     raise StudioRunError, 'Could not start studio' unless alive?
-  rescue VirtHCK::CmdRunError
+  rescue CmdRunError
     raise StudioRunError, 'Could not start studio'
   end
 
