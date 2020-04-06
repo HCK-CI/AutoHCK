@@ -8,3 +8,5 @@ class EngineError < AutoHCKError; end
 class CmdRunError < EngineError; end
 # A custom Invalid Paths Error exception
 class InvalidPathError < EngineError; end
+# A custom Invalid Config File error exception
+class InvalidConfigFile < EngineError; end
