@@ -94,7 +94,6 @@ class VirtHCK
   end
 
   def close
-    release_id
     cmd = base_cmd + ['end']
     run_cmd(cmd)
   end

@@ -85,5 +85,6 @@ class Engine
 
   def close
     @engine.close
+    release_id
   end
 end
