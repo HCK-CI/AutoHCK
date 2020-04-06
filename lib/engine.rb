@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require './lib/exceptions'
-require './lib/virthck'
+require './engines/virthck'
 require './lib/id_gen'
 
 # Engine
@@ -31,7 +31,7 @@ class Engine
     @engine = nil
     @type = @config['engine'].to_sym
     engine_create
-  rescue InvalidPathError
+  rescue EngineError
     release_id
     exit(1)
   end

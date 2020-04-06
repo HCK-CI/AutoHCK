@@ -1,17 +1,26 @@
 # frozen_string_literal: true
 
+require 'json'
 require './lib/exceptions'
 
 # Virthck class
 class VirtHCK
+  VIRTHCK_CONFIG_JSON = './engines/virthck.json'
   def initialize(project, id)
     @project = project
     @logger = project.logger
-    @config = project.config
+    @config = read_json(VIRTHCK_CONFIG_JSON)
     @device = project.device['device']
     @platform = project.platform
     @id = id
     validate_paths
+  end
+
+  def read_json(json_file)
+    JSON.parse(File.read(json_file))
+  rescue Errno::ENOENT, JSON::ParserError
+    @logger.fatal("Could not open #{json_file} file")
+    raise InvalidConfigFile
   end
 
   def studio_snapshot
@@ -25,17 +34,17 @@ class VirtHCK
   end
 
   def platform_config(param)
-    default_value = @project.config['platforms_defaults'][param]
+    default_value = @config['platforms_defaults'][param]
     @project.platform[param] || default_value
   end
 
   def base_cmd
-    ["cd #{@project.config['virthck_path']} &&",
+    ["cd #{@config['virthck_path']} &&",
      "sudo ./hck.sh ci_mode -id #{@id}",
-     "-world_bridge #{@project.config['dhcp_bridge']}",
-     "-qemu_bin #{@project.config['qemu_bin']}",
-     "-ivshmem_server_bin #{@project.config['ivshmem_server_bin']}",
-     "-filesystem_tests_image #{@project.config['filesystem_tests_image']}",
+     "-world_bridge #{@config['dhcp_bridge']}",
+     "-qemu_bin #{@config['qemu_bin']}",
+     "-ivshmem_server_bin #{@config['ivshmem_server_bin']}",
+     "-filesystem_tests_image #{@config['filesystem_tests_image']}",
      "-ctrl_net_device #{platform_config('ctrl_net_device')}",
      "-world_net_device #{platform_config('world_net_device')}",
      "-st_image #{studio_snapshot}"]
@@ -125,7 +134,7 @@ class VirtHCK
   def create_client_snapshot(name)
     client = @project.platform['clients'][name]
     @logger.info("Creating #{client['name']} snapshot file")
-    base = "#{@project.config['images_path']}/#{client['image']}"
+    base = "#{@config['images_path']}/#{client['image']}"
     target = client_snapshot(name)
     create_snapshot_cmd(base, target)
   end
@@ -139,7 +148,7 @@ class VirtHCK
 
   def create_studio_snapshot
     @logger.info('Creating studio snapshot file')
-    base = "#{@project.config['images_path']}/#{@project.platform['st_image']}"
+    base = "#{@config['images_path']}/#{@project.platform['st_image']}"
     target = studio_snapshot
     create_snapshot_cmd(base, target)
   end
@@ -151,7 +160,7 @@ class VirtHCK
   end
 
   def create_snapshot_cmd(base, target)
-    cmd = ["#{@project.config['qemu_img']} create -f qcow2 -b", base, target]
+    cmd = ["#{@config['qemu_img']} create -f qcow2 -b", base, target]
     run_cmd(cmd)
   end
 

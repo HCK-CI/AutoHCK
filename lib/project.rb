@@ -108,8 +108,6 @@ class Project
 
   def normalize_paths
     @driver_path.chomp!('/')
-    @config['images_path'].chomp!('/')
-    @config['virthck_path'].chomp!('/')
   end
 
   def read_platform
