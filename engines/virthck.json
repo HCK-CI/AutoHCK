@@ -4,6 +4,7 @@
     "qemu_img": "qemu-img",
     "qemu_bin": "qemu-kvm",
     "ivshmem_server_bin": "ivshmem-server",
+    "fs_deamon_bin" : "virtiofsd",
     "dhcp_bridge": "br1",
     "platforms_defaults": {
       "world_net_device": "e1000e",
