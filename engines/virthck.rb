@@ -44,6 +44,7 @@ class VirtHCK
      "-world_bridge #{@config['dhcp_bridge']}",
      "-qemu_bin #{@config['qemu_bin']}",
      "-ivshmem_server_bin #{@config['ivshmem_server_bin']}",
+     "-fs_deamon_bin #{@config['fs_deamon_bin']}",
      "-filesystem_tests_image #{@config['filesystem_tests_image']}",
      "-ctrl_net_device #{platform_config('ctrl_net_device')}",
      "-world_net_device #{platform_config('world_net_device')}",

@@ -134,5 +134,13 @@
     "blacklist": [
       "DF - Embedded Signature Verification Test (Certification)"
     ]
+  },
+  {
+   "name": "VirtIO FS Device",
+   "short": "viofs",
+   "device": { "type":"viofs", "name":"vhost-user-fs-pci", "extra":""},
+   "inf": "viofs.inf",
+   "install_method": "PNP",
+   "support": false
   }
 ]
