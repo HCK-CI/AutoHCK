@@ -7,7 +7,7 @@ class Tests
   APPLYING_FILTERS_INTERVAL = 50
   VERIFY_TARGET_RETRIES = 5
   VERIFY_TARGET_SLEEP = 5
-  def initialize(client, support, project, target, tools)
+  def initialize(client, support, project, target, tools, kit)
     @client = client
     @project = project
     @tag = project.tag
@@ -15,7 +15,7 @@ class Tests
     @tools = tools
     @support = support
     @logger = project.logger
-    @playlist = Playlist.new(client, project, target, tools)
+    @playlist = Playlist.new(client, project, target, tools, kit)
   end
 
   def list_tests(log = false)

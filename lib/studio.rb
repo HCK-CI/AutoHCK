@@ -8,12 +8,12 @@ require './lib/exceptions'
 class Studio
   attr_reader :tools, :name, :id
   HCK_FILTERS_PATH = 'filters/UpdateFilters.sql'
-  def initialize(project, name)
+  def initialize(project, setup_manager, name)
     @name = name
     @id = 0
     @project = project
     @logger = project.logger
-    @engine = project.engine
+    @setup_manager = setup_manager
   end
 
   # A custom StudioConnect error exception
@@ -28,11 +28,11 @@ class Studio
   end
 
   def create_snapshot
-    @engine.create_studio_snapshot
+    @setup_manager.create_studio_snapshot
   end
 
   def delete_snapshot
-    @engine.delete_studio_snapshot
+    @setup_manager.delete_studio_snapshot
   end
 
   def create_pool
@@ -59,13 +59,13 @@ class Studio
   end
 
   CONNECT_RETRIES = 5
-  CONNECT_RETRY_SLEEP = 5
+  CONNECT_RETRY_SLEEP = 10
 
   def connect
     retries ||= 0
     begin
       @logger.info('Initiating connection to studio')
-      @tools = Tools.new(@project, @ip)
+      @tools = Tools.new(@project, @ip, @clients)
     rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH, RToolsHCKConnectionError
       raise StudioConnectError, 'Initiating connection to studio failed'
     end
@@ -84,15 +84,11 @@ class Studio
     raise StudioConnectError, 'Tools did not pass the connection check'
   end
 
-  def assign_id
-    @ip = @project.config['ip_segment'] + @engine.id
-  end
-
   def run
     create_snapshot
     @logger.info('Starting studio')
-    assign_id
-    @pid = @engine.run(@name, true)
+    @ip = @project.config['ip_segment'] + @project.id.to_str
+    @pid = @setup_manager.run(@name, true)
     raise StudioRunError, 'Studio PID could not be retrieved' unless @pid
 
     @logger.info("Studio PID is #{@pid}")
@@ -113,7 +109,8 @@ class Studio
     delete_snapshot
   end
 
-  def configure
+  def configure(clients)
+    @clients = clients
     @logger.info('Waiting for studio to load...')
     sleep 5 until up?
     connect
@@ -153,7 +150,6 @@ class Studio
 
   def abort
     @tools&.close
-    return if soft_abort
 
     @logger.info('Studio soft abort failed, hard aborting...')
     return if hard_abort

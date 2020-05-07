@@ -2,12 +2,13 @@
 
 # Playlist class
 class Playlist
-  def initialize(client, project, target, tools)
+  def initialize(client, project, target, tools, kit)
     @machine = client.name
     @project = project
     @target = target
     @tools = tools
     @logger = project.logger
+    @kit = kit
     @ms_playlist = ms_playlist(true)
   end
 
@@ -29,7 +30,7 @@ class Playlist
   end
 
   def ms_playlist(log)
-    kit = @project.platform['kit']
+    kit = @kit
     file = kit[0..2] == 'HLK' ? "./playlists/#{kit[3..-1]}.xml" : nil
     return nil if file.nil? || !File.exist?("./#{file}")
 
@@ -50,7 +51,7 @@ class Playlist
   end
 
   def custom_playlist(log)
-    playlist = @project.device['playlist']
+    playlist = @project.driver['playlist']
     return unless playlist
 
     @tests.select! { |test| playlist.include?(test['name']) }
@@ -59,7 +60,7 @@ class Playlist
   end
 
   def custom_blacklist(log)
-    blacklist = @project.device['blacklist']
+    blacklist = @project.driver['blacklist']
     @tests.reject! { |test| blacklist.include?(test['name']) } if blacklist
     @logger.info('Applying custom blacklist') if log && blacklist
   end

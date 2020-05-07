@@ -4,13 +4,13 @@ require 'octokit'
 
 # github class
 class Github
-  def initialize(config, project, commit)
+  def initialize(config, logger, url, tag, commit)
     @api_connected = false
-    @logger = project.logger
-    @target_url = project.result_uploader.url
+    @logger = logger
+    @target_url = url
     @repo = config['repository']
     @commit = commit.to_s
-    @context = "HCK-CI/#{project.tag}"
+    @context = "HCK-CI/#{tag}"
     connect unless @commit.empty?
   end
 

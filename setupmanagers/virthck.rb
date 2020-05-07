@@ -1,41 +1,45 @@
 # frozen_string_literal: true
 
-require 'json'
 require './lib/exceptions'
+require './lib/json-helper'
 
 # Virthck class
 class VirtHCK
-  VIRTHCK_CONFIG_JSON = './engines/virthck.json'
-  def initialize(project, id)
+  VIRTHCK_CONFIG_JSON = './setupmanagers/virthck.json'
+  PLATFORMS_JSON = 'platforms.json'
+  def initialize(project)
     @project = project
     @logger = project.logger
-    @config = read_json(VIRTHCK_CONFIG_JSON)
-    @device = project.device['device']
-    @platform = project.platform
-    @id = id
+    @config = read_json(VIRTHCK_CONFIG_JSON,@logger)
+    @device = project.driver['device']
+    @platform = read_platform
+    @workspace_path = project.workspace_path
+    @id = project.id
     validate_paths
   end
 
-  def read_json(json_file)
-    JSON.parse(File.read(json_file))
-  rescue Errno::ENOENT, JSON::ParserError
-    @logger.fatal("Could not open #{json_file} file")
-    raise InvalidConfigFile
+  def read_platform
+    platforms = read_json(PLATFORMS_JSON, @project.logger)
+    platform_name = @project.tag.split('-', 2).last
+    @project.logger.info("Loading platform: #{platform_name}")
+    res = platforms.find { |p| p['name'] == platform_name }
+    @project.logger.fatal("#{platform_name} does not exist") unless res
+    res || exit(1)
   end
 
   def studio_snapshot
-    filename = File.basename(@project.platform['st_image'], '.*')
-    @project.workspace_path + '/' + filename + '-snapshot.qcow2'
+    filename = File.basename(@platform['st_image'], '.*')
+    @workspace_path + '/' + filename + '-snapshot.qcow2'
   end
 
   def client_snapshot(name)
-    filename = File.basename(@project.platform['clients'][name]['image'], '.*')
-    @project.workspace_path + '/' + filename + '-snapshot.qcow2'
+    filename = File.basename(@platform['clients'][name]['image'], '.*')
+    @workspace_path + '/' + filename + '-snapshot.qcow2'
   end
 
   def platform_config(param)
     default_value = @config['platforms_defaults'][param]
-    @project.platform[param] || default_value
+    @platform[param] || default_value
   end
 
   def base_cmd
@@ -70,7 +74,7 @@ class VirtHCK
 
   def clients_cmd
     clients = []
-    @project.platform['clients'].each do |name, client|
+    @platform['clients'].each do |name, client|
       clients += client_cmd(name, client)
     end
     clients
@@ -133,7 +137,7 @@ class VirtHCK
   end
 
   def create_client_snapshot(name)
-    client = @project.platform['clients'][name]
+    client = @platform['clients'][name]
     @logger.info("Creating #{client['name']} snapshot file")
     base = "#{@config['images_path']}/#{client['image']}"
     target = client_snapshot(name)
@@ -141,7 +145,7 @@ class VirtHCK
   end
 
   def delete_client_snapshot(name)
-    client = @project.platform['clients'][name]
+    client = @platform['clients'][name]
     @logger.info("Deleting #{client['name']} snapshot file")
     target = client_snapshot(name)
     FileUtils.rm_f(target)
@@ -149,7 +153,7 @@ class VirtHCK
 
   def create_studio_snapshot
     @logger.info('Creating studio snapshot file')
-    base = "#{@config['images_path']}/#{@project.platform['st_image']}"
+    base = "#{@config['images_path']}/#{@platform['st_image']}"
     target = studio_snapshot
     create_snapshot_cmd(base, target)
   end
@@ -166,7 +170,7 @@ class VirtHCK
   end
 
   def create_command_file(cmd, filename)
-    path = "#{@project.workspace_path}/#{filename}.sh"
+    path = "#{@workspace_path}/#{filename}.sh"
     File.open(path, 'w') { |file| file.write(cmd) }
     FileUtils.chmod('+x', path)
   end

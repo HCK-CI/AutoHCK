@@ -9,7 +9,7 @@ class Targets
     @machine = client.name
     @client = client
     @project = project
-    @name = project.device['name']
+    @name = project.driver['name']
     @tools = tools
     @pool = pool
     @logger = project.logger

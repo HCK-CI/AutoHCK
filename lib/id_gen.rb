@@ -5,12 +5,11 @@ require 'time'
 
 # Id Generator class
 class Idgen
-  def initialize(project)
-    @config = project.config
+  def initialize(range, timeout)
     @db = './id_gen.db'
-    @range = [@config['id_range'].first, @config['id_range'].last]
+    @range = range
     @conn = SQLite3::Database.new @db.to_s
-    @threshold = @config['time_out'] * 24 * 60 * 60
+    @threshold = timeout * 24 * 60 * 60
   end
 
   def load_data

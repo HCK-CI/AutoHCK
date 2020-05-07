@@ -1,8 +1,8 @@
 {
-    "virthck_path": "/home/hck-ci/HCK-CI/VirtHCK",
-    "images_path": "/home/hck-ci/HCK-CI/images",
-    "qemu_img": "qemu-img",
-    "qemu_bin": "qemu-kvm",
+    "virthck_path": "/root/Prometheus/VirtHCK",
+    "images_path": "/root/Prometheus/images",
+    "qemu_img": "/root/Prometheus/qemu/qemu-img",
+    "qemu_bin": "/root/Basilsworkdir/qemu/x86_64-softmmu/qemu-system-x86_64",
     "ivshmem_server_bin": "ivshmem-server",
     "fs_deamon_bin" : "virtiofsd",
     "dhcp_bridge": "br1",
@@ -15,5 +15,5 @@
       "enlightenments_state": "off",
       "vhost_state": "on"
     },
-    "filesystem_tests_image": "/home/hck-ci/HCK-CI/images/filesystem_tests_image.qcow2"
+    "filesystem_tests_image": "/root/Prometheus/images/filesystem_tests_image.qcow2"
 }
