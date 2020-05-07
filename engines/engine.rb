@@ -1,22 +1,35 @@
 # frozen_string_literal: true
 
 require './lib/exceptions'
-require './engines/virthck'
+require './setupmanagers/setupmanager'
 require './lib/id_gen'
+require './engines/hcktest'
 
 # Engine
 #
 class Engine
   attr_reader :id
+=begin
+  # EngineSettings
+  #
+  class EngineParams
+    def initialize(device, platform, workspace_path, id)
+      @device = device
+      @platform = platform
+      @workspace_path = workspace_path
+      @id = id
+    end
+  end
+=end
   # EngineFactory
   #
   class EngineFactory
     ENGINES = {
-      virthck: VirtHCK
+      hcktest: HCKTest
     }.freeze
 
-    def self.create(type, project, id)
-      ENGINES[type].new(project, id)
+    def self.create(type, project)
+      ENGINES[type].new(project)
     end
 
     def self.can_create?(type)
@@ -27,42 +40,20 @@ class Engine
   def initialize(project)
     @project = project
     @logger = project.logger
-    @config = project.config
     @engine = nil
-    @type = @config['engine'].to_sym
+    @type = project.engine.downcase.to_sym
     engine_create
-  rescue EngineError
-    release_id
-    exit(1)
   end
 
   def engine_create
     if EngineFactory.can_create?(@type)
-      @id_gen = Idgen.new(@project)
-      @id = assign_id
-      @engine = EngineFactory.create(@type, @project, @id)
+      @engine = EngineFactory.create(@type, @project)
     else
-      @project.logger.warn("Unkown type engine #{@type}, Exiting...")
-      exit
+      @logger.warn("Unkown type engine #{@type}, Exiting...")
+      raise InvalidEngineTypeError, "Unkown type engine #{@type}"
     end
   end
-
-  def assign_id
-    @id = @id_gen.allocate
-    while @id.negative?
-      @logger.info('No available ID')
-      sleep 20
-      @id = @id_gen.allocate
-    end
-    @logger.info("Assinged ID: #{@id}")
-    @id.to_s
-  end
-
-  def release_id
-    @logger.info("Releasing ID: #{@id}")
-    @id_gen.release(@id)
-  end
-
+=begin
   def create_studio_snapshot
     @engine.create_studio_snapshot
   end
@@ -78,13 +69,12 @@ class Engine
   def delete_client_snapshot(name)
     @engine.delete_client_snapshot(name)
   end
-
-  def run(name, first_time = false)
-    @engine.run(name, first_time)
+=end
+  def run
+    @engine.run
   end
 
   def close
     @engine.close
-    release_id
   end
 end

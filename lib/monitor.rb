@@ -11,7 +11,7 @@ class Monitor
   def initialize(project, machine)
     @name = machine.name
     @id = machine.id
-    @engine_id = project.engine.id
+    @project_id = project.id
     client_id = 3 * @engine_id.to_i - 2 + @id.to_i
     @port = MONITOR_BASE_PORT + client_id
     @logger = project.logger

@@ -4,32 +4,32 @@ require 'net/ping'
 require './lib/tests'
 require './lib/targets'
 require './lib/monitor'
-require './lib/github'
-require './lib/engine'
+require './setupmanagers/setupmanager'
 
 # Client class
-class Client
+class HCKClient
   attr_reader :name, :id
   attr_writer :support
-  def initialize(project, studio, tag)
+  def initialize(project, setup_manager, studio, tag, name, kit)
     @tag = tag
     @id = tag[-1]
     @project = project
     @logger = project.logger
-    @name = @project.platform['clients'][tag]['name']
+    @name = name
     @studio = studio
-    @engine = project.engine
+    @kit = kit
+    @setup_manager = setup_manager
   end
 
   # A custom ClientRun error exception
   class ClientRunError < AutoHCKError; end
 
   def create_snapshot
-    @engine.create_client_snapshot(@tag)
+    @setup_manager.create_client_snapshot(@tag)
   end
 
   def delete_snapshot
-    @engine.delete_client_snapshot(@tag)
+    @setup_manager.delete_client_snapshot(@tag)
   end
 
   def add_target_to_project
@@ -37,7 +37,7 @@ class Client
   end
 
   def run_tests
-    @tests = Tests.new(self, @support, @project, @target, @tools)
+    @tests = Tests.new(self, @support, @project, @target, @tools, @kit)
     @tests.list_tests
     @tests.run
   end
@@ -121,7 +121,7 @@ class Client
   end
 
   def run_pre_test_commands
-    @project.device['pretestcommands']&.each do |command|
+    @project.driver['pretestcommands']&.each do |command|
       desc = command['desc']
       cmd = command['run']
 
@@ -131,9 +131,9 @@ class Client
   end
 
   def install_driver
-    method = @project.device['install_method']
+    method = @project.driver['install_method']
     path = @project.driver_path
-    inf = @project.device['inf']
+    inf = @project.driver['inf']
     @logger.info("Installing #{method} driver #{inf} in #{@name}")
     @tools.install_machine_driver_package(@name, path, method, inf)
   end
@@ -166,7 +166,7 @@ class Client
     @pool = 'Default Pool'
     create_snapshot
     @logger.info("Starting client #{@name}")
-    @pid = @engine.run(@tag, true)
+    @pid = @setup_manager.run(@tag, true)
     e_message = "Client #{@name} PID could not be retrieved"
     raise ClientRunError, e_message unless @pid
 
@@ -242,7 +242,7 @@ class Client
     return if alive?
 
     @logger.info("Starting client #{@name}")
-    @pid = @engine.run(@tag)
+    @pid = @setup_manager.run(@tag)
     e_message = "Client #{@name} new PID could not be retrieved"
     raise ClientRunError, e_message unless @pid
 

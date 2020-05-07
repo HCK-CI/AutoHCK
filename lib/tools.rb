@@ -7,19 +7,22 @@ require 'nori/parser/rexml'
 class Tools < RToolsHCK
   ACTION_RETRIES = 5
   ACTION_RETRY_SLEEP = 10
-  def initialize(project, ip_addr)
+  def initialize(project, ip_addr, clients)
     @logger = project.logger
-    config = project.config
+    @config = project.config
+    @clients = clients
+    validate_paths
     connect(addr: ip_addr,
-            user: config['studio_username'],
-            pass: config['studio_password'],
+            user: @config['studio_username'],
+            pass: @config['studio_password'],
             winrm_ports: config_winrm_ports(project),
             timeout: 120,
             logger: @logger,
             outp_dir: project.workspace_path,
-            l_script_file: config['toolshck_path'])
+            l_script_file: @config['toolshck_path'])
   end
-
+  # A custom InvalidToolsPath error exception
+  class InvalidToolsPathError < AutoHCKError; end
   # A custom ZipTestResultLogs error exception
   class ZipTestResultLogsError < AutoHCKError; end
 
@@ -61,7 +64,7 @@ class Tools < RToolsHCK
 
   def config_winrm_ports(project)
     winrm_ports = {}
-    project.platform['clients'].each_value do |client|
+    @clients.each_value do |client|
       winrm_ports[client['name']] = client['winrm_port']
     end
     winrm_ports
@@ -244,5 +247,12 @@ class Tools < RToolsHCK
 
   def close
     @tools&.close
+  end
+
+  def validate_paths
+    return if File.exist?(@config['toolshck_path'])
+
+    @logger.fatal('toolsHCK script path is not valid')
+    raise InvalidToolsPathError, 'toolsHCK script path is not valid'
   end
 end

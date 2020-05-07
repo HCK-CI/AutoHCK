@@ -3,13 +3,10 @@
 
 require 'filelock'
 
-require './lib/exceptions'
-require './lib/project'
-require './lib/client'
-require './lib/studio'
 require './lib/cli'
+require './lib/project'
+require './engines/engine'
 
-STUDIO = 'st'
 CLIENT1 = 'c1'
 CLIENT2 = 'c2'
 
@@ -22,10 +19,7 @@ AUTOHCK_RETRIES = 5
 
 at_exit do
   @project&.abort
-  @client1&.abort
-  @client2&.abort
-  @studio&.abort
-  @project&.close_engine
+  @engine&.close
 end
 
 def clean_threads
@@ -58,53 +52,11 @@ end
 Thread.abort_on_exception = true
 Thread.report_on_exception = false
 
-def run_machines
-  @studio.run
-  @client1.run
-  @client2.run
-end
-
-def configure_engine_and_synchronize
-  @studio.configure
-  @client1.configure
-  @client2.configure
-  @client1.synchronize
-  @client2.synchronize
-  @client1.support = @client2
-end
-
-def clean_last_run_machines
-  @studio.clean_last_run
-  @client1.clean_last_run
-  @client2.clean_last_run
-end
-
-def run_and_configure_engine
-  retries ||= 0
-  Filelock '/var/tmp/virthck.lock', timeout: 0 do
-    run_machines
-  end
-  configure_engine_and_synchronize
-rescue AutoHCKError => e
-  @client1.synchronize(exit: true)
-  @client2.synchronize(exit: true)
-  @project.logger.warn("Running and configuring setup failed: (#{e.class}) "\
-                       "#{e.message}")
-  raise e unless (retries += 1) < AUTOHCK_RETRIES
-
-  clean_last_run_machines
-  @project.logger.info('Trying again to run and configure setup')
-  retry
-end
 
 begin
   @project = Project.new(options)
-  @studio = Studio.new(@project, STUDIO)
-  @client1 = Client.new(@project, @studio, CLIENT1)
-  @client2 = Client.new(@project, @studio, CLIENT2)
-  run_and_configure_engine
-  @client1.run_tests
-  @client1.create_package
+  @engine = Engine.new(@project)
+  @engine.run
 rescue StandardError => e
   Signal.trap('TERM') do
     @project.logger.warn('SIGTERM(*) received, ignoring...')

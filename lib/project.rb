@@ -1,20 +1,19 @@
 # frozen_string_literal: true
 
-require 'json'
 require 'fileutils'
 require 'mono_logger'
+require 'tempfile'
 require './lib/github'
 require './lib/result_uploader'
-require './lib/engine'
 require './lib/multi_logger'
 require './lib/diff_checker'
+require './lib/json-helper'
 
-# Kit project class
+# project class
 class Project
-  attr_reader :config, :logger, :timestamp, :platform, :device, :tag,
+  attr_reader :config, :logger, :timestamp, :setupmanager, :engine, :tag, :id, :driver,
               :driver_path, :workspace_path, :github, :result_uploader, :engine
-  PLATFORMS_JSON = 'platforms.json'
-  DEVICES_JSON = 'devices.json'
+  DRIVERS_JSON = 'drivers.json'
   CONFIG_JSON = 'config.json'
 
   def initialize(options)
@@ -25,12 +24,12 @@ class Project
     configure_result_uploader
     github_handling(options.commit)
     init_workspace
-    init_engine
     append_multilog
+    @id = assign_id
   end
 
   def diff_checker(diff)
-    diff_checker = DiffChecker.new(@logger, @device, @driver_path, diff)
+    diff_checker = DiffChecker.new(@logger, @driver, @driver_path, diff)
     return if diff_checker.trigger?
 
     @logger.info("Driver isn't changed, not running tests")
@@ -58,34 +57,61 @@ class Project
   end
 
   def append_multilog
-    FileUtils.cp(@temp_pre_logger_file.path, "#{workspace_path}/#{tag}.log")
+    @logfile_path = "#{workspace_path}/#{tag}.log"
+    FileUtils.cp(@temp_pre_logger_file.path, @logfile_path)
     @pre_logger.close
     @temp_pre_logger_file.unlink
     @logger.remove_logger(@pre_logger)
-    @logger.add_logger(MonoLogger.new("#{workspace_path}/#{tag}.log"))
+    @pre_logger = MonoLogger.new(@logfile_path)
+    @logger.add_logger(@pre_logger)
   end
 
-  def init_engine
-    @engine = Engine.new(self)
+  def move_workspace_to(path)
+    FileUtils.cp(@logfile_path,"#{path}/#{tag}.log")
+    @logfile_path = "#{path}/#{tag}.log"
+    @pre_logger.close
+    @logger.remove_logger(@pre_logger)
+    @pre_logger = MonoLogger.new(@logfile_path)
+    @logger.add_logger(@pre_logger)
+    @workspace_path = path
   end
-
   def init_class_variables(options)
-    @config = read_json(CONFIG_JSON)
+    @config = read_json(CONFIG_JSON, @logger)
     @timestamp = create_timestamp
     @tag = options.tag
     @driver_path = options.path
-    @device = find_device
-    @platform = read_platform
+    @driver = find_driver
+    @engine = @config['engine']
+    @setupmanager = @config['setupmanager']
+  end
+
+  def assign_id
+    @id_gen = Idgen.new(@config['id_range'], @config['time_out'])
+    id = @id_gen.allocate
+    while id.negative?
+      @logger.info('No available ID')
+      sleep 20
+      id = @id_gen.allocate
+    end
+    @logger.info("Assinged ID: #{id}")
+    id.to_s
+  end
+
+  def release_id
+    @logger.info("Releasing ID: #{@id}")
+    @id_gen.release(@id)
   end
 
   def configure_result_uploader
+    @logger.info('Initializing result uploaders')
     @result_uploader = ResultUploader.new(self)
     @result_uploader.connect
+    @logger.info('Resutl uploaders')
     @result_uploader.create_project_folder
   end
 
   def github_handling(commit)
-    @github = Github.new(@config, self, commit)
+    @github = Github.new(@config, @logger, @result_uploader.url, @tag, commit)
     return unless @github.connected?
 
     @github.find_pr
@@ -96,11 +122,7 @@ class Project
 
   def validate_paths
     normalize_paths
-    unless File.exist?(@config['toolshck_path'])
-      @logger.fatal('toolsHCK script path is not valid')
-      exit(1)
-    end
-    return if File.exist?("#{@driver_path}/#{@device['inf']}")
+    return if File.exist?("#{@driver_path}/#{@driver['inf']}")
 
     @logger.fatal('Driver path is not valid')
     exit(1)
@@ -110,33 +132,13 @@ class Project
     @driver_path.chomp!('/')
   end
 
-  def read_platform
-    platforms = read_json(PLATFORMS_JSON)
-    platform_name = @tag.split('-', 2).last
-    @logger.info("Loading platform: #{platform_name}")
-    res = platforms.find { |p| p['name'] == platform_name }
-    logger.fatal("#{platform_name} does not exist") unless res
-    res || exit(1)
-  end
-
-  def find_device
-    devices = read_json(DEVICES_JSON)
+  def find_driver
+    drivers = read_json(DRIVERS_JSON, @logger)
     short_name = @tag.split('-', 2).first
-    @logger.info("Loading device: #{short_name}")
-    res = devices.find { |device| device['short'] == short_name }
+    @logger.info("Loading driver: #{short_name}")
+    res = drivers.find { |driver| driver['short'] == short_name }
     logger.fatal("#{short_name} does not exist") unless res
     res || exit(1)
-  end
-
-  def support?
-    @device['support']
-  end
-
-  def read_json(json_file)
-    JSON.parse(File.read(json_file))
-  rescue Errno::ENOENT, JSON::ParserError
-    @logger.fatal("Could not open #{json_file} file")
-    exit(1)
   end
 
   def create_timestamp
@@ -144,8 +146,8 @@ class Project
   end
 
   def init_workspace
-    @workspace_path = [@config['workspace_path'], @device['short'],
-                       @platform['name'], @timestamp].join('/')
+    @workspace_path = [@config['workspace_path'], @driver['short'],
+                       @config['engine'], @config['setupmanager']].join('/')
     begin
       FileUtils.mkdir_p(@workspace_path)
     rescue Errno::EEXIST
@@ -153,19 +155,24 @@ class Project
     end
   end
 
-  def close_engine
-    @engine.close
-  end
-
   def handle_cancel
     @github.handle_cancel if @github&.connected?
+    release_id
   end
 
   def handle_error
     @github.handle_error if @github&.connected?
+    release_id
   end
 
   def abort
     @logger.remove_logger(@stdout_logger)
+  end
+
+  def close
+    @client1&.abort
+    @client2&.abort
+    @studio&.abort
+    @setup_manager.close
   end
 end

@@ -7,21 +7,21 @@ class DiffChecker
   DIFF_FILENAME = 'diff.txt'
   TRIGGER_YAML = 'triggers.yml'
 
-  def initialize(logger, device, driver_path, diff)
+  def initialize(logger, driver, driver_path, diff)
     @logger = logger
-    @device = device['short']
+    @driver = driver['short']
     @diff = diff || driver_path + '/' + DIFF_FILENAME
   end
 
-  def load_device_triggers
+  def load_driver_triggers
     @logger.info('Loading diff checker trigger file')
     yaml = YAML.safe_load(File.read(TRIGGER_YAML))
-    yaml.select! { |_key, value| value ? value & [@device, '*'] != [] : false }
+    yaml.select! { |_key, value| value ? value & [@driver, '*'] != [] : false }
     yaml.keys
   end
 
   def load_diff_files
-    @logger.info('Loading device diff file')
+    @logger.info('Loading driver diff file')
     File.readlines(@diff)
   end
 
@@ -37,7 +37,7 @@ class DiffChecker
     return true unless File.file?(@diff) && File.file?(TRIGGER_YAML)
 
     files = load_diff_files
-    triggers = load_device_triggers
+    triggers = load_driver_triggers
     root_trigger?(triggers, files) || subdir_trigger?(triggers, files)
   end
 end

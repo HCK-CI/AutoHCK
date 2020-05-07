@@ -88,7 +88,8 @@
     "blacklist": [
       "Static Tools Logo Test",
       "Flush Test",
-      "DF - Embedded Signature Verification Test (Certification)"
+      "DF - Embedded Signature Verification Test (Certification)",
+      "Storage HBA Firmware Update"
     ]
   },
   {

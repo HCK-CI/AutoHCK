@@ -10,3 +10,8 @@ class CmdRunError < EngineError; end
 class InvalidPathError < EngineError; end
 # A custom Invalid Config File error exception
 class InvalidConfigFile < EngineError; end
+# A custom Invalid Engine Type error exception
+class InvalidEngineTypeError < EngineError; end
+# A custom Could not open json file
+class OpenJsonError < StandardError; end
+class SetupManagerError < StandardError; end
