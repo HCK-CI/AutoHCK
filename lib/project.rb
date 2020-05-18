@@ -3,17 +3,18 @@
 require 'fileutils'
 require 'mono_logger'
 require 'tempfile'
-require './lib/github'
-require './lib/result_uploader'
-require './lib/multi_logger'
-require './lib/diff_checker'
-require './lib/json-helper'
+require './lib/aux/github'
+require './lib/resultuploaders/result_uploader'
+require './lib/aux/multi_logger'
+require './lib/aux/diff_checker'
+require './lib/aux/json-helper'
+require './lib/aux/id_gen'
 
 # project class
 class Project
   attr_reader :config, :logger, :timestamp, :setupmanager, :engine, :tag, :id, :driver,
               :driver_path, :workspace_path, :github, :result_uploader, :engine
-  DRIVERS_JSON = 'drivers.json'
+  DRIVERS_JSON = './drivers.json'
   CONFIG_JSON = 'config.json'
 
   def initialize(options)
@@ -106,7 +107,6 @@ class Project
     @logger.info('Initializing result uploaders')
     @result_uploader = ResultUploader.new(self)
     @result_uploader.connect
-    @logger.info('Resutl uploaders')
     @result_uploader.create_project_folder
   end
 

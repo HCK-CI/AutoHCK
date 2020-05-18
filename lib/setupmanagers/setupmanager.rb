@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 require './lib/exceptions'
-require './setupmanagers/virthck'
-require './lib/id_gen'
+require './lib/setupmanagers/virthck/virthck'
 
 # SetupManager
 #
@@ -71,6 +70,14 @@ class SetupManager
 
   def run(name, first_time = false)
     @setupmanager.run(name, first_time)
+  end
+
+  def create_studio
+    return @setupmanager.create_studio
+  end
+
+  def create_client(tag, name, kit)
+    return @setupmanager.create_client(tag, name, kit)
   end
 
   def close

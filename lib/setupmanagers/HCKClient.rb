@@ -1,35 +1,31 @@
 # frozen_string_literal: true
 
-require 'net/ping'
-require './lib/tests'
-require './lib/targets'
-require './lib/monitor'
-require './setupmanagers/setupmanager'
+require './lib/engines/hcktest/tests'
+require './lib/engines/hcktest/targets'
 
-# Client class
-class HCKClient
-  attr_reader :name, :id
+# HCKClient class
+class HCKClient < Machine
+  attr_reader :name,:id
   attr_writer :support
-  def initialize(project, setup_manager, studio, tag, name, kit)
-    @tag = tag
+  def initialize(project, setupmanager, studio, tag, name, kit)
     @id = tag[-1]
-    @project = project
-    @logger = project.logger
-    @name = name
+    super(project, name, setupmanager, @id, tag)
     @studio = studio
     @kit = kit
-    @setup_manager = setup_manager
+    @pool = 'Default Pool'
   end
 
-  # A custom ClientRun error exception
-  class ClientRunError < AutoHCKError; end
-
   def create_snapshot
-    @setup_manager.create_client_snapshot(@tag)
+    @setupmanager.create_client_snapshot(@tag)
   end
 
   def delete_snapshot
-    @setup_manager.delete_client_snapshot(@tag)
+    @setupmanager.delete_client_snapshot(@tag)
+  end
+
+  def run
+    create_snapshot
+    super
   end
 
   def add_target_to_project
@@ -67,44 +63,6 @@ class HCKClient
   def restart_machine
     @logger.info("Restarting #{@name}")
     @tools.restart_machine(@name)
-  end
-
-  def shutdown_machine
-    @monitor&.powerdown
-  end
-
-  # Client soft abort trials before force abort
-  ABORT_RETRIES = 10
-
-  # Client soft abort sleep for each trial
-  ABORT_SLEEP = 30
-
-  def soft_abort
-    ABORT_RETRIES.times do
-      return true unless alive?
-
-      shutdown_machine
-      sleep ABORT_SLEEP
-    end
-    false
-  end
-
-  def hard_abort
-    @monitor&.quit
-    sleep ABORT_SLEEP
-    return true unless alive?
-
-    false
-  end
-
-  def abort
-    return if soft_abort
-
-    @logger.info("Client #{@name} soft abort failed, hard aborting...")
-    return if hard_abort
-
-    @logger.info("Client #{@name} hard abort failed, force aborting...")
-    Process.kill('KILL', @pid)
   end
 
   def move_machine_to_pool
@@ -162,30 +120,6 @@ class HCKClient
     initialize_client_wait
   end
 
-  def run
-    @pool = 'Default Pool'
-    create_snapshot
-    @logger.info("Starting client #{@name}")
-    @pid = @setup_manager.run(@tag, true)
-    e_message = "Client #{@name} PID could not be retrieved"
-    raise ClientRunError, e_message unless @pid
-
-    @logger.info("Client #{@name} PID is #{@pid}")
-    @monitor = Monitor.new(@project, self)
-    raise ClientRunError, "Could not start client #{@name}" unless alive?
-  rescue CmdRunError
-    raise ClientRunError, "Could not start client #{@name}"
-  end
-
-  def clean_last_run
-    @logger.info("Cleaning last client #{@name} run")
-    unless hard_abort
-      @logger.info("Client #{@name} hard abort failed, force aborting...")
-      Process.kill('KILL', @pid)
-    end
-    delete_snapshot
-  end
-
   # Client cooldown timeout in seconds, to prevent hangs (30 minutes)
   CLIENT_COOLDOWN_TIMEOUT = 1800
 
@@ -219,16 +153,6 @@ class HCKClient
     @studio.list_pools.detect { |pool| pool['name'].eql?(@pool) }['machines']\
            .detect { |machine| machine['name'].eql?(@name) }['state']\
            .eql?('NotReady')
-  end
-
-  def alive?
-    return false unless @pid
-
-    Process.kill(0, @pid)
-    true
-  rescue Errno::ESRCH
-    @logger.info("Client #{@name} is not alive")
-    false
   end
 
   def reset_to_ready_state

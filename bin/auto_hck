@@ -2,13 +2,9 @@
 # frozen_string_literal: true
 
 require 'filelock'
-
 require './lib/cli'
 require './lib/project'
-require './engines/engine'
-
-CLIENT1 = 'c1'
-CLIENT2 = 'c2'
+require './lib/engines/engine'
 
 cli = CLI.new
 options = cli.parse(ARGV)
@@ -18,8 +14,8 @@ ENV.store 'LC_ALL', 'en_US.UTF-8'
 AUTOHCK_RETRIES = 5
 
 at_exit do
-  @project&.abort
   @engine&.close
+  @project&.abort
 end
 
 def clean_threads
@@ -35,6 +31,7 @@ Signal.trap('TERM') do
     Signal.trap('TERM') do
       @project.logger.warn('SIGTERM(*) received, ignoring...')
     end
+    @engine&.close unless @engine.nil?
     @project&.handle_cancel
     clean_threads
     exit

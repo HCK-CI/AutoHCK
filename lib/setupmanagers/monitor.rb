@@ -12,7 +12,7 @@ class Monitor
     @name = machine.name
     @id = machine.id
     @project_id = project.id
-    client_id = 3 * @engine_id.to_i - 2 + @id.to_i
+    client_id = 3 * @project_id.to_i - 2 + @id.to_i
     @port = MONITOR_BASE_PORT + client_id
     @logger = project.logger
     @logger.info('Initiating qemu-monitor session')

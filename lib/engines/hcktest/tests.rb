@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require './lib/playlist'
+require './lib/engines/hcktest/playlist'
 # Tests class
 class Tests
   HANDLE_TESTS_POLLING_INTERVAL = 10
