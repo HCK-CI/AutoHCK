@@ -1,12 +1,16 @@
 # frozen_string_literal: true
 
+require 'English'
 require './lib/exceptions'
-require './lib/json-helper'
+require './lib/aux/json-helper'
 
 # Virthck class
 class VirtHCK
-  VIRTHCK_CONFIG_JSON = './setupmanagers/virthck.json'
-  PLATFORMS_JSON = 'platforms.json'
+
+  VIRTHCK_CONFIG_JSON = 'lib/setupmanagers/virthck/virthck.json'
+  PLATFORMS_JSON = 'lib/engines/hcktest/platforms.json'
+  STUDIO = 'st'
+
   def initialize(project)
     @project = project
     @logger = project.logger
@@ -191,6 +195,14 @@ class VirtHCK
         raise InvalidPathError
       end
     end
+  end
+
+  def create_studio
+    return @studio = HCKStudio.new(@project, self, STUDIO)
+  end
+
+  def create_client(tag, name, kit)
+    return HCKClient.new(@project, self, @studio, tag, name, kit)
   end
 
   def validate_paths

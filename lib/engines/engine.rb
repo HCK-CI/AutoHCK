@@ -1,28 +1,12 @@
 # frozen_string_literal: true
 
-require './lib/exceptions'
-require './setupmanagers/setupmanager'
-require './lib/id_gen'
-require './engines/hcktest'
+require './lib/engines/exceptions'
+require './lib/setupmanagers/setupmanager'
+require './lib/engines/hcktest/hcktest'
 
 # Engine
 #
 class Engine
-  attr_reader :id
-=begin
-  # EngineSettings
-  #
-  class EngineParams
-    def initialize(device, platform, workspace_path, id)
-      @device = device
-      @platform = platform
-      @workspace_path = workspace_path
-      @id = id
-    end
-  end
-=end
-  # EngineFactory
-  #
   class EngineFactory
     ENGINES = {
       hcktest: HCKTest
@@ -53,23 +37,7 @@ class Engine
       raise InvalidEngineTypeError, "Unkown type engine #{@type}"
     end
   end
-=begin
-  def create_studio_snapshot
-    @engine.create_studio_snapshot
-  end
-
-  def delete_studio_snapshot
-    @engine.delete_studio_snapshot
-  end
-
-  def create_client_snapshot(name)
-    @engine.create_client_snapshot(name)
-  end
-
-  def delete_client_snapshot(name)
-    @engine.delete_client_snapshot(name)
-  end
-=end
+  
   def run
     @engine.run
   end

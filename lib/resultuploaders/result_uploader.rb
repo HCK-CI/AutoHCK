@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require './lib/dropbox'
+require './lib/resultuploaders/dropbox'
 
 # ResultUploader
 #

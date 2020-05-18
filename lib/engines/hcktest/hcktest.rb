@@ -1,15 +1,14 @@
 # frozen_string_literal: true
 
-require './lib/studio'
-require './lib/client'
-require './lib/json-helper'
+require './lib/setupmanagers/HCKStudio'
+require './lib/setupmanagers/HCKClient'
+require './lib/aux/json-helper'
 
 # HCKTest class
 class HCKTest
 
-  PLATFORMS_JSON = 'platforms.json'
+  PLATFORMS_JSON = 'lib/engines/hcktest/platforms.json'
   DRIVERS_JSON = 'drivers.json'
-  STUDIO = 'st'
   # This is a temporary workaround for clients names
   CLIENTS =  {
     CL1: 'c1',
@@ -23,12 +22,12 @@ class HCKTest
     @driver = project.driver
     init_workspace
     @setup_manager = SetupManager.new(project) 
-    @studio = Studio.new(@project, @setup_manager, STUDIO)
+    @studio = @setup_manager.create_studio
     initialize_clients
   end
 
   def init_workspace
-    @workspace_path = [@project.workspace_path,@platform['name']].join('/')
+    @workspace_path = [@project.workspace_path,@platform['name'],@project.timestamp].join('/')
     begin
       FileUtils.mkdir_p(@workspace_path)
     rescue Errno::EEXIST
@@ -49,9 +48,8 @@ class HCKTest
   def initialize_clients
     @clients = {}
     @platform['clients'].each_value do |client|
-      @project.logger.info(client['name'])
       tag = CLIENTS[client['name'].to_sym]
-      @clients[client['name']] = HCKClient.new(@project, @setup_manager, @studio, tag,@platform['clients'][tag]['name'], @platform['kit'])
+      @clients[client['name']] = @setup_manager.create_client(tag, @platform['clients'][tag]['name'], @platform['kit'])
     end
     if @clients.empty?
       raise InvalidConfigFile,'Clients configuration for this platform is incorrect'
@@ -60,18 +58,20 @@ class HCKTest
 
   def synchronize_clients(exit: false)
     @clients.each_value do |client|
-      client.synchronize(exit)
+      client.synchronize(exit: exit)
     end
   end
 
-  def configure_setup_manager_and_synchronize
-    @studio.configure(@platform['clients'])
+  def configure_clients
     @clients.each_value do |client|
       client.configure
     end
-    @clients.each_value do |client|
-      client.synchronize
-    end
+  end
+
+  def configure_setup_and_synchronize
+    @studio.configure(@platform['clients'])
+    configure_clients
+    synchronize_clients
     @client1 = @clients.values[0]
     @client2 = @clients.values[1]
     @client1.support = @client2 
@@ -83,19 +83,23 @@ class HCKTest
      end
   end
 
+  def clean_last_run_clients
+     @clients.each_value do |client|
+       client.clean_last_run
+     end
+  end
   def clean_last_run_machines
     @studio.clean_last_run
-    @client1.clean_last_run
-    @client2.clean_last_run
+    clean_last_run_clients
   end
 
-  def run_and_configure_setup_manager
+  def run_and_configure_setup
     retries ||= 0
     Filelock '/var/tmp/virthck.lock', timeout: 0 do
       @studio.run
       run_clients
     end
-    configure_setup_manager_and_synchronize
+    configure_setup_and_synchronize
   rescue AutoHCKError => e
     synchronize_clients(exit: true)
     @project.logger.warn("Running and configuring setup failed: (#{e.class}) "\
@@ -108,7 +112,7 @@ class HCKTest
   end
 
   def run
-    run_and_configure_setup_manager
+    run_and_configure_setup
     client = @client1
     client.run_tests
     client.create_package

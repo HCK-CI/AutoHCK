@@ -1,26 +1,17 @@
 # frozen_string_literal: true
 
-require 'rtoolsHCK'
 require 'net/ping'
-require './lib/tools'
-require './lib/exceptions'
-# Studio class
-class Studio
-  attr_reader :tools, :name, :id
-  HCK_FILTERS_PATH = 'filters/UpdateFilters.sql'
-  def initialize(project, setup_manager, name)
-    @name = name
-    @id = 0
-    @project = project
-    @logger = project.logger
-    @setup_manager = setup_manager
+require './lib/setupmanagers/machine'
+require './lib/engines/hcktest/tools'
+
+# HCKStudio class
+class HCKStudio < Machine
+  attr_reader :tools, :name, :id, :setupmanager
+  HCK_FILTERS_PATH ='filters/UpdateFilters.sql'
+  def initialize(project, setupmanager, name)
+     super(project, name, setupmanager, 0, 'st')
+     @ip = @project.config['ip_segment'] + @project.id.to_str
   end
-
-  # A custom StudioConnect error exception
-  class StudioConnectError < AutoHCKError; end
-
-  # A custom StudioRun error exception
-  class StudioRunError < AutoHCKError; end
 
   def up?
     check = Net::Ping::External.new(@ip)
@@ -28,11 +19,11 @@ class Studio
   end
 
   def create_snapshot
-    @setup_manager.create_studio_snapshot
+    @setupmanager.create_studio_snapshot
   end
 
   def delete_snapshot
-    @setup_manager.delete_studio_snapshot
+    @setupmanager.delete_studio_snapshot
   end
 
   def create_pool
@@ -86,27 +77,13 @@ class Studio
 
   def run
     create_snapshot
-    @logger.info('Starting studio')
-    @ip = @project.config['ip_segment'] + @project.id.to_str
-    @pid = @setup_manager.run(@name, true)
-    raise StudioRunError, 'Studio PID could not be retrieved' unless @pid
-
-    @logger.info("Studio PID is #{@pid}")
-    @monitor = Monitor.new(@project, self)
-    raise StudioRunError, 'Could not start studio' unless alive?
-  rescue CmdRunError
-    raise StudioRunError, 'Could not start studio'
+    super
   end
 
   def clean_last_run
-    @logger.info('Cleaning last studio run')
     @tools&.close
     @tools = nil
-    unless hard_abort
-      @logger.info('Studio hard abort failed, force aborting...')
-      Process.kill('KILL', @pid)
-    end
-    delete_snapshot
+    super
   end
 
   def configure(clients)
@@ -120,42 +97,9 @@ class Studio
     create_project
   end
 
-  def poweroff
-    @monitor&.powerdown
-  end
-
-  # Studio soft abort trials before force abort
-  ABORT_RETRIES = 10
-
-  # Studio soft abort sleep for each trial
-  ABORT_SLEEP = 30
-
-  def soft_abort
-    ABORT_RETRIES.times do
-      return true unless alive?
-
-      poweroff
-      sleep ABORT_SLEEP
-    end
-    false
-  end
-
-  def hard_abort
-    @monitor&.quit
-    sleep ABORT_SLEEP
-    return true unless alive?
-
-    false
-  end
-
   def abort
-    @tools&.close
-
-    @logger.info('Studio soft abort failed, hard aborting...')
-    return if hard_abort
-
-    @logger.info('Studio hard abort failed, force aborting...')
-    Process.kill('KILL', @pid)
+    @tools&.close unless @tools.nil?
+    super
   end
 
   def shutdown
