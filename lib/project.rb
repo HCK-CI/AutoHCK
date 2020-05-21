@@ -7,13 +7,13 @@ require './lib/aux/github'
 require './lib/resultuploaders/result_uploader'
 require './lib/aux/multi_logger'
 require './lib/aux/diff_checker'
-require './lib/aux/json-helper'
+require './lib/aux/json_helper'
 require './lib/aux/id_gen'
 
 # project class
 class Project
-  attr_reader :config, :logger, :timestamp, :setupmanager, :engine, :tag, :id, :driver,
-              :driver_path, :workspace_path, :github, :result_uploader, :engine
+  attr_reader :config, :logger, :timestamp, :setupmanager, :engine, :tag, :id,
+              :driver, :driver_path, :workspace_path, :github, :result_uploader
   DRIVERS_JSON = './drivers.json'
   CONFIG_JSON = 'config.json'
 
@@ -68,7 +68,7 @@ class Project
   end
 
   def move_workspace_to(path)
-    FileUtils.cp(@logfile_path,"#{path}/#{tag}.log")
+    FileUtils.cp(@logfile_path, "#{path}/#{tag}.log")
     @logfile_path = "#{path}/#{tag}.log"
     @pre_logger.close
     @logger.remove_logger(@pre_logger)
@@ -76,6 +76,7 @@ class Project
     @logger.add_logger(@pre_logger)
     @workspace_path = path
   end
+
   def init_class_variables(options)
     @config = read_json(CONFIG_JSON, @logger)
     @timestamp = create_timestamp

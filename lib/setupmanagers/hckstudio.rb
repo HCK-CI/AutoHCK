@@ -7,10 +7,10 @@ require './lib/engines/hcktest/tools'
 # HCKStudio class
 class HCKStudio < Machine
   attr_reader :tools, :name, :id, :setupmanager
-  HCK_FILTERS_PATH ='filters/UpdateFilters.sql'
+  HCK_FILTERS_PATH = 'filters/UpdateFilters.sql'
   def initialize(project, setupmanager, name)
-     super(project, name, setupmanager, 0, 'st')
-     @ip = @project.config['ip_segment'] + @project.id.to_str
+    super(project, name, setupmanager, 0, 'st')
+    @ip = @project.config['ip_segment'] + @project.id.to_str
   end
 
   def up?

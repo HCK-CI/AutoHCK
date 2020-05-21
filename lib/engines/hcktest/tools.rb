@@ -15,7 +15,7 @@ class Tools < RToolsHCK
     connect(addr: ip_addr,
             user: @config['studio_username'],
             pass: @config['studio_password'],
-            winrm_ports: config_winrm_ports(project),
+            winrm_ports: config_winrm_ports,
             timeout: 120,
             logger: @logger,
             outp_dir: project.workspace_path,
@@ -62,7 +62,7 @@ class Tools < RToolsHCK
     @tools = ThreadSafe.new(RToolsHCK.new(conn), Mutex.new)
   end
 
-  def config_winrm_ports(project)
+  def config_winrm_ports
     winrm_ports = {}
     @clients.each_value do |client|
       winrm_ports[client['name']] = client['winrm_port']

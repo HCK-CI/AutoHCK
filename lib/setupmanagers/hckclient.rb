@@ -1,17 +1,18 @@
 # frozen_string_literal: true
 
+require './lib/setupmanagers/excpetions'
 require './lib/engines/hcktest/tests'
 require './lib/engines/hcktest/targets'
 
 # HCKClient class
 class HCKClient < Machine
-  attr_reader :name,:id
+  attr_reader :name, :id, :kit
   attr_writer :support
-  def initialize(project, setupmanager, studio, tag, name, kit)
+  def initialize(project, setupmanager, studio, tag, name)
     @id = tag[-1]
     super(project, name, setupmanager, @id, tag)
     @studio = studio
-    @kit = kit
+    @kit = setupmanager.kit
     @pool = 'Default Pool'
   end
 
@@ -33,7 +34,7 @@ class HCKClient < Machine
   end
 
   def run_tests
-    @tests = Tests.new(self, @support, @project, @target, @tools, @kit)
+    @tests = Tests.new(self, @support, @project, @target, @tools)
     @tests.list_tests
     @tests.run
   end
