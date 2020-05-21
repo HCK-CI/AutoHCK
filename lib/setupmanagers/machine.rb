@@ -14,9 +14,8 @@ class Machine
     @setupmanager = setupmanager
     @logger = project.logger
     @id = id
-    @base_image_path
   end
-  
+
   def run
     @logger.info("Starting #{@name}")
     @pid = @setupmanager.run(@tag, true)
@@ -27,16 +26,6 @@ class Machine
     raise MachineRunError, "Could not start #{@name}" unless alive?
   rescue CmdRunError
     raise MachineRunError, "Could not start #{@name}"
-  end
-
-  def alive?
-    return false unless @pid
-
-    Process.kill(0, @pid)
-    true
-  rescue Errno::ESRCH
-    @logger.info('Studio is not alive')
-    false
   end
 
   def hard_abort
@@ -56,7 +45,7 @@ class Machine
     delete_snapshot
   end
 
-  def powerdown 
+  def powerdown
     @monitor&.powerdown
   end
 
@@ -95,5 +84,4 @@ class Machine
     @logger.info("#{@name} is not alive")
     false
   end
-
 end

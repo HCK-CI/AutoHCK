@@ -1,4 +1,5 @@
-#frozen_string_literal: true
+# frozen_string_literal: true
+
 require './lib/exceptions'
 
 # A custom SetupManager error exception
@@ -11,3 +12,7 @@ class StudioConnectError < AutoHCKError; end
 class MachineError < AutoHCKError; end
 class MachinePidNil < MachineError; end
 class MachineRunError < MachineError; end
+
+# custom client error
+class ClientError < MachineError; end
+class ClientRunError < ClientError; end

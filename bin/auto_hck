@@ -49,7 +49,6 @@ end
 Thread.abort_on_exception = true
 Thread.report_on_exception = false
 
-
 begin
   @project = Project.new(options)
   @engine = Engine.new(@project)

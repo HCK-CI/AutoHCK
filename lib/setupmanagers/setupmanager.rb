@@ -7,19 +7,6 @@ require './lib/setupmanagers/virthck/virthck'
 #
 class SetupManager
   attr_reader :id
-=begin
-  # SetupManagerParams
-  #
-  class SetupManagerParams
-    def initialize(type, device, platform, workspace_path, id)
-      @type = type.to_sym
-      @device = device
-      @platform = platform
-      @workspace_path = workspace_path
-      @id = id
-    end
-  end
-=end
   # SetupManagerFactory
   #
   class SetupManagerFactory
@@ -45,7 +32,7 @@ class SetupManager
 
   def setupmanager_create
     if SetupManagerFactory.can_create?(@type)
-      @setupmanager = SetupManagerFactory.create(@type,@project)
+      @setupmanager = SetupManagerFactory.create(@type, @project)
     else
       @logger.warn("Unkown type setup mainager #{@type}, Exiting...")
       raise SetupManagerError, "Unkown type setup manager #{@type}"
@@ -73,11 +60,11 @@ class SetupManager
   end
 
   def create_studio
-    return @setupmanager.create_studio
+    @setupmanager.create_studio
   end
 
-  def create_client(tag, name, kit)
-    return @setupmanager.create_client(tag, name, kit)
+  def create_client(tag, name)
+    @setupmanager.create_client(tag, name)
   end
 
   def close

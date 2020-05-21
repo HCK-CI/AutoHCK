@@ -1,16 +1,15 @@
 # frozen_string_literal: true
 
-require './lib/setupmanagers/HCKStudio'
-require './lib/setupmanagers/HCKClient'
-require './lib/aux/json-helper'
+require './lib/setupmanagers/hckstudio'
+require './lib/setupmanagers/hckclient'
+require './lib/aux/json_helper'
 
 # HCKTest class
 class HCKTest
-
   PLATFORMS_JSON = 'lib/engines/hcktest/platforms.json'
   DRIVERS_JSON = 'drivers.json'
   # This is a temporary workaround for clients names
-  CLIENTS =  {
+  CLIENTS = {
     CL1: 'c1',
     CL2: 'c2'
   }.freeze
@@ -21,19 +20,20 @@ class HCKTest
     @platform = read_platform
     @driver = project.driver
     init_workspace
-    @setup_manager = SetupManager.new(project) 
+    @setup_manager = SetupManager.new(project)
     @studio = @setup_manager.create_studio
     initialize_clients
   end
 
   def init_workspace
-    @workspace_path = [@project.workspace_path,@platform['name'],@project.timestamp].join('/')
+    @workspace_path = [@project.workspace_path, @platform['name'],
+                       @project.timestamp].join('/')
     begin
       FileUtils.mkdir_p(@workspace_path)
     rescue Errno::EEXIST
       @project.logger.warn('Workspace path already exists')
     end
-    @project.move_workspace_to("#{@workspace_path}")
+    @project.move_workspace_to(@workspace_path.to_s)
   end
 
   def read_platform
@@ -49,11 +49,13 @@ class HCKTest
     @clients = {}
     @platform['clients'].each_value do |client|
       tag = CLIENTS[client['name'].to_sym]
-      @clients[client['name']] = @setup_manager.create_client(tag, @platform['clients'][tag]['name'], @platform['kit'])
+      @clients[client['name']] = @setup_manager.create_client(tag,
+                                                              client['name'])
     end
-    if @clients.empty?
-      raise InvalidConfigFile,'Clients configuration for this platform is incorrect'
-    end
+    return unless @clients.empty?
+
+    raise InvalidConfigFile, 'Clients configuration for \
+                              this platform is incorrect'
   end
 
   def synchronize_clients(exit: false)
@@ -63,9 +65,7 @@ class HCKTest
   end
 
   def configure_clients
-    @clients.each_value do |client|
-      client.configure
-    end
+    @clients.values.map(&:configure)
   end
 
   def configure_setup_and_synchronize
@@ -74,20 +74,17 @@ class HCKTest
     synchronize_clients
     @client1 = @clients.values[0]
     @client2 = @clients.values[1]
-    @client1.support = @client2 
+    @client1.support = @client2
   end
 
   def run_clients
-     @clients.each_value do |client|
-       client.run
-     end
+    @clients.values.map(&:run)
   end
 
   def clean_last_run_clients
-     @clients.each_value do |client|
-       client.clean_last_run
-     end
+    @clients.values.map(&:clean_last_run)
   end
+
   def clean_last_run_machines
     @studio.clean_last_run
     clean_last_run_clients
@@ -119,9 +116,7 @@ class HCKTest
   end
 
   def close
-    @clients.each_value do |client|
-       client.abort
-    end
+    @clients.values.map(&:abort)
     @studio.abort
   end
 end

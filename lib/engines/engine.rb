@@ -4,9 +4,11 @@ require './lib/engines/exceptions'
 require './lib/setupmanagers/setupmanager'
 require './lib/engines/hcktest/hcktest'
 
-# Engine
+# Engine Class
 #
 class Engine
+  # EngineFactory Class
+  #
   class EngineFactory
     ENGINES = {
       hcktest: HCKTest
@@ -37,7 +39,7 @@ class Engine
       raise InvalidEngineTypeError, "Unkown type engine #{@type}"
     end
   end
-  
+
   def run
     @engine.run
   end

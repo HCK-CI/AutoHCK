@@ -2,11 +2,11 @@
 
 require 'English'
 require './lib/exceptions'
-require './lib/aux/json-helper'
+require './lib/aux/json_helper'
 
 # Virthck class
 class VirtHCK
-
+  attr_reader :kit
   VIRTHCK_CONFIG_JSON = 'lib/setupmanagers/virthck/virthck.json'
   PLATFORMS_JSON = 'lib/engines/hcktest/platforms.json'
   STUDIO = 'st'
@@ -14,11 +14,12 @@ class VirtHCK
   def initialize(project)
     @project = project
     @logger = project.logger
-    @config = read_json(VIRTHCK_CONFIG_JSON,@logger)
+    @config = read_json(VIRTHCK_CONFIG_JSON, @logger)
     @device = project.driver['device']
     @platform = read_platform
     @workspace_path = project.workspace_path
     @id = project.id
+    @kit = @platform['kit']
     validate_paths
   end
 
@@ -121,9 +122,7 @@ class VirtHCK
   end
 
   def log_stdout_stderr(stdout, stderr)
-    unless stdout.empty?
-      @logger.info('Info dump:' + prep_stream_for_log(stdout))
-    end
+    @logger.info('Info dump:' + prep_stream_for_log(stdout)) unless stdout.empty?
     return if stderr.empty?
 
     @logger.warn('Error dump:' + prep_stream_for_log(stderr))
@@ -198,11 +197,11 @@ class VirtHCK
   end
 
   def create_studio
-    return @studio = HCKStudio.new(@project, self, STUDIO)
+    @studio = HCKStudio.new(@project, self, STUDIO)
   end
 
-  def create_client(tag, name, kit)
-    return HCKClient.new(@project, self, @studio, tag, name, kit)
+  def create_client(tag, name)
+    HCKClient.new(@project, self, @studio, tag, name)
   end
 
   def validate_paths
