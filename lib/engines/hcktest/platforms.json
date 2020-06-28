@@ -1,5 +1,25 @@
 [
   {
+    "name": "PhyWin2016",
+    "kit": "HLK1607",
+    "clients": {
+      "c1": {
+        "name": "C1",
+        "winrm_port": "4002"
+      }
+    }
+  },
+  {
+    "name": "PhyWin2019",
+    "kit": "HLK1809server",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "winrm_port": "4002"
+      }
+    }
+  },
+  {
     "name": "Win7x64",
     "kit": "HCK",
     "st_image": "HCK.qcow2",
