@@ -32,10 +32,22 @@ class HCKStudio < Machine
     @tools.create_pool(tag)
   end
 
+  def delete_pool
+    @logger.info('Deleting pool')
+    tag = @project.tag
+    @tools.delete_pool(tag)
+  end
+
   def create_project
     @logger.info('Creating project')
     tag = @project.tag
     @tools.create_project(tag)
+  end
+
+  def delete_project
+    @logger.info('Deleting project')
+    tag = @project.tag
+    @tools.delete_project(tag)
   end
 
   def list_pools
@@ -81,6 +93,8 @@ class HCKStudio < Machine
   end
 
   def clean_last_run
+    delete_project
+    delete_pool
     @tools&.close
     @tools = nil
     super

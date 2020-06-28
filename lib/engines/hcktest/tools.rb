@@ -90,8 +90,16 @@ class Tools < RToolsHCK
     handle_results(@tools.create_pool(tag))
   end
 
+  def delete_pool(tag)
+    handle_results(@tools.delete_pool(tag))
+  end
+
   def create_project(tag)
     handle_results(@tools.create_project(tag))
+  end
+
+  def delete_project(tag)
+    handle_results(@tools.delete_project(tag))
   end
 
   def list_pools
