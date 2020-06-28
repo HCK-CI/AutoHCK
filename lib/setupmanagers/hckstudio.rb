@@ -8,9 +8,9 @@ require './lib/engines/hcktest/tools'
 class HCKStudio < Machine
   attr_reader :tools, :name, :id, :setupmanager
   HCK_FILTERS_PATH = 'filters/UpdateFilters.sql'
-  def initialize(project, setupmanager, name)
+  def initialize(project, setupmanager, name, ip)
     super(project, name, setupmanager, 0, 'st')
-    @ip = @project.config['ip_segment'] + @project.id.to_str
+    @ip = ip
   end
 
   def up?
@@ -105,15 +105,5 @@ class HCKStudio < Machine
   def shutdown
     @logger.info('Shutting down studio')
     @tools.shutdown
-  end
-
-  def alive?
-    return false unless @pid
-
-    Process.kill(0, @pid)
-    true
-  rescue Errno::ESRCH
-    @logger.info('Studio is not alive')
-    false
   end
 end

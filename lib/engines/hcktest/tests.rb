@@ -147,12 +147,12 @@ InQueue: #{stats['inqueue']}")
 
   def reset_clients_to_ready_state
     @client.reset_to_ready_state
-    @support.reset_to_ready_state
+    @support&.reset_to_ready_state
   end
 
   def keep_clients_alive
     @client.keep_alive
-    @support.keep_alive
+    @support&.keep_alive
   end
 
   def new_done
