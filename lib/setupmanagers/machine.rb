@@ -21,6 +21,8 @@ class Machine
     @pid = @setupmanager.run(@tag, true)
     raise MachinePidNil, "#{@name} PID could not be retrieved" unless @pid
 
+    return if @pid.negative?
+
     @logger.info("#{@name} PID is #{@pid}")
     @monitor = Monitor.new(@project, self)
     raise MachineRunError, "Could not start #{@name}" unless alive?
@@ -37,6 +39,8 @@ class Machine
   end
 
   def clean_last_run
+    return if @pid.negative?
+
     @logger.info("Cleaning last #{@name} run")
     unless hard_abort
       @logger.info("#{@name} hard abort failed, force aborting...")
@@ -46,6 +50,8 @@ class Machine
   end
 
   def powerdown
+    return if @pid.negative?
+
     @monitor&.powerdown
   end
 
@@ -66,7 +72,7 @@ class Machine
   end
 
   def abort
-    return if soft_abort
+    return if @pid.negative? || soft_abort
 
     @logger.info("#{@name} soft abort failed, hard aborting...")
     return if hard_abort
@@ -77,6 +83,7 @@ class Machine
 
   def alive?
     return false unless @pid
+    return true if @pid.negative?
 
     Process.kill(0, @pid)
     true

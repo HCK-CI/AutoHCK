@@ -2,6 +2,7 @@
 
 require './lib/exceptions'
 require './lib/setupmanagers/virthck/virthck'
+require './lib/setupmanagers/physhck/physhck'
 
 # SetupManager
 #
@@ -11,7 +12,8 @@ class SetupManager
   #
   class SetupManagerFactory
     SETUP_MANAGERS = {
-      virthck: VirtHCK
+      virthck: VirtHCK,
+      physhck: PhysHCK
     }.freeze
 
     def self.create(type, project)
