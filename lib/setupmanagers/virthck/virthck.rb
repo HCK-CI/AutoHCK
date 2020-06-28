@@ -197,7 +197,8 @@ class VirtHCK
   end
 
   def create_studio
-    @studio = HCKStudio.new(@project, self, STUDIO)
+    studio_ip = @project.config['ip_segment'] + @project.id.to_str
+    @studio = HCKStudio.new(@project, self, STUDIO, studio_ip)
   end
 
   def create_client(tag, name)

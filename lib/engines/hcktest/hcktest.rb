@@ -47,9 +47,8 @@ class HCKTest
 
   def initialize_clients
     @clients = {}
-    @platform['clients'].each_value do |client|
-      tag = CLIENTS[client['name'].to_sym]
-      @clients[client['name']] = @setup_manager.create_client(tag,
+    @platform['clients'].each do |name, client|
+      @clients[client['name']] = @setup_manager.create_client(name,
                                                               client['name'])
     end
     return unless @clients.empty?
