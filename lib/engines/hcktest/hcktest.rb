@@ -42,7 +42,7 @@ class HCKTest
     @project.logger.info("Loading platform: #{platform_name}")
     res = platforms.find { |p| p['name'] == platform_name }
     @project.logger.fatal("#{platform_name} does not exist") unless res
-    res || exit(1)
+    res || raise(InvalidConfigFile, "#{platform_name} does not exist")
   end
 
   def initialize_clients
