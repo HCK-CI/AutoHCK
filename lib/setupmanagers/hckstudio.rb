@@ -92,11 +92,15 @@ class HCKStudio < Machine
     super
   end
 
-  def clean_last_run
+  def clean_tools
     delete_project
     delete_pool
     @tools&.close
     @tools = nil
+  end
+
+  def clean_last_run
+    clean_tools unless @tools.nil?
     super
   end
 
