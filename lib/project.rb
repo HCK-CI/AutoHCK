@@ -112,11 +112,13 @@ class Project
   end
 
   def github_handling(commit)
+    return if commit.to_s.empty?
+
     @github = Github.new(@config, @logger, @result_uploader.url, @tag, commit)
-    return unless @github.connected?
+    raise GithubCommitInvalid unless @github.connected?
 
     @github.find_pr
-    return unless @github.connected?
+    raise GithubCommitInvalid unless @github.connected?
 
     @github.create_status('pending', 'Tests session initiated')
   end
