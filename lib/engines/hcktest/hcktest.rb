@@ -50,6 +50,7 @@ class HCKTest
     @platform['clients'].each do |name, client|
       @clients[client['name']] = @setup_manager.create_client(name,
                                                               client['name'])
+      break unless @driver['support']
     end
     return unless @clients.empty?
 
