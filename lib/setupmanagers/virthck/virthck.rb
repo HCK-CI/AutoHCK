@@ -57,6 +57,7 @@ class VirtHCK
      "-filesystem_tests_image #{@config['filesystem_tests_image']}",
      "-ctrl_net_device #{platform_config('ctrl_net_device')}",
      "-world_net_device #{platform_config('world_net_device')}",
+     "-viommu #{platform_config('viommu')}",
      "-st_image #{studio_snapshot}"]
   end
 

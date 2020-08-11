@@ -13,7 +13,8 @@
       "s3": "on",
       "s4": "on",
       "enlightenments_state": "off",
-      "vhost_state": "on"
+      "vhost_state": "on",
+      "viommu": "off"
     },
     "filesystem_tests_image": "/root/Prometheus/images/filesystem_tests_image.qcow2"
 }

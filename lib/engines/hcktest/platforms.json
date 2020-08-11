@@ -501,5 +501,29 @@
         "image": "HLK1903-C2-Win10_1903x64.qcow2"
       }
     }
+  },
+  {
+    "name": "Win10_1903x64_q35_viommu",
+    "kit": "HLK1903",
+    "machine_type": "q35",
+    "viommu": "on",
+    "device_extra": "",
+    "st_image": "HLK1903.qcow2",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "8",
+        "memory": "8G",
+        "winrm_port": "4002",
+        "image": "HLK1903_C1_Win10_1903x64_q35.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "8",
+        "memory": "8G",
+        "winrm_port": "4003",
+        "image": "HLK1903_C2_Win10_1903x64_q35.qcow2"
+      }
+    }
   }
 ]
