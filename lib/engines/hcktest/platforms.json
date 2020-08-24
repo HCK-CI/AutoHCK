@@ -507,6 +507,7 @@
     "kit": "HLK1903",
     "machine_type": "q35",
     "viommu": "on",
+    "englightments_state": "on",
     "device_extra": "",
     "st_image": "HLK1903.qcow2",
     "clients": {
