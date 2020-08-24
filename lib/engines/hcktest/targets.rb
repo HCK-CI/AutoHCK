@@ -10,6 +10,7 @@ class Targets
     @client = client
     @project = project
     @name = project.driver['name']
+    @type = project.driver['type']
     @tools = tools
     @pool = pool
     @logger = project.logger
@@ -47,7 +48,7 @@ class Targets
   def search_target
     @logger.info("Searching for target #{@name} on #{@machine}")
     @tools.list_machine_targets(@machine, @pool).each do |target|
-      return target if target['name'].eql?(@name)
+      return target if target['name'].eql?(@name) && target['type'].eql?(@type)
     end
 
     raise SearchTargetError, "Target #{@name} not found on #{@machine}"
