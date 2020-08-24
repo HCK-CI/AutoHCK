@@ -503,6 +503,28 @@
     }
   },
   {
+    "name": "Win10_1903x64_q35",
+    "kit": "HLK1903",
+    "machine_type": "q35",
+    "st_image": "HLK1903.qcow2",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "8",
+        "memory": "8G",
+        "winrm_port": "4002",
+        "image": "HLK1903_C1_Win10_1903x64_q35.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "8",
+        "memory": "8G",
+        "winrm_port": "4003",
+        "image": "HLK1903_C2_Win10_1903x64_q35.qcow2"
+      }
+    }
+  },
+  {
     "name": "Win10_1903x64_q35_viommu",
     "kit": "HLK1903",
     "machine_type": "q35",
@@ -524,6 +546,27 @@
         "memory": "8G",
         "winrm_port": "4003",
         "image": "HLK1903_C2_Win10_1903x64_q35.qcow2"
+      }
+    }
+  },
+  {
+    "name": "Win10_2004x86",
+    "kit": "HLK2004",
+    "st_image": "HLK2004.qcow2",
+    "clients": {
+      "c1": {
+        "name": "CL1",
+        "cpus": "4",
+        "memory": "4G",
+        "winrm_port": "4002",
+        "image": "HLK2004-C1-Win10_2004x86.qcow2"
+      },
+      "c2": {
+        "name": "CL2",
+        "cpus": "4",
+        "memory": "4G",
+        "winrm_port": "4003",
+        "image": "HLK2004-C2-Win10_2004x86.qcow2"
       }
     }
   }
