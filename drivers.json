@@ -5,6 +5,7 @@
     "device": { "type": "network", "name": "virtio-net-pci", "extra": "" },
     "inf": "netkvm.inf",
     "install_method": "PNP",
+    "type": 0,
     "support": true,
     "pretestcommands": [
       { "desc": "Rename NetKVM ethernet adapter to SupportDevice0",
@@ -26,6 +27,7 @@
     "device": { "type": "storage-blk", "name": "virtio-blk-pci", "extra": "" },
     "inf": "viostor.inf",
     "install_method": "PNP",
+    "type": 0,
     "support": false,
     "pretestcommands": [
       { "desc": "Set Disk Operational Status to Online",
@@ -45,6 +47,7 @@
     "device": { "type": "ivshmem", "name": "ivshmem-doorbell", "extra": "" },
     "inf": "ivshmem.inf",
     "install_method": "PNP",
+    "type": 0,
     "support": false,
     "blacklist": [
       "DF - Embedded Signature Verification Test (Certification)"
@@ -56,6 +59,7 @@
     "device": { "type": "pvpanic", "name": "pvpanic", "extra": "" },
     "inf": "pvpanic.inf",
     "install_method": "PNP",
+    "type": 0,
     "support": false,
     "blacklist": [
       "DF - Embedded Signature Verification Test (Certification)"
