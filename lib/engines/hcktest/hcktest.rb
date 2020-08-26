@@ -2,7 +2,7 @@
 
 require './lib/setupmanagers/hckstudio'
 require './lib/setupmanagers/hckclient'
-require './lib/aux/json_helper'
+require './lib/auxiliary/json_helper'
 
 # HCKTest class
 class HCKTest

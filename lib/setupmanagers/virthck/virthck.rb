@@ -2,7 +2,7 @@
 
 require 'English'
 require './lib/exceptions'
-require './lib/aux/json_helper'
+require './lib/auxiliary/json_helper'
 
 # Virthck class
 class VirtHCK

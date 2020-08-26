@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require './lib/exceptions'
-require './lib/aux/json_helper'
+require './lib/auxiliary/json_helper'
 
 # PhysHCK
 class PhysHCK

@@ -3,12 +3,12 @@
 require 'fileutils'
 require 'mono_logger'
 require 'tempfile'
-require './lib/aux/github'
+require './lib/auxiliary/github'
 require './lib/resultuploaders/result_uploader'
-require './lib/aux/multi_logger'
-require './lib/aux/diff_checker'
-require './lib/aux/json_helper'
-require './lib/aux/id_gen'
+require './lib/auxiliary/multi_logger'
+require './lib/auxiliary/diff_checker'
+require './lib/auxiliary/json_helper'
+require './lib/auxiliary/id_gen'
 
 # project class
 class Project
