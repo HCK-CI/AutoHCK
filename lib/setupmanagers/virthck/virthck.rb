@@ -114,7 +114,8 @@ class VirtHCK
   end
 
   def close
-    cmd = base_cmd + ['end']
+    @logger.info('Cleanup host configurations')
+    cmd = base_cmd + device_cmd + ['end']
     run_cmd(cmd)
   end
 
