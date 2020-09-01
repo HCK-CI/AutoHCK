@@ -160,12 +160,10 @@ class Project
 
   def handle_cancel
     @github.handle_cancel if @github&.connected?
-    release_id
   end
 
   def handle_error
     @github.handle_error if @github&.connected?
-    release_id
   end
 
   def abort
@@ -178,5 +176,6 @@ class Project
     @client2&.abort
     @studio&.abort
     @setup_manager.close
+    release_id
   end
 end
