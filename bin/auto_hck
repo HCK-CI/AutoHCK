@@ -37,7 +37,7 @@ Signal.trap('TERM') do
     exit
   else
     @sigterm = true
-    @project.logger.warn('SIGTERM(1) recieved, aborting if another SIGTERM is'\
+    @project.logger.warn('SIGTERM(1) received, aborting if another SIGTERM is'\
                          ' received in the span of the next one second')
     Thread.new do
       sleep 1

@@ -95,7 +95,7 @@ class Project
       sleep 20
       id = @id_gen.allocate
     end
-    @logger.info("Assinged ID: #{id}")
+    @logger.info("Assigned ID: #{id}")
     id.to_s
   end
 
