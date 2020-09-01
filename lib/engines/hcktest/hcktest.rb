@@ -104,6 +104,7 @@ class HCKTest
     raise e unless (retries += 1) < AUTOHCK_RETRIES
 
     clean_last_run_machines
+    @setup_manager.close
     @project.logger.info('Trying again to run and configure setup')
     retry
   end
@@ -118,5 +119,6 @@ class HCKTest
   def close
     @clients.values.map(&:abort)
     @studio.abort
+    @setup_manager&.close
   end
 end
