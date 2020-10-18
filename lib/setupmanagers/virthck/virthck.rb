@@ -104,6 +104,7 @@ class VirtHCK
   end
 
   def run(name, first_time = false)
+    sleep(rand(10))
     temp_file do |pid|
       cmd = base_cmd + clients_cmd + device_cmd +
             ["-pidfile #{pid.path}", name]
