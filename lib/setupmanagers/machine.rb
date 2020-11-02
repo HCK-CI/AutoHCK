@@ -82,8 +82,8 @@ class Machine
   end
 
   def alive?
-    return false unless @pid
-    return true if @pid.negative?
+    return false if @pid.nil?
+    return true if @pid&.negative?
 
     Process.kill(0, @pid)
     true
