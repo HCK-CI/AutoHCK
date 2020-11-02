@@ -14,5 +14,5 @@ group :test, :development do
   gem 'rake'
   gem 'rspec'
   gem 'rspec_junit_formatter'
-  gem 'rubocop'
+  gem 'rubocop', '0.93.1'
 end
