@@ -171,7 +171,7 @@ class VirtHCK
   end
 
   def create_snapshot_cmd(base, target)
-    cmd = ["#{@config['qemu_img']} create -f qcow2 -b", base, target]
+    cmd = ["#{@config['qemu_img']} create -f qcow2 -F qcow2 -b", base, target]
     run_cmd(cmd)
   end
 
