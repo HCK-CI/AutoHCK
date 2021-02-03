@@ -6,7 +6,7 @@ require './lib/auxiliary/json_helper'
 
 # HCKTest class
 class HCKTest
-  PLATFORMS_JSON = 'lib/engines/hcktest/platforms.json'
+  PLATFORMS_JSON = 'lib/engines/platforms.json'
   DRIVERS_JSON = 'drivers.json'
   # This is a temporary workaround for clients names
   CLIENTS = {

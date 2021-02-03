@@ -7,7 +7,7 @@ require './lib/auxiliary/json_helper'
 class PhysHCK
   attr_reader :kit
   PHYSHCK_CONFIG_JSON = 'lib/setupmanagers/physhck/physhck.json'
-  PLATFORMS_JSON = 'lib/engines/hcktest/platforms.json'
+  PLATFORMS_JSON = 'lib/engines/platforms.json'
 
   def initialize(project)
     @project = project

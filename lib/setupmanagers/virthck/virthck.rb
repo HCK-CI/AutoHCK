@@ -8,7 +8,7 @@ require './lib/auxiliary/json_helper'
 class VirtHCK
   attr_reader :kit
   VIRTHCK_CONFIG_JSON = 'lib/setupmanagers/virthck/virthck.json'
-  PLATFORMS_JSON = 'lib/engines/hcktest/platforms.json'
+  PLATFORMS_JSON = 'lib/engines/platforms.json'
   STUDIO = 'st'
 
   def initialize(project)
