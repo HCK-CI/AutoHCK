@@ -13,14 +13,15 @@ require './lib/auxiliary/id_gen'
 # project class
 class Project
   attr_reader :config, :logger, :timestamp, :setupmanager, :engine, :tag, :id,
-              :driver, :driver_path, :workspace_path, :github, :result_uploader
+              :driver, :driver_path, :workspace_path, :github, :result_uploader,
+              :install
   DRIVERS_JSON = './drivers.json'
   CONFIG_JSON = 'config.json'
 
   def initialize(options)
+    @install = options.install
     init_multilog(options.debug)
     init_class_variables(options)
-    validate_paths
     diff_checker(options.diff)
     configure_result_uploader
     github_handling(options.commit)
@@ -30,6 +31,8 @@ class Project
   end
 
   def diff_checker(diff)
+    return unless @install.nil?
+
     diff_checker = DiffChecker.new(@logger, @driver, @driver_path, diff)
     return if diff_checker.trigger?
 
@@ -58,7 +61,12 @@ class Project
   end
 
   def append_multilog
-    @logfile_path = "#{workspace_path}/#{tag}.log"
+    if @install.nil?
+      @logfile_path = "#{workspace_path}/#{tag}.log"
+    else
+      @logfile_path = "#{workspace_path}/#{install}.log"
+    end
+
     FileUtils.cp(@temp_pre_logger_file.path, @logfile_path)
     @pre_logger.close
     @temp_pre_logger_file.unlink
@@ -68,8 +76,14 @@ class Project
   end
 
   def move_workspace_to(path)
-    FileUtils.cp(@logfile_path, "#{path}/#{tag}.log")
-    @logfile_path = "#{path}/#{tag}.log"
+    if @install.nil?
+      new_logfile_path = "#{workspace_path}/#{tag}.log"
+    else
+      new_logfile_path = "#{workspace_path}/#{install}.log"
+    end
+
+    FileUtils.cp(@logfile_path, new_logfile_path)
+    @logfile_path = new_logfile_path
     @pre_logger.close
     @logger.remove_logger(@pre_logger)
     @pre_logger = MonoLogger.new(@logfile_path)
@@ -82,8 +96,14 @@ class Project
     @timestamp = create_timestamp
     @tag = options.tag
     @driver_path = options.path
-    @driver = find_driver
-    @engine = @config['engine']
+    if options.install
+      @logger.debug('options.install -> ' + options.install)
+      @engine = 'install'
+    else
+      @driver = find_driver
+      validate_paths
+      @engine = @config['engine']
+    end
     @setupmanager = @config['setupmanager']
   end
 
@@ -149,8 +169,13 @@ class Project
   end
 
   def init_workspace
-    @workspace_path = [@config['workspace_path'], @driver['short'],
-                       @config['engine'], @config['setupmanager']].join('/')
+    if @install.nil?
+      @workspace_path = [@config['workspace_path'], @driver['short'],
+                        @engine, @setupmanager].join('/')
+    else
+      @workspace_path = [@config['workspace_path'], @engine,
+                        @setupmanager].join('/')
+    end
     begin
       FileUtils.mkdir_p(@workspace_path)
     rescue Errno::EEXIST
