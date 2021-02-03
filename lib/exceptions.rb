@@ -8,3 +8,6 @@ class GithubCommitInvalid < AutoHCKError; end
 
 # A custom Could not open json file exception
 class OpenJsonError < StandardError; end
+
+# A custom Could not open XML file exception
+class OpenXmlError < StandardError; end
