@@ -175,7 +175,7 @@ class Project
     @client1&.abort
     @client2&.abort
     @studio&.abort
-    @setup_manager.close
+    @setup_manager&.close
     release_id
   end
 end
