@@ -3,6 +3,7 @@
 require './lib/engines/exceptions'
 require './lib/setupmanagers/setupmanager'
 require './lib/engines/hcktest/hcktest'
+require './lib/engines/install/install'
 
 # Engine Class
 #
@@ -11,7 +12,8 @@ class Engine
   #
   class EngineFactory
     ENGINES = {
-      hcktest: HCKTest
+      hcktest: HCKTest,
+      install: Install
     }.freeze
 
     def self.create(type, project)
