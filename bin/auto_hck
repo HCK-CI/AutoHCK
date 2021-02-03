@@ -16,6 +16,7 @@ AUTOHCK_RETRIES = 5
 at_exit do
   @engine&.close
   @project&.abort
+  @project&.close
 end
 
 def clean_threads
