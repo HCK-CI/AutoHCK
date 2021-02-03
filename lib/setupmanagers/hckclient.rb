@@ -167,7 +167,7 @@ class HCKClient < Machine
     return if alive?
 
     @logger.info("Starting client #{@name}")
-    @pid = @setup_manager.run(@tag)
+    @pid = @setupmanager.run(@tag)
     e_message = "Client #{@name} new PID could not be retrieved"
     raise ClientRunError, e_message unless @pid
 
