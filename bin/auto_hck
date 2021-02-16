@@ -28,16 +28,16 @@ module AutoHCK
   @sigterm = false
   Signal.trap('TERM') do
     if @sigterm
-      @project.logger.warn('SIGTERM(2) received, aborting...')
+      @project&.logger&.warn('SIGTERM(2) received, aborting...')
       Signal.trap('TERM') do
-        @project.logger.warn('SIGTERM(*) received, ignoring...')
+        @project&.logger&.warn('SIGTERM(*) received, ignoring...')
       end
       @project&.handle_cancel
       clean_threads
       exit
     else
       @sigterm = true
-      @project.logger.warn('SIGTERM(1) received, aborting if another SIGTERM is'\
+      @project&.logger&.warn('SIGTERM(1) received, aborting if another SIGTERM is'\
                           ' received in the span of the next one second')
       Thread.new do
         sleep 1
@@ -55,7 +55,7 @@ module AutoHCK
     @project.run
   rescue StandardError => e
     Signal.trap('TERM') do
-      @project.logger.warn('SIGTERM(*) received, ignoring...')
+      @project&.logger&.warn('SIGTERM(*) received, ignoring...')
     end
     @project&.log_exception(e, 'fatal')
     @project&.handle_error
