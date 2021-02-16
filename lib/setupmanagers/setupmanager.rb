@@ -31,7 +31,7 @@ module AutoHCK
     def initialize(project)
       @project = project
       @logger = project.logger
-      @type = project.setupmanager.downcase.to_sym
+      @type = project.config['setupmanager'].downcase.to_sym
       setupmanager_create
     end
 

@@ -3,6 +3,8 @@
 require 'fileutils'
 require 'mono_logger'
 require 'tempfile'
+require './lib/engines/engine'
+require './lib/setupmanagers/setupmanager'
 require './lib/auxiliary/github'
 require './lib/resultuploaders/result_uploader'
 require './lib/auxiliary/multi_logger'
@@ -16,7 +18,7 @@ module AutoHCK
   class Project
     include Helper
 
-    attr_reader :config, :logger, :timestamp, :setupmanager, :engine, :tag, :id,
+    attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :tag, :id,
                 :driver, :driver_path, :workspace_path, :github, :result_uploader
 
     DRIVERS_JSON = './drivers.json'
@@ -39,6 +41,15 @@ module AutoHCK
 
       @logger.info("Driver isn't changed, not running tests")
       exit(0)
+    end
+
+    def prepare
+      @engine = Engine.new(self)
+      @setup_manager = SetupManager.new(self)
+    end
+
+    def run
+      @engine.run
     end
 
     def prep_stream_for_log(stream)
@@ -88,8 +99,6 @@ module AutoHCK
       @tag = options.tag
       @driver_path = options.path
       @driver = find_driver
-      @engine = @config['engine']
-      @setupmanager = @config['setupmanager']
     end
 
     def assign_id
@@ -181,6 +190,7 @@ module AutoHCK
       @client2&.abort
       @studio&.abort
       @setup_manager&.close
+      @engine&.close
       release_id
     end
   end

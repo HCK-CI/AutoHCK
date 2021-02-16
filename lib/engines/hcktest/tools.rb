@@ -259,6 +259,7 @@ module AutoHCK
 
     def close
       @tools&.close
+      @tools = nil
     end
 
     def validate_paths
