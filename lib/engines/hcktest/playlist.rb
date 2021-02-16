@@ -53,7 +53,7 @@ module AutoHCK
     end
 
     def custom_playlist(log)
-      playlist = @project.driver['playlist']
+      playlist = @project.engine.driver['playlist']
       return unless playlist
 
       @tests.select! { |test| playlist.include?(test['name']) }
@@ -62,7 +62,7 @@ module AutoHCK
     end
 
     def custom_blacklist(log)
-      blacklist = @project.driver['blacklist']
+      blacklist = @project.engine.driver['blacklist']
       @tests.reject! { |test| blacklist.include?(test['name']) } if blacklist
       @logger.info('Applying custom blacklist') if log && blacklist
     end

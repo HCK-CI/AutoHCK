@@ -46,6 +46,10 @@ module AutoHCK
       @engine.run
     end
 
+    def driver
+      @engine.driver
+    end
+
     def close
       @engine.close
     end

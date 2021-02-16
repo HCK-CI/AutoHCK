@@ -27,16 +27,14 @@ module AutoHCK
     def initialize(options)
       init_multilog(options.debug)
       init_class_variables(options)
-      validate_paths
-      diff_checker(options.diff)
       configure_result_uploader
       github_handling(options.commit)
       init_workspace
       @id = assign_id
     end
 
-    def diff_checker(diff)
-      diff_checker = DiffChecker.new(@logger, @driver, @driver_path, diff)
+    def diff_checker(driver, diff)
+      diff_checker = DiffChecker.new(@logger, driver, @driver_path, diff)
       return if diff_checker.trigger?
 
       @logger.info("Driver isn't changed, not running tests")
@@ -45,6 +43,8 @@ module AutoHCK
 
     def prepare
       @engine = Engine.new(self)
+      diff_checker(@engine.driver, @diff)
+
       @setup_manager = SetupManager.new(self)
     end
 
@@ -98,7 +98,7 @@ module AutoHCK
       @timestamp = create_timestamp
       @tag = options.tag
       @driver_path = options.path
-      @driver = find_driver
+      @diff = options.diff
     end
 
     def assign_id
@@ -137,34 +137,13 @@ module AutoHCK
       @github.create_status('pending', 'Tests session initiated')
     end
 
-    def validate_paths
-      normalize_paths
-      return if File.exist?("#{@driver_path}/#{@driver['inf']}")
-
-      @logger.fatal('Driver path is not valid')
-      exit(1)
-    end
-
-    def normalize_paths
-      @driver_path.chomp!('/')
-    end
-
-    def find_driver
-      drivers = read_json(DRIVERS_JSON, @logger)
-      short_name = @tag.split('-', 2).first
-      @logger.info("Loading driver: #{short_name}")
-      res = drivers.find { |driver| driver['short'] == short_name }
-      logger.fatal("#{short_name} does not exist") unless res
-      res || exit(1)
-    end
-
     def create_timestamp
       Time.now.strftime('%Y_%m_%d_%H_%M_%S')
     end
 
     def init_workspace
-      @workspace_path = [@config['workspace_path'], @driver['short'],
-                         @config['engine'], @config['setupmanager']].join('/')
+      @workspace_path = [@config['workspace_path'], @config['engine'],
+                         @config['setupmanager']].join('/')
       begin
         FileUtils.mkdir_p(@workspace_path)
       rescue Errno::EEXIST
