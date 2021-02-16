@@ -2,6 +2,7 @@
 
 require './lib/setupmanagers/hckstudio'
 require './lib/setupmanagers/hckclient'
+require './lib/auxiliary/diff_checker'
 require './lib/auxiliary/json_helper'
 
 # AutoHCK module
@@ -9,6 +10,7 @@ module AutoHCK
   # HCKTest class
   class HCKTest
     include Helper
+    attr_reader :driver
 
     PLATFORMS_JSON = 'lib/engines/hcktest/platforms.json'
     DRIVERS_JSON = 'drivers.json'
@@ -23,19 +25,41 @@ module AutoHCK
       @project = project
       @project.append_multilog("#{@project.tag}.log")
       @platform = read_platform
-      @driver = project.driver
+      @driver = find_driver
+      validate_paths
       init_workspace
     end
 
     def init_workspace
-      @workspace_path = [@project.workspace_path, @platform['name'],
-                         @project.timestamp].join('/')
+      @workspace_path = [@project.workspace_path, @driver['short'],
+                         @platform['name'], @project.timestamp].join('/')
       begin
         FileUtils.mkdir_p(@workspace_path)
       rescue Errno::EEXIST
         @project.logger.warn('Workspace path already exists')
       end
       @project.move_workspace_to(@workspace_path.to_s)
+    end
+
+    def validate_paths
+      normalize_paths
+      return if File.exist?("#{@project.driver_path}/#{@driver['inf']}")
+
+      @project.logger.fatal('Driver path is not valid')
+      raise(InvalidPathError, "Driver path #{@project.driver_path}/#{@driver['inf']} is not valid")
+    end
+
+    def normalize_paths
+      @project.driver_path.chomp!('/')
+    end
+
+    def find_driver
+      drivers = read_json(DRIVERS_JSON, @project.logger)
+      short_name = @project.tag.split('-', 2).first
+      @project.logger.info("Loading driver: #{short_name}")
+      res = drivers.find { |driver| driver['short'] == short_name }
+      @project.logger.fatal("#{short_name} does not exist") unless res
+      res || raise(InvalidConfigFile, "#{short_name} does not exist")
     end
 
     def read_platform

@@ -83,7 +83,7 @@ module AutoHCK
     end
 
     def run_pre_test_commands
-      @project.driver['pretestcommands']&.each do |command|
+      @project.engine.driver['pretestcommands']&.each do |command|
         desc = command['desc']
         cmd = command['run']
 
@@ -93,9 +93,9 @@ module AutoHCK
     end
 
     def install_driver
-      method = @project.driver['install_method']
+      method = @project.engine.driver['install_method']
       path = @project.driver_path
-      inf = @project.driver['inf']
+      inf = @project.engine.driver['inf']
       @logger.info("Installing #{method} driver #{inf} in #{@name}")
       @tools.install_machine_driver_package(@name, path, method, inf)
     end

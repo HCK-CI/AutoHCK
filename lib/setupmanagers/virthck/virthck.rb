@@ -21,7 +21,7 @@ module AutoHCK
       @project = project
       @logger = project.logger
       @config = read_json(VIRTHCK_CONFIG_JSON, @logger)
-      @device = project.driver['device']
+      @device = project.engine.driver['device']
       @platform = read_platform
       @workspace_path = project.workspace_path
       @id = project.id
