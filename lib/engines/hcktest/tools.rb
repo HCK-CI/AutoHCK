@@ -3,264 +3,267 @@
 require 'rtoolsHCK'
 require 'nori/parser/rexml'
 
-# Tools class
-class Tools < RToolsHCK
-  ACTION_RETRIES = 5
-  ACTION_RETRY_SLEEP = 10
-  def initialize(project, ip_addr, clients)
-    @logger = project.logger
-    @config = project.config
-    @clients = clients
-    validate_paths
-    connect(addr: ip_addr,
-            user: @config['studio_username'],
-            pass: @config['studio_password'],
-            winrm_ports: config_winrm_ports,
-            timeout: 120,
-            logger: @logger,
-            outp_dir: project.workspace_path,
-            l_script_file: @config['toolshck_path'])
-  end
-  # A custom InvalidToolsPath error exception
-  class InvalidToolsPathError < AutoHCKError; end
-  # A custom ZipTestResultLogs error exception
-  class ZipTestResultLogsError < AutoHCKError; end
+# AutoHCK module
+module AutoHCK
+  # Tools class
+  class Tools < RToolsHCK
+    ACTION_RETRIES = 5
+    ACTION_RETRY_SLEEP = 10
+    def initialize(project, ip_addr, clients)
+      @logger = project.logger
+      @config = project.config
+      @clients = clients
+      validate_paths
+      connect(addr: ip_addr,
+              user: @config['studio_username'],
+              pass: @config['studio_password'],
+              winrm_ports: config_winrm_ports,
+              timeout: 120,
+              logger: @logger,
+              outp_dir: project.workspace_path,
+              l_script_file: @config['toolshck_path'])
+    end
+    # A custom InvalidToolsPath error exception
+    class InvalidToolsPathError < AutoHCKError; end
+    # A custom ZipTestResultLogs error exception
+    class ZipTestResultLogsError < AutoHCKError; end
 
-  # A custom RestartMachine error exception
-  class RestartMachineError < AutoHCKError; end
+    # A custom RestartMachine error exception
+    class RestartMachineError < AutoHCKError; end
 
-  # A custom RunOnMachine error exception
-  class RunOnMachineError < AutoHCKError; end
+    # A custom RunOnMachine error exception
+    class RunOnMachineError < AutoHCKError; end
 
-  # A custom ShutdownMachine error exception
-  class ShutdownMachineError < AutoHCKError; end
+    # A custom ShutdownMachine error exception
+    class ShutdownMachineError < AutoHCKError; end
 
-  # A custom InstallMachineDriverPackage error exception
-  class InstallMachineDriverPackageError < AutoHCKError; end
+    # A custom InstallMachineDriverPackage error exception
+    class InstallMachineDriverPackageError < AutoHCKError; end
 
-  # A thread safe class that wraps an object instace with critical data
-  class ThreadSafe < BasicObject
-    def initialize(object, mutex)
-      @delegate = object
-      @mutex = mutex
+    # A thread safe class that wraps an object instace with critical data
+    class ThreadSafe < BasicObject
+      def initialize(object, mutex)
+        @delegate = object
+        @mutex = mutex
+      end
+
+      def method_missing(method, *args, &block)
+        if @delegate.respond_to?(method)
+          @mutex.synchronize { @delegate.send(method, *args, &block) }
+        else
+          super
+        end
+      end
+
+      def respond_to_missing?(method, *args)
+        @delegate.respond_to?(method) || super
+      end
     end
 
-    def method_missing(method, *args, &block)
-      if @delegate.respond_to?(method)
-        @mutex.synchronize { @delegate.send(method, *args, &block) }
+    def connect(conn)
+      @tools = ThreadSafe.new(RToolsHCK.new(conn), Mutex.new)
+    end
+
+    def config_winrm_ports
+      winrm_ports = {}
+      @clients.each_value do |client|
+        winrm_ports[client['name']] = client['winrm_port']
+      end
+      winrm_ports
+    end
+
+    def prep_stream_for_log(stream)
+      stream.strip.lines.map { |line| "\n   -- #{line.rstrip}" }.join
+    end
+
+    def handle_results(results)
+      if results['result'] == 'Failure'
+        if results['message']
+          failure_message = prep_stream_for_log(results['message'])
+          @logger.warn("Tools action failure#{failure_message}")
+        end
+        false
       else
-        super
+        results['content'] || true
       end
     end
 
-    def respond_to_missing?(method, *args)
-      @delegate.respond_to?(method) || super
+    def create_pool(tag)
+      handle_results(@tools.create_pool(tag))
     end
-  end
 
-  def connect(conn)
-    @tools = ThreadSafe.new(RToolsHCK.new(conn), Mutex.new)
-  end
-
-  def config_winrm_ports
-    winrm_ports = {}
-    @clients.each_value do |client|
-      winrm_ports[client['name']] = client['winrm_port']
+    def delete_pool(tag)
+      handle_results(@tools.delete_pool(tag))
     end
-    winrm_ports
-  end
 
-  def prep_stream_for_log(stream)
-    stream.strip.lines.map { |line| "\n   -- #{line.rstrip}" }.join
-  end
-
-  def handle_results(results)
-    if results['result'] == 'Failure'
-      if results['message']
-        failure_message = prep_stream_for_log(results['message'])
-        @logger.warn("Tools action failure#{failure_message}")
-      end
-      false
-    else
-      results['content'] || true
+    def create_project(tag)
+      handle_results(@tools.create_project(tag))
     end
-  end
 
-  def create_pool(tag)
-    handle_results(@tools.create_pool(tag))
-  end
+    def delete_project(tag)
+      handle_results(@tools.delete_project(tag))
+    end
 
-  def delete_pool(tag)
-    handle_results(@tools.delete_pool(tag))
-  end
+    def list_pools
+      handle_results(@tools.list_pools)
+    end
 
-  def create_project(tag)
-    handle_results(@tools.create_project(tag))
-  end
+    def create_project_target(key, tag, machine)
+      handle_results(@tools.create_project_target(key, tag, machine, tag))
+    end
 
-  def delete_project(tag)
-    handle_results(@tools.delete_project(tag))
-  end
+    def list_machine_targets(machine, pool)
+      handle_results(@tools.list_machine_targets(machine, pool))
+    end
 
-  def list_pools
-    handle_results(@tools.list_pools)
-  end
+    def delete_machine(machine, pool)
+      handle_results(@tools.delete_machine(machine, pool))
+    end
 
-  def create_project_target(key, tag, machine)
-    handle_results(@tools.create_project_target(key, tag, machine, tag))
-  end
+    def run_on_machine(machine, desc, cmd)
+      retries ||= 0
+      ret = handle_results(@tools.run_on_machine(machine, cmd))
 
-  def list_machine_targets(machine, pool)
-    handle_results(@tools.list_machine_targets(machine, pool))
-  end
+      return ret if ret
 
-  def delete_machine(machine, pool)
-    handle_results(@tools.delete_machine(machine, pool))
-  end
+      e_message = "Running command (#{desc}) on machine #{machine} failed"
+      raise RunOnMachineError, e_message
+    rescue RunOnMachineError => e
+      @logger.warn(e.message)
+      raise unless (retries += 1) < ACTION_RETRIES
 
-  def run_on_machine(machine, desc, cmd)
-    retries ||= 0
-    ret = handle_results(@tools.run_on_machine(machine, cmd))
+      sleep ACTION_RETRY_SLEEP
+      @logger.info("Trying again to run command (#{desc}) on machine #{machine}")
+      retry
+    end
 
-    return ret if ret
+    def restart_machine(machine)
+      retries ||= 0
+      ret = handle_results(@tools.machine_shutdown(machine, :restart))
 
-    e_message = "Running command (#{desc}) on machine #{machine} failed"
-    raise RunOnMachineError, e_message
-  rescue RunOnMachineError => e
-    @logger.warn(e.message)
-    raise unless (retries += 1) < ACTION_RETRIES
+      return ret if ret
 
-    sleep ACTION_RETRY_SLEEP
-    @logger.info("Trying again to run command (#{desc}) on machine #{machine}")
-    retry
-  end
+      raise RestartMachineError, "Restarting machine #{machine} failed"
+    rescue RestartMachineError => e
+      @logger.warn(e.message)
+      raise unless (retries += 1) < ACTION_RETRIES
 
-  def restart_machine(machine)
-    retries ||= 0
-    ret = handle_results(@tools.machine_shutdown(machine, :restart))
+      sleep ACTION_RETRY_SLEEP
+      @logger.info("Trying again to restart machine #{machine}")
+      retry
+    end
 
-    return ret if ret
+    def shutdown_machine(machine)
+      retries ||= 0
+      ret = handle_results(@tools.machine_shutdown(machine, :shutdown))
 
-    raise RestartMachineError, "Restarting machine #{machine} failed"
-  rescue RestartMachineError => e
-    @logger.warn(e.message)
-    raise unless (retries += 1) < ACTION_RETRIES
+      return ret if ret
 
-    sleep ACTION_RETRY_SLEEP
-    @logger.info("Trying again to restart machine #{machine}")
-    retry
-  end
+      raise ShutdownMachineError, "Shuting down machine #{machine} failed"
+    rescue ShutdownMachineError => e
+      @logger.warn(e.message)
+      raise unless (retries += 1) < ACTION_RETRIES
 
-  def shutdown_machine(machine)
-    retries ||= 0
-    ret = handle_results(@tools.machine_shutdown(machine, :shutdown))
+      sleep ACTION_RETRY_SLEEP
+      @logger.info("Trying again to shutdown machine #{machine}")
+      retry
+    end
 
-    return ret if ret
+    def shutdown
+      handle_results(@tools.shutdown(false))
+    end
 
-    raise ShutdownMachineError, "Shuting down machine #{machine} failed"
-  rescue ShutdownMachineError => e
-    @logger.warn(e.message)
-    raise unless (retries += 1) < ACTION_RETRIES
+    def move_machine(machine, from, to)
+      handle_results(@tools.move_machine(machine, from, to))
+    end
 
-    sleep ACTION_RETRY_SLEEP
-    @logger.info("Trying again to shutdown machine #{machine}")
-    retry
-  end
+    # Timeout for setting a machine state to the Ready state
+    SET_MACHINE_READY_TIMEOUT = 120
 
-  def shutdown
-    handle_results(@tools.shutdown(false))
-  end
+    def set_machine_ready(machine, pool)
+      handle_results(@tools.set_machine_state(machine,
+                                              pool,
+                                              'ready',
+                                              SET_MACHINE_READY_TIMEOUT))
+    end
 
-  def move_machine(machine, from, to)
-    handle_results(@tools.move_machine(machine, from, to))
-  end
+    def install_machine_driver_package(machine, method, driver_path, file)
+      retries ||= 0
+      ret = handle_results(@tools.install_machine_driver_package(machine,
+                                                                 driver_path,
+                                                                 method, file))
 
-  # Timeout for setting a machine state to the Ready state
-  SET_MACHINE_READY_TIMEOUT = 120
+      return ret if ret
 
-  def set_machine_ready(machine, pool)
-    handle_results(@tools.set_machine_state(machine,
-                                            pool,
-                                            'ready',
-                                            SET_MACHINE_READY_TIMEOUT))
-  end
+      e_message = "Installing driver package on machine #{machine} failed"
+      raise InstallMachineDriverPackageError, e_message
+    rescue InstallMachineDriverPackageError => e
+      @logger.warn(e.message)
+      raise unless (retries += 1) < ACTION_RETRIES
 
-  def install_machine_driver_package(machine, method, driver_path, file)
-    retries ||= 0
-    ret = handle_results(@tools.install_machine_driver_package(machine,
-                                                               driver_path,
-                                                               method, file))
+      sleep ACTION_RETRY_SLEEP
+      @logger.info("Trying again to install driver package on machine #{machine}")
+      retry
+    end
 
-    return ret if ret
+    def list_tests(key, machine, tag, playlist)
+      handle_results(@tools.list_tests(key, tag, machine, tag, nil, nil,
+                                       playlist))
+    end
 
-    e_message = "Installing driver package on machine #{machine} failed"
-    raise InstallMachineDriverPackageError, e_message
-  rescue InstallMachineDriverPackageError => e
-    @logger.warn(e.message)
-    raise unless (retries += 1) < ACTION_RETRIES
+    def queue_test(test_id, target_key, machine, tag, support)
+      handle_results(@tools.queue_test(test_id, target_key, tag, machine, tag,
+                                       support))
+    end
 
-    sleep ACTION_RETRY_SLEEP
-    @logger.info("Trying again to install driver package on machine #{machine}")
-    retry
-  end
+    def update_filters(filters_path)
+      handle_results(@tools.update_filters(filters_path))
+    end
 
-  def list_tests(key, machine, tag, playlist)
-    handle_results(@tools.list_tests(key, tag, machine, tag, nil, nil,
-                                     playlist))
-  end
+    def apply_project_filters(project)
+      handle_results(@tools.apply_project_filters(project))
+    end
 
-  def queue_test(test_id, target_key, machine, tag, support)
-    handle_results(@tools.queue_test(test_id, target_key, tag, machine, tag,
-                                     support))
-  end
+    def zip_test_result_logs(test_id, target_key, machine, tag)
+      retries ||= 0
+      ret = handle_results(@tools.zip_test_result_logs(-1, test_id, target_key,
+                                                       tag, machine, tag))
 
-  def update_filters(filters_path)
-    handle_results(@tools.update_filters(filters_path))
-  end
+      return ret if ret
 
-  def apply_project_filters(project)
-    handle_results(@tools.apply_project_filters(project))
-  end
+      raise ZipTestResultLogsError, 'Archiving tests results failed'
+    rescue ZipTestResultLogsError => e
+      # Results archiving might fail because they requested before they are done
+      # or when the test itself didn't run and there are no results.
+      @logger.warn(e.message)
+      raise unless (retries += 1) < ACTION_RETRIES
 
-  def zip_test_result_logs(test_id, target_key, machine, tag)
-    retries ||= 0
-    ret = handle_results(@tools.zip_test_result_logs(-1, test_id, target_key,
-                                                     tag, machine, tag))
+      sleep ACTION_RETRY_SLEEP
+      @logger.info('Trying again to archive tests results')
+      retry
+    end
 
-    return ret if ret
+    def create_project_package(project, handler = nil)
+      handle_results(@tools.create_project_package(project, handler))
+    end
 
-    raise ZipTestResultLogsError, 'Archiving tests results failed'
-  rescue ZipTestResultLogsError => e
-    # Results archiving might fail because they requested before they are done
-    # or when the test itself didn't run and there are no results.
-    @logger.warn(e.message)
-    raise unless (retries += 1) < ACTION_RETRIES
+    def connection_check
+      handle_results(@tools.connection_check)
+    end
 
-    sleep ACTION_RETRY_SLEEP
-    @logger.info('Trying again to archive tests results')
-    retry
-  end
+    def reconnect
+      handle_results(@tools.reconnect)
+    end
 
-  def create_project_package(project, handler = nil)
-    handle_results(@tools.create_project_package(project, handler))
-  end
+    def close
+      @tools&.close
+    end
 
-  def connection_check
-    handle_results(@tools.connection_check)
-  end
+    def validate_paths
+      return if File.exist?(@config['toolshck_path'])
 
-  def reconnect
-    handle_results(@tools.reconnect)
-  end
-
-  def close
-    @tools&.close
-  end
-
-  def validate_paths
-    return if File.exist?(@config['toolshck_path'])
-
-    @logger.fatal('toolsHCK script path is not valid')
-    raise InvalidToolsPathError, 'toolsHCK script path is not valid'
+      @logger.fatal('toolsHCK script path is not valid')
+      raise InvalidToolsPathError, 'toolsHCK script path is not valid'
+    end
   end
 end

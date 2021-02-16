@@ -6,60 +6,63 @@ require './lib/cli'
 require './lib/project'
 require './lib/engines/engine'
 
-cli = CLI.new
-options = cli.parse(ARGV)
+# AutoHCK module
+module AutoHCK
+  cli = CLI.new
+  options = cli.parse(ARGV)
 
-ENV.store 'LC_ALL', 'en_US.UTF-8'
+  ENV.store 'LC_ALL', 'en_US.UTF-8'
 
-AUTOHCK_RETRIES = 5
+  AUTOHCK_RETRIES = 5
 
-at_exit do
-  @engine&.close
-  @project&.abort
-  @project&.close
-end
-
-def clean_threads
-  Thread.list.each do |thread|
-    thread.exit unless Thread.main.eql?(thread)
+  at_exit do
+    @engine&.close
+    @project&.abort
+    @project&.close
   end
-end
 
-@sigterm = false
-Signal.trap('TERM') do
-  if @sigterm
-    @project.logger.warn('SIGTERM(2) received, aborting...')
+  def self.clean_threads
+    Thread.list.each do |thread|
+      thread.exit unless Thread.main.eql?(thread)
+    end
+  end
+
+  @sigterm = false
+  Signal.trap('TERM') do
+    if @sigterm
+      @project.logger.warn('SIGTERM(2) received, aborting...')
+      Signal.trap('TERM') do
+        @project.logger.warn('SIGTERM(*) received, ignoring...')
+      end
+      @engine&.close unless @engine.nil?
+      @project&.handle_cancel
+      clean_threads
+      exit
+    else
+      @sigterm = true
+      @project.logger.warn('SIGTERM(1) received, aborting if another SIGTERM is'\
+                          ' received in the span of the next one second')
+      Thread.new do
+        sleep 1
+        @sigterm = false
+      end
+    end
+  end
+
+  Thread.abort_on_exception = true
+  Thread.report_on_exception = false
+
+  begin
+    @project = Project.new(options)
+    @engine = Engine.new(@project)
+    @engine.run
+  rescue StandardError => e
     Signal.trap('TERM') do
       @project.logger.warn('SIGTERM(*) received, ignoring...')
     end
-    @engine&.close unless @engine.nil?
-    @project&.handle_cancel
+    @project&.log_exception(e, 'fatal')
+    @project&.handle_error
     clean_threads
-    exit
-  else
-    @sigterm = true
-    @project.logger.warn('SIGTERM(1) received, aborting if another SIGTERM is'\
-                         ' received in the span of the next one second')
-    Thread.new do
-      sleep 1
-      @sigterm = false
-    end
+    raise e
   end
-end
-
-Thread.abort_on_exception = true
-Thread.report_on_exception = false
-
-begin
-  @project = Project.new(options)
-  @engine = Engine.new(@project)
-  @engine.run
-rescue StandardError => e
-  Signal.trap('TERM') do
-    @project.logger.warn('SIGTERM(*) received, ignoring...')
-  end
-  @project&.log_exception(e, 'fatal')
-  @project&.handle_error
-  clean_threads
-  raise e
 end
