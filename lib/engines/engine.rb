@@ -29,7 +29,7 @@ module AutoHCK
       @project = project
       @logger = project.logger
       @engine = nil
-      @type = project.engine.downcase.to_sym
+      @type = project.config['engine'].downcase.to_sym
       engine_create
     end
 

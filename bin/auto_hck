@@ -4,7 +4,6 @@
 require 'filelock'
 require './lib/cli'
 require './lib/project'
-require './lib/engines/engine'
 
 # AutoHCK module
 module AutoHCK
@@ -16,7 +15,6 @@ module AutoHCK
   AUTOHCK_RETRIES = 5
 
   at_exit do
-    @engine&.close
     @project&.abort
     @project&.close
   end
@@ -34,7 +32,6 @@ module AutoHCK
       Signal.trap('TERM') do
         @project.logger.warn('SIGTERM(*) received, ignoring...')
       end
-      @engine&.close unless @engine.nil?
       @project&.handle_cancel
       clean_threads
       exit
@@ -54,8 +51,8 @@ module AutoHCK
 
   begin
     @project = Project.new(options)
-    @engine = Engine.new(@project)
-    @engine.run
+    @project.prepare
+    @project.run
   rescue StandardError => e
     Signal.trap('TERM') do
       @project.logger.warn('SIGTERM(*) received, ignoring...')

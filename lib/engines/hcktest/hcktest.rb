@@ -25,9 +25,6 @@ module AutoHCK
       @platform = read_platform
       @driver = project.driver
       init_workspace
-      @setup_manager = SetupManager.new(project)
-      @studio = @setup_manager.create_studio
-      initialize_clients
     end
 
     def init_workspace
@@ -53,8 +50,8 @@ module AutoHCK
     def initialize_clients
       @clients = {}
       @platform['clients'].each do |name, client|
-        @clients[client['name']] = @setup_manager.create_client(name,
-                                                                client['name'])
+        @clients[client['name']] = @project.setup_manager.create_client(name,
+                                                                        client['name'])
         break unless @driver['support']
       end
       return unless @clients.empty?
@@ -109,12 +106,15 @@ module AutoHCK
       raise e unless (retries += 1) < AUTOHCK_RETRIES
 
       clean_last_run_machines
-      @setup_manager.close
+      @project.setup_manager&.close
       @project.logger.info('Trying again to run and configure setup')
       retry
     end
 
     def run
+      @studio = @project.setup_manager.create_studio
+      initialize_clients
+
       run_and_configure_setup
       client = @client1
       client.run_tests
@@ -124,7 +124,6 @@ module AutoHCK
     def close
       @clients.values.map(&:abort)
       @studio.abort
-      @setup_manager&.close
     end
   end
 end
