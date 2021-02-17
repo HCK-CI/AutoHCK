@@ -10,6 +10,7 @@ module AutoHCK
   class HCKClient < Machine
     attr_reader :name, :id, :kit
     attr_writer :support
+
     def initialize(project, setupmanager, studio, tag, name)
       @id = tag[-1]
       super(project, name, setupmanager, @id, tag)

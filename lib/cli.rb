@@ -10,6 +10,7 @@ module AutoHCK
     # class ScriptOptions
     class ScriptOptions
       attr_accessor :tag, :path, :diff, :commit, :debug
+
       def define_options(parser)
         self.debug = false
         parser.banner = 'Usage: auto_hck.rb [options]'

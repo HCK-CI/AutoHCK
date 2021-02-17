@@ -10,6 +10,7 @@ module AutoHCK
   #
   class SetupManager
     attr_reader :id
+
     # SetupManagerFactory
     #
     class SetupManagerFactory

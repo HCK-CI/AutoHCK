@@ -9,6 +9,7 @@ module AutoHCK
   # Machine class
   class Machine
     attr_reader :name
+
     def initialize(project, name, setupmanager, id, tag)
       @name = name
       @tag = tag

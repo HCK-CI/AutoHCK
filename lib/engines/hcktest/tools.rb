@@ -23,8 +23,10 @@ module AutoHCK
               outp_dir: project.workspace_path,
               l_script_file: @config['toolshck_path'])
     end
+
     # A custom InvalidToolsPath error exception
     class InvalidToolsPathError < AutoHCKError; end
+
     # A custom ZipTestResultLogs error exception
     class ZipTestResultLogsError < AutoHCKError; end
 
