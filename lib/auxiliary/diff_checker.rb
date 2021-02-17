@@ -12,7 +12,7 @@ module AutoHCK
     def initialize(logger, driver, driver_path, diff)
       @logger = logger
       @driver = driver['short']
-      @diff = diff || driver_path + '/' + DIFF_FILENAME
+      @diff = diff || "#{driver_path}/#{DIFF_FILENAME}"
     end
 
     def load_driver_triggers
