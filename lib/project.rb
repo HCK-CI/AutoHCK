@@ -30,7 +30,6 @@ module AutoHCK
       configure_result_uploader
       github_handling(options.commit)
       init_workspace
-      append_multilog
       @id = assign_id
     end
 
@@ -62,8 +61,9 @@ module AutoHCK
       @logger.level = debug ? 'DEBUG' : 'INFO'
     end
 
-    def append_multilog
-      @logfile_path = "#{workspace_path}/#{tag}.log"
+    def append_multilog(logfile_name)
+      @logfile_name = logfile_name
+      @logfile_path = "#{workspace_path}/#{@logfile_name}"
       FileUtils.cp(@temp_pre_logger_file.path, @logfile_path)
       @pre_logger.close
       @temp_pre_logger_file.unlink
@@ -73,8 +73,8 @@ module AutoHCK
     end
 
     def move_workspace_to(path)
-      FileUtils.cp(@logfile_path, "#{path}/#{tag}.log")
-      @logfile_path = "#{path}/#{tag}.log"
+      FileUtils.cp(@logfile_path, "#{path}/#{@logfile_name}")
+      @logfile_path = "#{path}/#{@logfile_name}"
       @pre_logger.close
       @logger.remove_logger(@pre_logger)
       @pre_logger = MonoLogger.new(@logfile_path)

@@ -21,6 +21,7 @@ module AutoHCK
 
     def initialize(project)
       @project = project
+      @project.append_multilog("#{@project.tag}.log")
       @platform = read_platform
       @driver = project.driver
       init_workspace
