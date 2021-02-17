@@ -18,6 +18,7 @@ module AutoHCK
 
     attr_reader :config, :logger, :timestamp, :setupmanager, :engine, :tag, :id,
                 :driver, :driver_path, :workspace_path, :github, :result_uploader
+
     DRIVERS_JSON = './drivers.json'
     CONFIG_JSON = 'config.json'
 

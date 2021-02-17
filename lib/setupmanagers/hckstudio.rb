@@ -9,6 +9,7 @@ module AutoHCK
   # HCKStudio class
   class HCKStudio < Machine
     attr_reader :tools, :name, :id, :setupmanager
+
     HCK_FILTERS_PATH = 'filters/UpdateFilters.sql'
     def initialize(project, setupmanager, name, ip)
       super(project, name, setupmanager, 0, 'st')

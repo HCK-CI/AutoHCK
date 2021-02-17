@@ -12,10 +12,13 @@ module AutoHCK
 
   # custom machine error
   class MachineError < AutoHCKError; end
+
   class MachinePidNil < MachineError; end
+
   class MachineRunError < MachineError; end
 
   # custom client error
   class ClientError < MachineError; end
+
   class ClientRunError < ClientError; end
 end

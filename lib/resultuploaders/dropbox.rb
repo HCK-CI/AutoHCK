@@ -7,6 +7,7 @@ module AutoHCK
   # dropbox class
   class Dropbox
     attr_reader :url
+
     def initialize(project)
       @tag = project.tag
       @timestamp = project.timestamp

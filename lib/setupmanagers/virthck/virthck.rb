@@ -12,6 +12,7 @@ module AutoHCK
     include Helper
 
     attr_reader :kit
+
     VIRTHCK_CONFIG_JSON = 'lib/setupmanagers/virthck/virthck.json'
     PLATFORMS_JSON = 'lib/engines/hcktest/platforms.json'
     STUDIO = 'st'
