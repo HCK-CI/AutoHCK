@@ -47,10 +47,10 @@ module AutoHCK
 
     def create_project_folder
       handle_exceptions(__method__) do
-        @path = '/' + @tag + '-' + @timestamp
+        @path = "/#{@tag}-#{@timestamp}"
         @dropbox.create_folder(@path)
         @dropbox.share_folder(@path)
-        @url = @dropbox.create_shared_link_with_settings(@path).url + '&lst='
+        @url = "#{@dropbox.create_shared_link_with_settings(@path).url}&lst="
         @logger.info("Dropbox project folder created: #{@url}")
       end
     end
@@ -58,14 +58,14 @@ module AutoHCK
     def upload_file(l_path, r_name)
       handle_exceptions(__method__) do
         content = IO.read(l_path)
-        r_path = @path + '/' + r_name
+        r_path = "#{@path}/#{r_name}"
         @dropbox.upload(r_path, content)
       end
     end
 
     def update_file_content(content, r_name)
       handle_exceptions(__method__) do
-        r_path = @path + '/' + r_name
+        r_path = "#{@path}/#{r_name}"
         @dropbox.upload(r_path, content, mode: 'overwrite')
       end
     end
@@ -73,7 +73,7 @@ module AutoHCK
     def delete_file(r_name)
       handle_exceptions(__method__) do
         begin
-          r_path = @path + '/' + r_name
+          r_path = "#{@path}/#{r_name}"
           @dropbox.delete(r_path)
           @logger.info("Dropbox file deleted: #{r_path}")
           true

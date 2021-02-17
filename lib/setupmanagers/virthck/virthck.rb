@@ -40,12 +40,12 @@ module AutoHCK
 
     def studio_snapshot
       filename = File.basename(@platform['st_image'], '.*')
-      @workspace_path + '/' + filename + '-snapshot.qcow2'
+      "#{@workspace_path}/#{filename}-snapshot.qcow2"
     end
 
     def client_snapshot(name)
       filename = File.basename(@platform['clients'][name]['image'], '.*')
-      @workspace_path + '/' + filename + '-snapshot.qcow2'
+      "#{@workspace_path}/#{filename}-snapshot.qcow2"
     end
 
     def platform_config(param)

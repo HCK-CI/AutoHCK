@@ -17,10 +17,10 @@ module AutoHCK
     end
 
     def log_stdout_stderr(stdout, stderr)
-      @logger.info('Info dump:' + prep_log_stream(stdout)) unless stdout.empty?
+      @logger.info("Info dump:#{prep_log_stream(stdout)}") unless stdout.empty?
       return if stderr.empty?
 
-      @logger.warn('Error dump:' + prep_log_stream(stderr))
+      @logger.warn("Error dump:#{prep_log_stream(stderr)}")
     end
 
     def run_cmd(cmd)

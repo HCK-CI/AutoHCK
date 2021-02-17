@@ -102,7 +102,7 @@ module AutoHCK
 
     def print_test_results(test)
       results = @tests.find { |t| t['id'] == test['id'] }
-      @logger.info(results['status'] + ': ' + test['name'])
+      @logger.info("#{results['status']}: #{test['name']}")
       @logger.info(info_page(test))
     end
 
@@ -118,7 +118,7 @@ module AutoHCK
 
     def update_remote(test_logs_path, status, testname)
       delete_old_remote(testname)
-      new_filename = status + ': ' + testname
+      new_filename = "#{status}: #{testname}"
       r_name = new_filename + File.extname(test_logs_path)
       @project.result_uploader.upload_file(test_logs_path, r_name)
       logs = @tests.reduce('') do |sum, test|
@@ -129,9 +129,9 @@ module AutoHCK
     end
 
     def delete_old_remote(test_name)
-      r_name = 'Failed: ' + test_name + '.zip'
+      r_name = "Failed: #{test_name}.zip"
       @project.result_uploader.delete_file(r_name)
-      r_name = 'Passed: ' + test_name + '.zip'
+      r_name = "Passed: #{test_name}.zip"
       @project.result_uploader.delete_file(r_name)
     end
 
