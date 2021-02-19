@@ -109,8 +109,11 @@ module AutoHCK
     def device_cmd
       ["-device_type #{@device['type']}",
        !@device['name'].empty? ? "-device_name #{@device['name']}" : '',
-       !@device['extra'].empty? ? "-device_extra #{@device['extra']}" : '',
-       "-machine_type #{platform_config('machine_type')}",
+       !@device['extra'].empty? ? "-device_extra #{@device['extra']}" : '']
+    end
+
+    def platform_cmd
+      ["-machine_type #{platform_config('machine_type')}",
        "-s3 #{platform_config('s3')}",
        "-s4 #{platform_config('s4')}",
        "-enlightenments_state #{platform_config('enlightenments_state')}",
@@ -154,7 +157,7 @@ module AutoHCK
 
       sleep(rand(10))
       temp_file do |pid|
-        cmd = base_cmd + clients_cmd + device_cmd +
+        cmd = base_cmd + clients_cmd + device_cmd + platform_cmd +
               ["-pidfile #{pid.path}", name]
         create_command_file(cmd.join(' '), name) if @run_options[:first_time]
         run_cmd(cmd)
