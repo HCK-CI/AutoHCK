@@ -60,8 +60,8 @@ module AutoHCK
       @setupmanager.delete_client_snapshot(name)
     end
 
-    def run(name, first_time = false)
-      @setupmanager.run(name, first_time)
+    def run(name, run_opts = {})
+      @setupmanager.run(name, run_opts)
     end
 
     def create_studio

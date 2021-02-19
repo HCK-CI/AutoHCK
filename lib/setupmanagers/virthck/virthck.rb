@@ -16,6 +16,9 @@ module AutoHCK
     VIRTHCK_CONFIG_JSON = 'lib/setupmanagers/virthck/virthck.json'
     PLATFORMS_JSON = 'lib/engines/hcktest/platforms.json'
     STUDIO = 'st'
+    DEFAULT_RUN_OPTIONS = {
+      first_time: false
+    }.freeze
 
     def initialize(project)
       @project = project
@@ -101,12 +104,23 @@ module AutoHCK
       nil
     end
 
-    def run(name, first_time = false)
+    def validate_run_opts(run_opts)
+      (run_opts.keys - DEFAULT_RUN_OPTIONS.keys).each do |option|
+        raise(SetupManagerError, "Undefined run option #{option.inspect}")
+      end
+
+      DEFAULT_RUN_OPTIONS.merge(run_opts)
+    end
+
+    def run(name, run_opts = {})
+      @run_options = validate_run_opts(run_opts)
+      @logger.debug(@run_options)
+
       sleep(rand(10))
       temp_file do |pid|
         cmd = base_cmd + clients_cmd + device_cmd +
               ["-pidfile #{pid.path}", name]
-        create_command_file(cmd.join(' '), name) if first_time
+        create_command_file(cmd.join(' '), name) if @run_options[:first_time]
         run_cmd(cmd)
         retrieve_pid(pid)
       end
