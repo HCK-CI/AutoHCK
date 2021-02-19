@@ -44,12 +44,20 @@ module AutoHCK
       end
     end
 
+    def create_studio_image
+      @setupmanager.create_studio_image
+    end
+
     def create_studio_snapshot
       @setupmanager.create_studio_snapshot
     end
 
     def delete_studio_snapshot
       @setupmanager.delete_studio_snapshot
+    end
+
+    def create_client_image(name)
+      @setupmanager.create_client_image(name)
     end
 
     def create_client_snapshot(name)
