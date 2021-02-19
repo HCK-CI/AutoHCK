@@ -43,7 +43,7 @@ module AutoHCK
 
     def prepare
       @engine = Engine.new(self)
-      diff_checker(@engine.driver, @diff)
+      @engine.driver.nil? || diff_checker(@engine.driver, @diff)
 
       @setup_manager = SetupManager.new(self)
     end

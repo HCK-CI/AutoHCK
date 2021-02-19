@@ -26,7 +26,7 @@ module AutoHCK
       @project = project
       @logger = project.logger
       @config = read_json(VIRTHCK_CONFIG_JSON, @logger)
-      @device = project.engine.driver['device']
+      @device = project.engine.driver&.dig('device')
       @platform = read_platform
       @workspace_path = project.workspace_path
       @id = project.id
@@ -107,9 +107,13 @@ module AutoHCK
     end
 
     def device_cmd
-      ["-device_type #{@device['type']}",
-       !@device['name'].empty? ? "-device_name #{@device['name']}" : '',
-       !@device['extra'].empty? ? "-device_extra #{@device['extra']}" : '']
+      if @device.nil?
+        []
+      else
+        ["-device_type #{@device['type']}",
+         !@device['name'].empty? ? "-device_name #{@device['name']}" : '',
+         !@device['extra'].empty? ? "-device_extra #{@device['extra']}" : '']
+      end
     end
 
     def platform_cmd
