@@ -21,7 +21,7 @@ module AutoHCK
 
     def run
       @logger.info("Starting #{@name}")
-      @pid = @setupmanager.run(@tag, true)
+      @pid = @setupmanager.run(@tag, { first_time: true })
       raise MachinePidNil, "#{@name} PID could not be retrieved" unless @pid
 
       return if @pid.negative?
