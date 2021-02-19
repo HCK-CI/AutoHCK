@@ -56,6 +56,15 @@ module AutoHCK
       end
     end
 
+    def create_studio_image
+      cmd = [
+        "#{@config['qemu_img']} create -f qcow2",
+        "#{@config['images_path']}/#{@platform['st_image']}",
+        '300G'
+      ]
+      run_cmd(cmd)
+    end
+
     def client_snapshot(name)
       filename = File.basename(@platform['clients'][name]['image'], '.*')
       "#{@workspace_path}/#{filename}-snapshot.qcow2"
@@ -67,6 +76,15 @@ module AutoHCK
       else
         "#{@config['images_path']}/#{@platform['clients'][name]['image']}"
       end
+    end
+
+    def create_client_image(name)
+      cmd = [
+        "#{@config['qemu_img']} create -f qcow2",
+        "#{@config['images_path']}/#{@platform['clients'][name]['image']}",
+        '300G'
+      ]
+      run_cmd(cmd)
     end
 
     def platform_config(param)
