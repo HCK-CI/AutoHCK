@@ -17,7 +17,9 @@ module AutoHCK
     PLATFORMS_JSON = 'lib/engines/hcktest/platforms.json'
     STUDIO = 'st'
     DEFAULT_RUN_OPTIONS = {
-      first_time: false
+      first_time: false,
+      studio_snapshot: true,
+      clients_snapshot: true
     }.freeze
 
     def initialize(project)
@@ -46,9 +48,25 @@ module AutoHCK
       "#{@workspace_path}/#{filename}-snapshot.qcow2"
     end
 
+    def studio_image
+      if @run_options[:studio_snapshot]
+        studio_snapshot
+      else
+        "#{@config['images_path']}/#{@platform['st_image']}"
+      end
+    end
+
     def client_snapshot(name)
       filename = File.basename(@platform['clients'][name]['image'], '.*')
       "#{@workspace_path}/#{filename}-snapshot.qcow2"
+    end
+
+    def client_image(name)
+      if @run_options[:clients_snapshot]
+        client_snapshot(name)
+      else
+        "#{@config['images_path']}/#{@platform['clients'][name]['image']}"
+      end
     end
 
     def platform_config(param)
@@ -67,7 +85,7 @@ module AutoHCK
        "-ctrl_net_device #{platform_config('ctrl_net_device')}",
        "-world_net_device #{platform_config('world_net_device')}",
        "-viommu #{platform_config('viommu')}",
-       "-st_image #{studio_snapshot}"]
+       "-st_image #{studio_image}"]
     end
 
     def device_cmd
@@ -82,7 +100,7 @@ module AutoHCK
     end
 
     def client_cmd(name, client)
-      ["-#{name}_image #{client_snapshot(name)}",
+      ["-#{name}_image #{client_image(name)}",
        "-#{name}_memory #{client['memory']}",
        "-#{name}_cpus #{client['cpus']}"]
     end
