@@ -155,11 +155,7 @@ module AutoHCK
       DEFAULT_RUN_OPTIONS.merge(run_opts)
     end
 
-    def run(name, run_opts = {})
-      @run_options = validate_run_opts(run_opts)
-      @logger.debug(@run_options)
-
-      sleep(rand(10))
+    def execute_run(name)
       temp_file do |pid|
         cmd = base_cmd + clients_cmd + device_cmd + platform_cmd +
               ["-pidfile #{pid.path}", name]
@@ -167,6 +163,14 @@ module AutoHCK
         run_cmd(cmd)
         retrieve_pid(pid)
       end
+    end
+
+    def run(name, run_opts = {})
+      @run_options = validate_run_opts(run_opts)
+      @logger.debug(@run_options)
+
+      sleep(rand(10))
+      execute_run(name)
     end
 
     def close
