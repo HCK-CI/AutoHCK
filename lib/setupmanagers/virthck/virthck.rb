@@ -31,7 +31,6 @@ module AutoHCK
       @workspace_path = project.workspace_path
       @id = project.id
       @kit = @platform['kit']
-      validate_paths
     end
 
     def read_platform
@@ -168,6 +167,7 @@ module AutoHCK
     def run(name, run_opts = {})
       @run_options = validate_run_opts(run_opts)
       @logger.debug(@run_options)
+      validate_paths
 
       sleep(rand(10))
       execute_run(name)
