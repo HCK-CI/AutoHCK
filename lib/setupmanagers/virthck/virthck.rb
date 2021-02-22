@@ -19,7 +19,9 @@ module AutoHCK
     DEFAULT_RUN_OPTIONS = {
       first_time: false,
       studio_snapshot: true,
-      clients_snapshot: true
+      studio_iso_list: [],
+      clients_snapshot: true,
+      clients_iso_list: []
     }.freeze
 
     def initialize(project)
@@ -91,6 +93,26 @@ module AutoHCK
       @platform[param] || default_value
     end
 
+    def studio_iso_cmd
+      drive_cmd = []
+
+      @run_options[:studio_iso_list].each do |iso|
+        drive_cmd += ["-drive file=#{@project.config['iso_path']}/#{iso},media=cdrom,readonly=on"]
+      end
+
+      drive_cmd.empty? ? [] : ['-st_extra', "'#{drive_cmd.join(' ')}'"]
+    end
+
+    def client_iso_cmd(name)
+      drive_cmd = []
+
+      @run_options[:clients_iso_list].each do |iso|
+        drive_cmd += ["-drive file=#{@project.config['iso_path']}/#{iso},media=cdrom,readonly=on"]
+      end
+
+      drive_cmd.empty? ? [] : ["-#{name}_extra", "'#{drive_cmd.join(' ')}'"]
+    end
+
     def base_cmd
       ["cd #{@config['virthck_path']} &&",
        "sudo ./hck.sh ci_mode -id #{@id}",
@@ -102,7 +124,7 @@ module AutoHCK
        "-ctrl_net_device #{platform_config('ctrl_net_device')}",
        "-world_net_device #{platform_config('world_net_device')}",
        "-viommu #{platform_config('viommu')}",
-       "-st_image #{studio_image}"]
+       "-st_image #{studio_image}"] + studio_iso_cmd
     end
 
     def device_cmd
@@ -126,7 +148,7 @@ module AutoHCK
     def client_cmd(name, client)
       ["-#{name}_image #{client_image(name)}",
        "-#{name}_memory #{client['memory']}",
-       "-#{name}_cpus #{client['cpus']}"]
+       "-#{name}_cpus #{client['cpus']}"] + client_iso_cmd(name)
     end
 
     def clients_cmd
@@ -236,6 +258,22 @@ module AutoHCK
       end
     end
 
+    def validate_iso
+      @run_options[:studio_iso_list].each do |iso|
+        unless File.exist?("#{@project.config['iso_path']}/#{iso}")
+          @logger.fatal("ISO #{iso} not found")
+          raise InvalidPathError
+        end
+      end
+
+      @run_options[:clients_iso_list].each do |iso|
+        unless File.exist?("#{@project.config['iso_path']}/#{iso}")
+          @logger.fatal("ISO #{iso} not found")
+          raise InvalidPathError
+        end
+      end
+    end
+
     def create_studio
       studio_ip = @project.config['ip_segment'] + @project.id.to_str
       @studio = HCKStudio.new(@project, self, STUDIO, studio_ip)
@@ -248,6 +286,7 @@ module AutoHCK
     def validate_paths
       normalize_paths
       validate_images
+      validate_iso
       return if File.exist?("#{@config['virthck_path']}/hck.sh")
 
       @logger.fatal('VirtHCK path is not valid')
