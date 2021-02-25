@@ -33,6 +33,7 @@ module AutoHCK
       @workspace_path = project.workspace_path
       @id = project.id
       @kit = @platform['kit']
+      @run_options = DEFAULT_RUN_OPTIONS
     end
 
     def read_platform
