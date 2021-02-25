@@ -98,7 +98,8 @@ module AutoHCK
       drive_cmd = []
 
       @run_options[:studio_iso_list].each do |iso|
-        drive_cmd += ["-drive file=#{@project.config['iso_path']}/#{iso},media=cdrom,readonly=on"]
+        iso_path = Pathname.new(@project.config['iso_path']).join(iso)
+        drive_cmd += ["-drive file=#{iso_path},media=cdrom,readonly=on"]
       end
 
       drive_cmd.empty? ? [] : ['-st_extra', "'#{drive_cmd.join(' ')}'"]
@@ -108,7 +109,8 @@ module AutoHCK
       drive_cmd = []
 
       @run_options[:clients_iso_list].each do |iso|
-        drive_cmd += ["-drive file=#{@project.config['iso_path']}/#{iso},media=cdrom,readonly=on"]
+        iso_path = Pathname.new(@project.config['iso_path']).join(iso)
+        drive_cmd += ["-drive file=#{iso_path},media=cdrom,readonly=on"]
       end
 
       drive_cmd.empty? ? [] : ["-#{name}_extra", "'#{drive_cmd.join(' ')}'"]
