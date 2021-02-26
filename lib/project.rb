@@ -19,7 +19,8 @@ module AutoHCK
     include Helper
 
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :tag, :id,
-                :driver, :driver_path, :workspace_path, :github, :result_uploader
+                :driver, :driver_path, :workspace_path, :github, :result_uploader,
+                :install_platform, :engine_type
 
     DRIVERS_JSON = './drivers.json'
     CONFIG_JSON = 'config.json'
@@ -31,6 +32,7 @@ module AutoHCK
       github_handling(options.commit)
       init_workspace
       @id = assign_id
+      @install_platform = options.install
     end
 
     def diff_checker(driver, diff)
@@ -99,6 +101,7 @@ module AutoHCK
       @tag = options.tag
       @driver_path = options.path
       @diff = options.diff
+      @engine_type = options.install.nil? ? @config['test_engine'] : @config['install_engine']
     end
 
     def assign_id
@@ -142,7 +145,7 @@ module AutoHCK
     end
 
     def init_workspace
-      @workspace_path = [@config['workspace_path'], @config['engine'],
+      @workspace_path = [@config['workspace_path'], @engine_type,
                          @config['setupmanager']].join('/')
       begin
         FileUtils.mkdir_p(@workspace_path)
