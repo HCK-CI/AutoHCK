@@ -50,6 +50,10 @@ module AutoHCK
       @engine.driver
     end
 
+    def platform
+      @engine.platform
+    end
+
     def close
       @engine.close
     end

@@ -29,20 +29,11 @@ module AutoHCK
       @logger = project.logger
       @config = read_json(VIRTHCK_CONFIG_JSON, @logger)
       @device = project.engine.driver&.dig('device')
-      @platform = read_platform
+      @platform = project.engine.platform
       @workspace_path = project.workspace_path
       @id = project.id
       @kit = @platform['kit']
       @run_options = DEFAULT_RUN_OPTIONS
-    end
-
-    def read_platform
-      platforms = read_json(PLATFORMS_JSON, @project.logger)
-      platform_name = @project.tag.split('-', 2).last
-      @project.logger.info("Loading platform: #{platform_name}")
-      res = platforms.find { |p| p['name'] == platform_name }
-      @project.logger.fatal("#{platform_name} does not exist") unless res
-      res || raise(SetupManagerError, "#{platform_name} does not exist")
     end
 
     def studio_snapshot
