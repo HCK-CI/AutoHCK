@@ -1,0 +1,9 @@
+{
+  "hck_setup_scripts_path": "/home/hck-ci/HLK-Setup-Scripts",
+  "answer_files": [
+    "autounattend.xml",
+    "unattend.xml"
+  ],
+  "studio_install_timeout": 10800,
+  "client_install_timeout": 3600
+}
