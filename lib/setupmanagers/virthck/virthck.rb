@@ -192,7 +192,7 @@ module AutoHCK
     def run(name, run_opts = {})
       @run_options = validate_run_opts(run_opts)
       @logger.debug(@run_options)
-      validate_paths
+      validate_paths(name)
 
       sleep(rand(10))
       execute_run(name)
@@ -248,12 +248,14 @@ module AutoHCK
       @config['virthck_path'].chomp!('/')
     end
 
-    def validate_images
-      unless File.exist?("#{@config['images_path']}/#{@platform['st_image']}")
-        @logger.fatal('Studio image not found')
-        raise InvalidPathError
-      end
-      @platform['clients'].each_value do |client|
+    def validate_images(name)
+      if name == STUDIO
+        unless File.exist?("#{@config['images_path']}/#{@platform['st_image']}")
+          @logger.fatal('Studio image not found')
+          raise InvalidPathError
+        end
+      else
+        client = @platform['clients'][name]
         unless File.exist?("#{@config['images_path']}/#{client['image']}")
           @logger.fatal("#{client['name']} image not found")
           raise InvalidPathError
@@ -261,19 +263,21 @@ module AutoHCK
       end
     end
 
-    def validate_iso
-      @run_options[:studio_iso_list].each do |iso|
-        unless File.exist?("#{@project.config['iso_path']}/#{iso}")
-          @logger.fatal("ISO #{iso} not found")
+    def validate_iso_list(iso_list)
+      iso_list.each do |iso|
+        iso_path = Pathname.new(@project.config['iso_path']).join(iso)
+        unless File.exist?(iso_path)
+          @logger.fatal("ISO #{iso_path} not found")
           raise InvalidPathError
         end
       end
+    end
 
-      @run_options[:clients_iso_list].each do |iso|
-        unless File.exist?("#{@project.config['iso_path']}/#{iso}")
-          @logger.fatal("ISO #{iso} not found")
-          raise InvalidPathError
-        end
+    def validate_iso(name)
+      if name == STUDIO
+        validate_iso_list(@run_options[:studio_iso_list])
+      else
+        validate_iso_list(@run_options[:clients_iso_list])
       end
     end
 
@@ -286,10 +290,10 @@ module AutoHCK
       HCKClient.new(@project, self, @studio, tag, name)
     end
 
-    def validate_paths
+    def validate_paths(name)
       normalize_paths
-      validate_images
-      validate_iso
+      validate_images(name)
+      validate_iso(name)
       return if File.exist?("#{@config['virthck_path']}/hck.sh")
 
       @logger.fatal('VirtHCK path is not valid')
