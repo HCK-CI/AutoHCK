@@ -8,7 +8,7 @@ require './lib/setupmanagers/monitor'
 module AutoHCK
   # Machine class
   class Machine
-    attr_reader :name
+    attr_reader :name, :id
 
     def initialize(project, name, setupmanager, id, tag)
       @name = name
