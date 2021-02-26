@@ -17,7 +17,7 @@ module AutoHCK
     def initialize(project)
       @project = project
       @logger = project.logger
-      @platform = read_platform
+      @platform = project.engine.platform
       @setup = find_setup
       @id = project.id
       @kit = @setup['kit']
@@ -28,14 +28,6 @@ module AutoHCK
       res = known_setups.find { |setup| setup['name'] == @platform['name'] }
       @project.logger.fatal("#{@platform['name']} does not exist") unless res
       res || raise(SetupManagerError, "#{@platform['name']} does not exist")
-    end
-
-    def read_platform
-      platforms = read_json(PLATFORMS_JSON, @project.logger)
-      platform_name = @project.tag.split('-', 2).last
-      res = platforms.find { |p| p['name'] == platform_name }
-      @project.logger.fatal("#{platform_name} does not exist") unless res
-      res || raise(SetupManagerError, "#{platform_name} does not exist")
     end
 
     def create_studio_image

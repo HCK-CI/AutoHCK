@@ -10,7 +10,7 @@ module AutoHCK
   # HCKTest class
   class HCKTest
     include Helper
-    attr_reader :driver
+    attr_reader :driver, :platform
 
     PLATFORMS_JSON = 'lib/engines/hcktest/platforms.json'
     DRIVERS_JSON = 'drivers.json'
