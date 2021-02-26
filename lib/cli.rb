@@ -9,13 +9,14 @@ module AutoHCK
   class CLI
     # class ScriptOptions
     class ScriptOptions
-      attr_accessor :tag, :path, :diff, :commit, :debug
+      attr_accessor :tag, :path, :diff, :commit, :debug, :install
 
       def define_options(parser)
         self.debug = false
         parser.banner = 'Usage: auto_hck.rb [options]'
         parser.separator ''
-        mandatory_options(parser)
+        mandatory_run_options(parser)
+        mandatory_install_options(parser)
         optional_options(parser)
         parser.on_tail('-h', '--help', 'Show this message') do
           puts parser
@@ -23,10 +24,15 @@ module AutoHCK
         end
       end
 
-      def mandatory_options(parser)
-        parser.separator 'Mandatory:'
+      def mandatory_run_options(parser)
+        parser.separator 'Mandatory for run:'
         tag_option(parser)
         path_option(parser)
+      end
+
+      def mandatory_install_options(parser)
+        parser.separator 'Mandatory for install:'
+        install_option(parser)
       end
 
       def optional_options(parser)
@@ -41,6 +47,13 @@ module AutoHCK
         parser.on('-c', '--commit <COMMITHASH>',
                   'Commit hash for CI status update') do |commit|
           self.commit = commit
+        end
+      end
+
+      def install_option(parser)
+        parser.on('-i', '--install <PLATFORM>',
+                  'Install VM for specified platform') do |install|
+          self.install = install
         end
       end
 
