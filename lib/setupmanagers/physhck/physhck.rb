@@ -30,6 +30,10 @@ module AutoHCK
       res || raise(SetupManagerError, "#{@platform['name']} does not exist")
     end
 
+    def check_studio_image_exist
+      @logger.info('Image checking is currently not supported for physical machines')
+    end
+
     def create_studio_image
       @logger.info('Image creating is currently not supported for physical machines')
     end
@@ -40,6 +44,10 @@ module AutoHCK
 
     def delete_studio_snapshot
       @logger.info('Snapshots are currently not supported for physical machines')
+    end
+
+    def check_client_image_exist(_name)
+      @logger.info('Image checking is currently not supported for physical machines')
     end
 
     def create_client_image(_name)

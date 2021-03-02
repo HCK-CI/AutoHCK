@@ -239,15 +239,24 @@ module AutoHCK
       @config['virthck_path'].chomp!('/')
     end
 
+    def check_studio_image_exist
+      File.exist?("#{@config['images_path']}/#{@platform['st_image']}")
+    end
+
+    def check_client_image_exist(name)
+      client = @platform['clients'][name]
+      File.exist?("#{@config['images_path']}/#{client['image']}")
+    end
+
     def validate_images(name)
       if name == STUDIO
-        unless File.exist?("#{@config['images_path']}/#{@platform['st_image']}")
+        unless check_studio_image_exist
           @logger.fatal('Studio image not found')
           raise InvalidPathError
         end
       else
         client = @platform['clients'][name]
-        unless File.exist?("#{@config['images_path']}/#{client['image']}")
+        unless check_client_image_exist(name)
           @logger.fatal("#{client['name']} image not found")
           raise InvalidPathError
         end
