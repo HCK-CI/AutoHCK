@@ -44,6 +44,10 @@ module AutoHCK
       end
     end
 
+    def check_studio_image_exist
+      @setupmanager.check_studio_image_exist
+    end
+
     def create_studio_image
       @setupmanager.create_studio_image
     end
@@ -54,6 +58,10 @@ module AutoHCK
 
     def delete_studio_snapshot
       @setupmanager.delete_studio_snapshot
+    end
+
+    def check_client_image_exist(name)
+      @setupmanager.check_client_image_exist(name)
     end
 
     def create_client_image(name)
