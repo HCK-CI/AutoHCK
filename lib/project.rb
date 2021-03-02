@@ -20,19 +20,19 @@ module AutoHCK
 
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :tag, :id,
                 :driver, :driver_path, :workspace_path, :github, :result_uploader,
-                :install_platform, :engine_type
+                :install_platform, :engine_type, :options
 
     DRIVERS_JSON = './drivers.json'
     CONFIG_JSON = 'config.json'
 
     def initialize(options)
+      @options = options
       init_multilog(options.debug)
-      init_class_variables(options)
+      init_class_variables
       configure_result_uploader
       github_handling(options.commit)
       init_workspace
       @id = assign_id
-      @install_platform = options.install
     end
 
     def diff_checker(driver, diff)
@@ -95,13 +95,14 @@ module AutoHCK
       @workspace_path = path
     end
 
-    def init_class_variables(options)
+    def init_class_variables
       @config = read_json(CONFIG_JSON, @logger)
       @timestamp = create_timestamp
-      @tag = options.tag
-      @driver_path = options.path
-      @diff = options.diff
-      @engine_type = options.install.nil? ? @config['test_engine'] : @config['install_engine']
+      @tag = @options.tag
+      @driver_path = @options.path
+      @diff = @options.diff
+      @install_platform = @options.install
+      @engine_type = @options.install.nil? ? @config['test_engine'] : @config['install_engine']
     end
 
     def assign_id
