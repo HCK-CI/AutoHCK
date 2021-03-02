@@ -9,7 +9,7 @@ module AutoHCK
   class CLI
     # class ScriptOptions
     class ScriptOptions
-      attr_accessor :tag, :path, :diff, :commit, :debug, :install
+      attr_accessor :tag, :path, :diff, :commit, :debug, :install, :force_install
 
       def define_options(parser)
         self.debug = false
@@ -40,6 +40,7 @@ module AutoHCK
         commit_option(parser)
         diff_option(parser)
         debug_option(parser)
+        force_install_option(parser)
         version_option(parser)
       end
 
@@ -85,6 +86,13 @@ module AutoHCK
         parser.on('-D', '--debug',
                   'Printing debug information') do |debug|
           self.debug = debug
+        end
+      end
+
+      def force_install_option(parser)
+        parser.on('--force-install',
+                  'Install all VM, replace studio if exist') do |force_install|
+          self.force_install = force_install
         end
       end
 

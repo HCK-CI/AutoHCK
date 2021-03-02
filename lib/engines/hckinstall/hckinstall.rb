@@ -96,13 +96,10 @@ module AutoHCK
       nil
     end
 
-    def run_studio(snapshot = true)
+    def run_studio(snapshot = true, iso_list = [])
       st_opts = {
         studio_snapshot: snapshot,
-        studio_iso_list: [
-          @setup_studio_iso,
-          @iso_info['path']
-        ]
+        studio_iso_list: iso_list
       }
 
       st = Machine.new(@project, 'st', @project.setup_manager, 0, 'st')
@@ -127,7 +124,10 @@ module AutoHCK
     def install_studio
       @project.setup_manager.create_studio_image
 
-      @st = run_studio(false)
+      @st = run_studio(false, [
+                         @setup_studio_iso,
+                         @iso_info['path']
+                       ])
 
       Timeout.timeout(@studio_install_timeout) do
         @logger.info("Waiting for #{@st.name} #{@st.id} instalation finished")
@@ -198,10 +198,22 @@ module AutoHCK
       @logger.debug('HCKInstall: run')
 
       prepare_setup_scripts_config
-      prepare_studio_iso
-      prepare_client_iso
 
-      install_studio
+      if @project.setup_manager.check_studio_image_exist
+        if @project.options.force_install
+          @logger.info('HCKInstall: Studio image exist, force reinstall started')
+
+          prepare_studio_iso
+          install_studio
+        else
+          @logger.info('HCKInstall: Studio image exist, installation skipped')
+        end
+      else
+        prepare_studio_iso
+        install_studio
+      end
+
+      prepare_client_iso
       install_clients
     end
 
