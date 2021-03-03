@@ -67,13 +67,18 @@ module AutoHCK
       @client_install_timeout = @config['client_install_timeout']
     end
 
+    def client_platform
+      @platform['clients'][@clients_name.first]['image'][/Win\w+x(86|64)/]
+    end
+
     def init_class_variables
       @iso_path = @project.config['iso_path']
 
       @platform = read_platform
       @clients_name = @platform['clients'].keys
 
-      @iso_info = read_iso(@platform['name'])
+      @studio_iso_info = read_iso(@platform['name'])
+      @client_iso_info = read_iso(client_platform)
       validate_paths
 
       @setup_studio_iso = "#{@workspace_path}/setup-studio.iso"
@@ -82,14 +87,20 @@ module AutoHCK
 
     def validate_paths
       normalize_paths
-      return if File.exist?("#{@iso_path}/#{@iso_info['path']}")
+      unless File.exist?("#{@iso_path}/#{@studio_iso_info['path']}")
+        @logger.fatal('Studio ISO path is not valid')
+        exit(1)
+      end
 
-      @logger.fatal('ISO path is not valid')
+      return if File.exist?("#{@iso_path}/#{@client_iso_info['path']}")
+
+      @logger.fatal('Client ISO path is not valid')
       exit(1)
     end
 
     def normalize_paths
-      @iso_info['path'].chomp!('/')
+      @studio_iso_info['path'].chomp!('/')
+      @client_iso_info['path'].chomp!('/')
     end
 
     def driver
@@ -112,7 +123,7 @@ module AutoHCK
         clients_snapshot: snapshot,
         clients_iso_list: [
           @setup_client_iso,
-          @iso_info['path']
+          @client_iso_info['path']
         ]
       }
 
@@ -126,7 +137,7 @@ module AutoHCK
 
       @st = run_studio(false, [
                          @setup_studio_iso,
-                         @iso_info['path']
+                         @studio_iso_info['path']
                        ])
 
       Timeout.timeout(@studio_install_timeout) do
@@ -170,8 +181,8 @@ module AutoHCK
 
     def prepare_studio_iso
       replacement_list = {
-        '@WINDOWS_IMAGE_NAME@' => @iso_info['windows_image_names'],
-        '@PRODUCT_KEY@' => @iso_info['product_key'],
+        '@WINDOWS_IMAGE_NAME@' => @studio_iso_info['windows_image_names'],
+        '@PRODUCT_KEY@' => @studio_iso_info['product_key'],
         '@HOST_TYPE@' => 'studio'
       }
       @answer_files.each do |file|
@@ -183,8 +194,8 @@ module AutoHCK
 
     def prepare_client_iso
       replacement_list = {
-        '@WINDOWS_IMAGE_NAME@' => @iso_info['windows_image_names'],
-        '@PRODUCT_KEY@' => @iso_info['product_key'],
+        '@WINDOWS_IMAGE_NAME@' => @client_iso_info['windows_image_names'],
+        '@PRODUCT_KEY@' => @client_iso_info['product_key'],
         '@HOST_TYPE@' => 'client'
       }
       @answer_files.each do |file|
