@@ -1,0 +1,14 @@
+[
+  {
+    "kit": "HLK1809server",
+    "download_url": "https://go.microsoft.com/fwlink/?linkid=2026646"
+  },
+  {
+    "kit": "HLK1809",
+    "download_url": "https://go.microsoft.com/fwlink/?linkid=2026646"
+  },
+  {
+    "kit": "HLK2004",
+    "download_url": "https://go.microsoft.com/fwlink/?linkid=2128655"
+  }
+]
