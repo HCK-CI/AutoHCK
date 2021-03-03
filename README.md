@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/HCK-CI/AutoHCK.svg?style=svg)](https://circleci.com/gh/HCK-CI/AutoHCK)
 
-AutoHCK is a tool for automating HCK/HLK testing, doing all the boilerplate steps in the process leaving you with simply choosing which driver you want to test on what os.
+AutoHCK is a tool for automating HCK/HLK testing, doing all the boilerplate steps in the process leaving you with simply choosing which driver you want to test on what OS.
 
 ## Getting Started
 
@@ -13,6 +13,9 @@ Use your package manager to install QEMU or build it from [source](https://githu
 
 ### VirtHCK
 Clone [VirtHCK](https://github.com/daynix/VirtHCK), AutoHCK will use it as a dependency.
+
+### HLK setup scripts
+Clone [HLK-Setup-Scripts](https://github.com/HCK-CI/HLK-Setup-Scripts), AutoHCK will use it as a dependency for image creation.
 
 ### toolsHCK
 Get a copy of the powershell script file in [toolsHCK](https://github.com/HCK-CI/toolsHCK)
@@ -55,9 +58,8 @@ __This might be dangerous to your computer security, do this at your own risk__
 hck-ci ALL=(ALL) NOPASSWD:ALL
 ```
 
-### Images preperation
-This is similar to making regular HLK/HCK studio and clients images with with few additionals configurations, detailed instrutions available at [HLK-Setup-Scripts](https://github.com/HCK-CI/HLK-Setup-Scripts).
-Images will be placeed at the images folder as configured in `config.json` file
+### Images installation
+See [ImageInstallation.md](ImageInstallation.md) for more details
 
 ### Result uploading
 AutoHCK supports uploading the results of the tests, (logs, test results and the hckx\hlkx package file), using the supported uploaders by configuring the array field "result_uploader" in the `config.json` file to the desired uploaders for AutoHCK to use, for example, to use dropbox:
@@ -83,10 +85,13 @@ to do that you will need to create a personal access token.
 3. set new environment variable for your username and token with `export AUTOHCK_GITHUB_LOGIN=<LOGIN>` and `export AUTOHCK_GITHUB_TOKEN=<TOKEN>`
 
 ### Configuration
-There are 3 diffrenet JSON files for configurations, examples included in the files:
+There are 6 diffrenet JSON files for configurations, examples included in the files:
 * `config.json` is the general configuration file which holds the paths to the dependencies stated above.
 * `platforms.json` list of configured opertaions systems images.
-* `devices.json` list of devices drivers information for testing
+* `devices.json` list of devices drivers information for testing.
+* `iso.json` list of ISO with information for unattended VM installation.
+* `hckinstall.json` is the specific configuration file for install engine.
+* `kit.json` list of HCK/HLK kits.
 
 ### Utils
 #### Cleanup
@@ -96,22 +101,31 @@ This script deletes logs and snapshots from HCK runs that are more than 1 month 
 
 Once everything is installed and configured, run `./bin/auto_hck` with these parameters:
 ```
-Required:
--t, --tag [PROJECT]-[OS][ARCH]   The driver name and architecture
--p, --path [PATH-TO-DRIVER]      The location of the driver
+Mandatory for run:
+    -t, --tag [PROJECT-PLATFORM]     Tag name consist of project name and platform separated by a dash
+    -p, --path [DRIVERPATH]          Path to the location of the driver wanted to be tested
+Mandatory for install:
+    -i, --install <PLATFORM>         Install VM for specified platform
 Optional:
--d, --diff <DIFF-LIST-FILE>      Path to text file containing a list of changed source files
--c, --commit <COMMIT-HASH>       Commit hash for updating github status
--D, --debug                      Printing debug information
+    -c, --commit <COMMITHASH>        Commit hash for CI status update
+    -d, --diff <DIFFFILE>            Path to text file containing a list of changed source files
+    -D, --debug                      Printing debug information
+        --force-install              Install all VM, replace studio if exist
+    -V, --version                    Display version information and exit
+    -h, --help                       Show this message
 ```
 ### Examples
 ```
 ruby ./bin/auto_hck -t Balloon-Win10x86 -p /home/hck-ci/balloon/win10/x86
 ruby ./bin/auto_hck -t NetKVM-Win10x64 -p /home/hck-ci/workspace -d /path/to/diff.txt
 ruby ./bin/auto_hck -t viostor-Win10x64 -p /home/hck-ci/viostor -d /path/to/diff.txt -c ec3da560827922e5a82486cf19cd9c27e95455a9
+ruby ./bin/auto_hck -i Win2019x64 --force-install
 ```
 ### Workspace
-When starting AutoHCK a session workspace will be created inside the workspace directory configured in `config.json` at the path: `workspace/[device-short]/[platform]/[timestamp]/`
+When starting AutoHCK a session workspace will be created inside the workspace directory configured in `config.json` at the path:
+  - in test mode: `workspace/[engine-type]/[setup-manager]/[device-short]/[platform]/[timestamp]/`
+  - in install mode: `workspace/[engine-type]/[setup-manager]/[platform]/[timestamp]/`
+
 Inside AutoHCK will save the following files:
 * qcow2 snapshots of the backing setup images: `[filename]-snapshot.qcow2`
 * AutoHCK log file: `[device-short]-[platform].log`
@@ -124,4 +138,3 @@ Inside AutoHCK will save the following files:
 * **Lior Haim** - *Development* - [Daynix Computing LTD](https://github.com/Daynix)
 * **Bishara AbuHattoum** - *Development* - [Daynix Computing LTD](https://github.com/Daynix)
 * **Basil Salman** - *Development* - [Daynix Computing LTD](https://github.com/Daynix)
-
