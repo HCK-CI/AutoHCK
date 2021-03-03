@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require './lib/exceptions'
+require './lib/auxiliary/downloader'
 
 # AutoHCK module
 module AutoHCK
@@ -17,6 +18,11 @@ module AutoHCK
       (config.keys - SUPPORTED_CONFIG.keys).each do |cfg|
         raise(AutoHCKError, "Undefined HLK setup scripts config #{cfg.inspect}")
       end
+    end
+
+    def download_kit_installer(url, kit, hck_setup_scripts_path)
+      dw = Downloader.new(@logger)
+      dw.download(url, "#{hck_setup_scripts_path}/Kits/#{kit}Setup.exe")
     end
 
     def create_setup_scripts_config(hck_setup_scripts_path, config)
