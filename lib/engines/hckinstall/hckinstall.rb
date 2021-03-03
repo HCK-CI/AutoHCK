@@ -18,6 +18,7 @@ module AutoHCK
     PLATFORMS_JSON = 'lib/engines/hcktest/platforms.json'
     CONFIG_JSON = 'lib/engines/hckinstall/hckinstall.json'
     ISO_JSON = 'lib/engines/hckinstall/iso.json'
+    KIT_JSON = 'lib/engines/hckinstall/kit.json'
 
     def initialize(project)
       @project = project
@@ -57,6 +58,14 @@ module AutoHCK
       res || raise(InvalidConfigFile, "ISO info for #{platform_name} does not exist")
     end
 
+    def read_kit(kit_name)
+      kit_list = read_json(KIT_JSON, @logger)
+      @logger.info("Loading kit by name: #{kit_name}")
+      res = kit_list.find { |p| p['kit'] == kit_name }
+      @logger.fatal("Kit info with name #{kit_name} does not exist") unless res
+      res || raise(InvalidConfigFile, "Kit info with name #{kit_name} does not exist")
+    end
+
     def init_config
       @config = read_json(CONFIG_JSON, @logger)
 
@@ -79,6 +88,8 @@ module AutoHCK
 
       @studio_iso_info = read_iso(@platform['name'])
       @client_iso_info = read_iso(client_platform)
+
+      @kit_info = read_kit(platform['kit'])
       validate_paths
 
       @setup_studio_iso = "#{@workspace_path}/setup-studio.iso"
@@ -169,13 +180,15 @@ module AutoHCK
     def prepare_setup_scripts_config
       kit_string = @platform['kit']
       kit_type = kit_string[0..2]
-      kit_version = 0
+      kit_version = ''
       kit_type == 'HCK' || kit_version = Integer(kit_string[/\d+/])
 
       config = {
         kit_type: kit_type,
         hlk_kit_ver: kit_version
       }
+      download_kit_installer(@kit_info['download_url'],
+                             "#{kit_type}#{kit_version}", @hck_setup_scripts_path)
       create_setup_scripts_config(@hck_setup_scripts_path, config)
     end
 
