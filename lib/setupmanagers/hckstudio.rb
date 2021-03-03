@@ -14,6 +14,7 @@ module AutoHCK
     def initialize(project, setupmanager, name, ip)
       super(project, name, setupmanager, 0, 'st')
       @ip = ip
+      @project.logger.debug("HCKStudio ip: #{ip}")
     end
 
     def up?
