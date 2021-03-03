@@ -24,6 +24,7 @@ module AutoHCK
     end
 
     def run_cmd(cmd)
+      @logger.debug("Run command: #{cmd.join(' ')}")
       temp_file do |stdout|
         temp_file do |stderr|
           Process.wait(spawn(cmd.join(' '), out: stdout.path, err: stderr.path))
