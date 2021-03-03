@@ -2,6 +2,7 @@
 
 source 'https://rubygems.org'
 
+gem 'curb'
 gem 'dropbox_api'
 gem 'faraday', '=0.12.2'
 gem 'filelock'
