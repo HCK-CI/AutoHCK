@@ -1,0 +1,54 @@
+[
+  {
+    "kit": "HLK20H2",
+    "platform_name": "Win2016x64"
+  },
+  {
+    "kit": "HLK2004",
+    "platform_name": "Win2016x64"
+  },
+  {
+    "kit": "HLK1909",
+    "platform_name": "Win2016x64"
+  },
+  {
+    "kit": "HLK1903",
+    "platform_name": "Win2016x64"
+  },
+  {
+    "kit": "HLK1809server",
+    "platform_name": "Win2019x64"
+  },
+  {
+    "kit": "HLK1809",
+    "platform_name": "Win2019x64"
+  },
+  {
+    "kit": "HLK1803",
+    "platform_name": "Win2016x64"
+  },
+  {
+    "kit": "HLK1709",
+    "platform_name": "Win2016x64"
+  },
+  {
+    "kit": "HLK1703",
+    "platform_name": "Win2016x64"
+  },
+  {
+    "kit": "HLK1607",
+    "platform_name": "Win2016x64"
+  },
+  {
+    "kit": "HLK1511",
+    "platform_name": "Win2016x64"
+  },
+  {
+    "kit": "HLK1507",
+    "platform_name": "Win2016x64"
+  },
+  {
+    "kit": "HCK",
+    "platform_name": "Win2012R2x64"
+  }
+]

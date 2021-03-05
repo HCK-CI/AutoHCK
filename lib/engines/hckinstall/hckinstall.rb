@@ -19,6 +19,7 @@ module AutoHCK
     CONFIG_JSON = 'lib/engines/hckinstall/hckinstall.json'
     ISO_JSON = 'lib/engines/hckinstall/iso.json'
     KIT_JSON = 'lib/engines/hckinstall/kit.json'
+    STUDIO_PLATFORM_JSON = 'lib/engines/hckinstall/studio_platform.json'
 
     def initialize(project)
       @project = project
@@ -76,6 +77,14 @@ module AutoHCK
       @client_install_timeout = @config['client_install_timeout']
     end
 
+    def studio_platform(kit)
+      studio_platform_list = read_json(STUDIO_PLATFORM_JSON, @logger)
+      @logger.info("Loading studio platform for kit: #{kit}")
+      res = studio_platform_list.find { |p| p['kit'] == kit }
+      @logger.fatal("Kit studio platform for kit #{kit} does not exist") unless res
+      res['platform_name'] || raise(InvalidConfigFile, "Kit studio platform for kit #{kit} does not exist")
+    end
+
     def client_platform
       @platform['clients'][@clients_name.first]['image'][/Win\w+x(86|64)/]
     end
@@ -86,10 +95,10 @@ module AutoHCK
       @platform = read_platform
       @clients_name = @platform['clients'].keys
 
-      @studio_iso_info = read_iso(@platform['name'])
+      @studio_iso_info = read_iso(studio_platform(@platform['kit']))
       @client_iso_info = read_iso(client_platform)
 
-      @kit_info = read_kit(platform['kit'])
+      @kit_info = read_kit(@platform['kit'])
       validate_paths
 
       @setup_studio_iso = "#{@workspace_path}/setup-studio.iso"
