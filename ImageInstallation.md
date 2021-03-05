@@ -41,6 +41,10 @@ Configure AutoHCK to have all information for building VM images. Edit the next 
    - **kit** - The kit name should be the same as in the `platforms.json` file.
    - **download_url** - contains the URL for download the kit online installer.
 
+5. `lib/engines/hckinstall/studio_platform.json` - contains information on which platform should be used for each HCK/HLK kit. The following fields should be configured:
+   - **kit** - The kit name should be the same as in the `platforms.json` file.
+   - **platform_name** - The platform name for Studio VM should be the same as in the `platforms.json` file.
+
 Notes:
    - Please do **not** edit any advanced configurations if you don't understand what it does!
    - All config files with generic config are present in the repository, you can use them as templates.
