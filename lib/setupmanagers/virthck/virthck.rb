@@ -28,7 +28,8 @@ module AutoHCK
       @project = project
       @logger = project.logger
       @config = read_json(VIRTHCK_CONFIG_JSON, @logger)
-      @device = project.engine.driver&.dig('device')
+      @driver = project.engine.driver
+      @device = @driver&.dig('device')
       @platform = project.engine.platform
       @workspace_path = project.workspace_path
       @id = project.id
@@ -85,6 +86,11 @@ module AutoHCK
       @platform[param] || default_value
     end
 
+    def driver_platform_config(param)
+      default_value = platform_config(param)
+      @driver[param] || default_value
+    end
+
     def studio_iso_cmd
       drive_cmd = []
 
@@ -135,7 +141,7 @@ module AutoHCK
       ["-machine_type #{platform_config('machine_type')}",
        "-s3 #{platform_config('s3')}",
        "-s4 #{platform_config('s4')}",
-       "-enlightenments_state #{platform_config('enlightenments_state')}",
+       "-enlightenments_state #{driver_platform_config('enlightenments_state')}",
        "-vhost_state #{platform_config('vhost_state')}"]
     end
 
