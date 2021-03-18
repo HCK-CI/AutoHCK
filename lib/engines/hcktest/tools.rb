@@ -141,7 +141,7 @@ module AutoHCK
 
     def restart_machine(machine)
       retries ||= 0
-      ret = handle_results(@tools.machine_shutdown(machine, :restart))
+      ret = handle_results(@tools.machine_shutdown(machine, restart: true))
 
       return ret if ret
 
@@ -157,7 +157,7 @@ module AutoHCK
 
     def shutdown_machine(machine)
       retries ||= 0
-      ret = handle_results(@tools.machine_shutdown(machine, :shutdown))
+      ret = handle_results(@tools.machine_shutdown(machine))
 
       return ret if ret
 
@@ -172,7 +172,7 @@ module AutoHCK
     end
 
     def shutdown
-      handle_results(@tools.shutdown(false))
+      handle_results(@tools.shutdown)
     end
 
     def move_machine(machine, from, to)
