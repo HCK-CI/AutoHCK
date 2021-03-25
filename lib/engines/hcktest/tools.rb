@@ -36,6 +36,9 @@ module AutoHCK
     # A custom RunOnMachine error exception
     class RunOnMachineError < AutoHCKError; end
 
+    # A custom UploadToMachineError error exception
+    class UploadToMachineError < AutoHCKError; end
+
     # A custom ShutdownMachine error exception
     class ShutdownMachineError < AutoHCKError; end
 
@@ -136,6 +139,23 @@ module AutoHCK
 
       sleep ACTION_RETRY_SLEEP
       @logger.info("Trying again to run command (#{desc}) on machine #{machine}")
+      retry
+    end
+
+    def upload_to_machine(machine, l_directory)
+      retries ||= 0
+      ret = handle_results(@tools.upload_to_machine(machine, l_directory))
+
+      return ret if ret
+
+      e_message = "Upload to machine #{machine} failed"
+      raise UploadToMachineError, e_message
+    rescue UploadToMachineError => e
+      @logger.warn(e.message)
+      raise unless (retries += 1) < ACTION_RETRIES
+
+      sleep ACTION_RETRY_SLEEP
+      @logger.info("Trying again upload to machine #{machine}")
       retry
     end
 
