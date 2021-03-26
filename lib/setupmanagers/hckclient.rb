@@ -135,7 +135,10 @@ module AutoHCK
       @tools = @studio.tools
       @cooldown_thread = Thread.new do
         return_when_client_up
+        @logger.info("Preparing client #{@name}...")
+        @project.extra_sw_manager.install_software_before_driver(@tools, @name)
         install_driver
+        @project.extra_sw_manager.install_software_after_driver(@tools, @name)
         @logger.info("Configuring client #{@name}...")
         configure_machine
         run_pre_test_commands
