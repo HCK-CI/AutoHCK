@@ -1,14 +1,17 @@
 [
   {
     "kit": "HLK1809server",
-    "download_url": "https://go.microsoft.com/fwlink/?linkid=2026646"
+    "download_url": "https://go.microsoft.com/fwlink/?linkid=2026646",
+    "extra_software": [ "HLK_GRFX_FOD", "winfsp" ]
   },
   {
     "kit": "HLK1809",
-    "download_url": "https://go.microsoft.com/fwlink/?linkid=2026646"
+    "download_url": "https://go.microsoft.com/fwlink/?linkid=2026646",
+    "extra_software": [ "HLK_GRFX_FOD", "winfsp" ]
   },
   {
     "kit": "HLK2004",
-    "download_url": "https://go.microsoft.com/fwlink/?linkid=2128655"
+    "download_url": "https://go.microsoft.com/fwlink/?linkid=2128655",
+    "extra_software": [ "winfsp" ]
   }
 ]
