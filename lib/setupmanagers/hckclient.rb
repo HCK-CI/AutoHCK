@@ -96,8 +96,9 @@ module AutoHCK
       method = @project.engine.driver['install_method']
       path = @project.driver_path
       inf = @project.engine.driver['inf']
+      custom_cmd = @project.engine.driver['install_command']
       @logger.info("Installing #{method} driver #{inf} in #{@name}")
-      @tools.install_machine_driver_package(@name, path, method, inf)
+      @tools.install_machine_driver_package(@name, path, method, inf, custom_cmd)
     end
 
     def machine_in_default_pool
