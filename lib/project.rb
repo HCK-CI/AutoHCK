@@ -11,6 +11,7 @@ require './lib/auxiliary/multi_logger'
 require './lib/auxiliary/diff_checker'
 require './lib/auxiliary/json_helper'
 require './lib/auxiliary/id_gen'
+require './lib/auxiliary/extra_software/manager'
 
 # AutoHCK module
 module AutoHCK
@@ -20,7 +21,7 @@ module AutoHCK
 
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :tag, :id,
                 :driver, :driver_path, :workspace_path, :github, :result_uploader,
-                :install_platform, :engine_type, :options
+                :install_platform, :engine_type, :options, :extra_sw_manager
 
     DRIVERS_JSON = './drivers.json'
     CONFIG_JSON = 'config.json'
@@ -42,6 +43,8 @@ module AutoHCK
     end
 
     def prepare
+      @extra_sw_manager = ExtraSoftwareManager.new(self)
+
       @engine = Engine.new(self)
       @engine.driver.nil? || diff_checker(@engine.driver, @diff)
 
