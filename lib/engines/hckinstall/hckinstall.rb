@@ -20,6 +20,7 @@ module AutoHCK
     ISO_JSON = 'lib/engines/hckinstall/iso.json'
     KIT_JSON = 'lib/engines/hckinstall/kit.json'
     STUDIO_PLATFORM_JSON = 'lib/engines/hckinstall/studio_platform.json'
+    ENGINE_MODE = 'install'
 
     def initialize(project)
       @project = project
@@ -28,6 +29,7 @@ module AutoHCK
       init_workspace
       init_config
       init_class_variables
+      prepare_extra_sw
       @logger.debug('HCKInstall: initialized')
     end
 
@@ -103,6 +105,22 @@ module AutoHCK
 
       @setup_studio_iso = "#{@workspace_path}/setup-studio.iso"
       @setup_client_iso = "#{@workspace_path}/setup-client.iso"
+    end
+
+    def prepare_extra_sw
+      unless @kit_info['extra_software'].nil?
+        @project.extra_sw_manager.prepare_software_packages(
+          @kit_info['extra_software'], @platform['kit'], ENGINE_MODE
+        )
+      end
+
+      unless @platform['extra_software'].nil?
+        @project.extra_sw_manager.prepare_software_packages(
+          @platform['extra_software'], @platform['kit'], ENGINE_MODE
+        )
+      end
+
+      @project.extra_sw_manager.copy_to_setup_scripts(@hck_setup_scripts_path)
     end
 
     def validate_paths
