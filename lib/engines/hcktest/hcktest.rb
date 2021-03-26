@@ -20,14 +20,30 @@ module AutoHCK
       CL2: 'c2'
     }.freeze
     SM_RETRIES = 5
+    ENGINE_MODE = 'test'
 
     def initialize(project)
       @project = project
       @project.append_multilog("#{@project.tag}.log")
       @platform = read_platform
       @driver = find_driver
+      prepare_extra_sw
       validate_paths
       init_workspace
+    end
+
+    def prepare_extra_sw
+      unless @driver['extra_software'].nil?
+        @project.extra_sw_manager.prepare_software_packages(
+          @driver['extra_software'], @platform['kit'], ENGINE_MODE
+        )
+      end
+
+      return if @platform['extra_software'].nil?
+
+      @project.extra_sw_manager.prepare_software_packages(
+        @platform['extra_software'], @platform['kit'], ENGINE_MODE
+      )
     end
 
     def init_workspace
