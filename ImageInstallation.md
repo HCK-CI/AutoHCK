@@ -49,6 +49,15 @@ Notes:
    - Please do **not** edit any advanced configurations if you don't understand what it does!
    - All config files with generic config are present in the repository, you can use them as templates.
 
+### Extra software installation
+
+The `extra_software` option can be specified in the following files:
+  - `drivers.json` - will be used in test mode only
+  - `lib/engines/hckinstall/kit.json` - will be used in install mode only
+  - `lib/engines/hcktest/platforms.json` - will be used in install and test modes
+
+According to the file, the software will be installed during image creating (install mode) or during driver testing (test mode)
+
 ## Automatic installation
 
 To run installation use `--install` AutoHCK command-line option. AutoHCK will create 3 images (studio and 2 clients) and perform the installation.

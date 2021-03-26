@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'fileutils'
+
 require './lib/exceptions'
 require './lib/auxiliary/downloader'
 
@@ -24,6 +26,16 @@ module AutoHCK
     def download_kit_installer(url, kit, hck_setup_scripts_path)
       dw = Downloader.new(@logger)
       dw.download(url, "#{hck_setup_scripts_path}/Kits/#{kit}Setup.exe")
+    end
+
+    def copy_extra_software(hck_setup_scripts_path, extra_software_path, sw_names)
+      FileUtils.rm_rf("#{hck_setup_scripts_path}/extra-software")
+      FileUtils.mkdir_p("#{hck_setup_scripts_path}/extra-software")
+
+      sw_names.each do |name|
+        FileUtils.cp_r("#{extra_software_path}/#{name}",
+                       "#{hck_setup_scripts_path}/extra-software/#{name}")
+      end
     end
 
     def create_setup_scripts_config(hck_setup_scripts_path, config)
