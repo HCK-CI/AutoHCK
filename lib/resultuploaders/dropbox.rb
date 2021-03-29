@@ -39,7 +39,7 @@ module AutoHCK
       else
         @logger.info('Dropbox token missing')
       end
-      @dropbox.nil? ? false : true
+      !@dropbox.nil?
     rescue DropboxApi::Errors::HttpError
       @logger.warn('Dropbox connection error')
       false
@@ -72,14 +72,12 @@ module AutoHCK
 
     def delete_file(r_name)
       handle_exceptions(__method__) do
-        begin
-          r_path = "#{@path}/#{r_name}"
-          @dropbox.delete(r_path)
-          @logger.info("Dropbox file deleted: #{r_path}")
-          true
-        rescue DropboxApi::Errors::NotFoundError
-          false
-        end
+        r_path = "#{@path}/#{r_name}"
+        @dropbox.delete(r_path)
+        @logger.info("Dropbox file deleted: #{r_path}")
+        true
+      rescue DropboxApi::Errors::NotFoundError
+        false
       end
     end
 

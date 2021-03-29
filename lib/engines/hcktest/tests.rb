@@ -21,7 +21,7 @@ module AutoHCK
       @playlist = Playlist.new(client, project, target, tools, @client.kit)
     end
 
-    def list_tests(log = false)
+    def list_tests(log: false)
       retries ||= 0
       @tests = @playlist.list_tests(log)
     rescue Playlist::ListTestsError => e
@@ -202,7 +202,7 @@ module AutoHCK
       @total = @tests.count
       @logger.info('Adding tests to queue')
       @tests.each { |test| queue_test(test) }
-      list_tests(true)
+      list_tests(log: true)
       handle_test_running
     end
   end

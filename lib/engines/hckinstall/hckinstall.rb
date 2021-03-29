@@ -127,7 +127,7 @@ module AutoHCK
       nil
     end
 
-    def run_studio(snapshot = true, iso_list = [])
+    def run_studio(iso_list = [], snapshot: true)
       st_opts = {
         studio_snapshot: snapshot,
         studio_iso_list: iso_list
@@ -138,7 +138,7 @@ module AutoHCK
       st
     end
 
-    def run_client(name, snapshot = true)
+    def run_client(name, snapshot: true)
       cl_opts = {
         clients_snapshot: snapshot,
         clients_iso_list: [
@@ -155,10 +155,10 @@ module AutoHCK
     def install_studio
       @project.setup_manager.create_studio_image
 
-      @st = run_studio(false, [
+      @st = run_studio([
                          @setup_studio_iso,
                          @studio_iso_info['path']
-                       ])
+                       ], snapshot: false)
 
       Timeout.timeout(@studio_install_timeout) do
         @logger.info("Waiting for #{@st.name} #{@st.id} instalation finished")
@@ -169,7 +169,7 @@ module AutoHCK
     def install_client(name)
       @project.setup_manager.create_client_image(name)
 
-      run_client(name, false)
+      run_client(name, snapshot: false)
     end
 
     def install_clients
