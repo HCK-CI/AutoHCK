@@ -1,0 +1,138 @@
+GIT
+  remote: https://github.com/HCK-CI/rtoolsHCK.git
+  revision: f3f69082e72160bce9649ced167ee0a2dbfd43c9
+  tag: v0.2.20
+  specs:
+    rtoolsHCK (0.2.20)
+      bundler
+      rdoc
+      winrm (= 2.3.4)
+      winrm-fs (= 1.3.4)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    addressable (2.7.0)
+      public_suffix (>= 2.0.2, < 5.0)
+    ast (2.4.2)
+    builder (3.2.4)
+    curb (0.9.11)
+    diff-lcs (1.4.4)
+    dropbox_api (0.1.19)
+      faraday (~> 1.0)
+      oauth2 (~> 1.1)
+    erubi (1.10.0)
+    faraday (1.3.0)
+      faraday-net_http (~> 1.0)
+      multipart-post (>= 1.2, < 3)
+      ruby2_keywords
+    faraday-net_http (1.0.1)
+    ffi (1.15.0)
+    filelock (1.1.1)
+    gssapi (1.3.1)
+      ffi (>= 1.0.1)
+    gyoku (1.3.1)
+      builder (>= 2.1.2)
+    httpclient (2.8.3)
+    jwt (2.2.2)
+    little-plugger (1.1.4)
+    logging (2.3.0)
+      little-plugger (~> 1.1)
+      multi_json (~> 1.14)
+    mono_logger (1.1.1)
+    multi_json (1.15.0)
+    multi_xml (0.6.0)
+    multipart-post (2.1.1)
+    net-ping (2.0.8)
+    nori (2.6.0)
+    oauth2 (1.4.7)
+      faraday (>= 0.8, < 2.0)
+      jwt (>= 1.0, < 3.0)
+      multi_json (~> 1.3)
+      multi_xml (~> 0.5)
+      rack (>= 1.2, < 3)
+    octokit (4.20.0)
+      faraday (>= 0.9)
+      sawyer (~> 0.8.0, >= 0.5.3)
+    parallel (1.20.1)
+    parser (3.0.0.0)
+      ast (~> 2.4.1)
+    public_suffix (4.0.6)
+    rack (2.2.3)
+    rainbow (3.0.0)
+    rake (13.0.3)
+    rdoc (6.3.0)
+    regexp_parser (2.1.1)
+    rexml (3.2.4)
+    rspec (3.10.0)
+      rspec-core (~> 3.10.0)
+      rspec-expectations (~> 3.10.0)
+      rspec-mocks (~> 3.10.0)
+    rspec-core (3.10.1)
+      rspec-support (~> 3.10.0)
+    rspec-expectations (3.10.1)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.10.0)
+    rspec-mocks (3.10.2)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.10.0)
+    rspec-support (3.10.2)
+    rspec_junit_formatter (0.4.1)
+      rspec-core (>= 2, < 4, != 2.12.0)
+    rubocop (1.9.1)
+      parallel (~> 1.10)
+      parser (>= 3.0.0.0)
+      rainbow (>= 2.2.2, < 4.0)
+      regexp_parser (>= 1.8, < 3.0)
+      rexml
+      rubocop-ast (>= 1.2.0, < 2.0)
+      ruby-progressbar (~> 1.7)
+      unicode-display_width (>= 1.4.0, < 3.0)
+    rubocop-ast (1.4.1)
+      parser (>= 2.7.1.5)
+    ruby-progressbar (1.11.0)
+    ruby2_keywords (0.0.4)
+    rubyntlm (0.6.3)
+    rubyzip (2.3.0)
+    sawyer (0.8.2)
+      addressable (>= 2.3.5)
+      faraday (> 0.8, < 2.0)
+    sqlite3 (1.4.2)
+    unicode-display_width (2.0.0)
+    winrm (2.3.4)
+      builder (>= 2.1.2)
+      erubi (~> 1.8)
+      gssapi (~> 1.2)
+      gyoku (~> 1.0)
+      httpclient (~> 2.2, >= 2.2.0.2)
+      logging (>= 1.6.1, < 3.0)
+      nori (~> 2.0)
+      rubyntlm (~> 0.6.0, >= 0.6.1)
+    winrm-fs (1.3.4)
+      erubi (~> 1.8)
+      logging (>= 1.6.1, < 3.0)
+      rubyzip (~> 2.0)
+      winrm (~> 2.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  curb
+  dropbox_api
+  filelock
+  mono_logger
+  net-ping
+  octokit
+  rake
+  rspec
+  rspec_junit_formatter
+  rtoolsHCK!
+  rubocop (= 1.9.1)
+  sqlite3
+
+RUBY VERSION
+   ruby 2.7.0p0
+
+BUNDLED WITH
+   2.1.4

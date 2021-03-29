@@ -2,18 +2,20 @@
 
 source 'https://rubygems.org'
 
+ruby '>= 2.6.5p114'
+
 gem 'curb'
 gem 'dropbox_api'
-gem 'faraday', '=0.12.2'
 gem 'filelock'
 gem 'mono_logger'
 gem 'net-ping'
 gem 'octokit'
+gem 'rtoolsHCK', git: 'https://github.com/HCK-CI/rtoolsHCK.git', tag: 'v0.2.20'
 gem 'sqlite3'
 
 group :test, :development do
   gem 'rake'
   gem 'rspec'
   gem 'rspec_junit_formatter'
-  gem 'rubocop', '0.93.1'
+  gem 'rubocop', '= 1.9.1'
 end

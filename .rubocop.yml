@@ -8,5 +8,9 @@ Metrics/MethodLength:
 
 # Excluding spec files
 AllCops:
+  NewCops: enable
+  TargetRubyVersion: 2.6.5p114
   Exclude:
     - 'spec/*'
+    - 'vendor/**/*'
+    - '.git/**/*'
