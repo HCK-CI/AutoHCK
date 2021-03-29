@@ -15,9 +15,10 @@ module AutoHCK
     }.freeze
 
     def validate_setup_scripts_config(config)
-      (config.keys - SUPPORTED_CONFIG.keys).each do |cfg|
-        raise(AutoHCKError, "Undefined HLK setup scripts config #{cfg.inspect}")
-      end
+      extra_keys = (config.keys - SUPPORTED_CONFIG.keys)
+      return if extra_keys.empty?
+
+      raise(AutoHCKError, "Undefined HLK setup scripts configs: #{extra_keys.join(', ')}.")
     end
 
     def download_kit_installer(url, kit, hck_setup_scripts_path)

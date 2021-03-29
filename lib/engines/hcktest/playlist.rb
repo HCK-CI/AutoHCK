@@ -33,7 +33,7 @@ module AutoHCK
 
     def ms_playlist(log)
       kit = @kit
-      file = kit[0..2] == 'HLK' ? "./playlists/#{kit[3..-1]}.xml" : nil
+      file = kit[0..2] == 'HLK' ? "./playlists/#{kit[3..]}.xml" : nil
       return nil if file.nil? || !File.exist?("./#{file}")
 
       @logger.info("Applying microsoft's playlist") if log

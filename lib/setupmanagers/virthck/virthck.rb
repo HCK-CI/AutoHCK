@@ -88,6 +88,8 @@ module AutoHCK
 
     def driver_platform_config(param)
       default_value = platform_config(param)
+      return default_value if @driver.nil?
+
       @driver[param] || default_value
     end
 
@@ -132,8 +134,8 @@ module AutoHCK
         []
       else
         ["-device_type #{@device['type']}",
-         !@device['name'].empty? ? "-device_name #{@device['name']}" : '',
-         !@device['extra'].empty? ? "-device_extra #{@device['extra']}" : '']
+         @device['name'].empty? ? '' : "-device_name #{@device['name']}",
+         @device['extra'].empty? ? '' : "-device_extra #{@device['extra']}"]
       end
     end
 
@@ -169,9 +171,9 @@ module AutoHCK
     end
 
     def validate_run_opts(run_opts)
-      (run_opts.keys - DEFAULT_RUN_OPTIONS.keys).each do |option|
-        raise(SetupManagerError, "Undefined run option #{option.inspect}")
-      end
+      extra_keys = (run_opts.keys - DEFAULT_RUN_OPTIONS.keys)
+
+      raise(SetupManagerError, "Undefined run options: #{extra_keys.join(', ')}.") unless extra_keys.empty?
 
       DEFAULT_RUN_OPTIONS.merge(run_opts)
     end

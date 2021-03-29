@@ -70,7 +70,7 @@ module AutoHCK
       @temp_pre_logger_file = Tempfile.new('')
       @temp_pre_logger_file.sync = true
       @pre_logger = MonoLogger.new(@temp_pre_logger_file)
-      @stdout_logger = MonoLogger.new(STDOUT)
+      @stdout_logger = MonoLogger.new($stdout)
       @logger = MultiLogger.new(@pre_logger, @stdout_logger)
       @logger.level = debug ? 'DEBUG' : 'INFO'
     end

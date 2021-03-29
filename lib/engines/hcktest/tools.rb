@@ -6,7 +6,7 @@ require 'nori/parser/rexml'
 # AutoHCK module
 module AutoHCK
   # Tools class
-  class Tools < RToolsHCK
+  class Tools
     ACTION_RETRIES = 5
     ACTION_RETRY_SLEEP = 10
     def initialize(project, ip_addr, clients)
