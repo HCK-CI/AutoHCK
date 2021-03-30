@@ -29,7 +29,6 @@ module AutoHCK
       @options = options
       init_multilog(options.debug)
       init_class_variables
-      configure_result_uploader
       init_workspace
       @id = assign_id
     end
@@ -46,6 +45,7 @@ module AutoHCK
       @engine = Engine.new(self)
       @engine.driver.nil? || diff_checker(@engine.driver, @diff)
 
+      configure_result_uploader
       github_handling(@options.commit)
 
       @setup_manager = SetupManager.new(self)
