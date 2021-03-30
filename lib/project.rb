@@ -165,8 +165,8 @@ module AutoHCK
     end
 
     def abort
-      @result_uploader.upload_file(@logfile_path, 'AutoHCK.log')
-      @logger.remove_logger(@stdout_logger)
+      @result_uploader&.upload_file(@logfile_path, 'AutoHCK.log')
+      @logger&.remove_logger(@stdout_logger)
     end
 
     def close
