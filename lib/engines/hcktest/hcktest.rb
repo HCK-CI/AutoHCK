@@ -146,8 +146,8 @@ module AutoHCK
     end
 
     def close
-      @clients.values.map(&:abort)
-      @studio.abort
+      @clients&.values&.map(&:abort)
+      @studio&.abort
     end
   end
 end
