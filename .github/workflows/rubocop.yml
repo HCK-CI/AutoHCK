@@ -9,17 +9,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Set up Ruby 2.6
-      uses: actions/setup-ruby@v1
-      with:
-        ruby-version: 2.6.x
     - name: Setup sqlite-devel
       run: sudo apt-get -y install libsqlite3-dev
     - name: Setup libcurl-devel
       run: sudo apt-get -y install libcurl4 libcurl3-gnutls libcurl4-openssl-dev
-    - name: Setup dependencies
-      run: |
-        gem install bundler
-        bundle install --jobs 4 --retry 3
+    - name: Set up Ruby 2.6.5
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.6.5
+        bundler-cache: true
     - name: Test with rubocop
-      run: rubocop
+      run: bundle exec rubocop

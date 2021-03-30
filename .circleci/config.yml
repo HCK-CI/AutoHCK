@@ -2,13 +2,17 @@
 #
 # Check https://circleci.com/docs/2.0/language-ruby/ for more details
 #
-version: 2
+version: 2.1
+
+orbs:
+  ruby: circleci/ruby@1.0
+
 jobs:
   build:
     docker:
       # specify the version you desire here
-       - image: circleci/ruby:2.4.1-node-browsers
-      
+       - image: circleci/ruby:2.6.5-node-browsers
+
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
@@ -18,9 +22,7 @@ jobs:
 
     steps:
       - checkout
-      - run:
-          name: Bundle install
-          command: bundle check || bundle install
+      - ruby/install-deps
 
       # run tests!
       - run:
