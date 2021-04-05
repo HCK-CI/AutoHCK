@@ -61,9 +61,16 @@ module AutoHCK
       @support.name if support_needed?(test)
     end
 
-    def queue_test(test)
+    def queue_test(test, wait: false)
       @tools.queue_test(test['id'], @target['key'], @client.name, @tag,
                         test_support(test))
+      return unless wait
+
+      loop do
+        sleep 5
+        test = @tools.get_test_info(test['id'], @target['key'], @client.name, @tag)
+        break if test['executionstate'] == 'InQueue'
+      end
     end
 
     def current_test
@@ -75,8 +82,11 @@ module AutoHCK
     end
 
     def tests_stats
-      { 'current' => current_test, 'passed' => status_count('Passed'),
-        'failed' => status_count('Failed'), 'inqueue' => status_count('InQueue'),
+      cnt_passed = status_count('Passed')
+      cnt_failed = status_count('Failed')
+
+      { 'current' => current_test, 'passed' => cnt_passed,
+        'failed' => cnt_failed, 'inqueue' => @total - cnt_passed - cnt_failed,
         'currentcount' => done_tests.count + 1, 'total' => @total }
     end
 
@@ -96,8 +106,8 @@ module AutoHCK
 
     def print_tests_stats
       stats = tests_stats
-      @logger.info("<<< Passed: #{stats['passed']} | Failed: #{stats['failed']} |\
-  InQueue: #{stats['inqueue']}")
+      @logger.info("<<< Passed: #{stats['passed']} | Failed: #{stats['failed']} | "\
+                   "InQueue: #{stats['inqueue']}")
     end
 
     def print_test_results(test)
@@ -177,7 +187,6 @@ module AutoHCK
     end
 
     def handle_test_running(running = nil)
-      @last_done = []
       until all_tests_finished?
         keep_clients_alive
         reset_clients_to_ready_state
@@ -199,11 +208,15 @@ module AutoHCK
     end
 
     def run
+      @last_done = []
       @total = @tests.count
-      @logger.info('Adding tests to queue')
-      @tests.each { |test| queue_test(test) }
-      list_tests(log: true)
-      handle_test_running
+      tests = @tests
+      tests.each do |test|
+        @logger.info("Adding to queue: #{test['name']} [#{test['estimatedruntime']}]")
+        queue_test(test, wait: true)
+        list_tests
+        handle_test_running
+      end
     end
   end
 end
