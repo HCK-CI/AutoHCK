@@ -120,6 +120,8 @@ module AutoHCK
     end
 
     def run_clients
+      sleep 5 until @studio.up?
+
       @clients.values.map(&:run)
     end
 
