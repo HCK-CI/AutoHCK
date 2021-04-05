@@ -233,6 +233,10 @@ module AutoHCK
                                        playlist))
     end
 
+    def get_test_info(id, key, machine, tag)
+      handle_results(@tools.get_test_info(id, key, tag, machine, tag))
+    end
+
     def queue_test(test_id, target_key, machine, tag, support)
       handle_results(@tools.queue_test(test_id, target_key, tag, machine, tag,
                                        support))
