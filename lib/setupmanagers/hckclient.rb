@@ -38,7 +38,7 @@ module AutoHCK
 
     def run_tests
       @tests = Tests.new(self, @support, @project, @target, @tools)
-      @tests.list_tests
+      @tests.list_tests(log: true)
       @tests.run
     end
 
