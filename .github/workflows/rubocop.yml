@@ -9,6 +9,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+    - name: Update Ubuntu package repository
+      run: sudo apt-get update
     - name: Setup sqlite-devel
       run: sudo apt-get -y install libsqlite3-dev
     - name: Setup libcurl-devel
