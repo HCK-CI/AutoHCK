@@ -6,6 +6,9 @@ require 'dropbox_api'
 module AutoHCK
   # dropbox class
   class Dropbox
+    ACTION_RETRIES = 5
+    ACTION_RETRY_SLEEP = 10
+
     attr_reader :url
 
     def initialize(project)
@@ -18,6 +21,8 @@ module AutoHCK
     end
 
     def handle_exceptions(where)
+      retries ||= 0
+
       if @dropbox.nil?
         @logger.warn("Dropbox connection error, ignoring #{where}")
       else
@@ -25,8 +30,17 @@ module AutoHCK
       end
     rescue Faraday::ConnectionFailed
       @logger.warn("Dropbox connection lost while #{where}")
+      raise unless (retries += 1) < ACTION_RETRIES
+
       @logger.info('Trying to re-establish the Dropbox connection')
       connect
+      retry
+    rescue DropboxApi::Errors::TooManyWriteOperationsError
+      @logger.warn("Dropbox API failed #{where}")
+      raise unless (retries += 1) < ACTION_RETRIES
+
+      @logger.info('Trying to re-send request after delay')
+      sleep ACTION_RETRY_SLEEP
       retry
     rescue StandardError => e
       @logger.warn("Dropbox #{where} error: (#{e.class}) #{e.message}")
