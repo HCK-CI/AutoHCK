@@ -69,7 +69,9 @@ module AutoHCK
       loop do
         sleep 5
         test = @tools.get_test_info(test['id'], @target['key'], @client.name, @tag)
-        break if test['executionstate'] == 'InQueue'
+        break if test['executionstate'] != 'NotRunning'
+        break if test['status'] == 'InQueue'
+        break if test_finished?(test)
       end
     end
 
