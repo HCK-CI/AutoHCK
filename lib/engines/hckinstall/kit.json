@@ -2,7 +2,7 @@
   {
     "kit": "HLK1809server",
     "download_url": "https://go.microsoft.com/fwlink/?linkid=2026646",
-    "extra_software": [ "HLK_GRFX_FOD", "winfsp" ]
+    "extra_software": [ "FOD_2019", "HLK_GRFX_FOD", "winfsp" ]
   },
   {
     "kit": "HLK1809",
