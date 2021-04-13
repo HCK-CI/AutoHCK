@@ -208,7 +208,7 @@ module AutoHCK
       kit_string = @platform['kit']
       kit_type = kit_string[0..2]
       kit_version = ''
-      kit_type == 'HCK' || kit_version = Integer(kit_string[/\d+/])
+      kit_type == 'HCK' || kit_version = kit_string[3..]
 
       config = {
         kit_type: kit_type,
@@ -221,8 +221,8 @@ module AutoHCK
 
     def prepare_studio_iso
       replacement_list = {
-        '@WINDOWS_IMAGE_NAME@' => @studio_iso_info['windows_image_names'],
-        '@PRODUCT_KEY@' => @studio_iso_info['product_key'],
+        '@WINDOWS_IMAGE_NAME@' => @studio_iso_info['studio']['windows_image_names'],
+        '@PRODUCT_KEY@' => @studio_iso_info['studio']['product_key'],
         '@HOST_TYPE@' => 'studio'
       }
       @answer_files.each do |file|
@@ -234,8 +234,8 @@ module AutoHCK
 
     def prepare_client_iso
       replacement_list = {
-        '@WINDOWS_IMAGE_NAME@' => @client_iso_info['windows_image_names'],
-        '@PRODUCT_KEY@' => @client_iso_info['product_key'],
+        '@WINDOWS_IMAGE_NAME@' => @client_iso_info['client']['windows_image_names'],
+        '@PRODUCT_KEY@' => @client_iso_info['client']['product_key'],
         '@HOST_TYPE@' => 'client'
       }
       @answer_files.each do |file|
