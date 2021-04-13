@@ -90,8 +90,12 @@ module AutoHCK
         'currentcount' => done_tests.count + 1, 'total' => @total }
     end
 
+    def test_finished?(test)
+      %w[Passed Failed].include? test['status']
+    end
+
     def done_tests
-      @tests.select { |test| %w[Passed Failed].include? test['status'] }
+      @tests.select { |test| test_finished?(test) }
     end
 
     def info_page(test)
