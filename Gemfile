@@ -12,6 +12,7 @@ gem 'net-ping'
 gem 'net-telnet'
 gem 'octokit'
 gem 'rtoolsHCK', git: 'https://github.com/HCK-CI/rtoolsHCK.git', tag: 'v0.2.21'
+gem 'rubyzip'
 gem 'sqlite3'
 
 group :test, :development do
