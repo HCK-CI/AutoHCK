@@ -87,9 +87,9 @@ module AutoHCK
           failure_message = prep_stream_for_log(results['message'])
           @logger.warn("Tools action failure#{failure_message}")
         end
-        false
+        nil
       else
-        results['content'] || true
+        results['content'].nil? ? true : results['content']
       end
     end
 
