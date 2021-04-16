@@ -39,6 +39,15 @@ module AutoHCK
     # A custom UploadToMachineError error exception
     class UploadToMachineError < AutoHCKError; end
 
+    # A custom DownloadFromMachineError error exception
+    class DownloadFromMachineError < AutoHCKError; end
+
+    # A custom ExistsOnMachineError error exception
+    class ExistsOnMachineError < AutoHCKError; end
+
+    # A custom DeleteOnMachineError error exception
+    class DeleteOnMachineError < AutoHCKError; end
+
     # A custom ShutdownMachine error exception
     class ShutdownMachineError < AutoHCKError; end
 
@@ -156,6 +165,57 @@ module AutoHCK
 
       sleep ACTION_RETRY_SLEEP
       @logger.info("Trying again upload to machine #{machine}")
+      retry
+    end
+
+    def download_from_machine(machine, r_path, l_path)
+      retries ||= 0
+      ret = handle_results(@tools.download_from_machine(machine, r_path, l_path))
+
+      return ret if ret
+
+      e_message = "Download from machine #{machine} failed"
+      raise DownloadFromMachineError, e_message
+    rescue DownloadFromMachineError => e
+      @logger.warn(e.message)
+      raise unless (retries += 1) < ACTION_RETRIES
+
+      sleep ACTION_RETRY_SLEEP
+      @logger.info("Trying again download from machine #{machine}")
+      retry
+    end
+
+    def exists_on_machine?(machine, r_path)
+      retries ||= 0
+      ret = handle_results(@tools.exists_on_machine?(machine, r_path))
+
+      return ret unless ret.nil?
+
+      e_message = "Checking exists on machine #{machine} failed"
+      raise ExistsOnMachineError, e_message
+    rescue ExistsOnMachineError => e
+      @logger.warn(e.message)
+      raise unless (retries += 1) < ACTION_RETRIES
+
+      sleep ACTION_RETRY_SLEEP
+      @logger.info("Trying again check exists on machine #{machine}")
+      retry
+    end
+
+    def delete_on_machine(machine, r_path)
+      retries ||= 0
+      ret = handle_results(@tools.delete_on_machine(machine, r_path))
+
+      return ret if ret
+
+      e_message = "delete_on_machine #{machine} failed"
+      raise DeleteOnMachineError, e_message
+    rescue DeleteOnMachineError => e
+      @logger.warn(e.message)
+      raise unless (retries += 1) < ACTION_RETRIES
+
+      sleep ACTION_RETRY_SLEEP
+      @logger.info("Trying again delete_on_machine #{machine}")
       retry
     end
 
