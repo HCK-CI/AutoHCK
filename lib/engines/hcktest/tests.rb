@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'fileutils'
+require 'zip'
 require './lib/engines/hcktest/playlist'
 
 # AutoHCK module
@@ -19,6 +21,7 @@ module AutoHCK
       @support = support
       @logger = project.logger
       @playlist = Playlist.new(client, project, target, tools, @client.kit)
+      @tests_dump = {}
     end
 
     def list_tests(log: false)
@@ -126,25 +129,38 @@ module AutoHCK
       res = @tools.zip_test_result_logs(test['id'], @target['key'], @client.name,
                                         @tag)
       @logger.info('Test archive successfully created')
-      update_remote(res['hostlogszippath'], res['status'], res['testname'])
+      update_remote(test['id'], res['hostlogszippath'], res['status'], res['testname'])
       @logger.info('Test archive uploaded via the result uploader')
     rescue Tools::ZipTestResultLogsError
       @logger.info('Skipping archiving test result logs')
     end
 
-    def update_remote(test_logs_path, status, testname)
-      delete_old_remote(testname)
-      new_filename = "#{status}: #{testname}"
-      r_name = new_filename + File.extname(test_logs_path)
-      @project.result_uploader.upload_file(test_logs_path, r_name)
+    def update_summary_results_log
       logs = @tests.reduce('') do |sum, test|
-        sum + "#{test['status']}: #{test['name']}\n"
+        extra_info = @tests_dump.keys.include?(test['id']) ? '(with Minidump)' : ''
+        sum + "#{test['status']}: #{test['name']} #{extra_info}\n"
       end
       @logger.info('Tests results logs updated via the result uploader')
       @project.result_uploader.update_file_content(logs, 'logs.txt')
     end
 
+    def update_remote(test_id, test_logs_path, status, testname)
+      delete_old_remote(testname)
+      new_filename = "#{status}: #{testname}"
+      r_name = new_filename + File.extname(test_logs_path)
+      @project.result_uploader.upload_file(test_logs_path, r_name)
+
+      if @tests_dump.keys.include? test_id
+        r_name = "Minidump: #{testname}.zip"
+        @project.result_uploader.upload_file(@tests_dump[test_id], r_name)
+      end
+
+      update_summary_results_log
+    end
+
     def delete_old_remote(test_name)
+      r_name = "Minidump: #{test_name}.zip"
+      @project.result_uploader.delete_file(r_name)
       r_name = "Failed: #{test_name}.zip"
       @project.result_uploader.delete_file(r_name)
       r_name = "Passed: #{test_name}.zip"
@@ -155,9 +171,47 @@ module AutoHCK
       status_count('InQueue').zero? && current_test.nil?
     end
 
+    def collect_memory_dump(machine, l_tmp_path)
+      exist = @tools.exists_on_machine?(machine, '${env:SystemRoot}/Minidump')
+      @logger.debug("Checking Minidump exist on #{machine}: #{exist}")
+      return false unless exist
+
+      @logger.info("Downloading memory dump (Minidump) from #{machine}")
+      @tools.download_from_machine(machine, '${env:SystemRoot}/Minidump', l_tmp_path)
+      @tools.delete_on_machine(machine, '${env:SystemRoot}/Minidump')
+
+      true
+    end
+
+    def create_zip_from_directory(zip_path, dir_path)
+      Zip::File.open(zip_path, Zip::File::CREATE) do |zip_file|
+        Dir["#{dir_path}/**/**"].each do |file|
+          zip_file.add(file.sub("#{dir_path}/", ''), file)
+        end
+      end
+    end
+
+    def collect_memory_dumps(test)
+      l_zip_path = "#{@project.workspace_path}/memory_dump_#{test['id']}.zip"
+      l_tmp_path = "#{@project.workspace_path}/tmp_#{test['id']}"
+
+      collected_client = collect_memory_dump(@client.name, "#{l_tmp_path}/#{@client.name}")
+      collected_support = collect_memory_dump(@support.name, "#{l_tmp_path}/#{@support.name}") unless @support.nil?
+
+      if collected_client || collected_support
+        create_zip_from_directory(l_zip_path, l_tmp_path)
+        @tests_dump[test['id']] = l_zip_path
+      end
+
+      FileUtils.rm_rf(l_tmp_path)
+    end
+
     def handle_finished_tests(tests)
       tests.each do |test|
         @project.github.update(tests_stats) if @project.github&.connected?
+
+        collect_memory_dumps(test)
+
         print_test_results(test)
         archive_test_results(test)
       end
