@@ -131,6 +131,7 @@ DEPENDENCIES
   rspec_junit_formatter
   rtoolsHCK!
   rubocop (= 1.9.1)
+  rubyzip
   sqlite3
 
 RUBY VERSION
