@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/HCK-CI/rtoolsHCK.git
-  revision: f3f69082e72160bce9649ced167ee0a2dbfd43c9
-  tag: v0.2.20
+  revision: 398da25982f7e5b280c5b24ae6fa38fff075455d
+  tag: v0.2.21
   specs:
-    rtoolsHCK (0.2.20)
+    rtoolsHCK (0.2.21)
       bundler
       rdoc
       winrm (= 2.3.4)
