@@ -4,6 +4,7 @@ require './lib/setupmanagers/hckstudio'
 require './lib/setupmanagers/hckclient'
 require './lib/auxiliary/diff_checker'
 require './lib/auxiliary/json_helper'
+require './lib/auxiliary/zip_helper'
 
 # AutoHCK module
 module AutoHCK
@@ -153,7 +154,18 @@ module AutoHCK
       retry
     end
 
+    def upload_driver_package
+      @project.logger.info('Uploading driver package')
+
+      r_name = "#{@project.tag}.zip"
+      zip_path = "#{@workspace_path}/#{r_name}"
+      create_zip_from_directory(zip_path, @project.driver_path)
+      @project.result_uploader.upload_file(zip_path, r_name)
+    end
+
     def run
+      upload_driver_package
+
       @studio = @project.setup_manager.create_studio
       initialize_clients
 
