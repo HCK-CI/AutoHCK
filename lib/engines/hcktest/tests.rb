@@ -1,13 +1,15 @@
 # frozen_string_literal: true
 
 require 'fileutils'
-require 'zip'
 require './lib/engines/hcktest/playlist'
+require './lib/auxiliary/zip_helper'
 
 # AutoHCK module
 module AutoHCK
   # Tests class
   class Tests
+    include Helper
+
     HANDLE_TESTS_POLLING_INTERVAL = 10
     APPLYING_FILTERS_INTERVAL = 50
     VERIFY_TARGET_RETRIES = 5
@@ -181,14 +183,6 @@ module AutoHCK
       @tools.delete_on_machine(machine, '${env:SystemRoot}/Minidump')
 
       true
-    end
-
-    def create_zip_from_directory(zip_path, dir_path)
-      Zip::File.open(zip_path, Zip::File::CREATE) do |zip_file|
-        Dir["#{dir_path}/**/**"].each do |file|
-          zip_file.add(file.sub("#{dir_path}/", ''), file)
-        end
-      end
     end
 
     def collect_memory_dumps(test)
