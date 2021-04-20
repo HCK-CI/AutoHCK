@@ -48,8 +48,10 @@ module AutoHCK
     end
 
     def search_target
-      @logger.info("Searching for target #{@name} on #{@machine}")
-      @tools.list_machine_targets(@machine, @pool).each do |target|
+      @logger.info("Searching for target #{@name} (type #{@type}) on #{@machine}")
+      target_list = @tools.list_machine_targets(@machine, @pool)
+      @logger.debug("Received target list: #{target_list}")
+      target_list.each do |target|
         return target if target['name'].eql?(@name) && target['type'].eql?(@type)
       end
 
