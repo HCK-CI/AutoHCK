@@ -20,22 +20,22 @@ module AutoHCK
     include Helper
 
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :tag, :id,
-                :driver, :driver_path, :workspace_path, :github, :result_uploader,
-                :install_platform, :engine_type, :options, :extra_sw_manager
+                :workspace_path, :github, :result_uploader,
+                :engine_type, :options, :extra_sw_manager
 
     DRIVERS_JSON = './drivers.json'
     CONFIG_JSON = 'config.json'
 
     def initialize(options)
       @options = options
-      init_multilog(options.debug)
+      init_multilog(options.common.debug)
       init_class_variables
       init_workspace
       @id = assign_id
     end
 
     def diff_checker(driver, diff)
-      diff_checker = DiffChecker.new(@logger, driver, @driver_path, diff)
+      diff_checker = DiffChecker.new(@logger, driver, @options.test.driver_path, diff)
       return if diff_checker.trigger?
 
       @logger.info("Driver isn't changed, not running tests")
@@ -46,10 +46,10 @@ module AutoHCK
       @extra_sw_manager = ExtraSoftwareManager.new(self)
 
       @engine = Engine.new(self)
-      @engine.driver.nil? || diff_checker(@engine.driver, @diff)
+      @engine.driver.nil? || diff_checker(@engine.driver, @options.test.diff_file)
 
       configure_result_uploader
-      github_handling(@options.commit)
+      github_handling(@options.test.commit)
 
       @setup_manager = SetupManager.new(self)
     end
@@ -102,11 +102,9 @@ module AutoHCK
     def init_class_variables
       @config = read_json(CONFIG_JSON, @logger)
       @timestamp = create_timestamp
-      @tag = @options.tag
-      @driver_path = @options.path
-      @diff = @options.diff
-      @install_platform = @options.install
-      @engine_type = @options.install.nil? ? @config['test_engine'] : @config['install_engine']
+      # TODO: Fix me
+      @tag = "#{@options.test.drivers&.first}-#{@options.test.platform}"
+      @engine_type = @config["#{@options.mode}_engine"]
     end
 
     def assign_id

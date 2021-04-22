@@ -9,7 +9,7 @@ require './lib/project'
 # AutoHCK module
 module AutoHCK
   cli = CLI.new
-  options = cli.parse(ARGV)
+  cli.parse(ARGV)
 
   ENV.store 'LC_ALL', 'en_US.UTF-8'
 
@@ -51,7 +51,7 @@ module AutoHCK
   Thread.report_on_exception = false
 
   begin
-    @project = Project.new(options)
+    @project = Project.new(cli)
     @project.prepare
     @project.run
   rescue StandardError => e
