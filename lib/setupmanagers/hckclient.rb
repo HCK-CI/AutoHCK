@@ -94,7 +94,7 @@ module AutoHCK
 
     def install_driver
       method = @project.engine.driver['install_method']
-      path = @project.driver_path
+      path = @project.options.test.driver_path
       inf = @project.engine.driver['inf']
       custom_cmd = @project.engine.driver['install_command']
       @logger.info("Installing #{method} driver #{inf} in #{@name}")

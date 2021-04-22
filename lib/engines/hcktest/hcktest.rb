@@ -15,18 +15,14 @@ module AutoHCK
 
     PLATFORMS_JSON_DIR = 'lib/engines/hcktest/platforms'
     DRIVERS_JSON = 'drivers.json'
-    # This is a temporary workaround for clients names
-    CLIENTS = {
-      CL1: 'c1',
-      CL2: 'c2'
-    }.freeze
-    SM_RETRIES = 5
     ENGINE_MODE = 'test'
 
     def initialize(project)
       @project = project
+      @logger = project.logger
       @project.append_multilog("#{@project.tag}.log")
       @platform = read_platform
+      @driver_path = @project.options.test.driver_path
       @driver = find_driver
       prepare_extra_sw
       validate_paths
@@ -60,27 +56,32 @@ module AutoHCK
 
     def validate_paths
       normalize_paths
-      return if File.exist?("#{@project.driver_path}/#{@driver['inf']}")
+      return if File.exist?("#{@driver_path}/#{@driver['inf']}")
 
       @project.logger.fatal('Driver path is not valid')
-      raise(InvalidPathError, "Driver path #{@project.driver_path}/#{@driver['inf']} is not valid")
+      raise(InvalidPathError, "Driver path #{@driver_path}/#{@driver['inf']} is not valid")
     end
 
     def normalize_paths
-      @project.driver_path.chomp!('/')
+      @driver_path.chomp!('/')
     end
 
     def find_driver
-      drivers = read_json(DRIVERS_JSON, @project.logger)
-      short_name = @project.tag.split('-', 2).first
+      drivers = @project.options.test.drivers
+      if drivers.size != 1
+        raise(AutoHCKError, "Wrong drivers list: #{drivers}. Currently only one driver can be tested.")
+      end
+
+      drivers_info = read_json(DRIVERS_JSON, @project.logger)
+      short_name = drivers.first
       @project.logger.info("Loading driver: #{short_name}")
-      res = drivers.find { |driver| driver['short'] == short_name }
+      res = drivers_info.find { |driver| driver['short'] == short_name }
       @project.logger.fatal("#{short_name} does not exist") unless res
       res || raise(InvalidConfigFile, "#{short_name} does not exist")
     end
 
     def read_platform
-      platform_name = @project.tag.split('-', 2).last
+      platform_name = @project.options.test.platform
       platform_json = "#{PLATFORMS_JSON_DIR}/#{platform_name}.json"
 
       @logger.info("Loading platform: #{platform_name}")
@@ -163,7 +164,7 @@ module AutoHCK
 
       r_name = "#{@project.tag}.zip"
       zip_path = "#{@workspace_path}/#{r_name}"
-      create_zip_from_directory(zip_path, @project.driver_path)
+      create_zip_from_directory(zip_path, @driver_path)
       @project.result_uploader.upload_file(zip_path, r_name)
     end
 
