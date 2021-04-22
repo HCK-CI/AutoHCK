@@ -7,97 +7,55 @@ require './lib/version'
 module AutoHCK
   # class CLI
   class CLI
-    # class ScriptOptions
-    class ScriptOptions
-      attr_accessor :tag, :path, :diff, :commit, :debug, :install, :force_install
+    attr_reader :common, :install, :test, :mode
 
-      def define_options(parser)
-        self.debug = false
-        parser.banner = 'Usage: auto_hck.rb [options]'
-        parser.separator ''
-        mandatory_run_options(parser)
-        mandatory_install_options(parser)
-        optional_options(parser)
-        parser.on_tail('-h', '--help', 'Show this message') do
-          puts parser
-          exit
+    def initialize
+      @common = CommonOptions.new
+      @test = TestOptions.new
+      @install = InstallOptions.new
+
+      @sub_parser = {
+        'test' => @test.create_parser,
+        'install' => @install.create_parser
+      }
+
+      @parser = @common.create_parser(@sub_parser)
+    end
+
+    # class CommonOptions
+    class CommonOptions
+      attr_accessor :debug
+
+      def create_parser(sub_parser)
+        OptionParser.new do |parser|
+          parser.banner = 'Usage: auto_hck.rb [common options] <command> [command options]'
+          parser.separator ''
+          define_options(parser)
+          parser.on_tail('-h', '--help', 'Show this message') do
+            puts parser
+            sub_parser&.each do |_k, v|
+              puts v
+            end
+            exit
+          end
         end
       end
 
-      def mandatory_run_options(parser)
-        parser.separator 'Mandatory for run:'
-        tag_option(parser)
-        path_option(parser)
-      end
-
-      def mandatory_install_options(parser)
-        parser.separator 'Mandatory for install:'
-        install_option(parser)
-      end
-
-      def optional_options(parser)
-        parser.separator 'Optional:'
-        commit_option(parser)
-        diff_option(parser)
+      def define_options(parser)
+        @debug = false
         debug_option(parser)
-        force_install_option(parser)
         version_option(parser)
       end
 
-      def commit_option(parser)
-        parser.on('-c', '--commit <COMMITHASH>',
-                  'Commit hash for CI status update') do |commit|
-          self.commit = commit
-        end
-      end
-
-      def install_option(parser)
-        parser.on('-i', '--install <PLATFORM>',
-                  'Install VM for specified platform') do |install|
-          self.install = install
-        end
-      end
-
-      def diff_option(parser)
-        parser.on('-d', '--diff <DIFFFILE>',
-                  'Path to text file containing a list of changed source '\
-                  'files') do |diff|
-          self.diff = diff
-        end
-      end
-
-      def tag_option(parser)
-        parser.on('-t', '--tag [PROJECT-PLATFORM]',
-                  'Tag name consist of project name and platform separated by a '\
-                  'dash') do |tag|
-          self.tag = tag
-        end
-      end
-
-      def path_option(parser)
-        parser.on('-p', '--path [DRIVERPATH]',
-                  'Path to the location of the driver wanted to be '\
-                  'tested') do |path|
-          self.path = path
-        end
-      end
-
       def debug_option(parser)
-        parser.on('-D', '--debug',
+        parser.on('--debug', TrueClass,
                   'Printing debug information') do |debug|
-          self.debug = debug
-        end
-      end
-
-      def force_install_option(parser)
-        parser.on('--force-install',
-                  'Install all VM, replace studio if exist') do |force_install|
-          self.force_install = force_install
+          @debug = debug
         end
       end
 
       def version_option(parser)
-        parser.on('-V', '--version',
+        parser.on('-v', '--version',
                   'Display version information and exit') do
           puts "AutoHCK Version: #{AutoHCK::VERSION}"
           exit
@@ -105,15 +63,108 @@ module AutoHCK
       end
     end
 
-    def parse(args)
-      @options = ScriptOptions.new
-      @args = OptionParser.new do |parser|
-        @options.define_options(parser)
-        parser.parse!(args)
+    # class TestOptions
+    class TestOptions
+      attr_accessor :platform, :drivers, :driver_path, :commit, :diff_file
+
+      def create_parser
+        OptionParser.new do |parser|
+          parser.banner = 'Usage: auto_hck.rb test [test options]'
+          parser.separator ''
+          define_options(parser)
+          parser.on_tail('-h', '--help', 'Show this message') do
+            puts parser
+            exit
+          end
+        end
       end
-      @options
+
+      def define_options(parser)
+        platform_option(parser)
+        drivers_option(parser)
+        driver_path_option(parser)
+        commit_option(parser)
+        diff_file_option(parser)
+      end
+
+      def platform_option(parser)
+        parser.on('-p', '--platform <platform_name>', String,
+                  'Platform for run test') do |platform|
+          @platform = platform
+        end
+      end
+
+      def drivers_option(parser)
+        parser.on('-d', '--drivers <drivers_list>', Array,
+                  'List of driver for run test') do |drivers|
+          @drivers = drivers
+        end
+      end
+
+      def driver_path_option(parser)
+        parser.on('--driver-path <driver_path>', String,
+                  'Path to the location of the driver wanted to be tested') do |driver_path|
+          @driver_path = driver_path
+        end
+      end
+
+      def commit_option(parser)
+        parser.on('-c', '--commit <commit_hash>', String,
+                  'Commit hash for CI status update') do |commit|
+          @commit = commit
+        end
+      end
+
+      def diff_file_option(parser)
+        parser.on('--diff <diff_file>', String,
+                  'Path to text file containing a list of changed source files') do |diff_file|
+          @diff_file = diff_file
+        end
+      end
     end
 
-    attr_reader :parser, :options
+    # class InstallOptions
+    class InstallOptions
+      attr_accessor :platform, :force
+
+      def create_parser
+        OptionParser.new do |parser|
+          parser.banner = 'Usage: auto_hck.rb install [install options]'
+          parser.separator ''
+          define_options(parser)
+          parser.on_tail('-h', '--help', 'Show this message') do
+            puts parser
+            exit
+          end
+        end
+      end
+
+      def define_options(parser)
+        @force = false
+
+        platform_option(parser)
+        force_option(parser)
+      end
+
+      def platform_option(parser)
+        parser.on('-p', '--platform <platform_name>', String,
+                  'Install VM for specified platform') do |platform|
+          @platform = platform
+        end
+      end
+
+      def force_option(parser)
+        parser.on('-f', '--force', TrueClass,
+                  'Install all VM, replace studio if exist') do |force|
+          @force = force
+        end
+      end
+    end
+
+    def parse(args)
+      @parser.order!(args)
+      @mode = args.shift
+      @sub_parser[@mode].order!(args) unless @mode.nil?
+    end
   end
 end

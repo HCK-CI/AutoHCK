@@ -25,7 +25,7 @@ module AutoHCK
     def initialize(project)
       @project = project
       @logger = project.logger
-      @project.append_multilog("#{project.install_platform}.log")
+      @project.append_multilog("#{project.options.install.platform}.log")
       init_workspace
       init_config
       init_class_variables
@@ -34,7 +34,7 @@ module AutoHCK
     end
 
     def init_workspace
-      @workspace_path = [@project.workspace_path, @project.install_platform,
+      @workspace_path = [@project.workspace_path, @project.options.install.platform,
                          @project.timestamp].join('/')
       begin
         FileUtils.mkdir_p(@workspace_path)
@@ -45,7 +45,7 @@ module AutoHCK
     end
 
     def read_platform
-      platform_name = @project.install_platform
+      platform_name = @project.options.install.platform
       platform_json = "#{PLATFORMS_JSON_DIR}/#{platform_name}.json"
 
       @logger.info("Loading platform: #{platform_name}")
@@ -255,7 +255,7 @@ module AutoHCK
       prepare_setup_scripts_config
 
       if @project.setup_manager.check_studio_image_exist
-        if @project.options.force_install
+        if @project.options.install.force
           @logger.info('HCKInstall: Studio image exist, force reinstall started')
 
           prepare_studio_iso
