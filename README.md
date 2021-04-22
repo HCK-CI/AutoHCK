@@ -87,7 +87,7 @@ to do that you will need to create a personal access token.
 ### Configuration
 There are 6 diffrenet JSON files for configurations, examples included in the files:
 * `config.json` is the general configuration file which holds the paths to the dependencies stated above.
-* `platforms.json` list of configured opertaions systems images.
+* `platforms.json` list of configured opertaions systems images. #TODO: Fix
 * `devices.json` list of devices drivers information for testing.
 * `iso.json` list of ISO with information for unattended VM installation.
 * `hckinstall.json` is the specific configuration file for install engine.
@@ -101,25 +101,31 @@ This script deletes logs and snapshots from HCK runs that are more than 1 month 
 
 Once everything is installed and configured, run `./bin/auto_hck` with these parameters:
 ```
-Mandatory for run:
-    -t, --tag [PROJECT-PLATFORM]     Tag name consist of project name and platform separated by a dash
-    -p, --path [DRIVERPATH]          Path to the location of the driver wanted to be tested
-Mandatory for install:
-    -i, --install <PLATFORM>         Install VM for specified platform
-Optional:
-    -c, --commit <COMMITHASH>        Commit hash for CI status update
-    -d, --diff <DIFFFILE>            Path to text file containing a list of changed source files
-    -D, --debug                      Printing debug information
-        --force-install              Install all VM, replace studio if exist
-    -V, --version                    Display version information and exit
+Usage: auto_hck.rb [common options] <command> [command options]
+
+        --debug                      Printing debug information
+    -v, --version                    Display version information and exit
+    -h, --help                       Show this message
+Usage: auto_hck.rb test [test options]
+
+    -p, --platform <platform_name>   Platform for run test
+    -d, --drivers <drivers_list>     List of driver for run test
+        --driver-path <driver_path>  Path to the location of the driver wanted to be tested
+    -c, --commit <commit_hash>       Commit hash for CI status update
+        --diff <diff_file>           Path to text file containing a list of changed source files
+    -h, --help                       Show this message
+Usage: auto_hck.rb install [install options]
+
+    -p, --platform <platform_name>   Install VM for specified platform
+    -f, --force                      Install all VM, replace studio if exist
     -h, --help                       Show this message
 ```
 ### Examples
 ```
-ruby ./bin/auto_hck -t Balloon-Win10x86 -p /home/hck-ci/balloon/win10/x86
-ruby ./bin/auto_hck -t NetKVM-Win10x64 -p /home/hck-ci/workspace -d /path/to/diff.txt
-ruby ./bin/auto_hck -t viostor-Win10x64 -p /home/hck-ci/viostor -d /path/to/diff.txt -c ec3da560827922e5a82486cf19cd9c27e95455a9
-ruby ./bin/auto_hck -i Win2019x64 --force-install
+ruby ./bin/auto_hck test --drivers Balloon --platform Win10x86 --driver-path /home/hck-ci/balloon/win10/x86
+ruby ./bin/auto_hck test --drivers NetKVM --platform Win10x64 --driver-path /home/hck-ci/workspace --diff /path/to/diff.txt
+ruby ./bin/auto_hck test --drivers viostor --platform Win10x64 --driver-path /home/hck-ci/viostor --diff /path/to/diff.txt -c ec3da560827922e5a82486cf19cd9c27e95455a9
+ruby ./bin/auto_hck install --platform Win2019x64 --force
 ```
 ### Workspace
 When starting AutoHCK a session workspace will be created inside the workspace directory configured in `config.json` at the path:

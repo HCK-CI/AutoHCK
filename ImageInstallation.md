@@ -54,7 +54,7 @@ Notes:
 The `extra_software` option can be specified in the following files:
   - `drivers.json` - will be used in test mode only
   - `lib/engines/hckinstall/kit.json` - will be used in install mode only
-  - `lib/engines/hcktest/platforms.json` - will be used in install and test modes
+  - `lib/engines/hcktest/platforms.json` - will be used in install and test modes #TODO: Fix
 
 According to the file, the software will be installed during image creating (install mode) or during driver testing (test mode)
 
