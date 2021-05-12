@@ -40,6 +40,18 @@ module AutoHCK
       end
     end
 
+    def run_cmd_no_fail(cmd)
+      @logger.debug("Run command: #{cmd.join(' ')}")
+      temp_file do |stdout|
+        temp_file do |stderr|
+          Process.wait(spawn(cmd.join(' '), out: stdout.path, err: stderr.path))
+          log_stdout_stderr(stdout.read, stderr.read)
+          @logger.debug("Command finished with code: #{$CHILD_STATUS.exitstatus}")
+          $CHILD_STATUS.exitstatus
+        end
+      end
+    end
+
     def file_gsub(src, dst, gsub_list)
       content = File.read(src)
       gsub_list.each do |k, v|
