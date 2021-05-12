@@ -4,6 +4,7 @@ require 'pathname'
 
 require './lib/auxiliary/downloader'
 require './lib/auxiliary/json_helper'
+require './lib/auxiliary/string_helper'
 require './lib/auxiliary/extra_software/exceptions'
 require './lib/engines/hckinstall/setup_scripts_helper'
 
@@ -95,20 +96,6 @@ module AutoHCK
       copy_extra_software(setup_scripts_path, @ext_path, @sw_names)
     end
 
-    def replace_command(cmd, replacement_list)
-      result = cmd
-      replacement_list.each do |k, v|
-        # If replacement is a String it will be substituted for the matched text.
-        # It may contain back-references to the pattern's capture groups of the form \d,
-        # where d is a group number, or \k<n>, where n is a group name.
-        # In the block form, the current match string is passed in as a parameter,
-        # and variables such as $1, $2, $`, $&, and $' will be set appropriately.
-        # The value returned by the block will be substituted for the match on each call.
-        result = result.gsub(k) { v }
-      end
-      result
-    end
-
     def install_software_on_computer(sw_name, sw_config, tools, machine_name)
       @logger.info("Installing #{sw_name} on #{machine_name}")
       path = tools.upload_to_machine(machine_name, Pathname.new(@ext_path).join(sw_name))
@@ -121,7 +108,7 @@ module AutoHCK
       }
 
       cmd = "#{sw_config['install_cmd']} #{sw_config['install_args']}"
-      full_cmd = replace_command(cmd, replacement_list)
+      full_cmd = replace_string(cmd, replacement_list)
 
       @logger.debug("cmd #{machine_name}:\n - path = #{path}\n - cmd = #{cmd}\n - full_cmd = #{full_cmd}\n")
       tools.run_on_machine(machine_name, "Installing #{sw_name}", full_cmd)
