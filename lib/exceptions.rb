@@ -10,4 +10,13 @@ module AutoHCK
 
   # A custom Could not open json file exception
   class OpenJsonError < StandardError; end
+
+  # A custom CmdRun error exception
+  class CmdRunError < AutoHCKError; end
+
+  # A custom Invalid Paths Error exception
+  class InvalidPathError < AutoHCKError; end
+
+  # A custom Invalid Config File error exception
+  class InvalidConfigFile < AutoHCKError; end
 end
