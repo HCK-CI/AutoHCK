@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+require 'English'
+require 'tempfile'
+
+require_relative '../exceptions'
+
 # AutoHCK module
 module AutoHCK
   # Helper module
