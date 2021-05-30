@@ -173,9 +173,6 @@ module AutoHCK
     end
 
     def close
-      @client1&.abort
-      @client2&.abort
-      @studio&.abort
       @setup_manager&.close
       @engine&.close
       release_id
