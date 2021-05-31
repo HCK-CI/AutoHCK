@@ -66,6 +66,30 @@ module AutoHCK
       -1
     end
 
+    def studio_alive?
+      @logger.info('Physical machine is always alive')
+    end
+
+    def client_alive?(_name)
+      @logger.info('Physical machine is always alive')
+    end
+
+    def keep_studio_alive
+      @logger.info('Physical machine is always alive')
+    end
+
+    def keep_client_alive(_name)
+      @logger.info('Physical machine is always alive')
+    end
+
+    def clean_last_studio_run
+      @logger.info('Clean last run is currently not supported for physical machines')
+    end
+
+    def clean_last_client_run(_name)
+      @logger.info('Clean last run is currently not supported for physical machines')
+    end
+
     def create_studio
       studio_ip = @setup['st_ip']
       @studio = HCKStudio.new(@project, self, 'st', studio_ip)
@@ -73,6 +97,14 @@ module AutoHCK
 
     def create_client(tag, name)
       HCKClient.new(@project, self, @studio, tag, name)
+    end
+
+    def abort_studio
+      @logger.info('Abort is currently not supported for physical machines')
+    end
+
+    def abort_client(_name)
+      @logger.info('Abort is currently not supported for physical machines')
     end
 
     def close
