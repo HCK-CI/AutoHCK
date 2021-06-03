@@ -98,22 +98,27 @@ module AutoHCK
     end
 
     def run_pre_test_commands
-      @project.engine.driver['pretestcommands']&.each do |command|
-        desc = command['desc']
-        cmd = command['run']
+      @project.engine.drivers&.each do |driver|
+        driver['pretestcommands']&.each do |command|
+          desc = command['desc']
+          cmd = command['run']
 
-        @logger.info("Running command (#{desc}) on client #{@name}")
-        @tools.run_on_machine(@name, desc, cmd)
+          @logger.info("Running command (#{desc}) on client #{@name}")
+          @tools.run_on_machine(@name, desc, cmd)
+        end
       end
     end
 
-    def install_driver
-      method = @project.engine.driver['install_method']
+    def install_drivers
       path = @project.options.test.driver_path
-      inf = @project.engine.driver['inf']
-      custom_cmd = @project.engine.driver['install_command']
-      @logger.info("Installing #{method} driver #{inf} in #{@name}")
-      @tools.install_machine_driver_package(@name, path, method, inf, custom_cmd)
+
+      @project.engine.drivers&.each do |driver|
+        method = driver['install_method']
+        inf = driver['inf']
+        custom_cmd = driver['install_command']
+        @logger.info("Installing #{method} driver #{inf} in #{@name}")
+        @tools.install_machine_driver_package(@name, path, method, inf, custom_cmd)
+      end
     end
 
     def machine_in_default_pool
@@ -152,7 +157,7 @@ module AutoHCK
         return_when_client_up
         @logger.info("Preparing client #{@name}...")
         @project.extra_sw_manager.install_software_before_driver(@tools, @name)
-        install_driver
+        install_drivers
         @project.extra_sw_manager.install_software_after_driver(@tools, @name)
         @logger.info("Configuring client #{@name}...")
         configure_machine

@@ -48,8 +48,12 @@ module AutoHCK
       @engine.run
     end
 
-    def driver
-      @engine.driver
+    def drivers
+      @engine.drivers
+    end
+
+    def target
+      @engine.target
     end
 
     def platform
