@@ -11,7 +11,7 @@ module AutoHCK
   # HCKTest class
   class HCKTest
     include Helper
-    attr_reader :driver, :platform
+    attr_reader :drivers, :platform
 
     PLATFORMS_JSON_DIR = 'lib/engines/hcktest/platforms'
     DRIVERS_JSON = 'drivers.json'
@@ -23,16 +23,18 @@ module AutoHCK
       @project.append_multilog("#{@project.tag}.log")
       @platform = read_platform
       @driver_path = @project.options.test.driver_path
-      @driver = find_driver
+      @drivers = find_drivers(@project.options.test.drivers)
       prepare_extra_sw
       validate_paths
       init_workspace
     end
 
     def prepare_extra_sw
-      unless @driver['extra_software'].nil?
+      @drivers.each do |driver|
+        next if driver['extra_software'].nil?
+
         @project.extra_sw_manager.prepare_software_packages(
-          @driver['extra_software'], @platform['kit'], ENGINE_MODE
+          driver['extra_software'], @platform['kit'], ENGINE_MODE
         )
       end
 
@@ -44,7 +46,8 @@ module AutoHCK
     end
 
     def init_workspace
-      @workspace_path = [@project.workspace_path, @driver['short'],
+      @workspace_path = [@project.workspace_path,
+                         @project.options.test.drivers.sort.join('-'),
                          @platform['name'], @project.timestamp].join('/')
       begin
         FileUtils.mkdir_p(@workspace_path)
@@ -56,28 +59,41 @@ module AutoHCK
 
     def validate_paths
       normalize_paths
-      return if File.exist?("#{@driver_path}/#{@driver['inf']}")
+      @drivers.each do |driver|
+        paths = [
+          "#{@driver_path}/#{driver['inf']}"
+        ]
+        next if paths.any? { |p| File.exist?(p) }
 
-      @project.logger.fatal('Driver path is not valid')
-      raise(InvalidPathError, "Driver path #{@driver_path}/#{@driver['inf']} is not valid")
+        @project.logger.fatal('Driver paths are not valid')
+        raise(InvalidPathError, "Driver paths #{paths.join(', ')} are not valid")
+      end
     end
 
     def normalize_paths
       @driver_path.chomp!('/')
     end
 
-    def find_driver
-      drivers = @project.options.test.drivers
-      if drivers.size != 1
-        raise(AutoHCKError, "Wrong drivers list: #{drivers}. Currently only one driver can be tested.")
-      end
-
+    def find_drivers(driver_names)
       drivers_info = read_json(DRIVERS_JSON, @project.logger)
-      short_name = drivers.first
-      @project.logger.info("Loading driver: #{short_name}")
-      res = drivers_info.find { |driver| driver['short'] == short_name }
-      @project.logger.fatal("#{short_name} does not exist") unless res
-      res || raise(InvalidConfigFile, "#{short_name} does not exist")
+
+      raise(AutoHCKError, 'Unsupported configuration. Drivers count is not equals 1') if driver_names.count != 1
+
+      driver_names.map do |short_name|
+        @project.logger.info("Loading driver: #{short_name}")
+        res = drivers_info.find { |driver| driver['short'] == short_name }
+        @project.logger.fatal("#{short_name} does not exist") unless res
+        res || raise(InvalidConfigFile, "#{short_name} does not exist")
+      end
+    end
+
+    def target
+      {
+        'name' => drivers.first['name'],
+        'type' => drivers.first['type'],
+        'playlist' => drivers.first['playlist'],
+        'blacklist' => drivers.first['blacklist']
+      }
     end
 
     def read_platform
@@ -98,7 +114,7 @@ module AutoHCK
       @platform['clients'].each do |name, client|
         @clients[client['name']] = @project.setup_manager.create_client(name,
                                                                         client['name'])
-        break unless @driver['support']
+        break unless @drivers.any? { |d| d['support'] }
       end
       return unless @clients.empty?
 

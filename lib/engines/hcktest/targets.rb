@@ -11,8 +11,8 @@ module AutoHCK
       @machine = client.name
       @client = client
       @project = project
-      @name = project.engine.driver['name']
-      @type = project.engine.driver['type']
+      @name = project.engine.target['name']
+      @type = project.engine.target['type']
       @tools = tools
       @pool = pool
       @logger = project.logger
