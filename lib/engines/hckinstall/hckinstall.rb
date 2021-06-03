@@ -145,7 +145,11 @@ module AutoHCK
       @client_iso_info['path'].chomp!('/')
     end
 
-    def driver
+    def drivers
+      nil
+    end
+
+    def target
       nil
     end
 

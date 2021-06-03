@@ -34,11 +34,11 @@ module AutoHCK
       @id = assign_id
     end
 
-    def diff_checker(driver, diff)
-      diff_checker = DiffChecker.new(@logger, driver, @options.test.driver_path, diff)
+    def diff_checker(drivers, diff)
+      diff_checker = DiffChecker.new(@logger, drivers, @options.test.driver_path, diff)
       return if diff_checker.trigger?
 
-      @logger.info("Driver isn't changed, not running tests")
+      @logger.info("Any drivers aren't changed, not running tests")
       exit(0)
     end
 
@@ -46,7 +46,7 @@ module AutoHCK
       @extra_sw_manager = ExtraSoftwareManager.new(self)
 
       @engine = Engine.new(self)
-      @engine.driver.nil? || diff_checker(@engine.driver, @options.test.diff_file)
+      @engine.drivers.nil? || diff_checker(@engine.drivers, @options.test.diff_file)
 
       configure_result_uploader
       github_handling(@options.test.commit)

@@ -9,16 +9,16 @@ module AutoHCK
     DIFF_FILENAME = 'diff.txt'
     TRIGGER_YAML = 'triggers.yml'
 
-    def initialize(logger, driver, driver_path, diff)
+    def initialize(logger, drivers, driver_path, diff)
       @logger = logger
-      @driver = driver['short']
+      @drivers = drivers.map { |d| d['short'] }
       @diff = diff || "#{driver_path}/#{DIFF_FILENAME}"
     end
 
-    def load_driver_triggers
+    def load_drivers_triggers
       @logger.info('Loading diff checker trigger file')
       yaml = YAML.safe_load(File.read(TRIGGER_YAML))
-      yaml.select! { |_key, value| value ? value & [@driver, '*'] != [] : false }
+      yaml.select! { |_key, value| value ? value & [*@drivers, '*'] != [] : false }
       yaml.keys
     end
 
@@ -39,7 +39,7 @@ module AutoHCK
       return true unless File.file?(@diff) && File.file?(TRIGGER_YAML)
 
       files = load_diff_files
-      triggers = load_driver_triggers
+      triggers = load_drivers_triggers
       root_trigger?(triggers, files) || subdir_trigger?(triggers, files)
     end
   end
