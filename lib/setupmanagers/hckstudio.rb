@@ -1,21 +1,23 @@
 # frozen_string_literal: true
 
 require 'net/ping'
-require './lib/setupmanagers/machine'
 require './lib/engines/hcktest/tools'
 
 # AutoHCK module
 module AutoHCK
   # HCKStudio class
   class HCKStudio
-    attr_reader :tools, :setupmanager
+    attr_reader :tools
 
     STUDIO = 'st'
     HCK_FILTERS_PATH = 'filters/UpdateFilters.sql'
-    def initialize(project, setupmanager, ip)
+    CONNECT_RETRIES = 5
+    CONNECT_RETRY_SLEEP = 10
+
+    def initialize(project, setup_manager, ip)
       @project = project
       @tag = project.engine.tag
-      @setupmanager = setupmanager
+      @setup_manager = setup_manager
       @ip = ip
       @logger = project.logger
       @logger.debug("HCKStudio ip: #{ip}")
@@ -27,35 +29,31 @@ module AutoHCK
     end
 
     def create_snapshot
-      @setupmanager.create_studio_snapshot
+      @setup_manager.create_studio_snapshot
     end
 
     def delete_snapshot
-      @setupmanager.delete_studio_snapshot
+      @setup_manager.delete_studio_snapshot
     end
 
     def create_pool
       @logger.info('Creating pool')
-      tag = @project.tag
-      @tools.create_pool(tag)
+      @tools.create_pool(@tag)
     end
 
     def delete_pool
       @logger.info('Deleting pool')
-      tag = @project.tag
-      @tools.delete_pool(tag)
+      @tools.delete_pool(@tag)
     end
 
     def create_project
       @logger.info('Creating project')
-      tag = @project.tag
-      @tools.create_project(tag)
+      @tools.create_project(@tag)
     end
 
     def delete_project
       @logger.info('Deleting project')
-      tag = @project.tag
-      @tools.delete_project(tag)
+      @tools.delete_project(@tag)
     end
 
     def list_pools
@@ -68,9 +66,6 @@ module AutoHCK
       @logger.info('Updating HCK filters')
       @tools.update_filters(HCK_FILTERS_PATH)
     end
-
-    CONNECT_RETRIES = 5
-    CONNECT_RETRY_SLEEP = 10
 
     def connect
       retries ||= 0
@@ -96,11 +91,11 @@ module AutoHCK
     end
 
     def run(run_opts = nil)
-      @setupmanager.run(STUDIO, run_opts)
+      @setup_manager.run(STUDIO, run_opts)
     end
 
     def alive?
-      @setupmanager.studio_alive?
+      @setup_manager.studio_alive?
     end
 
     def clean_tools
@@ -112,7 +107,7 @@ module AutoHCK
 
     def clean_last_run
       clean_tools unless @tools.nil?
-      @setupmanager.clean_last_studio_run
+      @setup_manager.clean_last_studio_run
     end
 
     def configure(clients)
@@ -129,7 +124,7 @@ module AutoHCK
     def abort
       @logger.info('Aborting HLK Studio')
       @tools&.close unless @tools.nil?
-      @setupmanager.abort_studio
+      @setup_manager.abort_studio
     end
 
     def shutdown
