@@ -1,0 +1,10 @@
+{
+  "name": "PhyWin2016",
+  "kit": "HLK1607",
+  "clients": {
+    "c1": {
+      "name": "C1",
+      "winrm_port": "4002"
+    }
+  }
+}

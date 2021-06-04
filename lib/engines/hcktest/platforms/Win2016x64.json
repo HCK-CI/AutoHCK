@@ -1,0 +1,21 @@
+{
+  "name": "Win2016x64",
+  "kit": "HLK1607",
+  "st_image": "HLK1607.qcow2",
+  "clients": {
+    "c1": {
+      "name": "CL1",
+      "cpus": "2",
+      "memory": "2G",
+      "winrm_port": "4002",
+      "image": "HLK1607-C1-Win2016x64.qcow2"
+    },
+    "c2": {
+      "name": "CL2",
+      "cpus": "2",
+      "memory": "2G",
+      "winrm_port": "4003",
+      "image": "HLK1607-C2-Win2016x64.qcow2"
+    }
+  }
+}

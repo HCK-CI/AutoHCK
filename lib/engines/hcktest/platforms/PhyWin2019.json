@@ -1,0 +1,10 @@
+{
+  "name": "PhyWin2019",
+  "kit": "HLK1809server",
+  "clients": {
+    "c1": {
+      "name": "CL1",
+      "winrm_port": "4002"
+    }
+  }
+}

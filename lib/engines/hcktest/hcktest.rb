@@ -13,7 +13,7 @@ module AutoHCK
     include Helper
     attr_reader :driver, :platform
 
-    PLATFORMS_JSON = 'lib/engines/hcktest/platforms.json'
+    PLATFORMS_JSON_DIR = 'lib/engines/hcktest/platforms'
     DRIVERS_JSON = 'drivers.json'
     # This is a temporary workaround for clients names
     CLIENTS = {
@@ -80,12 +80,16 @@ module AutoHCK
     end
 
     def read_platform
-      platforms = read_json(PLATFORMS_JSON, @project.logger)
       platform_name = @project.tag.split('-', 2).last
-      @project.logger.info("Loading platform: #{platform_name}")
-      res = platforms.find { |p| p['name'] == platform_name }
-      @project.logger.fatal("#{platform_name} does not exist") unless res
-      res || raise(InvalidConfigFile, "#{platform_name} does not exist")
+      platform_json = "#{PLATFORMS_JSON_DIR}/#{platform_name}.json"
+
+      @logger.info("Loading platform: #{platform_name}")
+      unless File.exist?(platform_json)
+        @logger.fatal("#{platform_name} does not exist")
+        raise(InvalidConfigFile, "#{platform_name} does not exist")
+      end
+
+      read_json(platform_json, @logger)
     end
 
     def initialize_clients
