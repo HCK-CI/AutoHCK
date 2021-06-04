@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require './lib/exceptions'
-require './lib/setupmanagers/virthck/virthck'
 require './lib/setupmanagers/physhck/physhck'
 
 # AutoHCK module
@@ -15,7 +14,6 @@ module AutoHCK
     #
     class SetupManagerFactory
       SETUP_MANAGERS = {
-        virthck: VirtHCK,
         physhck: PhysHCK
       }.freeze
 
