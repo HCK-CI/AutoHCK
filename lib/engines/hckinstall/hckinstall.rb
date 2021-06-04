@@ -15,7 +15,7 @@ module AutoHCK
 
     attr_reader :platform
 
-    PLATFORMS_JSON = 'lib/engines/hcktest/platforms.json'
+    PLATFORMS_JSON_DIR = 'lib/engines/hcktest/platforms'
     CONFIG_JSON = 'lib/engines/hckinstall/hckinstall.json'
     ISO_JSON = 'lib/engines/hckinstall/iso.json'
     KIT_JSON = 'lib/engines/hckinstall/kit.json'
@@ -45,12 +45,16 @@ module AutoHCK
     end
 
     def read_platform
-      platforms = read_json(PLATFORMS_JSON, @logger)
       platform_name = @project.install_platform
+      platform_json = "#{PLATFORMS_JSON_DIR}/#{platform_name}.json"
+
       @logger.info("Loading platform: #{platform_name}")
-      res = platforms.find { |p| p['name'] == platform_name }
-      @logger.fatal("#{platform_name} does not exist") unless res
-      res || raise(InvalidConfigFile, "#{platform_name} does not exist")
+      unless File.exist?(platform_json)
+        @logger.fatal("#{platform_name} does not exist")
+        raise(InvalidConfigFile, "#{platform_name} does not exist")
+      end
+
+      read_json(platform_json, @logger)
     end
 
     def read_iso(platform_name)
