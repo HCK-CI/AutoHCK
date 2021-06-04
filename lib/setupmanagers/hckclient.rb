@@ -8,37 +8,43 @@ require './lib/engines/hcktest/targets'
 module AutoHCK
   # HCKClient class
   class HCKClient
+    # Client cooldown timeout in seconds, to prevent hangs (30 minutes)
+    CLIENT_COOLDOWN_TIMEOUT = 1800
+
+    # Client cooldown sleep after thread is joined in seconds
+    CLIENT_COOLDOWN_SLEEP = 60
+
     attr_reader :name, :kit
     attr_writer :support
 
-    def initialize(project, setupmanager, studio, name)
+    def initialize(project, setup_manager, studio, name)
       @project = project
       @logger = project.logger
       @studio = studio
       @name = name
-      @kit = setupmanager.kit
-      @setupmanager = setupmanager
+      @kit = setup_manager.kit
+      @setup_manager = setup_manager
       @pool = 'Default Pool'
     end
 
     def create_snapshot
-      @setupmanager.create_client_snapshot(@name)
+      @setup_manager.create_client_snapshot(@name)
     end
 
     def delete_snapshot
-      @setupmanager.delete_client_snapshot(@name)
+      @setup_manager.delete_client_snapshot(@name)
     end
 
     def run(run_opts = nil)
-      @setupmanager.run(@name, run_opts)
+      @setup_manager.run(@name, run_opts)
     end
 
     def alive?
-      @setupmanager.client_alive?(@name)
+      @setup_manager.client_alive?(@name)
     end
 
     def keep_alive
-      @setupmanager.keep_client_alive(@name)
+      @setup_manager.keep_client_alive(@name)
     end
 
     def clean_last_run
@@ -143,12 +149,6 @@ module AutoHCK
       initialize_client_wait
     end
 
-    # Client cooldown timeout in seconds, to prevent hangs (30 minutes)
-    CLIENT_COOLDOWN_TIMEOUT = 1800
-
-    # Client cooldown sleep after thread is joined in seconds
-    CLIENT_COOLDOWN_SLEEP = 60
-
     def configure
       @tools = @studio.tools
       @cooldown_thread = Thread.new do
@@ -189,7 +189,7 @@ module AutoHCK
     end
 
     def abort
-      @setupmanager.abort_client(@name)
+      @setup_manager.abort_client(@name)
     end
   end
 end
