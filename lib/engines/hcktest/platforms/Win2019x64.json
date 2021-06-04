@@ -1,0 +1,21 @@
+{
+  "name": "Win2019x64",
+  "kit": "HLK1809server",
+  "st_image": "HLK1809.qcow2",
+  "clients": {
+    "c1": {
+      "name": "CL1",
+      "cpus": "2",
+      "memory": "2G",
+      "winrm_port": "4002",
+      "image": "HLK1809-C1-Win2019x64.qcow2"
+    },
+    "c2": {
+      "name": "CL2",
+      "cpus": "2",
+      "memory": "2G",
+      "winrm_port": "4003",
+      "image": "HLK1809-C2-Win2019x64.qcow2"
+    }
+  }
+}

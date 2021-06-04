@@ -14,7 +14,6 @@ module AutoHCK
     attr_reader :kit
 
     VIRTHCK_CONFIG_JSON = 'lib/setupmanagers/virthck/virthck.json'
-    PLATFORMS_JSON = 'lib/engines/hcktest/platforms.json'
     STUDIO = 'st'
     DEFAULT_RUN_OPTIONS = {
       first_time: false,

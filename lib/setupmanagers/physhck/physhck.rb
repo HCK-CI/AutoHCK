@@ -12,7 +12,6 @@ module AutoHCK
     attr_reader :kit
 
     PHYSHCK_CONFIG_JSON = 'lib/setupmanagers/physhck/physhck.json'
-    PLATFORMS_JSON = 'lib/engines/hcktest/platforms.json'
 
     def initialize(project)
       @project = project

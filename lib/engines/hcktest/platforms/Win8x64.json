@@ -1,0 +1,21 @@
+{
+  "name": "Win8x64",
+  "kit": "HCK",
+  "st_image": "HCK.qcow2",
+  "clients": {
+    "c1": {
+      "name": "CL1",
+      "cpus": "2",
+      "memory": "2G",
+      "winrm_port": "4002",
+      "image": "HCK-C1-Win8x64.qcow2"
+    },
+    "c2": {
+      "name": "CL2",
+      "cpus": "2",
+      "memory": "2G",
+      "winrm_port": "4003",
+      "image": "HCK-C2-Win8x64.qcow2"
+    }
+  }
+}
