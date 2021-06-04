@@ -106,8 +106,8 @@ module AutoHCK
       @setupmanager.create_studio
     end
 
-    def create_client(tag, name)
-      @setupmanager.create_client(tag, name)
+    def create_client(name)
+      @setupmanager.create_client(name)
     end
 
     def abort_studio

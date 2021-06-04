@@ -95,8 +95,8 @@ module AutoHCK
       @studio = HCKStudio.new(@project, self, 'st', studio_ip)
     end
 
-    def create_client(tag, name)
-      HCKClient.new(@project, self, @studio, tag, name)
+    def create_client(name)
+      HCKClient.new(@project, self, @studio, name)
     end
 
     def abort_studio

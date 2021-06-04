@@ -111,9 +111,9 @@ module AutoHCK
 
     def initialize_clients
       @clients = {}
-      @platform['clients'].each do |name, client|
-        @clients[client['name']] = @project.setup_manager.create_client(name,
-                                                                        client['name'])
+      @platform['clients'].each do |_name, client|
+        @clients[client['name']] = @project.setup_manager.create_client(client['name'])
+
         break unless @drivers.any? { |d| d['support'] }
       end
       return unless @clients.empty?

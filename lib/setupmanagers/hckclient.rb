@@ -8,27 +8,25 @@ require './lib/engines/hcktest/targets'
 module AutoHCK
   # HCKClient class
   class HCKClient
-    attr_reader :name, :id, :kit
+    attr_reader :name, :kit
     attr_writer :support
 
-    def initialize(project, setupmanager, studio, tag, name)
-      @id = tag[-1]
-      @tag = tag
+    def initialize(project, setupmanager, studio, name)
       @project = project
       @logger = project.logger
       @studio = studio
       @name = name
-      @kit = setup_manager.kit
+      @kit = setupmanager.kit
       @setupmanager = setupmanager
       @pool = 'Default Pool'
     end
 
     def create_snapshot
-      @setupmanager.create_client_snapshot(@tag)
+      @setupmanager.create_client_snapshot(@name)
     end
 
     def delete_snapshot
-      @setupmanager.delete_client_snapshot(@tag)
+      @setupmanager.delete_client_snapshot(@name)
     end
 
     def run(run_opts = nil)
@@ -40,7 +38,7 @@ module AutoHCK
     end
 
     def keep_alive
-      @setupmanager.keep_client_alive(@tag)
+      @setupmanager.keep_client_alive(@name)
     end
 
     def clean_last_run
@@ -191,7 +189,7 @@ module AutoHCK
     end
 
     def abort
-      @setupmanager.abort_client(@tag)
+      @setupmanager.abort_client(@name)
     end
   end
 end
