@@ -17,7 +17,7 @@ module AutoHCK
     def initialize(client, support, project, target, tools)
       @client = client
       @project = project
-      @tag = project.tag
+      @tag = project.engine.tag
       @target = target
       @tools = tools
       @support = support
