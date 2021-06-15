@@ -7,15 +7,19 @@ require './lib/engines/hcktest/targets'
 # AutoHCK module
 module AutoHCK
   # HCKClient class
-  class HCKClient < Machine
+  class HCKClient
     attr_reader :name, :id, :kit
     attr_writer :support
 
     def initialize(project, setupmanager, studio, tag, name)
       @id = tag[-1]
-      super(project, name, setupmanager, @id, tag)
+      @tag = tag
+      @project = project
+      @logger = project.logger
       @studio = studio
-      @kit = setupmanager.kit
+      @name = name
+      @kit = setup_manager.kit
+      @setupmanager = setupmanager
       @pool = 'Default Pool'
     end
 
@@ -27,9 +31,20 @@ module AutoHCK
       @setupmanager.delete_client_snapshot(@tag)
     end
 
-    def run
-      create_snapshot
-      super
+    def run(run_opts = nil)
+      @setupmanager.run(@name, run_opts)
+    end
+
+    def alive?
+      @setupmanager.client_alive?(@name)
+    end
+
+    def keep_alive
+      @setupmanager.keep_client_alive(@tag)
+    end
+
+    def clean_last_run
+      @setup_manager.clean_last_client_run(@name)
     end
 
     def add_target_to_project
@@ -170,18 +185,8 @@ module AutoHCK
       set_machine_ready
     end
 
-    def keep_alive
-      return if alive?
-
-      @logger.info("Starting client #{@name}")
-      @pid = @setupmanager.run(@tag)
-      e_message = "Client #{@name} new PID could not be retrieved"
-      raise ClientRunError, e_message unless @pid
-
-      @logger.info("Client #{@name} new PID is #{@pid}")
-      raise ClientRunError, "Could not start client #{@name}" unless alive?
-    rescue CmdRunError
-      raise ClientRunError, "Could not start client #{@name}"
+    def abort
+      @setupmanager.abort_client(@tag)
     end
   end
 end

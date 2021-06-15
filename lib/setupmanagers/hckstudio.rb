@@ -7,14 +7,18 @@ require './lib/engines/hcktest/tools'
 # AutoHCK module
 module AutoHCK
   # HCKStudio class
-  class HCKStudio < Machine
-    attr_reader :tools, :name, :id, :setupmanager
+  class HCKStudio
+    attr_reader :tools, :setupmanager
 
+    STUDIO = 'st'
     HCK_FILTERS_PATH = 'filters/UpdateFilters.sql'
-    def initialize(project, setupmanager, name, ip)
-      super(project, name, setupmanager, 0, 'st')
+    def initialize(project, setupmanager, ip)
+      @project = project
+      @tag = project.tag
+      @setupmanager = setupmanager
       @ip = ip
-      @project.logger.debug("HCKStudio ip: #{ip}")
+      @logger = project.logger
+      @logger.debug("HCKStudio ip: #{ip}")
     end
 
     def up?
@@ -91,9 +95,12 @@ module AutoHCK
       raise StudioConnectError, 'Tools did not pass the connection check'
     end
 
-    def run
-      create_snapshot
-      super
+    def run(run_opts = nil)
+      @setupmanager.run(STUDIO, run_opts)
+    end
+
+    def alive?
+      @setupmanager.studio_alive?
     end
 
     def clean_tools
@@ -105,7 +112,7 @@ module AutoHCK
 
     def clean_last_run
       clean_tools unless @tools.nil?
-      super
+      @setupmanager.clean_last_studio_run
     end
 
     def configure(clients)
@@ -120,8 +127,9 @@ module AutoHCK
     end
 
     def abort
+      @logger.info('Aborting HLK Studio')
       @tools&.close unless @tools.nil?
-      super
+      @setupmanager.abort_studio
     end
 
     def shutdown
