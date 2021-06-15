@@ -2,6 +2,8 @@
 
 require 'uri'
 
+require './lib/setupmanagers/hckclient'
+require './lib/setupmanagers/hckstudio'
 require './lib/auxiliary/json_helper'
 require './lib/auxiliary/host_helper'
 require './lib/auxiliary/iso_helper'
@@ -92,14 +94,14 @@ module AutoHCK
     end
 
     def client_platform
-      @platform['clients'][@clients_name.first]['image'][/Win\w+x(86|64)/]
+      @platform['clients'].values.first['image'][/Win\w+x(86|64)/]
     end
 
     def init_class_variables
       @iso_path = @project.config['iso_path']
 
       @platform = read_platform
-      @clients_name = @platform['clients'].keys
+      @clients_name = @platform['clients'].map { |_k, v| v['name'] }
 
       @studio_iso_info = read_iso(studio_platform(@platform['kit']))
       @client_iso_info = read_iso(client_platform)
@@ -155,25 +157,25 @@ module AutoHCK
 
     def run_studio(iso_list = [], snapshot: true)
       st_opts = {
-        studio_snapshot: snapshot,
-        studio_iso_list: iso_list
+        create_snapshot: snapshot,
+        attach_iso_list: iso_list
       }
 
-      st = Machine.new(@project, 'st', @project.setup_manager, 0, 'st')
+      st = @project.setup_manager.create_studio
       st.run(st_opts)
       st
     end
 
     def run_client(name, snapshot: true)
       cl_opts = {
-        clients_snapshot: snapshot,
-        clients_iso_list: [
+        create_snapshot: snapshot,
+        attach_iso_list: [
           @setup_client_iso,
           @client_iso_info['path']
         ]
       }
 
-      cl = Machine.new(@project, name, @project.setup_manager, name[/\d+/], name)
+      cl = @project.setup_manager.create_client(name)
       cl.run(cl_opts)
       cl
     end
@@ -187,7 +189,7 @@ module AutoHCK
                        ], snapshot: false)
 
       Timeout.timeout(@studio_install_timeout) do
-        @logger.info("Waiting for #{@st.name} #{@st.id} instalation finished")
+        @logger.info('Waiting for studio instalation finished')
         sleep 5 while @st.alive?
       end
     end
@@ -206,7 +208,7 @@ module AutoHCK
 
       @cl.each do |client|
         Timeout.timeout(@client_install_timeout) do
-          @logger.info("Waiting for #{client.name} #{client.id} instalation finished")
+          @logger.info("Waiting for #{client.name} instalation finished")
           sleep 5 while client.alive?
         end
       end
