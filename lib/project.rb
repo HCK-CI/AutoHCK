@@ -19,7 +19,7 @@ module AutoHCK
   class Project
     include Helper
 
-    attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :tag, :id,
+    attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :id,
                 :workspace_path, :github, :result_uploader,
                 :engine_type, :options, :extra_sw_manager
 
@@ -102,8 +102,6 @@ module AutoHCK
     def init_class_variables
       @config = read_json(CONFIG_JSON, @logger)
       @timestamp = create_timestamp
-      # TODO: Fix me
-      @tag = "#{@options.test.drivers&.first}-#{@options.test.platform}"
       @engine_type = @config["#{@options.mode}_engine"]
     end
 

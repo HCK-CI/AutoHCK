@@ -20,7 +20,7 @@ module AutoHCK
     def initialize(project)
       @project = project
       @logger = project.logger
-      @project.append_multilog("#{@project.tag}.log")
+      @project.append_multilog("#{tag}.log")
       @platform = read_platform
       @driver_path = @project.options.test.driver_path
       @drivers = find_drivers(@project.options.test.drivers)
@@ -178,10 +178,14 @@ module AutoHCK
     def upload_driver_package
       @project.logger.info('Uploading driver package')
 
-      r_name = "#{@project.tag}.zip"
+      r_name = "#{tag}.zip"
       zip_path = "#{@workspace_path}/#{r_name}"
       create_zip_from_directory(zip_path, @driver_path)
       @project.result_uploader.upload_file(zip_path, r_name)
+    end
+
+    def tag
+      "#{@project.options.test.drivers.sort.join('-')}-#{@project.options.test.platform}"
     end
 
     def run

@@ -253,6 +253,10 @@ module AutoHCK
       create_iso(@setup_client_iso, [@hck_setup_scripts_path])
     end
 
+    def tag
+      "install-#{@project.options.install.platform}"
+    end
+
     def run
       @logger.debug('HCKInstall: run')
 
