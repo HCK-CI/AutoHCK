@@ -44,6 +44,10 @@ module AutoHCK
       end
     end
 
+    def tag
+      @engine.tag
+    end
+
     def run
       @engine.run
     end

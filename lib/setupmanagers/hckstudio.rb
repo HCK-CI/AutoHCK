@@ -14,7 +14,7 @@ module AutoHCK
     HCK_FILTERS_PATH = 'filters/UpdateFilters.sql'
     def initialize(project, setupmanager, ip)
       @project = project
-      @tag = project.tag
+      @tag = project.engine.tag
       @setupmanager = setupmanager
       @ip = ip
       @logger = project.logger

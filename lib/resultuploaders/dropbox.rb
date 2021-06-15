@@ -12,7 +12,7 @@ module AutoHCK
     attr_reader :url
 
     def initialize(project)
-      @tag = project.tag
+      @tag = project.engine.tag
       @timestamp = project.timestamp
       @logger = project.logger
       @token = ENV['AUTOHCK_DROPBOX_TOKEN']
