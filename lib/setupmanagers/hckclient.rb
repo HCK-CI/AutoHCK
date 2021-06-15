@@ -86,8 +86,8 @@ module AutoHCK
 
     def move_machine_to_pool
       @logger.info("Moving #{@name} to pool")
-      @tools.move_machine(@name, @pool, @project.tag)
-      @pool = @project.tag
+      @tools.move_machine(@name, @pool, @project.engine.tag)
+      @pool = @project.engine.tag
     end
 
     def set_machine_ready

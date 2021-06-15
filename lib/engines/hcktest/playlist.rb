@@ -18,7 +18,7 @@ module AutoHCK
     class ListTestsError < AutoHCKError; end
 
     def list_tests(log)
-      @tests = @tools.list_tests(@target['key'], @machine, @project.tag,
+      @tests = @tools.list_tests(@target['key'], @machine, @project.engine.tag,
                                  @ms_playlist)
       raise ListTestsError, 'Failed to list tests' unless @tests
 
