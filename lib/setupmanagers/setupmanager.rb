@@ -2,6 +2,7 @@
 
 require './lib/exceptions'
 require './lib/setupmanagers/physhck/physhck'
+require './lib/setupmanagers/qemuhck/qemuhck'
 
 # AutoHCK module
 module AutoHCK
@@ -14,6 +15,7 @@ module AutoHCK
     #
     class SetupManagerFactory
       SETUP_MANAGERS = {
+        qemuhck: QemuHCK,
         physhck: PhysHCK
       }.freeze
 

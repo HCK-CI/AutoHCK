@@ -1,0 +1,5 @@
+{
+  "name": "virtio-vga",
+  "type": "vga",
+  "command_line": ["-device virtio-vga@device_extra_param@,edid=off,bus=@bus_name@.0"]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "virtio-blk-pci",
+  "command_line": [
+    "-drive file=@test_image_path@,if=none,format=qcow2,id=virtio_blk_@run_id@_@client_id@@drive_cache_options@",
+    "-device virtio-blk-pci@device_extra_param@,bus=@bus_name@.0,drive=virtio_blk_@run_id@_@client_id@,serial=@client_id@0@run_id@"
+  ],
+  "define_variables": {
+    "@test_image_path@": "@workspace@/client@client_id@_blk_test_image1.qcow2"
+  },
+  "pre_start_commands": [
+    "cp @fs_test_image@ @test_image_path@ || @qemu_img_bin@ create -f qcow2 @test_image_path@ 30G"
+  ]
+}

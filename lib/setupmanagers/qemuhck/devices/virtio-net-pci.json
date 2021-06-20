@@ -1,0 +1,8 @@
+{
+  "name": "virtio-net-pci",
+  "type": "network",
+  "command_line": [
+    "-netdev tap,id=@net_if_name@,vhost=@vhost_value@,script=@net_up_script@,downscript=no,ifname=@net_if_name@",
+    "-device virtio-net-pci@device_extra_param@,netdev=@net_if_name@,mac=@net_if_mac@@net_addr@,bus=@bus_name@.0,id=@net_if_name@"
+  ]
+}

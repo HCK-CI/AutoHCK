@@ -1,0 +1,20 @@
+{
+  "name": "vhost-user-fs-pci",
+  "command_line": [
+    "-chardev socket,id=virtiofsid,path=@fs_daemon_socket@",
+    "-object memory-backend-file,id=mem_backend,size=@memory@,mem-path=/dev/shm,share=on",
+    "-numa node,memdev=mem_backend",
+    "-device vhost-user-fs-pci`extra_params_cmd`,queue-size=1024,chardev=virtiofsid,tag=myfs,bus=@bus_name@.0"
+  ],
+  "define_variables": {
+    "@fs_daemon_socket@": "/tmp/fs_daemon_socket_@run_id@_@client_id@"
+  },
+  "pre_start_commands": [
+    "mkdir -p @fs_daemon_share_path@",
+    "rm -f @fs_daemon_socket@",
+    "@fs_daemon_bin@ --socket-path=@fs_daemon_socket@ -o source=@fs_daemon_share_path@ -o cache=always &"
+  ],
+  "post_stop_commands": [
+    "rm -f @fs_daemon_socket@"
+  ]
+}

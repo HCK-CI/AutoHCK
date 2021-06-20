@@ -1,0 +1,4 @@
+{
+  "name": "virtio-serial-pci",
+  "command_line": ["-device virtio-serial-pci@device_extra_param@,bus=@bus_name@.0,id=virtio_serial_pci0"]
+}
