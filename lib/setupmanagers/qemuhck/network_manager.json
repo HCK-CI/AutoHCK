@@ -1,0 +1,34 @@
+{
+  "devices": {
+    "control": {
+      "ifname": "cs_r@run_id@_c@client_id@",
+      "mac": "56:@run_id_first@:@run_id_second@:@client_id@:cc:cc",
+      "bus_name": "@ctrl_bus_name@",
+      "address": "03"
+    },
+    "world": {
+      "ifname": "ws_r@run_id@_c@client_id@",
+      "mac": "56:@run_id_first@:@run_id_second@:@client_id@:dd:dd",
+      "bus_name": "@bus_name@"
+    },
+    "test": {
+      "ifname": "ts_r@run_id@_c@client_id@",
+      "mac": "56:@run_id_first@:@run_id_second@:@client_id@:@device_id@:bb",
+      "bus_name": "@bus_name@"
+    },
+    "transfer": {
+      "ifname": "trs_r@run_id@_c@client_id@",
+      "mac": "56:@run_id_first@:@run_id_second@:@client_id@:aa:aa",
+      "bus_name": "@bus_name@"
+    }
+  },
+  "scripts": {
+    "net_up": [
+      "#!/bin/bash",
+      "set -e",
+      "ip link set ${1} up",
+      "ip link set ${1} master @bridge_name@",
+      "ethtool -K ${1} tx off"
+    ]
+  }
+}

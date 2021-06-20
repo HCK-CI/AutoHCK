@@ -1,0 +1,4 @@
+{
+  "name": "pvpanic",
+  "command_line": ["-device pvpanic@device_extra_param@"]
+}

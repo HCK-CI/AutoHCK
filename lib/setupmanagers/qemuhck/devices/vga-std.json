@@ -1,0 +1,5 @@
+{
+  "name": "vga-std",
+  "type": "vga",
+  "command_line": ["-vga std"]
+}
