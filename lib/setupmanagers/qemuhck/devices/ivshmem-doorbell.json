@@ -1,0 +1,19 @@
+{
+  "name": "ivshmem-doorbell",
+  "command_line": [
+    "-chardev socket,path=@ivshmem_socket@,id=ivshmemid",
+    "-device ivshmem-doorbell@device_extra_param@,chardev=ivshmemid"
+  ],
+  "define_variables": {
+    "@ivshmem_socket@": "/tmp/ivshmem_socket_@run_id@_@client_id@",
+    "@ivshmem_pid@": "/var/run/ivshmem-server_@run_id@_@client_id@.pid"
+  },
+  "pre_start_commands": [
+    "rm -f @ivshmem_socket@ @ivshmem_pid@",
+    "@ivshmem_server_bin@ -p @ivshmem_pid@ -S @ivshmem_socket@"
+  ],
+  "post_stop_commands": [
+    "kill $(cat @ivshmem_pid@)",
+    "rm -f @ivshmem_socket@ @ivshmem_pid@"
+  ]
+}

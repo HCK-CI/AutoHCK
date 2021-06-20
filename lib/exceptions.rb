@@ -19,4 +19,7 @@ module AutoHCK
 
   # A custom Invalid Config File error exception
   class InvalidConfigFile < AutoHCKError; end
+
+  # A custom Not Implemented feature error error exception
+  class NotImplementedError < AutoHCKError; end
 end

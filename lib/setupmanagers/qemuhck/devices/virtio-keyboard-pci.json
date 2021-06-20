@@ -1,0 +1,4 @@
+{
+  "name": "virtio-keyboard-pci",
+  "command_line": ["-device virtio-keyboard-pci@device_extra_param@,bus=@bus_name@.0"]
+}

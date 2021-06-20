@@ -12,6 +12,6 @@
     "result_uploaders": [ "dropbox" ],
     "test_engine": "hcktest",
     "install_engine": "hckinstall",
-    "setupmanager": "virthck",
+    "setupmanager": "qemuhck",
     "time_out": "9"
 }

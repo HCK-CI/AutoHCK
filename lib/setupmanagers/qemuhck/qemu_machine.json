@@ -1,0 +1,25 @@
+{
+  "qemu_bin": "/root/Prometheus/qemu/build/x86_64-softmmu/qemu-system-x86_64",
+  "qemu_img_bin": "/root/Prometheus/qemu/build/qemu-img",
+  "ivshmem_server_bin": "/root/Prometheus/qemu/build/contrib/ivshmem-server/ivshmem-server",
+  "fs_daemon_bin" : "/root/Prometheus/qemu/build/tools/virtiofsd/virtiofsd",
+  "fs_daemon_share_path" : "/root/Prometheus/fs_share",
+  "images_path": "/root/Prometheus/images",
+  "fs_test_image": "/root/Prometheus/images/filesystem_tests_image.qcow2",
+  "world_net_bridge": "br0",
+  "platforms_defaults": {
+    "cpu_count": 2,
+    "memory": "4G",
+    "world_net_device": "e1000e",
+    "ctrl_net_device": "e1000e",
+    "machine_type": "pc",
+    "boot_device": "ide-storage",
+    "vga_device": "vga-std",
+    "s3_state": true,
+    "s4_state": true,
+    "enlightenments_state": false,
+    "vhost_state": true,
+    "viommu_state": false,
+    "drive_unsafe_cache_state": false
+  }
+}
