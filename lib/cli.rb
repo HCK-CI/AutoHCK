@@ -65,7 +65,7 @@ module AutoHCK
 
     # class TestOptions
     class TestOptions
-      attr_accessor :platform, :drivers, :driver_path, :commit, :diff_file
+      attr_accessor :platform, :drivers, :driver_path, :commit, :diff_file, :svvp
 
       def create_parser
         OptionParser.new do |parser|
@@ -85,6 +85,7 @@ module AutoHCK
         driver_path_option(parser)
         commit_option(parser)
         diff_file_option(parser)
+        svvp_option(parser)
       end
 
       def platform_option(parser)
@@ -119,6 +120,13 @@ module AutoHCK
         parser.on('--diff <diff_file>', String,
                   'Path to text file containing a list of changed source files') do |diff_file|
           @diff_file = diff_file
+        end
+      end
+
+      def svvp_option(parser)
+        parser.on('--svvp', TrueClass,
+                  'Run SVVP tests for specified platform instead of driver tests') do |svvp|
+          @svvp = svvp
         end
       end
     end
