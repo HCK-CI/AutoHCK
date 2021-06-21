@@ -1,0 +1,18 @@
+{
+  "type":1,
+  "drivers": [
+    "Balloon",
+    // "ivshmem",
+    "NetKVM",
+    "pvpanic",
+    "viofs",
+    // "viogpu",
+    "vioinput",
+    "viorng",
+    "vioscsi",
+    //"viosock",
+    "vioserial"
+  ],
+  // "playlist": [],
+  "blacklist": []
+}

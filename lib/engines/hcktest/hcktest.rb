@@ -15,6 +15,7 @@ module AutoHCK
 
     PLATFORMS_JSON_DIR = 'lib/engines/hcktest/platforms'
     DRIVERS_JSON = 'drivers.json'
+    SVVP_JSON = 'svvp.json'
     ENGINE_MODE = 'test'
 
     def initialize(project)
@@ -23,7 +24,7 @@ module AutoHCK
       @project.append_multilog("#{tag}.log")
       @platform = read_platform
       @driver_path = @project.options.test.driver_path
-      @drivers = find_drivers(@project.options.test.drivers)
+      @drivers = find_drivers
       prepare_extra_sw
       validate_paths
       init_workspace
@@ -47,8 +48,7 @@ module AutoHCK
 
     def init_workspace
       @workspace_path = [@project.workspace_path,
-                         @project.options.test.drivers.sort.join('-'),
-                         @platform['name'], @project.timestamp].join('/')
+                         tag, @project.timestamp].join('/')
       begin
         FileUtils.mkdir_p(@workspace_path)
       rescue Errno::EEXIST
@@ -61,7 +61,8 @@ module AutoHCK
       normalize_paths
       @drivers.each do |driver|
         paths = [
-          "#{@driver_path}/#{driver['inf']}"
+          "#{@driver_path}/#{driver['inf']}",
+          "#{@driver_path}/#{driver['short']}/#{driver['inf']}"
         ]
         next if paths.any? { |p| File.exist?(p) }
 
@@ -74,10 +75,20 @@ module AutoHCK
       @driver_path.chomp!('/')
     end
 
-    def find_drivers(driver_names)
-      drivers_info = read_json(DRIVERS_JSON, @project.logger)
+    def driver_names
+      if @project.options.test.svvp
+        @svvp_info = read_json(SVVP_JSON, @project.logger)
+        driver_names = @svvp_info['drivers']
+      else
+        driver_names = @project.options.test.drivers
+        raise(AutoHCKError, 'Unsupported configuration. Drivers count is not equals 1') if driver_names.count != 1
+      end
 
-      raise(AutoHCKError, 'Unsupported configuration. Drivers count is not equals 1') if driver_names.count != 1
+      driver_names
+    end
+
+    def find_drivers
+      drivers_info = read_json(DRIVERS_JSON, @project.logger)
 
       driver_names.map do |short_name|
         @project.logger.info("Loading driver: #{short_name}")
@@ -88,12 +99,22 @@ module AutoHCK
     end
 
     def target
-      {
-        'name' => drivers.first['name'],
-        'type' => drivers.first['type'],
-        'playlist' => drivers.first['playlist'],
-        'blacklist' => drivers.first['blacklist']
-      }
+      if @project.options.test.svvp
+        {
+          'name' => @clients.values[0].name,
+          'type' => @svvp_info['type'],
+          'playlist' => @svvp_info['playlist'],
+          'blacklist' => @svvp_info['blacklist']
+        }
+      else
+        driver = drivers.first
+        {
+          'name' => driver['name'],
+          'type' => driver['type'],
+          'playlist' => driver['playlist'],
+          'blacklist' => driver['blacklist']
+        }
+      end
     end
 
     def read_platform
@@ -114,6 +135,7 @@ module AutoHCK
       @platform['clients'].each do |_name, client|
         @clients[client['name']] = @project.setup_manager.create_client(client['name'])
 
+        break if @project.options.test.svvp
         break unless @drivers.any? { |d| d['support'] }
       end
       return unless @clients.empty?
@@ -185,7 +207,11 @@ module AutoHCK
     end
 
     def tag
-      "#{@project.options.test.drivers.sort.join('-')}-#{@project.options.test.platform}"
+      if @project.options.test.svvp
+        "svvp-#{@project.options.test.platform}"
+      else
+        "#{@project.options.test.drivers.sort.join('-')}-#{@project.options.test.platform}"
+      end
     end
 
     def run
