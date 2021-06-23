@@ -54,20 +54,20 @@ Notes:
 The `extra_software` option can be specified in the following files:
   - `drivers.json` - will be used in test mode only
   - `lib/engines/hckinstall/kit.json` - will be used in install mode only
-  - `lib/engines/hcktest/platforms.json` - will be used in install and test modes
+  - `lib/engines/hcktest/<paltform>.json` - will be used in install and test modes
 
 According to the file, the software will be installed during image creating (install mode) or during driver testing (test mode)
 
 ## Automatic installation
 
-To run installation use `--install` AutoHCK command-line option. AutoHCK will create 3 images (studio and 2 clients) and perform the installation.
+To run installation use `install` AutoHCK command-line command. AutoHCK will create 3 images (studio and 2 clients) and perform the installation.
 
-In case when studio image exists, it will be reused. To recreate studio image use `--force-install` option
+In case when studio image exists, it will be reused. To recreate studio image use `--force` option
 
 ### Examples
 ```
-ruby ./bin/auto_hck -i Win10_2004x86
-ruby ./bin/auto_hck -i Win2019x64 --force-install
+ruby ./bin/auto_hck install -p Win10_2004x86
+ruby ./bin/auto_hck install -p Win2019x64 --force
 ```
 
 ## Related information

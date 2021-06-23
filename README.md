@@ -11,26 +11,19 @@ There are not so few steps needed to install and set up AutoHCK, First of all cl
 ### QEMU
 Use your package manager to install QEMU or build it from [source](https://github.com/qemu/qemu)
 
-### VirtHCK
-Clone [VirtHCK](https://github.com/daynix/VirtHCK), AutoHCK will use it as a dependency.
-
 ### HLK setup scripts
 Clone [HLK-Setup-Scripts](https://github.com/HCK-CI/HLK-Setup-Scripts), AutoHCK will use it as a dependency for image creation.
+
+### Extra software
+Clone [extra-software](https://github.com/HCK-CI/extra-software), AutoHCK will use it as a dependency for image creation.
 
 ### toolsHCK
 Get a copy of the powershell script file in [toolsHCK](https://github.com/HCK-CI/toolsHCK)
 
-### rtoolsHCK
-Get a clone of [rtoolsHCK](https://github.com/HCK-CI/rtoolsHCK), execute the follwing to build and install as a gem:
-```
-rake build
-rake install
-```
-
 ### RubyGems
 Install the following gems using bundler with `bundler install` or `gem install <gem_name>`:
+* [rtoolsHCK](https://github.com/HCK-CI/rtoolsHCK)
 * [dropbox_api](https://rubygems.org/gems/dropbox_api)
-* [faraday](https://rubygems.org/gems/faraday) (version 0.12.2)
 * [net-ping](https://rubygems.org/gems/net-ping)
 * [filelock](https://rubygems.org/gems/filelock)
 * [octokit](https://rubygems.org/gems/octokit)
@@ -40,7 +33,7 @@ Install the following gems using bundler with `bundler install` or `gem install 
 ### DHCP SERVER
 In order to connect to the Studio machine in each HLK/HCK setup, we need to set up a DHCP server that will provide each studio with a predefined unique IP address. The server will assign the IP address according to the machine network adapter mac address with the following rule:
 ```
-56:00:XX:00:XX:dd > 192.168.0.XX
+56:00:XX:00:dd:dd > 192.168.0.XX
 ```
 Use the following script [OpenDHCPServerSetup](https://github.com/HCK-CI/OpenDHCPServerSetup) to install and configure OpenDHCPServer.
 
@@ -85,13 +78,13 @@ to do that you will need to create a personal access token.
 3. set new environment variable for your username and token with `export AUTOHCK_GITHUB_LOGIN=<LOGIN>` and `export AUTOHCK_GITHUB_TOKEN=<TOKEN>`
 
 ### Configuration
-There are 6 diffrenet JSON files for configurations, examples included in the files:
+There are few different JSON files for configurations, examples included in the files:
 * `config.json` is the general configuration file which holds the paths to the dependencies stated above.
-* `platforms.json` list of configured opertaions systems images.
-* `devices.json` list of devices drivers information for testing.
-* `iso.json` list of ISO with information for unattended VM installation.
-* `hckinstall.json` is the specific configuration file for install engine.
-* `kit.json` list of HCK/HLK kits.
+* `lib/engines/hcktest/platforms/<platform>.json` are set of file with operations systems images configuration.
+* `drivers.json` list of drivers information for testing.
+* `lib/engines/hckinstall/iso.json` list of ISO with information for unattended VM installation.
+* `lib/engines/hckinstall/hckinstall.json` is the specific configuration file for install engine.
+* `lib/engines/hckinstall/kit.json` list of HCK/HLK kits.
 
 ### Utils
 #### Cleanup
@@ -101,40 +94,52 @@ This script deletes logs and snapshots from HCK runs that are more than 1 month 
 
 Once everything is installed and configured, run `./bin/auto_hck` with these parameters:
 ```
-Mandatory for run:
-    -t, --tag [PROJECT-PLATFORM]     Tag name consist of project name and platform separated by a dash
-    -p, --path [DRIVERPATH]          Path to the location of the driver wanted to be tested
-Mandatory for install:
-    -i, --install <PLATFORM>         Install VM for specified platform
-Optional:
-    -c, --commit <COMMITHASH>        Commit hash for CI status update
-    -d, --diff <DIFFFILE>            Path to text file containing a list of changed source files
-    -D, --debug                      Printing debug information
-        --force-install              Install all VM, replace studio if exist
-    -V, --version                    Display version information and exit
+Usage: auto_hck.rb [common options] <command> [command options]
+
+        --debug                      Printing debug information
+    -v, --version                    Display version information and exit
+    -h, --help                       Show this message
+Usage: auto_hck.rb test [test options]
+
+    -p, --platform <platform_name>   Platform for run test
+    -d, --drivers <drivers_list>     List of driver for run test
+        --driver-path <driver_path>  Path to the location of the driver wanted to be tested
+    -c, --commit <commit_hash>       Commit hash for CI status update
+        --diff <diff_file>           Path to text file containing a list of changed source files
+        --svvp                       Run SVVP tests for specified platform instead of driver tests
+    -h, --help                       Show this message
+Usage: auto_hck.rb install [install options]
+
+    -p, --platform <platform_name>   Install VM for specified platform
+    -f, --force                      Install all VM, replace studio if exist
     -h, --help                       Show this message
 ```
 ### Examples
 ```
-ruby ./bin/auto_hck -t Balloon-Win10x86 -p /home/hck-ci/balloon/win10/x86
-ruby ./bin/auto_hck -t NetKVM-Win10x64 -p /home/hck-ci/workspace -d /path/to/diff.txt
-ruby ./bin/auto_hck -t viostor-Win10x64 -p /home/hck-ci/viostor -d /path/to/diff.txt -c ec3da560827922e5a82486cf19cd9c27e95455a9
-ruby ./bin/auto_hck -i Win2019x64 --force-install
+ruby ./bin/auto_hck test --drivers Balloon --platform Win10x86 --driver-path /home/hck-ci/balloon/win10/x86
+ruby ./bin/auto_hck test --drivers NetKVM --platform Win10x64 --driver-path /home/hck-ci/workspace --diff /path/to/diff.txt
+ruby ./bin/auto_hck test --drivers viostor --platform Win10x64 --driver-path /home/hck-ci/viostor --diff /path/to/diff.txt -c ec3da560827922e5a82486cf19cd9c27e95455a9
+ruby ./bin/auto_hck test --svvp --platform Win10x64 --driver-path /home/hck-ci/virtio-drv
+ruby ./bin/auto_hck install -p Win2019x64 --force
 ```
 ### Workspace
 When starting AutoHCK a session workspace will be created inside the workspace directory configured in `config.json` at the path:
-  - in test mode: `workspace/[engine-type]/[setup-manager]/[device-short]/[platform]/[timestamp]/`
+  - in test mode: `workspace/[engine-type]/[setup-manager]/[devices-list]-[platform]/[timestamp]/`
+  - in test svvp mode: `workspace/[engine-type]/[setup-manager]/svvp-[platform]/[timestamp]/`
   - in install mode: `workspace/[engine-type]/[setup-manager]/[platform]/[timestamp]/`
 
 Inside AutoHCK will save the following files:
 * qcow2 snapshots of the backing setup images: `[filename]-snapshot.qcow2`
-* AutoHCK log file: `[device-short]-[platform].log`
+* AutoHCK log file: `[devices-list]-[platform].log`
+* toolsHCK guest log file: `[timestamp]_toolsHCK.log`
 * archived tests log files: `[timestamp]-[testid].zip`
-* Executables: `st.sh` `c1.sh` `c2.sh` to rerun test setup machines manually.
-* HLKX/HCKX file (after tests session ended): `[device-short]-[platform].hlkx`
+* archived driver binary: `[devices-list]-[platform].zip`
+* Executables: `pre_start_[id].sh` `QemuMachine[id]_CL[id].sh` `post_stop_[id].sh` to rerun test setup machines manually.
+* HLKX/HCKX file (after tests session ended): `[devices-list]-[platform].hlkx`
 
 ## Authors
 
 * **Lior Haim** - *Development* - [Daynix Computing LTD](https://github.com/Daynix)
 * **Bishara AbuHattoum** - *Development* - [Daynix Computing LTD](https://github.com/Daynix)
 * **Basil Salman** - *Development* - [Daynix Computing LTD](https://github.com/Daynix)
+* **Kostiantyn Kostiuk** - *Development* - [Daynix Computing LTD](https://github.com/Daynix)
