@@ -189,6 +189,8 @@ module AutoHCK
     end
 
     def abort
+      @logger.info("Aborting HLKClient #{@name}")
+
       @setup_manager.abort_client(@name)
     end
   end
