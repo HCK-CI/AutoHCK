@@ -10,6 +10,7 @@
   "platforms_defaults": {
     "cpu_count": 2,
     "memory": "4G",
+    "cpu_model": 13,
     "world_net_device": "e1000e",
     "ctrl_net_device": "e1000e",
     "machine_type": "pc",
