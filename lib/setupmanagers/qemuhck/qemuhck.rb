@@ -156,8 +156,12 @@ module AutoHCK
     end
 
     def close
-      @studio_vm&.close
       @clients_vm.each { |_k, vm| vm.close }
+      if @studio.nil?
+        @studio_vm&.close
+      else
+        @studio.abort
+      end
     end
 
     def create_studio
