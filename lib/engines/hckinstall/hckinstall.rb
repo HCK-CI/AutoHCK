@@ -297,8 +297,8 @@ module AutoHCK
     def close
       @logger.debug('HCKInstall: close')
 
-      cleanup_studio
       cleanup_clients
+      cleanup_studio
     end
   end
 end
