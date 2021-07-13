@@ -169,6 +169,8 @@ module AutoHCK
     end
 
     def close
+      @logger.debug('Closing AutoHCK project')
+
       @setup_manager&.close
       @engine&.close
       release_id
