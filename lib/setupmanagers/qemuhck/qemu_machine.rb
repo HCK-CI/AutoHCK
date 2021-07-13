@@ -177,6 +177,7 @@ module AutoHCK
         '@workspace@' => @workspace_path,
         '@memory@' => option_config('memory'),
         '@cpu_count@' => option_config('cpu_count'),
+        '@cpu_model@' => option_config('cpu_model'),
         '@vnc_id@' => @vnc_id,
         '@vnc_port@' => @vnc_port,
         '@qemu_monitor_port@' => @monitor_port,
@@ -286,7 +287,7 @@ module AutoHCK
     def base_cmd
       '@qemu_bin@ -enable-kvm -machine @machine_name@@machine_extra_param@ ' \
       '-m @memory@ -smp @cpu_count@,cores=@cpu_count@ ' \
-      '-cpu qemu64,+x2apic,+fsgsbase@cpu_options@ -boot order=cd,menu=on ' \
+      '-cpu qemu64,+x2apic,+fsgsbase@cpu_options@,model=@cpu_model@ -boot order=cd,menu=on ' \
       '-nodefaults -no-user-config -usb -device usb-tablet -vnc :@vnc_id@ ' \
       '-global kvm-pit.lost_tick_policy=discard -rtc base=localtime,clock=host,driftfix=slew ' \
       '-global @disable_s3_param@=@disable_s3_value@ -global @disable_s4_param@=@disable_s4_value@ ' \
