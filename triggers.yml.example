@@ -30,9 +30,11 @@ vioscsi:
   - 'vioscsi'
 vioserial:
   - 'vioserial'
-viosock
+viosock:
   - 'viosock'
 viostor:
   - 'viostor'
+viogpu:
+  - 'viogpu'
 /:
   - '*'
