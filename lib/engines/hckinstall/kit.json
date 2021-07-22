@@ -13,5 +13,10 @@
     "kit": "HLK2004",
     "download_url": "https://go.microsoft.com/fwlink/?linkid=2128655",
     "extra_software": [ "winfsp" ]
+  },
+  {
+    "kit": "HLK2022",
+    "download_url": "https://go.microsoft.com/fwlink/?linkid=2164257",
+    "extra_software": [ "winfsp" ]
   }
 ]
