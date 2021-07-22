@@ -1,5 +1,9 @@
 [
   {
+    "kit": "HLK2022",
+    "platform_name": "Win2022x64"
+  },
+  {
     "kit": "HLK20H2",
     "platform_name": "Win2016x64"
   },
