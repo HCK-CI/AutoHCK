@@ -252,7 +252,7 @@ module AutoHCK
         file_gsub(@hck_setup_scripts_path + "/answer-files/#{file}.in",
                   @hck_setup_scripts_path + "/#{file}", replacement_list)
       end
-      create_iso(@setup_client_iso, [@hck_setup_scripts_path])
+      create_iso(@setup_client_iso, [@hck_setup_scripts_path], ['Kits'])
     end
 
     def tag

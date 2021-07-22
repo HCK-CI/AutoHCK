@@ -6,9 +6,11 @@ require './lib/auxiliary/host_helper'
 module AutoHCK
   # Helper module
   module Helper
-    def create_iso(iso_path, dir_paths)
-      run_cmd(['mkisofs', '-iso-level', '4', '-l', '-R', '-udf', '-D',
-               '-o', iso_path] + dir_paths)
+    def create_iso(iso_path, dir_paths, exclude_list = [])
+      exclude_args = exclude_list.map { |v| "-exclude=#{v}" }
+
+      run_cmd(['mkisofs', '-iso-level', '4', '-l', '-R', '-udf', '-D'] +
+               exclude_args + ['-o', iso_path] + dir_paths)
     end
   end
 end
