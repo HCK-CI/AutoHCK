@@ -39,9 +39,9 @@ module AutoHCK
       end
 
       def create_bridge(bridge, tx_queue_len = 0)
-        run_cmd(["sudo brctl show #{bridge} 1>/dev/null 2>&1 || sudo brctl addbr #{bridge}"])
-        run_cmd(["sudo ifconfig #{bridge} up"])
-        run_cmd(["sudo ifconfig #{bridge} txqueuelen #{tx_queue_len}"]) if tx_queue_len.positive?
+        run_cmd(["brctl show #{bridge} 1>/dev/null 2>&1 || brctl addbr #{bridge}"])
+        run_cmd(["ifconfig #{bridge} up"])
+        run_cmd(["ifconfig #{bridge} txqueuelen #{tx_queue_len}"]) if tx_queue_len.positive?
       end
 
       def remove_bridge(bridge)
