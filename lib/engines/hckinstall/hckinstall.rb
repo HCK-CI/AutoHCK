@@ -229,10 +229,17 @@ module AutoHCK
       create_setup_scripts_config(@hck_setup_scripts_path, config)
     end
 
+    def product_key_xml(product_key)
+      product_key == '' || product_key.nil? ? '' : "<Key>#{product_key}</Key>"
+    end
+
     def prepare_studio_iso
+      product_key = @studio_iso_info.dig('studio', 'product_key')
+
       replacement_list = {
         '@WINDOWS_IMAGE_NAME@' => @studio_iso_info['studio']['windows_image_names'],
-        '@PRODUCT_KEY@' => @studio_iso_info['studio']['product_key'],
+        '@PRODUCT_KEY@' => product_key,
+        '@PRODUCT_KEY_XML@' => product_key_xml(product_key),
         '@HOST_TYPE@' => 'studio'
       }
       @answer_files.each do |file|
@@ -243,9 +250,12 @@ module AutoHCK
     end
 
     def prepare_client_iso
+      product_key = @client_iso_info.dig('client', 'product_key')
+
       replacement_list = {
         '@WINDOWS_IMAGE_NAME@' => @client_iso_info['client']['windows_image_names'],
-        '@PRODUCT_KEY@' => @client_iso_info['client']['product_key'],
+        '@PRODUCT_KEY@' => product_key,
+        '@PRODUCT_KEY_XML@' => product_key_xml(product_key),
         '@HOST_TYPE@' => 'client'
       }
       @answer_files.each do |file|
