@@ -11,7 +11,7 @@ gem 'mono_logger'
 gem 'net-ping'
 gem 'net-telnet'
 gem 'octokit'
-gem 'rtoolsHCK', git: 'https://github.com/HCK-CI/rtoolsHCK.git', tag: 'v0.2.21'
+gem 'rtoolsHCK', git: 'https://github.com/HCK-CI/rtoolsHCK.git', tag: 'v0.2.22'
 gem 'rubyzip'
 gem 'sqlite3'
 
