@@ -155,10 +155,12 @@ module AutoHCK
       initialize_client_wait
     end
 
-    def configure
+    def configure(run_only: false)
       @tools = @studio.tools
       @cooldown_thread = Thread.new do
         return_when_client_up
+        Thread.exit if run_only
+
         @logger.info("Preparing client #{@name}...")
         @project.extra_sw_manager.install_software_before_driver(@tools, @name)
         install_drivers

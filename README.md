@@ -107,6 +107,7 @@ Usage: auto_hck.rb test [test options]
     -c, --commit <commit_hash>       Commit hash for CI status update
         --diff <diff_file>           Path to text file containing a list of changed source files
         --svvp                       Run SVVP tests for specified platform instead of driver tests
+        --manual                     Run and prepare the machine for tests, but do not run the tests themselves
     -h, --help                       Show this message
 Usage: auto_hck.rb install [install options]
 
@@ -114,12 +115,19 @@ Usage: auto_hck.rb install [install options]
     -f, --force                      Install all VM, replace studio if exist
     -h, --help                       Show this message
 ```
+
+### Manual mode
+
+In manual mode, AutoHCK configures the network and runs studio and client with proper configuration for the specific device. If the path to the location of the driver is specified, then AutoHCK will install this driver. When all machines have been started, AutoHCK will wait for user interaction before shutdown the machines. Please type 'stop' when you no need this setup anymore.
+
 ### Examples
 ```
 ruby ./bin/auto_hck test --drivers Balloon --platform Win10x86 --driver-path /home/hck-ci/balloon/win10/x86
 ruby ./bin/auto_hck test --drivers NetKVM --platform Win10x64 --driver-path /home/hck-ci/workspace --diff /path/to/diff.txt
 ruby ./bin/auto_hck test --drivers viostor --platform Win10x64 --driver-path /home/hck-ci/viostor --diff /path/to/diff.txt -c ec3da560827922e5a82486cf19cd9c27e95455a9
 ruby ./bin/auto_hck test --svvp --platform Win10x64 --driver-path /home/hck-ci/virtio-drv
+ruby ./bin/auto_hck test -d NetKVM -p Win10x64 --driver-path /home/hck-ci/virtio-drv --manual
+ruby ./bin/auto_hck test -d NetKVM -p Win10x64 --manual
 ruby ./bin/auto_hck install -p Win2019x64 --force
 ```
 ### Workspace
