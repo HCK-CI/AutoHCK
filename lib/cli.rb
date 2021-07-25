@@ -65,7 +65,7 @@ module AutoHCK
 
     # class TestOptions
     class TestOptions
-      attr_accessor :platform, :drivers, :driver_path, :commit, :diff_file, :svvp
+      attr_accessor :platform, :drivers, :driver_path, :commit, :diff_file, :svvp, :manual
 
       def create_parser
         OptionParser.new do |parser|
@@ -86,6 +86,7 @@ module AutoHCK
         commit_option(parser)
         diff_file_option(parser)
         svvp_option(parser)
+        manual_option(parser)
       end
 
       def platform_option(parser)
@@ -127,6 +128,13 @@ module AutoHCK
         parser.on('--svvp', TrueClass,
                   'Run SVVP tests for specified platform instead of driver tests') do |svvp|
           @svvp = svvp
+        end
+      end
+
+      def manual_option(parser)
+        parser.on('--manual', TrueClass,
+                  'Run and prepare the machine for tests, but do not run the tests themselves') do |manual|
+          @manual = manual
         end
       end
     end

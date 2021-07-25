@@ -26,7 +26,7 @@ module AutoHCK
       @driver_path = @project.options.test.driver_path
       @drivers = find_drivers
       prepare_extra_sw
-      validate_paths
+      validate_paths unless @driver_path.nil?
       init_workspace
     end
 
@@ -151,7 +151,11 @@ module AutoHCK
     end
 
     def configure_clients
-      @clients.values.map(&:configure)
+      run_only = @project.options.test.manual && @project.options.test.driver_path.nil?
+
+      @clients.each_value do |client|
+        client.configure(run_only: run_only)
+      end
     end
 
     def configure_setup_and_synchronize
@@ -214,19 +218,40 @@ module AutoHCK
       end
     end
 
-    def run
-      upload_driver_package
+    def manual_run
+      loop do
+        @project.logger.info('Please type "stop" to stop AutoHCK')
+        break if gets.chomp == 'stop'
+      end
+      @project.logger.info('AutoHCK will be stopped')
+    end
 
-      @studio = @project.setup_manager.create_studio
-      initialize_clients
-
-      run_and_configure_setup
+    def auto_run
       client = @client1
       client.run_tests
       client.create_package
     end
 
+    def run
+      upload_driver_package unless @driver_path.nil?
+
+      @studio = @project.setup_manager.create_studio
+      initialize_clients
+
+      @project.logger.info('AutoHCK started in manual mode') if @project.options.test.manual
+
+      run_and_configure_setup
+
+      if @project.options.test.manual
+        manual_run
+      else
+        auto_run
+      end
+    end
+
     def close
+      @project.logger.info('Closing HCK test engine')
+
       @clients&.values&.map(&:abort)
       @studio&.abort
     end
