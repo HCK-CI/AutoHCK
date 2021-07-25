@@ -177,6 +177,8 @@
     "short": "openvpn",
     "device": "e1000e",
     "inf": "OemVista.inf",
+    "sys": "tap0901.sys",
+    "install_cert": true,
     "install_method": "custom",
     "install_command": "@driver_dir@/tapinstall.exe install @inf_path@ tap0901",
     "extra_software": [ "openvpn-srv" ],
