@@ -45,6 +45,10 @@ Configure AutoHCK to have all information for building VM images. Edit the next 
    - **kit** - The kit name should be the same as in the `platforms.json` file.
    - **platform_name** - The platform name for Studio VM should be the same as in the `platforms.json` file.
 
+6. `lib/setupmanagers/<setup_manager>/<setup_manager>.json` - contains information for specific setup manager. Please edit the setup manager which you need. Existing setup managers config:
+   - `lib/setupmanagers/physhck/physhck.json`
+   - `lib/setupmanagers/qemuhck/qemu_machine.json`
+
 Notes:
    - Please do **not** edit any advanced configurations if you don't understand what it does!
    - All config files with generic config are present in the repository, you can use them as templates.
