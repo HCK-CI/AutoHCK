@@ -269,11 +269,11 @@ module AutoHCK
                                               SET_MACHINE_READY_TIMEOUT))
     end
 
-    def install_machine_driver_package(machine, method, driver_path, file, custom_cmd = nil)
+    def install_machine_driver_package(machine, method, driver_path, file, options = {})
       retries ||= 0
       ret = handle_results(@tools.install_machine_driver_package(machine,
                                                                  driver_path,
-                                                                 method, file, custom_cmd))
+                                                                 method, file, options))
 
       return ret if ret
 
