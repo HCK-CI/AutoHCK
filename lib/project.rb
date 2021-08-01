@@ -91,9 +91,10 @@ module AutoHCK
 
     def move_workspace_to(path)
       FileUtils.cp(@logfile_path, "#{path}/#{@logfile_name}")
-      @logfile_path = "#{path}/#{@logfile_name}"
       @pre_logger.close
       @logger.remove_logger(@pre_logger)
+      FileUtils.rm_f(@logfile_path)
+      @logfile_path = "#{path}/#{@logfile_name}"
       @pre_logger = MonoLogger.new(@logfile_path)
       @logger.add_logger(@pre_logger)
       @workspace_path = path
