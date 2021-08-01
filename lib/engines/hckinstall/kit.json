@@ -17,6 +17,6 @@
   {
     "kit": "HLK2022",
     "download_url": "https://go.microsoft.com/fwlink/?linkid=2164257",
-    "extra_software": [ "winfsp" ]
+    "extra_software": [ "FOD_2022", "Test-NETHLK", "winfsp" ]
   }
 ]
