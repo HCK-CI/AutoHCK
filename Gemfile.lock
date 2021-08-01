@@ -18,6 +18,7 @@ GEM
     builder (3.2.4)
     curb (0.9.11)
     diff-lcs (1.4.4)
+    dotenv (2.7.6)
     dropbox_api (0.1.19)
       faraday (~> 1.0)
       oauth2 (~> 1.1)
@@ -120,6 +121,7 @@ PLATFORMS
 
 DEPENDENCIES
   curb
+  dotenv
   dropbox_api
   filelock
   mono_logger
