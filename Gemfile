@@ -5,6 +5,7 @@ source 'https://rubygems.org'
 ruby '>= 2.6.5p114'
 
 gem 'curb'
+gem 'dotenv'
 gem 'dropbox_api'
 gem 'filelock'
 gem 'mono_logger'
