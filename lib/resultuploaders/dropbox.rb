@@ -15,6 +15,7 @@ module AutoHCK
       @tag = project.engine.tag
       @timestamp = project.timestamp
       @logger = project.logger
+      @repo = project.config['repository']
       @token = ENV['AUTOHCK_DROPBOX_TOKEN']
       @dropbox = nil
       @url = nil
@@ -61,7 +62,7 @@ module AutoHCK
 
     def create_project_folder
       handle_exceptions(__method__) do
-        @path = "/#{@tag}-#{@timestamp}"
+        @path = "/#{@repo}/CI/#{@tag}-#{@timestamp}"
         @dropbox.create_folder(@path)
         @dropbox.share_folder(@path)
         @url = "#{@dropbox.create_shared_link_with_settings(@path).url}&lst="
