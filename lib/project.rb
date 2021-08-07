@@ -164,13 +164,10 @@ module AutoHCK
       @github.handle_error if @github&.connected?
     end
 
-    def abort
-      @result_uploader&.upload_file(@logfile_path, 'AutoHCK.log')
-      @logger&.remove_logger(@stdout_logger)
-    end
-
     def close
       @logger.debug('Closing AutoHCK project')
+
+      @result_uploader&.upload_file(@logfile_path, 'AutoHCK.log')
 
       @setup_manager&.close
       @engine&.close

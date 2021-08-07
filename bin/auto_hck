@@ -17,7 +17,6 @@ module AutoHCK
   AUTOHCK_RETRIES = 5
 
   at_exit do
-    @project&.abort
     @project&.close
   end
 
