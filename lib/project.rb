@@ -46,6 +46,8 @@ module AutoHCK
       @extra_sw_manager = ExtraSoftwareManager.new(self)
 
       @engine = Engine.new(self)
+      Sentry.set_tags('autohck.tag': @engine.tag)
+
       @engine.drivers.nil? || diff_checker(@engine.drivers, @options.test.diff_file)
 
       configure_result_uploader

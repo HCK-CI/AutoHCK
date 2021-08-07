@@ -3,6 +3,7 @@
 
 require 'bundler/setup'
 require 'dotenv/load'
+require './lib/config/sentry'
 require 'filelock'
 require './lib/cli'
 require './lib/project'
@@ -58,9 +59,10 @@ module AutoHCK
     Signal.trap('TERM') do
       @project&.logger&.warn('SIGTERM(*) received, ignoring...')
     end
+    Sentry.capture_exception(e)
     @project&.log_exception(e, 'fatal')
     @project&.handle_error
     clean_threads
-    raise e
+    exit(1)
   end
 end
