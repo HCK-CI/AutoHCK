@@ -250,6 +250,15 @@ module AutoHCK
       end
     end
 
+    def process_optional_hck_network
+      return unless @config['transfer_net_enabled']
+
+      @device_commands << @nm.transfer_device_command(@config['transfer_net_device'],
+                                                      @config['share_on_host_net'],
+                                                      @config['share_on_host_path'],
+                                                      full_replacement_list)
+    end
+
     def process_hck_network
       @device_commands << @nm.control_device_command(option_config('ctrl_net_device'),
                                                      full_replacement_list)
@@ -259,6 +268,8 @@ module AutoHCK
       @device_commands << @nm.world_device_command(option_config('world_net_device'),
                                                    @config['world_net_bridge'],
                                                    full_replacement_list)
+
+      process_optional_hck_network
     end
 
     def process_devices

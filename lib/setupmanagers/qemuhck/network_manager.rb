@@ -143,8 +143,22 @@ module AutoHCK
         cmd
       end
 
-      def transfer_device_command(_device_name, _qemu_replacement_list = {})
-        raise(NotImplementedError, 'SMB transfer device is not implemented')
+      def transfer_device_command(device_name, transfer_net, share_path, qemu_replacement_list = {})
+        type = __method__.to_s.split('_').first
+
+        path = File.absolute_path(share_path)
+
+        netdev_options = ",net=#{transfer_net}.0/24,smb=#{path},smbserver=#{transfer_net}.4,restrict=on"
+        network_backend = 'user'
+
+        options = {
+          '@network_backend@' => network_backend,
+          '@netdev_options@' => netdev_options
+        }
+
+        cmd, = device_info(type, device_name, options, qemu_replacement_list)
+
+        cmd
       end
 
       def close
