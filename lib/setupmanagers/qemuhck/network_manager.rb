@@ -53,7 +53,7 @@ module AutoHCK
         addr.nil? ? '' : ",addr=#{addr}"
       end
 
-      def device_replacement_list(type, device_info, device_config, qemu_replacement_list)
+      def device_replacement_list(type, device_info, device_options, device_config, qemu_replacement_list)
         replacement_list = {
           '@net_if_name@' => device_config['ifname'],
           '@net_up_script@' => "@workspace@/#{type}_ifup_@run_id@.sh",
@@ -61,18 +61,18 @@ module AutoHCK
           '@net_addr@' => net_addr_cmd(device_config['address']),
           '@bus_name@' => device_config['bus_name'],
           '@device_id@' => format('%02x', @dev_id)
-        }
+        }.merge(device_options)
 
         qemu_replacement_list.merge(device_info['define_variables'].to_h).merge(replacement_list)
       end
 
-      def device_info(type, device_name, qemu_replacement_list)
+      def device_info(type, device_name, device_options, qemu_replacement_list)
         @dev_id += 1
 
         device = read_device(device_name)
         type_config = @config['devices'][type]
 
-        replacement_list = device_replacement_list(type, device, type_config, qemu_replacement_list)
+        replacement_list = device_replacement_list(type, device, device_options, type_config, qemu_replacement_list)
         device_command = replace_string_recursive(device['command_line'].join(' '), replacement_list)
 
         @logger.debug("Device #{device_name} used as #{type} device")
@@ -93,8 +93,14 @@ module AutoHCK
       def control_device_command(device_name, qemu_replacement_list = {})
         type = __method__.to_s.split('_').first
 
+        network_backend = 'tap'
+
+        options = {
+          '@network_backend@' => network_backend
+        }
+
         create_bridge(@control_bridge)
-        cmd, replacement_list = device_info(type, device_name, qemu_replacement_list)
+        cmd, replacement_list = device_info(type, device_name, options, qemu_replacement_list)
         create_net_up_script(replacement_list.merge({ '@bridge_name@' => @control_bridge }))
 
         cmd
@@ -103,7 +109,13 @@ module AutoHCK
       def world_device_command(device_name, bridge_name, qemu_replacement_list = {})
         type = __method__.to_s.split('_').first
 
-        cmd, replacement_list = device_info(type, device_name, qemu_replacement_list)
+        network_backend = 'tap'
+
+        options = {
+          '@network_backend@' => network_backend
+        }
+
+        cmd, replacement_list = device_info(type, device_name, options, qemu_replacement_list)
         create_net_up_script(replacement_list.merge({ '@bridge_name@' => bridge_name }))
 
         cmd
@@ -112,8 +124,14 @@ module AutoHCK
       def test_device_command(device_name, qemu_replacement_list = {})
         type = __method__.to_s.split('_').first
 
+        network_backend = 'tap'
+
+        options = {
+          '@network_backend@' => network_backend
+        }
+
         create_bridge(@test_bridge)
-        cmd, replacement_list = device_info(type, device_name, qemu_replacement_list)
+        cmd, replacement_list = device_info(type, device_name, options, qemu_replacement_list)
         create_net_up_script(replacement_list.merge({ '@bridge_name@' => @test_bridge }))
 
         cmd
