@@ -93,10 +93,12 @@ module AutoHCK
       def control_device_command(device_name, qemu_replacement_list = {})
         type = __method__.to_s.split('_').first
 
+        netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no'
         network_backend = 'tap'
 
         options = {
-          '@network_backend@' => network_backend
+          '@network_backend@' => network_backend,
+          '@netdev_options@' => netdev_options
         }
 
         create_bridge(@control_bridge)
@@ -109,10 +111,12 @@ module AutoHCK
       def world_device_command(device_name, bridge_name, qemu_replacement_list = {})
         type = __method__.to_s.split('_').first
 
+        netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no'
         network_backend = 'tap'
 
         options = {
-          '@network_backend@' => network_backend
+          '@network_backend@' => network_backend,
+          '@netdev_options@' => netdev_options
         }
 
         cmd, replacement_list = device_info(type, device_name, options, qemu_replacement_list)
@@ -124,10 +128,12 @@ module AutoHCK
       def test_device_command(device_name, qemu_replacement_list = {})
         type = __method__.to_s.split('_').first
 
+        netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no'
         network_backend = 'tap'
 
         options = {
-          '@network_backend@' => network_backend
+          '@network_backend@' => network_backend,
+          '@netdev_options@' => netdev_options
         }
 
         create_bridge(@test_bridge)
