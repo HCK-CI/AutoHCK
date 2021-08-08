@@ -7,6 +7,10 @@
   "images_path": "/root/Prometheus/images",
   "fs_test_image": "/root/Prometheus/images/filesystem_tests_image.qcow2",
   "world_net_bridge": "br0",
+  "transfer_net_enabled": false,
+  "transfer_net_device": "e1000e",
+  "share_on_host_net": "192.168.101", // The =FIRST THREE= octets of the share IP
+  "share_on_host_path": "/root/Prometheus/fs_share",
   "platforms_defaults": {
     "cpu_count": 2,
     "memory": "4G",
