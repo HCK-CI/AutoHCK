@@ -17,10 +17,6 @@ module AutoHCK
 
   AUTOHCK_RETRIES = 5
 
-  at_exit do
-    @project&.close
-  end
-
   def self.clean_threads
     Thread.list.each do |thread|
       thread.exit unless Thread.main.eql?(thread)
@@ -55,6 +51,7 @@ module AutoHCK
     @project = Project.new(cli)
     @project.prepare
     @project.run
+    @project.close
   rescue StandardError => e
     Signal.trap('TERM') do
       @project&.logger&.warn('SIGTERM(*) received, ignoring...')
@@ -62,6 +59,7 @@ module AutoHCK
     Sentry.capture_exception(e)
     @project&.log_exception(e, 'fatal')
     @project&.handle_error
+    @project&.close
     clean_threads
     exit(1)
   end
