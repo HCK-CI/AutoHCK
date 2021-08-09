@@ -184,10 +184,10 @@ module AutoHCK
 
     def run_and_configure_setup
       retries ||= 0
-      Filelock '/var/tmp/virthck.lock', timeout: 0 do
-        @studio.run
-        run_clients
-      end
+
+      @studio.run
+      run_clients
+
       configure_setup_and_synchronize
     rescue AutoHCKError => e
       synchronize_clients(exit: true)
