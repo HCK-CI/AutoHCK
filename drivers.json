@@ -50,6 +50,7 @@
     "type": 0,
     "support": false,
     "blacklist": [
+      "Static Tools Logo Test",
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
@@ -62,6 +63,7 @@
     "type": 0,
     "support": false,
     "blacklist": [
+      "Static Tools Logo Test",
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
@@ -74,6 +76,7 @@
     "type": 0,
     "support": false,
     "blacklist": [
+      "Static Tools Logo Test",
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
@@ -107,6 +110,7 @@
     "type": 0,
     "support": false,
     "blacklist": [
+      "Static Tools Logo Test",
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
@@ -119,6 +123,7 @@
     "type": 0,
     "support": false,
     "blacklist": [
+      "Static Tools Logo Test",
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
@@ -131,6 +136,7 @@
     "type": 0,
     "support": false,
     "blacklist": [
+      "Static Tools Logo Test",
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
@@ -143,6 +149,7 @@
     "type": 0,
     "support": false,
     "blacklist": [
+      "Static Tools Logo Test",
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
@@ -153,7 +160,10 @@
     "inf": "viofs.inf",
     "install_method": "PNP",
     "type": 0,
-    "support": false
+    "support": false,
+    "blacklist": [
+      "Static Tools Logo Test"
+    ]
   },
   {
      "name": "Red Hat VirtIO GPU DOD controller",
@@ -165,6 +175,7 @@
      "support": false,
      "enlightenments_state": "on",
      "blacklist": [
+       "Static Tools Logo Test",
        "DF - Embedded Signature Verification Test (Certification)",
        "Test for EDID Requirements (Manual)",
        "Multimon minimum resolution check - Multihead",
