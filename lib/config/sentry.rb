@@ -2,6 +2,7 @@
 
 require 'sentry-ruby'
 require './lib/version'
+require 'mono_logger'
 
 # AutoHCK module
 module AutoHCK
@@ -21,5 +22,13 @@ module AutoHCK
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for performance monitoring.
     config.traces_sample_rate = 1.0
+
+    unless ENV['SENTRY_TRANSPORT_SSL_CA'].nil?
+      if File.exist?(ENV['SENTRY_TRANSPORT_SSL_CA'])
+        config.transport.ssl_ca_file = ENV['SENTRY_TRANSPORT_SSL_CA']
+      else
+        MonoLogger.new($stdout).warn('SENTRY_TRANSPORT_SSL_CA environment specified, but file does not exist')
+      end
+    end
   end
 end
