@@ -74,10 +74,10 @@ module AutoHCK
 
       @logger = @options['logger'] || MonoLogger.new($stdout)
 
-      @id = format('%04x', @options['id'])
+      @id = format('%04d', @options['id'])
       @id_first = @id[0..1]
       @id_second = @id[2..3]
-      @client_id = format('%02x', @options['client_id'])
+      @client_id = format('%02d', @options['client_id'])
       @run_name = "QemuMachine#{@id}_CL#{@client_id}"
 
       @devices_list << @options['devices_list']
