@@ -33,7 +33,9 @@ module AutoHCK
 
     def ms_playlist(log)
       kit = @kit
-      file = kit[0..2] == 'HLK' ? "./playlists/#{kit[3..]}.xml" : nil
+      playlists_path = @project.engine.config['playlists_path']
+
+      file = kit[0..2] == 'HLK' ? "#{playlists_path}/#{kit[3..]}.xml" : nil
       workspace_file = "#{@project.workspace_path}/playlist_#{kit[3..]}.xml"
 
       return nil if file.nil? || !File.exist?("./#{file}")
