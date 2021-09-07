@@ -4,7 +4,7 @@
     "-chardev socket,id=virtiofsid,path=@fs_daemon_socket@",
     "-object memory-backend-file,id=mem_backend,size=@memory@,mem-path=/dev/shm,share=on",
     "-numa node,memdev=mem_backend",
-    "-device vhost-user-fs-pci`extra_params_cmd`,queue-size=1024,chardev=virtiofsid,tag=myfs,bus=@bus_name@.0"
+    "-device vhost-user-fs-pci@device_extra_param@,queue-size=1024,chardev=virtiofsid,tag=myfs,bus=@bus_name@.0"
   ],
   "define_variables": {
     "@fs_daemon_socket@": "/tmp/fs_daemon_socket_@run_id@_@client_id@"
