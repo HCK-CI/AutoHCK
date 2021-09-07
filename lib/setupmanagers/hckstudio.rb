@@ -10,7 +10,6 @@ module AutoHCK
     attr_reader :tools
 
     STUDIO = 'st'
-    HCK_FILTERS_PATH = 'filters/UpdateFilters.sql'
     CONNECT_RETRIES = 5
     CONNECT_RETRY_SLEEP = 10
 
@@ -61,10 +60,12 @@ module AutoHCK
     end
 
     def update_filters
-      return unless File.file?(HCK_FILTERS_PATH)
+      filters_path = @project.engine.config['filters_path']
+
+      return unless File.file?(filters_path)
 
       @logger.info('Updating HCK filters')
-      @tools.update_filters(HCK_FILTERS_PATH)
+      @tools.update_filters(filters_path)
     end
 
     def connect
