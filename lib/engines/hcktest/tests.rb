@@ -140,7 +140,7 @@ module AutoHCK
     def update_summary_results_log
       logs = @tests.reduce('') do |sum, test|
         extra_info = @tests_dump.keys.include?(test['id']) ? '(with Minidump)' : ''
-        sum + "#{test['status']}: #{test['name']} #{extra_info}\n"
+        sum + "#{test['status']}: #{test['name']} [#{test['estimatedruntime']}] #{extra_info}\n"
       end
       @logger.info('Tests results logs updated via the result uploader')
       @project.result_uploader.update_file_content(logs, 'logs.txt')
