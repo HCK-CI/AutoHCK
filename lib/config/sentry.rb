@@ -16,8 +16,16 @@ module AutoHCK
     # events that happened prior to an issue.
     config.breadcrumbs_logger = [:sentry_logger]
 
+    config.before_breadcrumb = lambda do |breadcrumb, _hint|
+      if breadcrumb.level.to_s.downcase == 'debug'
+        nil
+      else
+        breadcrumb
+      end
+    end
+
     # The maximum number of breadcrumbs the SDK would hold.
-    config.max_breadcrumbs = 10_000
+    config.max_breadcrumbs = 2_500
 
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for performance monitoring.
