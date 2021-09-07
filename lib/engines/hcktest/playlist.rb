@@ -34,10 +34,14 @@ module AutoHCK
     def ms_playlist(log)
       kit = @kit
       file = kit[0..2] == 'HLK' ? "./playlists/#{kit[3..]}.xml" : nil
+      workspace_file = "#{@project.workspace_path}/playlist_#{kit[3..]}.xml"
+
       return nil if file.nil? || !File.exist?("./#{file}")
 
+      FileUtils.cp(file, workspace_file)
+
       @logger.info("Applying microsoft's playlist") if log
-      file
+      workspace_file
     end
 
     def time_to_seconds(time)
