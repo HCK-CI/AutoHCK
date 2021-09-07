@@ -11,9 +11,10 @@ module AutoHCK
   # HCKTest class
   class HCKTest
     include Helper
-    attr_reader :drivers, :platform
+    attr_reader :config, :drivers, :platform
 
     PLATFORMS_JSON_DIR = 'lib/engines/hcktest/platforms'
+    CONFIG_JSON = 'lib/engines/hcktest/hcktest.json'
     DRIVERS_JSON = 'drivers.json'
     SVVP_JSON = 'svvp.json'
     ENGINE_MODE = 'test'
@@ -22,6 +23,7 @@ module AutoHCK
       @project = project
       @logger = project.logger
       @project.append_multilog("#{tag}.log")
+      @config = read_json(CONFIG_JSON, @logger)
       @platform = read_platform
       @driver_path = @project.options.test.driver_path
       @drivers = find_drivers
