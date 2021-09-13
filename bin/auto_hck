@@ -49,8 +49,7 @@ module AutoHCK
 
   begin
     @project = Project.new(cli)
-    @project.prepare
-    @project.run
+    @project.run if @project.prepare
     @project.close
   rescue StandardError => e
     Signal.trap('TERM') do

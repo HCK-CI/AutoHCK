@@ -133,13 +133,13 @@ module AutoHCK
       normalize_paths
       unless File.exist?("#{@iso_path}/#{@studio_iso_info['path']}")
         @logger.fatal('Studio ISO path is not valid')
-        exit(1)
+        raise(InvalidPathError, 'Studio ISO path is not valid')
       end
 
       return if File.exist?("#{@iso_path}/#{@client_iso_info['path']}")
 
       @logger.fatal('Client ISO path is not valid')
-      exit(1)
+      raise(InvalidPathError, 'Client ISO path is not valid')
     end
 
     def normalize_paths
