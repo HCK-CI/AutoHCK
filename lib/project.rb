@@ -36,10 +36,10 @@ module AutoHCK
 
     def diff_checker(drivers, diff)
       diff_checker = DiffChecker.new(@logger, drivers, @options.test.driver_path, diff)
-      return if diff_checker.trigger?
+      return true if diff_checker.trigger?
 
       @logger.info("Any drivers aren't changed, not running tests")
-      exit(0)
+      false
     end
 
     def prepare
@@ -48,12 +48,13 @@ module AutoHCK
       @engine = Engine.new(self)
       Sentry.set_tags('autohck.tag': @engine.tag)
 
-      @engine.drivers.nil? || diff_checker(@engine.drivers, @options.test.diff_file)
+      return false unless @engine.drivers.nil? || diff_checker(@engine.drivers, @options.test.diff_file)
 
       configure_result_uploader
       github_handling(@options.test.commit)
 
       @setup_manager = SetupManager.new(self)
+      true
     end
 
     def run
