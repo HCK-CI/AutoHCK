@@ -46,7 +46,6 @@ module AutoHCK
       apply_states
       init_ports
 
-      @pid_file = Tempfile.new(@run_name)
       @monitor = Monitor.new(@run_name, @monitor_port, @logger)
 
       @base_image_path = Pathname.new(@config['images_path']).join(@options['image_name'])
@@ -181,7 +180,7 @@ module AutoHCK
         '@vnc_id@' => @vnc_id,
         '@vnc_port@' => @vnc_port,
         '@qemu_monitor_port@' => @monitor_port,
-        '@pid_file@' => @pid_file.path,
+        '@pid_file@' => @pid_file&.path,
         '@image_path@' => image_path
       }.merge(config_replacement_list)
         .merge(machine_replacement_list)
@@ -361,12 +360,18 @@ module AutoHCK
       FileUtils.chmod(0o755, file_name)
     end
 
+    def save_run_script(file_name, file_content)
+      file_path = Pathname.new(@workspace_path).join(file_name)
+      create_run_script(file_path, file_content)
+    end
+
     def run_vm
       dump_config
 
+      @pid_file = Tempfile.new(@run_name)
+
       cmd = replace_string_recursive(dirty_command.join(' '), full_replacement_list)
-      file_name = Pathname.new(@workspace_path).join("#{@run_name}.sh")
-      create_run_script(file_name, cmd)
+      save_run_script("#{@run_name}.sh", cmd)
 
       Thread.new do
         run_cmd([cmd])
