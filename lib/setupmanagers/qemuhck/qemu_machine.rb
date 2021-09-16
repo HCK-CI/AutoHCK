@@ -264,6 +264,8 @@ module AutoHCK
 
       return unless @options['client_id'].zero?
 
+      @nm.disable_bridge_nf
+
       @device_commands << @nm.world_device_command(option_config('world_net_device'),
                                                    @config['world_net_bridge'],
                                                    full_replacement_list)
