@@ -29,7 +29,7 @@ end
 def cleanup
   config = read_json(CONFIG_JSON)
   workspace_path = config['workspace_path']
-  test_runs = Dir["#{workspace_path}/*/*/*/*/*"]
+  test_runs = Dir["#{workspace_path}/*/*/*/*"]
   test_runs.each do |test_run|
     delete(test_run) if delete?(test_run.split('/').last)
   end
