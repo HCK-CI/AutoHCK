@@ -49,6 +49,13 @@ module AutoHCK
         run_cmd_no_fail(["brctl delbr #{bridge}"])
       end
 
+      def disable_bridge_nf
+        @logger.info('Disabling bridge-netfilter')
+        run_cmd_no_fail(['sysctl net.bridge.bridge-nf-call-arptables=0'])
+        run_cmd_no_fail(['sysctl net.bridge.bridge-nf-call-ip6tables=0'])
+        run_cmd_no_fail(['sysctl net.bridge.bridge-nf-call-iptables=0'])
+      end
+
       def net_addr_cmd(addr)
         addr.nil? ? '' : ",addr=#{addr}"
       end
