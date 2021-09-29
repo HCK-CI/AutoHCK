@@ -42,13 +42,19 @@ module AutoHCK
       false
     end
 
+    def check_run?
+      return true if @engine.drivers.nil?
+
+      diff_checker(@engine.drivers, @options.test.diff_file)
+    end
+
     def prepare
       @extra_sw_manager = ExtraSoftwareManager.new(self)
 
       @engine = Engine.new(self)
       Sentry.set_tags('autohck.tag': @engine.tag)
 
-      return false unless @engine.drivers.nil? || diff_checker(@engine.drivers, @options.test.diff_file)
+      return false unless check_run?
 
       configure_result_uploader
       github_handling(@options.test.commit)
