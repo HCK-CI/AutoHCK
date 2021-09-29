@@ -56,7 +56,7 @@ module AutoHCK
 
       return false unless check_run?
 
-      configure_result_uploader
+      configure_result_uploader if @engine.result_uploader_needed?
       github_handling(@options.test.commit)
 
       @setup_manager = SetupManager.new(self)
