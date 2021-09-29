@@ -251,6 +251,10 @@ module AutoHCK
       end
     end
 
+    def result_uploader_needed?
+      true
+    end
+
     def close
       @project.logger.info('Closing HCK test engine')
 

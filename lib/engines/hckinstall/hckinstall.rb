@@ -155,6 +155,10 @@ module AutoHCK
       nil
     end
 
+    def result_uploader_needed?
+      true
+    end
+
     def run_studio(iso_list = [], snapshot: true)
       st_opts = {
         create_snapshot: snapshot,
