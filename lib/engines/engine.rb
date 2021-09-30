@@ -4,6 +4,7 @@ require './lib/engines/exceptions'
 require './lib/setupmanagers/setupmanager'
 require './lib/engines/hcktest/hcktest'
 require './lib/engines/hckinstall/hckinstall'
+require './lib/engines/config_manager/config_manager'
 
 # AutoHCK module
 module AutoHCK
@@ -15,7 +16,8 @@ module AutoHCK
     class EngineFactory
       ENGINES = {
         hcktest: HCKTest,
-        hckinstall: HCKInstall
+        hckinstall: HCKInstall,
+        config_manager: ConfigManager
       }.freeze
 
       def self.create(type, project)
