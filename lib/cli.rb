@@ -180,7 +180,7 @@ module AutoHCK
     def parse(args)
       @parser.order!(args)
       @mode = args.shift
-      @sub_parser[@mode].order!(args) unless @mode.nil?
+      @sub_parser[@mode]&.order!(args) unless @mode.nil?
     end
   end
 end
