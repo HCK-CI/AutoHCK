@@ -36,6 +36,10 @@ module AutoHCK
       end
     end
 
+    def ask_token
+      @uploaders.each_value(&:ask_token)
+    end
+
     def connect
       @uploaders.each_pair do |type, uploader|
         if uploader.connect

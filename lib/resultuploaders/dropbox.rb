@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
 require 'dropbox_api'
+require 'json'
 
 # AutoHCK module
 module AutoHCK
+  TOKEN_JSON = 'lib/resultuploaders/dropbox.json'
+
   # dropbox class
   class Dropbox
     ACTION_RETRIES = 5
@@ -16,7 +19,12 @@ module AutoHCK
       @timestamp = project.timestamp
       @logger = project.logger
       @repo = project.config['repository']
-      @token = ENV['AUTOHCK_DROPBOX_TOKEN']
+
+      @client_id = ENV['AUTOHCK_DROPBOX_CLIENT_ID']
+      @client_secret = ENV['AUTOHCK_DROPBOX_CLIENT_SECRET']
+
+      @authenticator = DropboxApi::Authenticator.new(@client_id, @client_secret)
+
       @dropbox = nil
       @url = nil
     end
@@ -47,9 +55,51 @@ module AutoHCK
       @logger.warn("Dropbox #{where} error: (#{e.class}) #{e.message}")
     end
 
+    def ask_token
+      url = @authenticator.auth_code.authorize_url(token_access_type: 'offline')
+      @logger.info("Navigate to #{url}")
+      @logger.info('Please enter authorization code')
+
+      code = gets.chomp
+      @token = @authenticator.auth_code.get_token(code)
+
+      save_token(@token)
+    end
+
+    def save_token(token)
+      @logger&.info('Dropbox token to be saved in the local file')
+
+      File.open(TOKEN_JSON, 'w') do |f|
+        f.write(token.to_hash.to_json)
+      end
+    end
+
+    def load_token
+      @logger.info('Loading Dropbox token from the local file')
+
+      return nil unless File.exist?(TOKEN_JSON)
+
+      begin
+        hash = JSON.parse(File.read(TOKEN_JSON))
+      rescue StandardError => e
+        @logger.warn("Loading Dropbox token error: (#{e.class}) #{e.message}")
+
+        return nil
+      end
+
+      @token = OAuth2::AccessToken.from_hash(@authenticator, hash)
+    end
+
     def connect
+      load_token if @token.nil?
+
       if @token
-        @dropbox = DropboxApi::Client.new(@token)
+        @dropbox = DropboxApi::Client.new(
+          access_token: @token,
+          on_token_refreshed: lambda { |new_token|
+            save_token(new_token)
+          }
+        )
         @logger.warn('Dropbox authentication failure') if @dropbox.nil?
       else
         @logger.info('Dropbox token missing')
