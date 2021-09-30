@@ -59,7 +59,7 @@ module AutoHCK
       configure_result_uploader if @engine.result_uploader_needed?
       github_handling(@options.test.commit)
 
-      @setup_manager = SetupManager.new(self)
+      @setup_manager = SetupManager.new(self) unless @engine.platform.nil?
       true
     end
 
