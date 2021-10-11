@@ -100,9 +100,15 @@ module AutoHCK
 
       driver_names.map do |short_name|
         @project.logger.info("Loading driver: #{short_name}")
-        res = drivers_info.find { |driver| driver['short'] == short_name }
-        @project.logger.fatal("#{short_name} does not exist") unless res
-        res || raise(InvalidConfigFile, "#{short_name} does not exist")
+        driver = drivers_info[short_name]
+
+        if driver
+          driver['short'] = short_name
+          driver
+        else
+          @project.logger.fatal("#{short_name} does not exist")
+          raise(InvalidConfigFile, "#{short_name} does not exist")
+        end
       end
     end
 

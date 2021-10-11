@@ -1,15 +1,16 @@
-[
-  {
+{
+  "NetKVM": {
     "name": "Red Hat VirtIO Ethernet Adapter",
-    "short": "NetKVM",
     "device": "virtio-net-pci",
     "inf": "netkvm.inf",
     "install_method": "PNP",
     "type": 0,
     "support": true,
     "pretestcommands": [
-      { "desc": "Rename NetKVM ethernet adapter to SupportDevice0",
-        "run": "Rename-NetAdapter -Name (Get-NetAdapter -InterfaceDescription 'Red Hat VirtIO Ethernet Adapter').Name -NewName 'SupportDevice0'" }
+      {
+        "desc": "Rename NetKVM ethernet adapter to SupportDevice0",
+        "run": "Rename-NetAdapter -Name (Get-NetAdapter -InterfaceDescription 'Red Hat VirtIO Ethernet Adapter').Name -NewName 'SupportDevice0'"
+      }
     ],
     "blacklist": [
       "NDISTest 6.5 - [2 Machine] - MPE_Ethernet.xml",
@@ -21,19 +22,22 @@
       "Hardware-enforced Stack Protection Compatibility Test"
     ]
   },
-  {
+  "viostor": {
     "name": "Red Hat VirtIO SCSI Disk Device",
-    "short": "viostor",
     "device": "virtio-blk-pci",
     "inf": "viostor.inf",
     "install_method": "PNP",
     "type": 0,
     "support": false,
     "pretestcommands": [
-      { "desc": "Set Disk Operational Status to Online",
-        "run": "Set-Disk -Number 1 -IsOffline $False" },
-      { "desc": "Make Disk Writable",
-        "run": "Set-Disk -Number 1 -IsReadonly $False" }
+      {
+        "desc": "Set Disk Operational Status to Online",
+        "run": "Set-Disk -Number 1 -IsOffline $False"
+      },
+      {
+        "desc": "Make Disk Writable",
+        "run": "Set-Disk -Number 1 -IsReadonly $False"
+      }
     ],
     "blacklist": [
       "Static Tools Logo Test",
@@ -41,9 +45,8 @@
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
-  {
+  "ivshmem": {
     "name": "IVSHMEM Device",
-    "short": "ivshmem",
     "device": "ivshmem-doorbell",
     "inf": "ivshmem.inf",
     "install_method": "PNP",
@@ -54,9 +57,8 @@
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
-  {
+  "pvpanic": {
     "name": "QEMU PVPanic Device",
-    "short": "pvpanic",
     "device": "pvpanic",
     "inf": "pvpanic.inf",
     "install_method": "PNP",
@@ -67,9 +69,8 @@
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
-  {
+  "viorng": {
     "name": "VirtIO RNG Device",
-    "short": "viorng",
     "device": "virtio-rng-pci",
     "inf": "viorng.inf",
     "install_method": "PNP",
@@ -80,19 +81,22 @@
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
-  {
+  "vioscsi": {
     "name": "Red Hat VirtIO SCSI pass-through controller",
-    "short": "vioscsi",
     "device": "virtio-scsi-pci",
     "inf": "vioscsi.inf",
     "install_method": "PNP",
     "type": 0,
     "support": false,
     "pretestcommands": [
-      { "desc": "Set Disk Operational Status to Online",
-        "run": "Set-Disk -Number 1 -IsOffline $False" },
-      { "desc": "Make Disk Writable",
-        "run": "Set-Disk -Number 1 -IsReadonly $False" }
+      {
+        "desc": "Set Disk Operational Status to Online",
+        "run": "Set-Disk -Number 1 -IsOffline $False"
+      },
+      {
+        "desc": "Make Disk Writable",
+        "run": "Set-Disk -Number 1 -IsReadonly $False"
+      }
     ],
     "blacklist": [
       "Static Tools Logo Test",
@@ -101,9 +105,8 @@
       "Storage HBA Firmware Update"
     ]
   },
-  {
+  "Balloon": {
     "name": "VirtIO Balloon Driver",
-    "short": "Balloon",
     "device": "virtio-balloon-pci",
     "inf": "balloon.inf",
     "install_method": "PNP",
@@ -114,9 +117,8 @@
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
-  {
+  "vioinput": {
     "name": "VirtIO Input Driver",
-    "short": "vioinput",
     "device": "virtio-keyboard-pci",
     "inf": "vioinput.inf",
     "install_method": "PNP",
@@ -127,9 +129,8 @@
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
-  {
+  "vioserial": {
     "name": "VirtIO Serial Driver",
-    "short": "vioserial",
     "device": "virtio-serial-pci",
     "inf": "vioser.inf",
     "install_method": "PNP",
@@ -140,9 +141,8 @@
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
-  {
+  "viosock": {
     "name": "VirtIO Socket Driver",
-    "short": "viosock",
     "device": "vhost-vsock-pci",
     "inf": "viosock.inf",
     "install_method": "PNP",
@@ -153,9 +153,8 @@
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
-  {
+  "viofs": {
     "name": "VirtIO FS Device",
-    "short": "viofs",
     "device": "vhost-user-fs-pci",
     "inf": "viofs.inf",
     "install_method": "PNP",
@@ -165,39 +164,41 @@
       "Static Tools Logo Test"
     ]
   },
-  {
-     "name": "Red Hat VirtIO GPU DOD controller",
-     "short": "viogpu",
-     "device": "virtio-vga",
-     "inf": "viogpudo.inf",
-     "install_method": "PNP",
-     "type": 0,
-     "support": false,
-     "enlightenments_state": "on",
-     "blacklist": [
-       "Static Tools Logo Test",
-       "DF - Embedded Signature Verification Test (Certification)",
-       "Test for EDID Requirements (Manual)",
-       "Multimon minimum resolution check - Multihead",
-       "WDDM HPD Notification Test (Manual)",
-       "Check Resolution for Dualview (WoW64) - multihead"
-     ]
+  "viogpu": {
+    "name": "Red Hat VirtIO GPU DOD controller",
+    "device": "virtio-vga",
+    "inf": "viogpudo.inf",
+    "install_method": "PNP",
+    "type": 0,
+    "support": false,
+    "enlightenments_state": "on",
+    "blacklist": [
+      "Static Tools Logo Test",
+      "DF - Embedded Signature Verification Test (Certification)",
+      "Test for EDID Requirements (Manual)",
+      "Multimon minimum resolution check - Multihead",
+      "WDDM HPD Notification Test (Manual)",
+      "Check Resolution for Dualview (WoW64) - multihead"
+    ]
   },
-  {
+  "openvpn": {
     "name": "TAP-Windows Adapter V9",
-    "short": "openvpn",
     "device": "e1000e",
     "inf": "OemVista.inf",
     "sys": "tap0901.sys",
     "install_cert": true,
     "install_method": "custom",
     "install_command": "@driver_dir@/tapinstall.exe install @inf_path@ tap0901",
-    "extra_software": [ "openvpn-srv" ],
+    "extra_software": [
+      "openvpn-srv"
+    ],
     "type": 0,
     "support": true,
     "pretestcommands": [
-      { "desc": "Rename TAP-Windows ethernet adapter to SupportDevice0",
-        "run": "Rename-NetAdapter -Name (Get-NetAdapter -InterfaceDescription 'TAP-Windows Adapter V9').Name -NewName 'SupportDevice0'" }
+      {
+        "desc": "Rename TAP-Windows ethernet adapter to SupportDevice0",
+        "run": "Rename-NetAdapter -Name (Get-NetAdapter -InterfaceDescription 'TAP-Windows Adapter V9').Name -NewName 'SupportDevice0'"
+      }
     ],
     "blacklist": [
       "NDISTest 6.0 - [2 Machine] - 2c_Priority",
@@ -206,4 +207,4 @@
       "DF - Reinstall with IO Before and After (Reliability)"
     ]
   }
-]
+}
