@@ -88,9 +88,9 @@ module AutoHCK
     def studio_platform(kit)
       studio_platform_list = read_json(STUDIO_PLATFORM_JSON, @logger)
       @logger.info("Loading studio platform for kit: #{kit}")
-      res = studio_platform_list.find { |p| p['kit'] == kit }
+      res = studio_platform_list[kit]
       @logger.fatal("Kit studio platform for kit #{kit} does not exist") unless res
-      res['platform_name'] || raise(InvalidConfigFile, "Kit studio platform for kit #{kit} does not exist")
+      res || raise(InvalidConfigFile, "Kit studio platform for kit #{kit} does not exist")
     end
 
     def client_platform
