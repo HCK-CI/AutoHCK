@@ -70,7 +70,7 @@ module AutoHCK
     def read_kit(kit_name)
       kit_list = read_json(KIT_JSON, @logger)
       @logger.info("Loading kit by name: #{kit_name}")
-      res = kit_list.find { |p| p['kit'] == kit_name }
+      res = kit_list[kit_name]
       @logger.fatal("Kit info with name #{kit_name} does not exist") unless res
       res || raise(InvalidConfigFile, "Kit info with name #{kit_name} does not exist")
     end

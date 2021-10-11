@@ -1,22 +1,18 @@
-[
-  {
-    "kit": "HLK1809server",
+{
+  "HLK1809server": {
     "download_url": "https://go.microsoft.com/fwlink/?linkid=2026646",
     "extra_software": [ "FOD_2019", "HLK_GRFX_FOD", "WDTFNetData_1809", "winfsp" ]
   },
-  {
-    "kit": "HLK1809",
+  "HLK1809": {
     "download_url": "https://go.microsoft.com/fwlink/?linkid=2026646",
     "extra_software": [ "HLK_GRFX_FOD", "WDTFNetData_1809", "winfsp" ]
   },
-  {
-    "kit": "HLK2004",
+  "HLK2004": {
     "download_url": "https://go.microsoft.com/fwlink/?linkid=2128655",
     "extra_software": [ "winfsp" ]
   },
-  {
-    "kit": "HLK2022",
+  "HLK2022": {
     "download_url": "https://go.microsoft.com/fwlink/?linkid=2164257",
     "extra_software": [ "FOD_2022", "Test-NETHLK", "winfsp" ]
   }
-]
+}
