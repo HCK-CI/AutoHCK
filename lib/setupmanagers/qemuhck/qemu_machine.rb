@@ -96,7 +96,7 @@ module AutoHCK
     def read_machine
       machines = read_json(MACHINE_JSON, @logger)
       @logger.info("Loading machine: #{@machine_name}")
-      res = machines.find { |m| m['name'] == @machine_name }
+      res = machines[@machine_name]
       @logger.fatal("#{@machine_name} does not exist") unless res
       res || raise(InvalidConfigFile, "#{@machine_name} does not exist")
     end
