@@ -62,7 +62,7 @@ module AutoHCK
     def read_iso(platform_name)
       iso = read_json(ISO_JSON, @logger)
       @logger.info("Loading ISO for platform: #{platform_name}")
-      res = iso.find { |p| p['platform_name'] == platform_name }
+      res = iso[platform_name]
       @logger.fatal("ISO info for #{platform_name} does not exist") unless res
       res || raise(InvalidConfigFile, "ISO info for #{platform_name} does not exist")
     end
