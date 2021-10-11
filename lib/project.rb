@@ -23,7 +23,6 @@ module AutoHCK
                 :workspace_path, :github, :result_uploader,
                 :engine_type, :options, :extra_sw_manager
 
-    DRIVERS_JSON = './drivers.json'
     CONFIG_JSON = 'config.json'
 
     def initialize(options)
