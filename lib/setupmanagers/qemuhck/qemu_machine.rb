@@ -108,11 +108,11 @@ module AutoHCK
     end
 
     def apply_states
-      @states_config.each do |state|
-        state_name = option_config(state['name'])
-        next if state[state_name.to_s].nil?
+      @states_config.each do |name, state|
+        state_value = option_config(name)
+        next if state[state_value.to_s].nil?
 
-        state[state_name.to_s].each do |key, value|
+        state[state_value.to_s].each do |key, value|
           var = :"@#{key}"
           next unless defined? var
 
@@ -454,6 +454,9 @@ module AutoHCK
     def run(run_opts = nil)
       @run_opts = validate_run_opts(run_opts.to_h)
       create_snapshot if @run_opts[:create_snapshot]
+
+      @devices_list.flatten!
+      @devices_list.compact!
 
       process_devices
       normalize_lists
