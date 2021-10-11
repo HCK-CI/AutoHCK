@@ -5,7 +5,8 @@
     "ctrl_bus_name": "pcie",
     "disable_s3_param": "ICH9-LPC.disable_s3",
     "disable_s4_param": "ICH9-LPC.disable_s4",
-    "machine_uuid": "", // Windows 2012R2 crashes during boot on Q35 machine with UUID set
+    "machine_uuid__comment": "Windows 2012R2 crashes during boot on Q35 machine with UUID set",
+    "machine_uuid": "",
     "pcie_root_port": "-device pcie-root-port,slot=3,chassis=1,addr=0x4,bus=pcie.0,id=root1.0"
   },
   {
