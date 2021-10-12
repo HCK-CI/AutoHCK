@@ -31,6 +31,7 @@ module AutoHCK
         @project&.logger&.warn('SIGTERM(*) received, ignoring...')
       end
       @project&.handle_cancel
+      @project&.close
       clean_threads
       exit
     else
