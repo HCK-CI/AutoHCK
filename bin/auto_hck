@@ -18,17 +18,14 @@ module AutoHCK
 
   AUTOHCK_RETRIES = 5
 
-  def self.clean_threads
-    Thread.list.each do |thread|
-      thread.exit unless Thread.main.eql?(thread)
-    end
-  end
+  Trap.init_traps(%w[TERM INT])
 
   Thread.abort_on_exception = true
   Thread.report_on_exception = false
 
   begin
     @project = Project.new(cli)
+    Trap.project = @project
     @project.run if @project.prepare
     @project.close
   rescue StandardError => e
@@ -39,7 +36,7 @@ module AutoHCK
     @project&.log_exception(e, 'fatal')
     @project&.handle_error
     @project&.close
-    clean_threads
+    Trap.clean_threads
     exit(1)
   end
 end
