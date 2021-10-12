@@ -4,6 +4,7 @@ source 'https://rubygems.org'
 
 ruby '>= 2.6.5p114'
 
+gem 'activesupport'
 gem 'curb'
 gem 'dotenv'
 gem 'dropbox_api'
