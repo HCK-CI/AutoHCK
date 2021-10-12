@@ -1,0 +1,24 @@
+{
+    "config.json": {
+        "iso_path": "/data/user/auto_hck/iso",
+        "extra_software": "/home/user/repos/extra-software",
+        "workspace_path": "/data/user/auto_hck/workspace",
+        "toolshck_path": "/home/user/repos/toolsHCK/toolsHCK.ps1",
+        "result_uploaders": []
+    },
+    "lib/engines/hckinstall/hckinstall.json": {
+        "hck_setup_scripts_path": "/home/user/repos/HLK-Setup-Scripts"
+    },
+    "lib/setupmanagers/qemuhck/qemu_machine.json": {
+        "qemu_bin": "/home/user/repos/qemu-5.1.0/x86_64-softmmu/qemu-system-x86_64",
+        "qemu_img_bin": "/home/user/repos/qemu-5.1.0/qemu-img",
+        "ivshmem_server_bin": "/home/user/repos/qemu-5.1.0/ivshmem-server",
+        "fs_daemon_bin": "/home/user/repos/qemu-5.1.0/virtiofsd",
+        "fs_daemon_share_path": "/data/user/auto_hck/fs_share",
+        "images_path": "/data/user/auto_hck/images/",
+        "fs_test_image": "/data/user/auto_hck/images/filesystem_tests_image.qcow2",
+        "world_net_bridge": "br1hck",
+        "share_on_host_path": "/data/user/auto_hck/fs_share"
+    },
+    "lib/engines/hckinstall/iso.json": {}
+}
