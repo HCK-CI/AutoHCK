@@ -24,7 +24,7 @@ module AutoHCK
 
     # class CommonOptions
     class CommonOptions
-      attr_accessor :debug
+      attr_accessor :debug, :config
 
       def create_parser(sub_parser)
         OptionParser.new do |parser|
@@ -43,7 +43,9 @@ module AutoHCK
 
       def define_options(parser)
         @debug = false
+        @config = nil
         debug_option(parser)
+        config_option(parser)
         version_option(parser)
       end
 
@@ -51,6 +53,13 @@ module AutoHCK
         parser.on('--debug', TrueClass,
                   'Printing debug information') do |debug|
           @debug = debug
+        end
+      end
+
+      def config_option(parser)
+        parser.on('--config <override.json>', String,
+                  'Path to custom override.json file') do |config|
+          @config = config
         end
       end
 
