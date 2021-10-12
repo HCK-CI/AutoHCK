@@ -24,7 +24,7 @@ module AutoHCK
 
     def find_setup
       known_setups = read_json(PHYSHCK_CONFIG_JSON, @logger)
-      res = known_setups.find { |setup| setup['name'] == @platform['name'] }
+      res = known_setups[@platform['name']]
       @project.logger.fatal("#{@platform['name']} does not exist") unless res
       res || raise(SetupManagerError, "#{@platform['name']} does not exist")
     end
