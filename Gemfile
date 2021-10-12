@@ -17,7 +17,12 @@ gem 'rubyzip'
 gem 'sentry-ruby'
 gem 'sqlite3'
 
-group :test, :development do
+group :development do
+  gem 'debase'
+  gem 'ruby-debug-ide'
+end
+
+group :test do
   gem 'rake'
   gem 'rspec'
   gem 'rspec_junit_formatter'
