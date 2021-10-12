@@ -27,6 +27,8 @@ module AutoHCK
 
     def initialize(options)
       @options = options
+      Json.update_json_override(options.common.config) unless options.common.config.nil?
+
       init_multilog(options.common.debug)
       init_class_variables
       init_workspace
