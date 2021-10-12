@@ -23,7 +23,7 @@ module AutoHCK
       @project = project
       @logger = project.logger
       @project.append_multilog("#{tag}.log")
-      @config = read_json(CONFIG_JSON, @logger)
+      @config = Json.read_json(CONFIG_JSON, @logger)
       @platform = read_platform
       @driver_path = @project.options.test.driver_path
       @drivers = find_drivers
@@ -85,7 +85,7 @@ module AutoHCK
 
     def driver_names
       if @project.options.test.svvp
-        @svvp_info = read_json(SVVP_JSON, @project.logger)
+        @svvp_info = Json.read_json(SVVP_JSON, @project.logger)
         driver_names = @svvp_info['drivers']
       else
         driver_names = @project.options.test.drivers
@@ -96,7 +96,7 @@ module AutoHCK
     end
 
     def find_drivers
-      drivers_info = read_json(DRIVERS_JSON, @project.logger)
+      drivers_info = Json.read_json(DRIVERS_JSON, @project.logger)
 
       driver_names.map do |short_name|
         @project.logger.info("Loading driver: #{short_name}")
@@ -141,7 +141,7 @@ module AutoHCK
         raise(InvalidConfigFile, "#{platform_name} does not exist")
       end
 
-      read_json(platform_json, @logger)
+      Json.read_json(platform_json, @logger)
     end
 
     def initialize_clients

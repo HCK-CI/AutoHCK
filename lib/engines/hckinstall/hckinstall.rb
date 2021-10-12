@@ -56,11 +56,11 @@ module AutoHCK
         raise(InvalidConfigFile, "#{platform_name} does not exist")
       end
 
-      read_json(platform_json, @logger)
+      Json.read_json(platform_json, @logger)
     end
 
     def read_iso(platform_name)
-      iso = read_json(ISO_JSON, @logger)
+      iso = Json.read_json(ISO_JSON, @logger)
       @logger.info("Loading ISO for platform: #{platform_name}")
       res = iso[platform_name]
       @logger.fatal("ISO info for #{platform_name} does not exist") unless res
@@ -68,7 +68,7 @@ module AutoHCK
     end
 
     def read_kit(kit_name)
-      kit_list = read_json(KIT_JSON, @logger)
+      kit_list = Json.read_json(KIT_JSON, @logger)
       @logger.info("Loading kit by name: #{kit_name}")
       res = kit_list[kit_name]
       @logger.fatal("Kit info with name #{kit_name} does not exist") unless res
@@ -76,7 +76,7 @@ module AutoHCK
     end
 
     def init_config
-      @config = read_json(CONFIG_JSON, @logger)
+      @config = Json.read_json(CONFIG_JSON, @logger)
 
       @hck_setup_scripts_path = @config['hck_setup_scripts_path']
 
@@ -86,7 +86,7 @@ module AutoHCK
     end
 
     def studio_platform(kit)
-      studio_platform_list = read_json(STUDIO_PLATFORM_JSON, @logger)
+      studio_platform_list = Json.read_json(STUDIO_PLATFORM_JSON, @logger)
       @logger.info("Loading studio platform for kit: #{kit}")
       res = studio_platform_list[kit]
       @logger.fatal("Kit studio platform for kit #{kit} does not exist") unless res

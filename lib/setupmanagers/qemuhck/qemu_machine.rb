@@ -94,7 +94,7 @@ module AutoHCK
     end
 
     def read_machine
-      machines = read_json(MACHINE_JSON, @logger)
+      machines = Json.read_json(MACHINE_JSON, @logger)
       @logger.info("Loading machine: #{@machine_name}")
       res = machines[@machine_name]
       @logger.fatal("#{@machine_name} does not exist") unless res
@@ -129,8 +129,8 @@ module AutoHCK
     end
 
     def init_config
-      @config = read_json(CONFIG_JSON, @logger)
-      @states_config = read_json(STATES_JSON, @logger)
+      @config = Json.read_json(CONFIG_JSON, @logger)
+      @states_config = Json.read_json(STATES_JSON, @logger)
 
       @devices_list << option_config('boot_device')
       @machine_name = option_config('machine_type')
@@ -195,7 +195,7 @@ module AutoHCK
         @logger.fatal("#{device} does not exist")
         raise(InvalidConfigFile, "#{device} does not exist")
       end
-      read_json(device_json, @logger)
+      Json.read_json(device_json, @logger)
     end
 
     def normalize_lists

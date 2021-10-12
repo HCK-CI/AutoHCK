@@ -25,7 +25,7 @@ module AutoHCK
         @control_bridge = "br_ctrl_#{id}"
         @test_bridge = "br_test_#{id}"
 
-        @config = read_json(CONFIG_JSON, @logger)
+        @config = Json.read_json(CONFIG_JSON, @logger)
       end
 
       def read_device(device)
@@ -35,7 +35,7 @@ module AutoHCK
           @logger.fatal("#{device} does not exist")
           raise(InvalidConfigFile, "#{device} does not exist")
         end
-        read_json(device_json, @logger)
+        Json.read_json(device_json, @logger)
       end
 
       def create_bridge(bridge, tx_queue_len = 0)

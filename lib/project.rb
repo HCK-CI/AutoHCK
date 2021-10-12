@@ -109,7 +109,7 @@ module AutoHCK
     end
 
     def init_class_variables
-      @config = read_json(CONFIG_JSON, @logger)
+      @config = Json.read_json(CONFIG_JSON, @logger)
       @timestamp = create_timestamp
       @engine_type = @config["#{@options.mode}_engine"]
     end
