@@ -32,10 +32,10 @@ module AutoHCK
       @logger.debug("Run command: #{cmd.join(' ')}")
       temp_file do |stdout|
         temp_file do |stderr|
-          Process.wait(spawn(cmd.join(' '), out: stdout.path, err: stderr.path))
+          _, status = Process.wait2(spawn(cmd.join(' '), out: stdout.path, err: stderr.path))
           log_stdout_stderr(stdout.read, stderr.read)
           e_message = "Failed to run: #{cmd.join(' ')}"
-          raise CmdRunError, e_message unless $CHILD_STATUS.exitstatus.zero?
+          raise CmdRunError, e_message unless status&.exitstatus&.zero?
         end
       end
     end
@@ -44,10 +44,10 @@ module AutoHCK
       @logger.debug("Run command: #{cmd.join(' ')}")
       temp_file do |stdout|
         temp_file do |stderr|
-          Process.wait(spawn(cmd.join(' '), out: stdout.path, err: stderr.path))
+          _, status = Process.wait2(spawn(cmd.join(' '), out: stdout.path, err: stderr.path))
           log_stdout_stderr(stdout.read, stderr.read)
-          @logger.debug("Command finished with code: #{$CHILD_STATUS.exitstatus}")
-          $CHILD_STATUS.exitstatus
+          @logger.debug("Command finished with code: #{status&.exitstatus}")
+          status&.exitstatus
         end
       end
     end
