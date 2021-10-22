@@ -12,9 +12,7 @@
         "run": "Rename-NetAdapter -Name (Get-NetAdapter -InterfaceDescription 'Red Hat VirtIO Ethernet Adapter').Name -NewName 'SupportDevice0'" }
     ],
     "blacklist": [
-      "NDISTest 6.0 - [2 Machine] - 2c_Mini6RSSSendRecv",
       "NDISTest 6.5 - [2 Machine] - MPE_Ethernet.xml",
-      "NDISTest 6.0 - [2 Machine] - 2c_Mini6RSSSendRecv (Multi-Group Win8+)",
       "NDISTest 6.0 - [1 Machine] - 1c_Mini6RSSOids",
       "PrivateCloudSimulator - Device.Network.LAN.10GbOrGreater",
       "Run RSC Tests",
