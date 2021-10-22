@@ -118,6 +118,11 @@ module AutoHCK
 
       @project.engine.drivers&.each do |driver|
         method = driver['install_method']
+        if method == 'no-drv'
+          @project.logger.info("Driver installation skipped for #{driver['name']} in #{@name}")
+          next
+        end
+
         inf = driver['inf']
 
         @logger.info("Installing #{method} driver #{inf} in #{@name}")
