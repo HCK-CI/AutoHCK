@@ -19,7 +19,8 @@
       "PrivateCloudSimulator - Device.Network.LAN.10GbOrGreater",
       "Run RSC Tests",
       "Static Tools Logo Test",
-      "DF - Embedded Signature Verification Test (Certification)"
+      "DF - Embedded Signature Verification Test (Certification)",
+      "Hardware-enforced Stack Protection Compatibility Test"
     ]
   },
   {
