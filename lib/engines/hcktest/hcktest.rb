@@ -62,6 +62,12 @@ module AutoHCK
     def validate_paths
       normalize_paths
       @drivers.each do |driver|
+        method = driver['install_method']
+        if method == 'no-drv'
+          @project.logger.info("Driver paths validation skipped for #{driver['name']}")
+          next
+        end
+
         paths = [
           "#{@driver_path}/#{driver['inf']}",
           "#{@driver_path}/#{driver['short']}/#{driver['inf']}"
