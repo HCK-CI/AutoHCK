@@ -137,11 +137,23 @@ module AutoHCK
       @logger.info('Skipping archiving test result logs')
     end
 
-    def update_summary_results_log
-      logs = @tests.reduce('') do |sum, test|
+    def summary_blacklisted_log
+      @playlist.blacklisted.reduce('') do |sum, test|
+        sum + "Skipped: #{test['name']} [#{test['estimatedruntime']}]\n"
+      end
+    end
+
+    def summary_results_log
+      @tests.reduce('') do |sum, test|
         extra_info = @tests_dump.keys.include?(test['id']) ? '(with Minidump)' : ''
         sum + "#{test['status']}: #{test['name']} [#{test['estimatedruntime']}] #{extra_info}\n"
       end
+    end
+
+    def update_summary_results_log
+      logs = summary_blacklisted_log
+      logs += summary_results_log
+
       @logger.info('Tests results logs updated via the result uploader')
       @project.result_uploader.update_file_content(logs, 'logs.txt')
     end

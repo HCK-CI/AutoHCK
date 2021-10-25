@@ -4,6 +4,8 @@
 module AutoHCK
   # Playlist class
   class Playlist
+    attr_reader :blacklisted
+
     def initialize(client, project, target, tools, kit)
       @machine = client.name
       @project = project
@@ -69,7 +71,17 @@ module AutoHCK
 
     def custom_blacklist(log)
       blacklist = @project.engine.target['blacklist']
-      @tests.reject! { |test| blacklist.include?(test['name']) } if blacklist
+      @blacklisted = []
+      if blacklist
+        @tests.reject! do |test|
+          if blacklist.include?(test['name'])
+            @blacklisted << test
+            true
+          else
+            false
+          end
+        end
+      end
       @logger.info('Applying custom blacklist') if log && blacklist
     end
   end
