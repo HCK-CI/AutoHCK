@@ -29,6 +29,7 @@ module AutoHCK
     }.freeze
 
     MACHINE_JSON = 'lib/setupmanagers/qemuhck/machine.json'
+    FW_JSON = 'lib/setupmanagers/qemuhck/fw.json'
     DEVICES_JSON_DIR = 'lib/setupmanagers/qemuhck/devices'
     CONFIG_JSON = 'lib/setupmanagers/qemuhck/qemu_machine.json'
     STATES_JSON = 'lib/setupmanagers/qemuhck/states.json'
@@ -101,6 +102,26 @@ module AutoHCK
       res || raise(InvalidConfigFile, "#{@machine_name} does not exist")
     end
 
+    def load_fw
+      fws = Json.read_json(FW_JSON, @logger)
+      @logger.info("Loading FW: #{@fw_name}")
+      res = fws[@fw_name]
+
+      unless res
+        @logger.fatal("#{@fw_name} does not exist")
+        raise(InvalidConfigFile, "#{@fw_name} does not exist")
+      end
+
+      return res unless res['nvram']
+
+      @logger.info("FW #{@fw_name} has NVRAM. Creating local copy")
+      nvram = "#{@workspace_path}/#{@fw_name}_#{@id}_cl#{@client_id}.nvram"
+      FileUtils.cp(res['nvram'], nvram)
+      res['nvram'] = nvram
+
+      res
+    end
+
     def option_config(option)
       return @options[option] if @options.keys.include? option
 
@@ -134,7 +155,9 @@ module AutoHCK
 
       @devices_list << option_config('boot_device')
       @machine_name = option_config('machine_type')
+      @fw_name = option_config('fw_type')
       @machine = read_machine
+      @fw = load_fw
     end
 
     def config_replacement_list
@@ -306,9 +329,19 @@ module AutoHCK
       '-monitor telnet::@qemu_monitor_port@,server,nowait -monitor vc -pidfile @pid_file@'
     end
 
+    def fw_cmd
+      cmd = []
+
+      cmd << "-drive if=pflash,format=raw,readonly,file=#{@fw['binary']}" if @fw['binary']
+      cmd << "-drive if=pflash,format=raw,file=#{@fw['nvram']}" if @fw['nvram']
+
+      cmd
+    end
+
     def dirty_command
       [
         base_cmd,
+        *fw_cmd,
         @machine['machine_uuid'],
         @machine['pcie_root_port'],
         *@device_commands,
@@ -332,6 +365,7 @@ module AutoHCK
         '   Setup ID ................... @run_id@',
         '   Machine type ............... @machine_name@',
         '   QEMU binary ................ @qemu_bin@',
+        "   FW type .................... #{@fw_name}",
         "   Test devices ............... #{@devices_list.join(', ')}",
         '   VM ID ...................... @client_id@',
         '   VM image ................... @image_path@',
