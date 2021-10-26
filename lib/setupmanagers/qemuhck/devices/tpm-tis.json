@@ -1,0 +1,21 @@
+{
+  "name": "tpm-tis",
+  "command_line": [
+    "-chardev socket,id=chrtpm,path=@tpm_socket@",
+    "-tpmdev emulator,id=tpm0,chardev=chrtpm",
+    "-device tpm-tis,tpmdev=tpm0"
+  ],
+  "define_variables": {
+    "@tpm_state_dir@": "/tmp/swtpm_state_@run_id@_@client_id@",
+    "@tpm_socket@": "@tpm_state_dir@/sock"
+  },
+  "pre_start_commands": [
+    "mkdir -p @tpm_state_dir@",
+    "rm -f @tpm_socket@",
+    "swtpm_setup --tpm-state @tpm_state_dir@ --tpm2 --createek --create-ek-cert --create-platform-cert --lock-nvram",
+    "swtpm socket --daemon --tpm2 --tpmstate dir=@tpm_state_dir@ --ctrl type=unixio,path=@tpm_socket@ --log file=@tpm_state_dir@/swtpm.log,level=20"
+  ],
+  "post_stop_commands": [
+    "rm -rf @tpm_state_dir@"
+  ]
+}
