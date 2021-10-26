@@ -1,0 +1,7 @@
+{
+  "bios": {},
+  "uefi": {
+    "binary": "/usr/share/OVMF/OVMF_CODE.fd",
+    "nvram": "/usr/share/OVMF/OVMF_VARS.fd"
+  }
+}
