@@ -76,6 +76,14 @@ module AutoHCK
       @setupmanager.delete_client_snapshot(name)
     end
 
+    def studio_option_config(option)
+      @setupmanager.studio_option_config(option)
+    end
+
+    def client_option_config(name, option)
+      @setupmanager.client_option_config(name, option)
+    end
+
     def run(name, run_opts = {})
       @setupmanager.run(name, run_opts)
     end
