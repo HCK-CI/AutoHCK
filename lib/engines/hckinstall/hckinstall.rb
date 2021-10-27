@@ -237,6 +237,29 @@ module AutoHCK
       product_key == '' || product_key.nil? ? '' : "<Key>#{product_key}</Key>"
     end
 
+    def build_answer_file_path(file, fw_type)
+      paths = [
+        @hck_setup_scripts_path + "/answer-files/#{file}.#{fw_type}.in",
+        @hck_setup_scripts_path + "/answer-files/#{file}.in"
+      ]
+
+      paths.each do |path|
+        return path if File.exist?(path)
+      end
+    end
+
+    def build_studio_answer_file_path(file)
+      fw_type = @project.setup_manager.studio_option_config('fw_type')
+
+      build_answer_file_path(file, fw_type)
+    end
+
+    def build_client_answer_file_path(file)
+      fw_type = @project.setup_manager.client_option_config(@clients_name.first, 'fw_type')
+
+      build_answer_file_path(file, fw_type)
+    end
+
     def prepare_studio_iso
       product_key = @studio_iso_info.dig('studio', 'product_key')
 
@@ -247,7 +270,7 @@ module AutoHCK
         '@HOST_TYPE@' => 'studio'
       }
       @answer_files.each do |file|
-        file_gsub(@hck_setup_scripts_path + "/answer-files/#{file}.in",
+        file_gsub(build_studio_answer_file_path(file),
                   @hck_setup_scripts_path + "/#{file}", replacement_list)
       end
       create_iso(@setup_studio_iso, [@hck_setup_scripts_path])
@@ -263,7 +286,7 @@ module AutoHCK
         '@HOST_TYPE@' => 'client'
       }
       @answer_files.each do |file|
-        file_gsub(@hck_setup_scripts_path + "/answer-files/#{file}.in",
+        file_gsub(build_client_answer_file_path(file),
                   @hck_setup_scripts_path + "/#{file}", replacement_list)
       end
       create_iso(@setup_client_iso, [@hck_setup_scripts_path], ['Kits'])
