@@ -113,6 +113,14 @@ module AutoHCK
       @clients_vm[name].delete_snapshot
     end
 
+    def studio_option_config(option)
+      @studio_vm.option_config(option)
+    end
+
+    def client_option_config(name, option)
+      @clients_vm[name].option_config(option)
+    end
+
     def run(name, run_opts = nil)
       if name == STUDIO
         @studio_vm.run(run_opts)
