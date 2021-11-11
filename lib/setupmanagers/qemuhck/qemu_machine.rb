@@ -320,13 +320,15 @@ module AutoHCK
     end
 
     def base_cmd
-      '@qemu_bin@ -enable-kvm -machine @machine_name@@machine_extra_param@ ' \
-      '-m @memory@ -smp @cpu_count@,cores=@cpu_count@ ' \
-      '-cpu qemu64,+x2apic,+fsgsbase@cpu_options@,model=@cpu_model@ -boot order=cd,menu=on ' \
-      '-nodefaults -no-user-config -usb -device usb-tablet -vnc :@vnc_id@ ' \
-      '-global kvm-pit.lost_tick_policy=discard -rtc base=localtime,clock=host,driftfix=slew ' \
-      '-global @disable_s3_param@=@disable_s3_value@ -global @disable_s4_param@=@disable_s4_value@ ' \
-      '-monitor telnet::@qemu_monitor_port@,server,nowait -monitor vc -pidfile @pid_file@'
+      [
+        '@qemu_bin@ -enable-kvm -machine @machine_name@@machine_extra_param@ ',
+        '-m @memory@ -smp @cpu_count@,cores=@cpu_count@ ',
+        '-cpu qemu64,+x2apic,+fsgsbase@cpu_options@,model=@cpu_model@ -boot order=cd,menu=on ',
+        '-nodefaults -no-user-config -usb -device usb-tablet -vnc :@vnc_id@ ',
+        '-global kvm-pit.lost_tick_policy=discard -rtc base=localtime,clock=host,driftfix=slew ',
+        '-global @disable_s3_param@=@disable_s3_value@ -global @disable_s4_param@=@disable_s4_value@ ',
+        '-monitor telnet::@qemu_monitor_port@,server,nowait -monitor vc -pidfile @pid_file@'
+      ]
     end
 
     def fw_cmd
@@ -340,7 +342,7 @@ module AutoHCK
 
     def dirty_command
       [
-        base_cmd,
+        *base_cmd,
         *fw_cmd,
         @machine['machine_uuid'],
         @machine['pcie_root_port'],
