@@ -347,7 +347,7 @@ module AutoHCK
         *@device_commands,
         *iso_cmd,
         "-name #{@run_name}"
-      ]
+      ].compact
     end
 
     def retrieve_pid
