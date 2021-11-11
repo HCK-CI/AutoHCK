@@ -25,7 +25,8 @@ module AutoHCK
     DEFAULT_RUN_OPTIONS = {
       first_time: false,
       create_snapshot: true,
-      attach_iso_list: []
+      attach_iso_list: [],
+      dump_only: false
     }.freeze
 
     MACHINE_JSON = 'lib/setupmanagers/qemuhck/machine.json'
@@ -516,6 +517,39 @@ module AutoHCK
       DEFAULT_RUN_OPTIONS.merge(run_opts)
     end
 
+    def merge_commands_array(arr)
+      arr.reduce('') do |sum, dirty_cmd|
+        "#{sum}#{replace_string_recursive(dirty_cmd, full_replacement_list)}\n"
+      end
+    end
+
+    def dump_commands
+      dump_config
+
+      @pid_file = Tempfile.new(@run_name)
+
+      file_name = "#{@workspace_path}/#{@run_name}_manual.sh"
+      content = [
+        "#!/usr/bin/env bash\n",
+        "\n\n# QEMU network manager pre start commands\n",
+        merge_commands_array(@nm_commands_start),
+
+        "\n\n# QEMU pre start commands\n",
+        merge_commands_array(@pre_start_commands),
+
+        "\n\n# QEMU command line\n",
+        replace_string_recursive(dirty_command.join(" \\\n"), full_replacement_list),
+
+        "\n\n# QEMU post stop commands\n",
+        merge_commands_array(@post_stop_commands),
+
+        "\n\n# QEMU network manager post stop commands\n",
+        merge_commands_array(@nm_commands_stop)
+      ]
+
+      create_run_script(file_name, content.join)
+    end
+
     def run(run_opts = nil)
       @run_opts = validate_run_opts(run_opts.to_h)
       create_snapshot if @run_opts[:create_snapshot]
@@ -525,8 +559,13 @@ module AutoHCK
 
       process_devices
       normalize_lists
-      run_pre_start_commands
-      run_vm
+
+      if @run_opts[:dump_only]
+        dump_commands
+      else
+        run_pre_start_commands
+        run_vm
+      end
     end
 
     def alive?
@@ -596,6 +635,8 @@ module AutoHCK
     end
 
     def close
+      return if @run_opts[:dump_only]
+
       vm_abort
       @nm.close
       run_post_stop_commands
