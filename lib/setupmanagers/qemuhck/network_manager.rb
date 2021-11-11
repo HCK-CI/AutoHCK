@@ -38,22 +38,36 @@ module AutoHCK
         Json.read_json(device_json, @logger)
       end
 
-      def create_bridge(bridge, tx_queue_len = 0)
-        run_cmd(["brctl show #{bridge} 1>/dev/null 2>&1 || brctl addbr #{bridge}"])
-        run_cmd(["ifconfig #{bridge} up"])
-        run_cmd(["ifconfig #{bridge} txqueuelen #{tx_queue_len}"]) if tx_queue_len.positive?
+      def create_bridge_commands(bridge, tx_queue_len = 0)
+        cmd = [
+          "brctl show #{bridge} 1>/dev/null 2>&1 || brctl addbr #{bridge}",
+          "ifconfig #{bridge} up"
+        ]
+
+        cmd << "ifconfig #{bridge} txqueuelen #{tx_queue_len}" if tx_queue_len.positive?
+
+        cmd
       end
 
-      def remove_bridge(bridge)
-        run_cmd_no_fail(["ifconfig #{bridge} down"])
-        run_cmd_no_fail(["brctl delbr #{bridge}"])
+      def remove_bridge_commands(bridge)
+        [
+          "ifconfig #{bridge} down",
+          "brctl delbr #{bridge}"
+        ]
+      end
+
+      def disable_bridge_nf_commands
+        [
+          'sysctl net.bridge.bridge-nf-call-arptables=0',
+          'sysctl net.bridge.bridge-nf-call-ip6tables=0',
+          'sysctl net.bridge.bridge-nf-call-iptables=0'
+        ]
       end
 
       def disable_bridge_nf
         @logger.info('Disabling bridge-netfilter')
-        run_cmd_no_fail(['sysctl net.bridge.bridge-nf-call-arptables=0'])
-        run_cmd_no_fail(['sysctl net.bridge.bridge-nf-call-ip6tables=0'])
-        run_cmd_no_fail(['sysctl net.bridge.bridge-nf-call-iptables=0'])
+
+        disable_bridge_nf_commands
       end
 
       def net_addr_cmd(addr)
@@ -108,11 +122,10 @@ module AutoHCK
           '@netdev_options@' => netdev_options
         }
 
-        create_bridge(@control_bridge)
         cmd, replacement_list = device_info(type, device_name, options, qemu_replacement_list)
         create_net_up_script(replacement_list.merge({ '@bridge_name@' => @control_bridge }))
 
-        cmd
+        [cmd, create_bridge_commands(@control_bridge), remove_bridge_commands(@control_bridge)]
       end
 
       def world_device_command(device_name, bridge_name, qemu_replacement_list = {})
@@ -129,7 +142,7 @@ module AutoHCK
         cmd, replacement_list = device_info(type, device_name, options, qemu_replacement_list)
         create_net_up_script(replacement_list.merge({ '@bridge_name@' => bridge_name }))
 
-        cmd
+        [cmd, nil, nil]
       end
 
       def test_device_command(device_name, qemu_replacement_list = {})
@@ -143,11 +156,10 @@ module AutoHCK
           '@netdev_options@' => netdev_options
         }
 
-        create_bridge(@test_bridge)
         cmd, replacement_list = device_info(type, device_name, options, qemu_replacement_list)
         create_net_up_script(replacement_list.merge({ '@bridge_name@' => @test_bridge }))
 
-        cmd
+        [cmd, create_bridge_commands(@test_bridge), remove_bridge_commands(@test_bridge)]
       end
 
       def transfer_device_command(device_name, transfer_net, share_path, qemu_replacement_list = {})
@@ -165,13 +177,10 @@ module AutoHCK
 
         cmd, = device_info(type, device_name, options, qemu_replacement_list)
 
-        cmd
+        [cmd, nil, nil]
       end
 
-      def close
-        remove_bridge(@control_bridge)
-        remove_bridge(@test_bridge)
-      end
+      def close; end
     end
   end
 end
