@@ -29,7 +29,7 @@ module AutoHCK
     end
 
     def run_cmd(cmd)
-      @logger.debug("Run command: #{cmd.join(' ')}")
+      @logger.info("Run command: #{cmd.join(' ')}")
       temp_file do |stdout|
         temp_file do |stderr|
           _, status = Process.wait2(spawn(cmd.join(' '), out: stdout.path, err: stderr.path))
@@ -41,12 +41,12 @@ module AutoHCK
     end
 
     def run_cmd_no_fail(cmd)
-      @logger.debug("Run command: #{cmd.join(' ')}")
+      @logger.info("Run command: #{cmd.join(' ')}")
       temp_file do |stdout|
         temp_file do |stderr|
           _, status = Process.wait2(spawn(cmd.join(' '), out: stdout.path, err: stderr.path))
           log_stdout_stderr(stdout.read, stderr.read)
-          @logger.debug("Command finished with code: #{status&.exitstatus}")
+          @logger.info("Command finished with code: #{status&.exitstatus}")
           status&.exitstatus
         end
       end
