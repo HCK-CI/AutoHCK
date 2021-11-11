@@ -233,11 +233,8 @@ module AutoHCK
     end
 
     def manual_run
-      loop do
-        @project.logger.info('Please type "stop" to stop AutoHCK')
-        break if gets.chomp == 'stop'
-      end
-      @project.logger.info('AutoHCK will be stopped')
+      @studio.run({ dump_only: true })
+      @clients.each_value { |client| client.run({ dump_only: true }) }
     end
 
     def auto_run
@@ -252,13 +249,15 @@ module AutoHCK
       @studio = @project.setup_manager.create_studio
       initialize_clients
 
-      @project.logger.info('AutoHCK started in manual mode') if @project.options.test.manual
-
-      run_and_configure_setup
-
       if @project.options.test.manual
+        @project.logger.info('AutoHCK started in manual mode')
+
         manual_run
+
+        @project.logger.info("Find all scripts in folder: #{@project.workspace_path}")
       else
+        run_and_configure_setup
+
         auto_run
       end
     end
