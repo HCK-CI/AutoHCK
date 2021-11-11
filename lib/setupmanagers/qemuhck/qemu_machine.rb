@@ -65,6 +65,8 @@ module AutoHCK
       @drive_cache_options = []
       @define_variables = {}
       @run_opts = {}
+      @nm_commands_start = []
+      @nm_commands_stop = []
 
       @pid = nil
     end
@@ -221,6 +223,14 @@ module AutoHCK
       Json.read_json(device_json, @logger)
     end
 
+    def normalize_nm_lists
+      @nm_commands_start.flatten!
+      @nm_commands_start.compact!
+
+      @nm_commands_stop.flatten!
+      @nm_commands_stop.compact!
+    end
+
     def normalize_lists
       @device_commands.flatten!
       @device_commands.compact!
@@ -242,6 +252,8 @@ module AutoHCK
 
       @drive_cache_options.flatten!
       @drive_cache_options.compact!
+
+      normalize_nm_lists
     end
 
     def load_device_info(device_info)
@@ -265,7 +277,10 @@ module AutoHCK
     def process_device(device_info)
       case device_info['type']
       when 'network'
-        @device_commands << @nm.test_device_command(device_info['name'], full_replacement_list)
+        dev, run_start, run_stop = @nm.test_device_command(device_info['name'], full_replacement_list)
+        @device_commands << dev
+        @nm_commands_start << run_start
+        @nm_commands_stop << run_stop
       else
         cmd = device_info['command_line'].join(' ')
         @device_commands << replace_string_recursive(cmd, full_replacement_list)
@@ -275,23 +290,36 @@ module AutoHCK
     def process_optional_hck_network
       return unless @config['transfer_net_enabled']
 
-      @device_commands << @nm.transfer_device_command(@config['transfer_net_device'],
-                                                      @config['share_on_host_net'],
-                                                      @config['share_on_host_path'],
-                                                      full_replacement_list)
+      dev, run_start, run_stop = @nm.transfer_device_command(@config['transfer_net_device'],
+                                                             @config['share_on_host_net'],
+                                                             @config['share_on_host_path'],
+                                                             full_replacement_list)
+      @device_commands << dev
+      @nm_commands_start << run_start
+      @nm_commands_stop << run_stop
+    end
+
+    def process_world_hck_network
+      dev, run_start, run_stop = @nm.world_device_command(option_config('world_net_device'),
+                                                          @config['world_net_bridge'],
+                                                          full_replacement_list)
+      @device_commands << dev
+      @nm_commands_start << run_start
+      @nm_commands_stop << run_stop
     end
 
     def process_hck_network
-      @device_commands << @nm.control_device_command(option_config('ctrl_net_device'),
-                                                     full_replacement_list)
+      dev, run_start, run_stop = @nm.control_device_command(option_config('ctrl_net_device'),
+                                                            full_replacement_list)
+      @device_commands << dev
+      @nm_commands_start << run_start
+      @nm_commands_stop << run_stop
 
       return unless @options['client_id'].zero?
 
-      @nm.disable_bridge_nf
+      @nm_commands_start << @nm.disable_bridge_nf
 
-      @device_commands << @nm.world_device_command(option_config('world_net_device'),
-                                                   @config['world_net_bridge'],
-                                                   full_replacement_list)
+      process_world_hck_network
 
       process_optional_hck_network
     end
@@ -427,6 +455,10 @@ module AutoHCK
     end
 
     def run_pre_start_commands
+      @nm_commands_start.each do |cmd|
+        run_cmd([cmd])
+      end
+
       @pre_start_commands.each do |dirty_cmd|
         cmd = replace_string_recursive(dirty_cmd, full_replacement_list)
         run_cmd([cmd])
@@ -436,6 +468,10 @@ module AutoHCK
     def run_post_stop_commands
       @post_stop_commands.each do |dirty_cmd|
         cmd = replace_string_recursive(dirty_cmd, full_replacement_list)
+        run_cmd_no_fail([cmd])
+      end
+
+      @nm_commands_stop.each do |cmd|
         run_cmd_no_fail([cmd])
       end
     end
