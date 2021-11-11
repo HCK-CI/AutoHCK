@@ -407,7 +407,6 @@ module AutoHCK
       @pid_file = Tempfile.new(@run_name)
 
       cmd = replace_string_recursive(dirty_command.join(' '), full_replacement_list)
-      save_run_script("#{@run_name}.sh", cmd)
 
       Thread.new do
         run_cmd([cmd])
@@ -426,21 +425,15 @@ module AutoHCK
     end
 
     def run_pre_start_commands
-      @pre_start_commands.each_with_index do |dirty_cmd, index|
+      @pre_start_commands.each do |dirty_cmd|
         cmd = replace_string_recursive(dirty_cmd, full_replacement_list)
-        file_name = Pathname.new(@workspace_path).join("pre_start_#{format('%03d', index)}.sh")
-
-        create_run_script(file_name, cmd)
         run_cmd([cmd])
       end
     end
 
     def run_post_stop_commands
-      @post_stop_commands.each_with_index do |dirty_cmd, index|
+      @post_stop_commands.each do |dirty_cmd|
         cmd = replace_string_recursive(dirty_cmd, full_replacement_list)
-        file_name = Pathname.new(@workspace_path).join("post_stop_#{format('%03d', index)}.sh")
-
-        create_run_script(file_name, cmd)
         run_cmd_no_fail([cmd])
       end
     end
