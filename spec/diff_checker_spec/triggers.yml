@@ -1,0 +1,17 @@
+"driver":
+  include:
+    - src/drv/
+  exclude:
+    - src/drv/license
+"driver2":
+  include:
+    - src/drv2/
+  exclude:
+    - src/drv2/srv/
+    - src/drv2/license
+"*":
+  include:
+    - /
+    - src/tools/
+  exclude:
+    - license
