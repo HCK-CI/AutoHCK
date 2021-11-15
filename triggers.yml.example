@@ -1,40 +1,115 @@
-#Example file for repository virtio-win/kvm-guest-drivers-windows
+# Example file for repository virtio-win/kvm-guest-drivers-windows
 # https://github.com/virtio-win/kvm-guest-drivers-windows
+#
+# <driver>:
+#   include:
+#     - <path_to_file>
+#     - <path_to_dir>/
+#   exclude:
+#     - <path_to_file>
+#     - <path_to_dir>/
+#
+# Notes:
+#   Directory should have / at the end
+
 Balloon:
-  - 'Balloon'
-Documentation:
+  include:
+    - Balloon/
+  exclude:
+    - Balloon/app/
+    - Balloon/LICENSE
 NetKVM:
-  - 'NetKVM'
-Q35:
-Tools:
-  - '*'
-VirtIO:
-  - '*'
-fwcfg:
+  include:
+    - NetKVM/
+  exclude:
+    - NetKVM/DebugTools/
+    - NetKVM/Documentation/
+    - NetKVM/LICENSE
 fwcfg64:
-  - 'fwcfg64'
+  include:
+    - fwcfg64/
 ivshmem:
-  - 'ivshmem'
-packaging:
-  - '*'
-pciserial:
+  include:
+    - ivshmem/
+  exclude:
+    - ivshmem/test/
 pvpanic:
-  - 'pvpanic'
+  include:
+    - pvpanic/
+  exclude:
+    - pvpanic/LICENSE
 viocrypt:
-  - 'viocrypt'
-vioinput:
-  - 'vioinput'
-viorng:
-  - 'viorng'
-vioscsi:
-  - 'vioscsi'
-vioserial:
-  - 'vioserial'
-viosock:
-  - 'viosock'
-viostor:
-  - 'viostor'
+  include:
+    - viocrypt/
+  exclude:
+    - viocrypt/dll/
+    - viocrypt/test/
+    - viocrypt/LICENSE
+viofs:
+  include:
+    - viofs/
+  exclude:
+    - viofs/svc/
 viogpu:
-  - 'viogpu'
-/:
-  - '*'
+  include:
+    - viogpu/
+  exclude:
+    - viogpu/viogpuap/
+    - viogpu/viogpusc/
+vioinput:
+  include:
+    - vioinput/
+  exclude:
+    - vioinput/LICENSE
+viorng:
+  include:
+    - vioinput/
+  exclude:
+    - viorng/cng/um/
+    - viorng/test/
+    - viorng/compile.readme
+vioscsi:
+  include:
+    - vioscsi/
+  exclude:
+    - vioscsi/LICENSE
+vioserial:
+  include:
+    - vioserial/
+  exclude:
+    - vioserial/app/
+    - vioserial/benchmark/
+    - vioserial/lib/
+    - vioserial/libtestapp/
+    - vioserial/libtestsvc/
+    - vioserial/LICENSE
+viosock:
+  include:
+    - viosock/
+  exclude:
+    - viosock/lib/
+    - viosock/viosock-test/
+    - viosock/viosocklib-test/
+    - viosock/wsk/
+    - viosock/LICENSE
+viostor:
+  include:
+    - viostor/
+  exclude:
+    - viostor/LICENSE
+"*":
+  include:
+    - /
+    - Tools/
+    - VirtIO/
+  exclude:
+    - packaging/
+    - Documentation/
+    - Q35/
+    - fwcfg/
+    - pciserial/
+    - .gitignore
+    - LICENSE
+    - README.md
+    - contributing.md
+    - status.txt
