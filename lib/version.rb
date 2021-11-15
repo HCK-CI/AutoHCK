@@ -3,6 +3,6 @@
 # AutoHCK module
 module AutoHCK
   class AutoHCK
-    VERSION = '0.9.3'
+    VERSION = '0.9.4'
   end
 end
