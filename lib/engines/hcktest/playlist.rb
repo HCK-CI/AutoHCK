@@ -40,7 +40,7 @@ module AutoHCK
       file = kit[0..2] == 'HLK' ? "#{playlists_path}/#{kit[3..]}.xml" : nil
       workspace_file = "#{@project.workspace_path}/playlist_#{kit[3..]}.xml"
 
-      return nil if file.nil? || !File.exist?("./#{file}")
+      return nil if file.nil? || !File.exist?(file)
 
       FileUtils.cp(file, workspace_file)
 
