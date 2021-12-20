@@ -1,4 +1,8 @@
 {
+  "HLK1607": {
+    "download_url": "https://go.microsoft.com/fwlink/p/?LinkID=404112",
+    "extra_software": [ "winfsp" ]
+  },
   "HLK1809server": {
     "download_url": "https://go.microsoft.com/fwlink/?linkid=2026646",
     "extra_software": [ "FOD_2019", "HLK_GRFX_FOD", "WDTFNetData_1809", "winfsp" ]
