@@ -151,9 +151,9 @@ module AutoHCK
       retry
     end
 
-    def upload_to_machine(machine, l_directory)
+    def upload_to_machine(machine, l_directory, r_directory = nil)
       retries ||= 0
-      ret = handle_results(@tools.upload_to_machine(machine, l_directory))
+      ret = handle_results(@tools.upload_to_machine(machine, l_directory, r_directory))
 
       return ret if ret
 
