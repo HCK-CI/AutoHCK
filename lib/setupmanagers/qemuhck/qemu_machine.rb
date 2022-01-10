@@ -432,16 +432,24 @@ module AutoHCK
       create_run_script(file_path, file_content)
     end
 
+    def run_qemu
+      cmd = replace_string_recursive(dirty_command.join(' '), full_replacement_list)
+
+      @qemu_thread = Thread.new do
+        run_cmd([cmd])
+      rescue CmdRunError
+        raise unless Thread.current.thread_variable_get(:cmd_error_expected)
+
+        @logger.warn("Suppress expected CmdRunError in QEMU run thread for #{@run_name}")
+      end
+    end
+
     def run_vm
       dump_config
 
       @pid_file = Tempfile.new(@run_name)
 
-      cmd = replace_string_recursive(dirty_command.join(' '), full_replacement_list)
-
-      Thread.new do
-        run_cmd([cmd])
-      end
+      run_qemu
       sleep 5
       @pid = retrieve_pid
 
@@ -623,6 +631,7 @@ module AutoHCK
 
       @logger.info("#{@run_name} hard abort failed, force aborting...")
 
+      @qemu_thread.thread_variable_set(:cmd_error_expected, true)
       Process.kill('KILL', @pid)
     end
 
