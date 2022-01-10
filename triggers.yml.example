@@ -63,7 +63,7 @@ vioinput:
     - vioinput/LICENSE
 viorng:
   include:
-    - vioinput/
+    - viorng/
   exclude:
     - viorng/cng/um/
     - viorng/test/
