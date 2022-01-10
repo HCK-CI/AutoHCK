@@ -227,8 +227,8 @@
     "install_command": "@driver_dir@/devcon.exe install @inf_path@ ovpn-dco",
     "type": 0,
     "blacklist": [
-        "Static Tools Logo Test",
-        "Hardware-enforced Stack Protection Compatibility Test"
+      "Static Tools Logo Test",
+      "Hardware-enforced Stack Protection Compatibility Test"
     ]
   }
 }
