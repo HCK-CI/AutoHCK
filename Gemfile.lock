@@ -72,11 +72,14 @@ GEM
     parallel (1.20.1)
     parser (3.0.0.0)
       ast (~> 2.4.1)
+    psych (4.0.3)
+      stringio
     public_suffix (4.0.6)
     rack (2.2.3)
     rainbow (3.0.0)
     rake (13.0.3)
-    rdoc (6.3.2)
+    rdoc (6.4.0)
+      psych (>= 4.0.0)
     regexp_parser (2.1.1)
     rexml (3.2.5)
     rspec (3.10.0)
@@ -122,6 +125,7 @@ GEM
       concurrent-ruby
       faraday
     sqlite3 (1.4.2)
+    stringio (3.0.1)
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.0.0)
