@@ -58,7 +58,7 @@ module AutoHCK
       return false unless check_run?
 
       configure_result_uploader if @engine.result_uploader_needed?
-      github_handling(@options.test.commit)
+      return false unless github_handling(@options.test.commit)
 
       @setup_manager = SetupManager.new(self) unless @engine.platform.nil?
       true
@@ -141,15 +141,18 @@ module AutoHCK
     end
 
     def github_handling(commit)
-      return if commit.to_s.empty?
+      return true if commit.to_s.empty?
 
       @github = Github.new(@config, @logger, @result_uploader.url, @engine.tag, commit)
       raise GithubCommitInvalid unless @github.connected?
 
       @github.find_pr
+      return false if @github.pr_closed?
+
       raise GithubCommitInvalid unless @github.connected?
 
       @github.create_status('pending', 'Tests session initiated')
+      true
     end
 
     def create_timestamp
