@@ -8,6 +8,8 @@ module AutoHCK
   class Github
     def initialize(config, logger, url, tag, commit)
       @api_connected = false
+      @pr_closed = nil
+
       @logger = logger
       @target_url = url
       @repo = config['repository']
@@ -31,17 +33,39 @@ module AutoHCK
       @api_connected
     end
 
+    def pr_closed?
+      @pr_closed
+    end
+
+    def check_closed_pr
+      pr = @github.pulls(@repo, state: 'closed').find { |x| x['head']['sha'] == @commit }
+
+      return false if pr.nil?
+
+      @pr_closed = true
+      if pr.merged_at?
+        @logger.warn("PR ##{pr['number']}: #{pr['title']} - already merged. Skipping CI.")
+      else
+        @logger.warn("PR ##{pr['number']}: #{pr['title']} - closed. Skipping CI.")
+      end
+
+      true
+    end
+
     def find_pr
       pr = @github.pulls(@repo).find { |x| x['head']['sha'] == @commit }
       if pr.nil?
-        @logger.warn('Pull request commit hash not valid, disconnecting github.')
-        @api_connected = false
+        unless check_closed_pr
+          @logger.warn('Pull request commit hash not valid, disconnecting github.')
+          @api_connected = false
+        end
+
         return nil
       end
-      unless pr.nil?
-        @logger.info("PR ##{pr['number']}: #{pr['title']}")
-        @logger.info(pr['html_url'])
-      end
+
+      @logger.info("PR ##{pr['number']}: #{pr['title']}")
+      @logger.info(pr['html_url'])
+
       pr
     end
 
