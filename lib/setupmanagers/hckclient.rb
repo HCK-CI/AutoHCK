@@ -133,6 +133,17 @@ module AutoHCK
       end
     end
 
+    def copy_dvl
+      path = @project.options.test.driver_path
+
+      @logger.info('Looking for DVL logs')
+      Dir.glob("#{path}/*.DVL.XML", File::FNM_CASEFOLD).each do |dvl_file|
+        dvl_file_name = File.basename(dvl_file)
+        @logger.info("Uploading #{dvl_file_name} log to #{@name}")
+        @tools.upload_to_machine(@name, dvl_file, "C:/DVL/#{dvl_file_name}")
+      end
+    end
+
     def machine_in_default_pool
       default_pool = @studio.list_pools
                             .detect { |pool| pool['name'].eql?('Default Pool') }
@@ -166,6 +177,7 @@ module AutoHCK
         @logger.info("Preparing client #{@name}...")
         @project.extra_sw_manager.install_software_before_driver(@tools, @name)
         install_drivers
+        copy_dvl
         @project.extra_sw_manager.install_software_after_driver(@tools, @name)
         @logger.info("Configuring client #{@name}...")
         configure_machine
