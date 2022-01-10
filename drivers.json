@@ -49,7 +49,11 @@
     "blacklist": [
       "Static Tools Logo Test",
       "Flush Test",
-      "DF - Embedded Signature Verification Test (Certification)"
+      "DF - Embedded Signature Verification Test (Certification)",
+      "Thin Provisioning SCSI Compliance Test (LOGO)",
+      "Thin Provisioning Performance Test - RAW Disk (LOGO)",
+      "Thin Provisioning Performance Test - NTFS (LOGO)",
+      "Thin Provisioning Threshold and Resource Exhaustion Test (LOGO)"
     ]
   },
   "ivshmem": {
