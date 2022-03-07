@@ -41,7 +41,8 @@ module AutoHCK
       @logger.warn("Dropbox connection lost while #{where}")
       raise unless (retries += 1) < ACTION_RETRIES
 
-      @logger.info('Trying to re-establish the Dropbox connection')
+      @logger.info('Trying to re-establish the Dropbox connection after delay')
+      sleep ACTION_RETRY_SLEEP
       connect
       retry
     rescue DropboxApi::Errors::TooManyWriteOperationsError
