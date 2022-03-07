@@ -75,7 +75,7 @@ module AutoHCK
                   'target_url' => @target_url }
       begin
         @github.create_status(@repo, @commit, state, options)
-      rescue Faraday::ConnectionFailed
+      rescue Faraday::ConnectionFailed, Octokit::BadGateway
         @logger.warn('Github server connection error')
       end
       @logger.info('Github status updated')
