@@ -29,6 +29,9 @@ module AutoHCK
       @url = nil
     end
 
+    # handle_exceptions has different logic for different exceptions,
+    # so this method can not be simplified without dirty workarounds
+    # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     def handle_exceptions(where)
       retries ||= 0
 
@@ -55,6 +58,7 @@ module AutoHCK
     rescue StandardError => e
       @logger.warn("Dropbox #{where} error: (#{e.class}) #{e.message}")
     end
+    # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
     def ask_token
       url = @authenticator.auth_code.authorize_url(token_access_type: 'offline')
