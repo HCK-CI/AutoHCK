@@ -5,7 +5,7 @@ require 'json'
 
 # AutoHCK module
 module AutoHCK
-  TOKEN_JSON = 'lib/resultuploaders/dropbox.json'
+  TOKEN_JSON = 'lib/resultuploaders/dropbox.token.json'
 
   # dropbox class
   class Dropbox

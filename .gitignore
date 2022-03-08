@@ -51,5 +51,5 @@ build-iPhoneSimulator/
 
 # AutoHCK database
 /id_gen.db
-/lib/resultuploaders/dropbox.json
+/lib/resultuploaders/dropbox.token.json
 /override.json
