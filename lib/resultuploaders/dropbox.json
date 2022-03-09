@@ -1,0 +1,5 @@
+{
+    "action_retries": 5,
+    "action_retry_sleep__comment": "time before retry action in seconds",
+    "action_retry_sleep": 10
+}

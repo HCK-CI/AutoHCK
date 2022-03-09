@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 
 require 'dropbox_api'
-require 'json'
+require './lib/auxiliary/json_helper'
 
 # AutoHCK module
 module AutoHCK
   TOKEN_JSON = 'lib/resultuploaders/dropbox.token.json'
+  CONFIG_JSON = 'lib/resultuploaders/dropbox.json'
 
   # dropbox class
   class Dropbox
-    ACTION_RETRIES = 5
-    ACTION_RETRY_SLEEP = 10
+    include Helper
 
     attr_reader :url
 
@@ -20,8 +20,13 @@ module AutoHCK
       @logger = project.logger
       @repo = project.config['repository']
 
+      @config = Json.read_json(CONFIG_JSON, @logger)
+
       @client_id = ENV['AUTOHCK_DROPBOX_CLIENT_ID']
       @client_secret = ENV['AUTOHCK_DROPBOX_CLIENT_SECRET']
+
+      @action_retries = @config['action_retries']
+      @action_retry_sleep = @config['action_retry_sleep']
 
       @authenticator = DropboxApi::Authenticator.new(@client_id, @client_secret)
 
@@ -42,18 +47,18 @@ module AutoHCK
       end
     rescue Faraday::ConnectionFailed
       @logger.warn("Dropbox connection lost while #{where}")
-      raise unless (retries += 1) < ACTION_RETRIES
+      raise unless (retries += 1) < @action_retries
 
       @logger.info('Trying to re-establish the Dropbox connection after delay')
-      sleep ACTION_RETRY_SLEEP
+      sleep @action_retry_sleep
       connect
       retry
     rescue DropboxApi::Errors::TooManyWriteOperationsError
       @logger.warn("Dropbox API failed #{where}")
-      raise unless (retries += 1) < ACTION_RETRIES
+      raise unless (retries += 1) < @action_retries
 
       @logger.info('Trying to re-send request after delay')
-      sleep ACTION_RETRY_SLEEP
+      sleep @action_retry_sleep
       retry
     rescue StandardError => e
       @logger.warn("Dropbox #{where} error: (#{e.class}) #{e.message}")
