@@ -102,36 +102,68 @@ module AutoHCK
       end
     end
 
+    def retry_tools_command(action)
+      ret = nil
+
+      ACTION_RETRIES.times do
+        ret = yield
+
+        break if ret
+
+        @logger.warn("Running HLK tools command (#{action}) failed")
+        sleep ACTION_RETRY_SLEEP
+        @logger.info("Trying again to run HLK tools command (#{action})")
+      end
+
+      ret
+    end
+
     def create_pool(tag)
-      handle_results(@tools.create_pool(tag))
+      retry_tools_command(__method__) do
+        handle_results(@tools.create_pool(tag))
+      end
     end
 
     def delete_pool(tag)
-      handle_results(@tools.delete_pool(tag))
+      retry_tools_command(__method__) do
+        handle_results(@tools.delete_pool(tag))
+      end
     end
 
     def create_project(tag)
-      handle_results(@tools.create_project(tag))
+      retry_tools_command(__method__) do
+        handle_results(@tools.create_project(tag))
+      end
     end
 
     def delete_project(tag)
-      handle_results(@tools.delete_project(tag))
+      retry_tools_command(__method__) do
+        handle_results(@tools.delete_project(tag))
+      end
     end
 
     def list_pools
-      handle_results(@tools.list_pools)
+      retry_tools_command(__method__) do
+        handle_results(@tools.list_pools)
+      end
     end
 
     def create_project_target(key, tag, machine)
-      handle_results(@tools.create_project_target(key, tag, machine, tag))
+      retry_tools_command(__method__) do
+        handle_results(@tools.create_project_target(key, tag, machine, tag))
+      end
     end
 
     def list_machine_targets(machine, pool)
-      handle_results(@tools.list_machine_targets(machine, pool))
+      retry_tools_command(__method__) do
+        handle_results(@tools.list_machine_targets(machine, pool))
+      end
     end
 
     def delete_machine(machine, pool)
-      handle_results(@tools.delete_machine(machine, pool))
+      retry_tools_command(__method__) do
+        handle_results(@tools.delete_machine(machine, pool))
+      end
     end
 
     def run_on_machine(machine, desc, cmd)
@@ -252,21 +284,27 @@ module AutoHCK
     end
 
     def shutdown
-      handle_results(@tools.shutdown)
+      retry_tools_command(__method__) do
+        handle_results(@tools.shutdown)
+      end
     end
 
     def move_machine(machine, from, to)
-      handle_results(@tools.move_machine(machine, from, to))
+      retry_tools_command(__method__) do
+        handle_results(@tools.move_machine(machine, from, to))
+      end
     end
 
     # Timeout for setting a machine state to the Ready state
     SET_MACHINE_READY_TIMEOUT = 120
 
     def set_machine_ready(machine, pool)
-      handle_results(@tools.set_machine_state(machine,
-                                              pool,
-                                              'ready',
-                                              SET_MACHINE_READY_TIMEOUT))
+      retry_tools_command(__method__) do
+        handle_results(@tools.set_machine_state(machine,
+                                                pool,
+                                                'ready',
+                                                SET_MACHINE_READY_TIMEOUT))
+      end
     end
 
     def install_machine_driver_package(machine, method, driver_path, file, options = {})
@@ -289,25 +327,35 @@ module AutoHCK
     end
 
     def list_tests(key, machine, tag, playlist)
-      handle_results(@tools.list_tests(key, tag, machine, tag, nil, nil,
-                                       playlist))
+      retry_tools_command(__method__) do
+        handle_results(@tools.list_tests(key, tag, machine, tag, nil, nil,
+                                         playlist))
+      end
     end
 
     def get_test_info(id, key, machine, tag)
-      handle_results(@tools.get_test_info(id, key, tag, machine, tag))
+      retry_tools_command(__method__) do
+        handle_results(@tools.get_test_info(id, key, tag, machine, tag))
+      end
     end
 
     def queue_test(test_id, target_key, machine, tag, support)
-      handle_results(@tools.queue_test(test_id, target_key, tag, machine, tag,
-                                       support))
+      retry_tools_command(__method__) do
+        handle_results(@tools.queue_test(test_id, target_key, tag, machine, tag,
+                                         support))
+      end
     end
 
     def update_filters(filters_path)
-      handle_results(@tools.update_filters(filters_path))
+      retry_tools_command(__method__) do
+        handle_results(@tools.update_filters(filters_path))
+      end
     end
 
     def apply_project_filters(project)
-      handle_results(@tools.apply_project_filters(project))
+      retry_tools_command(__method__) do
+        handle_results(@tools.apply_project_filters(project))
+      end
     end
 
     def zip_test_result_logs(test_id, target_key, machine, tag)
@@ -330,15 +378,21 @@ module AutoHCK
     end
 
     def create_project_package(project, handler = nil)
-      handle_results(@tools.create_project_package(project, handler))
+      retry_tools_command(__method__) do
+        handle_results(@tools.create_project_package(project, handler))
+      end
     end
 
     def connection_check
-      handle_results(@tools.connection_check)
+      retry_tools_command(__method__) do
+        handle_results(@tools.connection_check)
+      end
     end
 
     def reconnect
-      handle_results(@tools.reconnect)
+      retry_tools_command(__method__) do
+        handle_results(@tools.reconnect)
+      end
     end
 
     def close
