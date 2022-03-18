@@ -192,6 +192,18 @@
       "Check Resolution for Dualview (WoW64) - multihead"
     ]
   },
+  "fwcfg64": {
+    "name": "QEMU FwCfg Device",
+    "device": "vmcoreinfo",
+    "inf": "fwcfg.inf",
+    "install_method": "PNP",
+    "type": 0,
+    "support": false,
+    "blacklist": [
+      "Static Tools Logo Test",
+      "Hardware-enforced Stack Protection Compatibility Test"
+    ]
+  },
   "openvpn": {
     "name": "TAP-Windows Adapter V9",
     "device": "e1000e",
