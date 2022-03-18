@@ -1,0 +1,4 @@
+{
+  "name": "vmcoreinfo",
+  "command_line": ["-device vmcoreinfo"]
+}
