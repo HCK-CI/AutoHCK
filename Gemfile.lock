@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/HCK-CI/rtoolsHCK.git
-  revision: fe841830d114e59fed010672c09cbfdc2f589c73
-  tag: v0.2.24
+  revision: 4db7d7a74316bac9dc7ff0726783466f0193da79
+  tag: v0.3.0
   specs:
-    rtoolsHCK (0.2.24)
+    rtoolsHCK (0.3.0)
       bundler
       rdoc
       winrm (= 2.3.4)
@@ -38,12 +38,13 @@ GEM
       multipart-post (>= 1.2, < 3)
       ruby2_keywords
     faraday-net_http (1.0.1)
-    ffi (1.15.4)
+    ffi (1.15.5)
     filelock (1.1.1)
     gssapi (1.3.1)
       ffi (>= 1.0.1)
-    gyoku (1.3.1)
+    gyoku (1.4.0)
       builder (>= 2.1.2)
+      rexml (~> 3.0)
     httpclient (2.8.3)
     i18n (1.8.10)
       concurrent-ruby (~> 1.0)
