@@ -108,6 +108,7 @@ module AutoHCK
       @pre_logger = MonoLogger.new(@logfile_path)
       @logger.add_logger(@pre_logger)
       @workspace_path = path
+      @logger.info("Workspace moved to: #{@workspace_path}")
     end
 
     def init_class_variables
@@ -167,6 +168,7 @@ module AutoHCK
       rescue Errno::EEXIST
         @logger.warn('Workspace path already exists')
       end
+      @logger.info("Workspace init path: #{@workspace_path}")
     end
 
     def handle_cancel
