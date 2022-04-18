@@ -24,6 +24,7 @@ group :development do
 end
 
 group :test do
+  gem 'code-scanning-rubocop', '= 0.6.1'
   gem 'rake'
   gem 'rspec'
   gem 'rspec_junit_formatter'

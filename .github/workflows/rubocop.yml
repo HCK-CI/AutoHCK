@@ -3,22 +3,41 @@ name: RuboCop
 on: [push, pull_request]
 
 jobs:
-  analyze:
+  rubocop:
 
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+
     steps:
-    - uses: actions/checkout@v1
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
     - name: Update Ubuntu package repository
       run: sudo apt-get update
     - name: Setup sqlite-devel
       run: sudo apt-get -y install libsqlite3-dev
     - name: Setup libcurl-devel
       run: sudo apt-get -y install libcurl4 libcurl3-gnutls libcurl4-openssl-dev
+
     - name: Set up Ruby 2.6.5
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: 2.6.5
         bundler-cache: true
-    - name: Test with rubocop
-      run: bundle exec rubocop
+
+    - name: Install dependencies
+      run: bundle install
+
+    - name: RuboCop run
+      run: |
+        bash -c "
+          bundle exec rubocop --require code_scanning --format CodeScanning::SarifFormatter -o rubocop.sarif
+          [[ $? -ne 2 ]]
+        "
+
+    - name: Upload Sarif output
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: rubocop.sarif
