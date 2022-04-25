@@ -162,6 +162,7 @@
     "type": 0,
     "support": false,
     "blacklist": [
+      "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
   "viogpu": {
