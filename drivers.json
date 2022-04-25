@@ -24,7 +24,6 @@
       "NDISTest 6.0 - [1 Machine] - 1c_Mini6RSSOids",
       "PrivateCloudSimulator - Device.Network.LAN.10GbOrGreater",
       "Run RSC Tests",
-      "Static Tools Logo Test",
       "DF - Embedded Signature Verification Test (Certification)",
       "Hardware-enforced Stack Protection Compatibility Test"
     ]
@@ -47,7 +46,6 @@
       }
     ],
     "blacklist": [
-      "Static Tools Logo Test",
       "Flush Test",
       "DF - Embedded Signature Verification Test (Certification)",
       "Thin Provisioning SCSI Compliance Test (LOGO)",
@@ -64,7 +62,6 @@
     "type": 0,
     "support": false,
     "blacklist": [
-      "Static Tools Logo Test",
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
@@ -76,7 +73,6 @@
     "type": 0,
     "support": false,
     "blacklist": [
-      "Static Tools Logo Test",
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
@@ -88,7 +84,6 @@
     "type": 0,
     "support": false,
     "blacklist": [
-      "Static Tools Logo Test",
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
@@ -110,7 +105,6 @@
       }
     ],
     "blacklist": [
-      "Static Tools Logo Test",
       "Flush Test",
       "DF - Embedded Signature Verification Test (Certification)",
       "Storage HBA Firmware Update"
@@ -124,7 +118,6 @@
     "type": 0,
     "support": false,
     "blacklist": [
-      "Static Tools Logo Test",
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
@@ -136,7 +129,6 @@
     "type": 0,
     "support": false,
     "blacklist": [
-      "Static Tools Logo Test",
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
@@ -148,7 +140,6 @@
     "type": 0,
     "support": false,
     "blacklist": [
-      "Static Tools Logo Test",
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
@@ -160,7 +151,6 @@
     "type": 0,
     "support": false,
     "blacklist": [
-      "Static Tools Logo Test",
       "DF - Embedded Signature Verification Test (Certification)"
     ]
   },
@@ -172,7 +162,6 @@
     "type": 0,
     "support": false,
     "blacklist": [
-      "Static Tools Logo Test"
     ]
   },
   "viogpu": {
@@ -184,7 +173,6 @@
     "support": false,
     "enlightenments_state": "on",
     "blacklist": [
-      "Static Tools Logo Test",
       "DF - Embedded Signature Verification Test (Certification)",
       "Test for EDID Requirements (Manual)",
       "Multimon minimum resolution check - Multihead",
@@ -200,7 +188,6 @@
     "type": 0,
     "support": false,
     "blacklist": [
-      "Static Tools Logo Test",
       "Hardware-enforced Stack Protection Compatibility Test"
     ]
   },
