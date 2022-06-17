@@ -13,6 +13,7 @@ gem 'mono_logger'
 gem 'net-ping'
 gem 'net-telnet'
 gem 'octokit'
+gem 'openssl', require: false
 gem 'rtoolsHCK', git: 'https://github.com/HCK-CI/rtoolsHCK.git', tag: 'v0.3.0'
 gem 'rubyzip'
 gem 'sentry-ruby'
