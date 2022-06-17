@@ -72,6 +72,7 @@ GEM
     octokit (4.20.0)
       faraday (>= 0.9)
       sawyer (~> 0.8.0, >= 0.5.3)
+    openssl (3.0.0)
     parallel (1.20.1)
     parser (3.0.0.0)
       ast (~> 2.4.1)
@@ -163,6 +164,7 @@ DEPENDENCIES
   net-ping
   net-telnet
   octokit
+  openssl
   rake
   rspec
   rspec_junit_formatter
