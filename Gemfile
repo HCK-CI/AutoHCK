@@ -25,7 +25,7 @@ group :development do
 end
 
 group :test do
-  gem 'code-scanning-rubocop', '= 0.6.1'
+  gem 'code-scanning-rubocop'
   gem 'rspec'
   gem 'rspec_junit_formatter'
   gem 'rubocop', '= 1.9.1'

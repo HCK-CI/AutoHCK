@@ -154,7 +154,7 @@ PLATFORMS
 
 DEPENDENCIES
   activesupport
-  code-scanning-rubocop (= 0.6.1)
+  code-scanning-rubocop
   curb
   debase
   dotenv
