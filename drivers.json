@@ -51,7 +51,8 @@
       "Thin Provisioning SCSI Compliance Test (LOGO)",
       "Thin Provisioning Performance Test - RAW Disk (LOGO)",
       "Thin Provisioning Performance Test - NTFS (LOGO)",
-      "Thin Provisioning Threshold and Resource Exhaustion Test (LOGO)"
+      "Thin Provisioning Threshold and Resource Exhaustion Test (LOGO)",
+      "Hardware-enforced Stack Protection Compatibility Test"
     ]
   },
   "ivshmem": {
@@ -62,7 +63,8 @@
     "type": 0,
     "support": false,
     "blacklist": [
-      "DF - Embedded Signature Verification Test (Certification)"
+      "DF - Embedded Signature Verification Test (Certification)",
+      "Hardware-enforced Stack Protection Compatibility Test"
     ]
   },
   "pvpanic": {
@@ -73,7 +75,8 @@
     "type": 0,
     "support": false,
     "blacklist": [
-      "DF - Embedded Signature Verification Test (Certification)"
+      "DF - Embedded Signature Verification Test (Certification)",
+      "Hardware-enforced Stack Protection Compatibility Test"
     ]
   },
   "viorng": {
@@ -84,7 +87,8 @@
     "type": 0,
     "support": false,
     "blacklist": [
-      "DF - Embedded Signature Verification Test (Certification)"
+      "DF - Embedded Signature Verification Test (Certification)",
+      "Hardware-enforced Stack Protection Compatibility Test"
     ]
   },
   "vioscsi": {
@@ -107,7 +111,8 @@
     "blacklist": [
       "Flush Test",
       "DF - Embedded Signature Verification Test (Certification)",
-      "Storage HBA Firmware Update"
+      "Storage HBA Firmware Update",
+      "Hardware-enforced Stack Protection Compatibility Test"
     ]
   },
   "Balloon": {
@@ -118,7 +123,8 @@
     "type": 0,
     "support": false,
     "blacklist": [
-      "DF - Embedded Signature Verification Test (Certification)"
+      "DF - Embedded Signature Verification Test (Certification)",
+      "Hardware-enforced Stack Protection Compatibility Test"
     ]
   },
   "vioinput": {
@@ -129,7 +135,8 @@
     "type": 0,
     "support": false,
     "blacklist": [
-      "DF - Embedded Signature Verification Test (Certification)"
+      "DF - Embedded Signature Verification Test (Certification)",
+      "Hardware-enforced Stack Protection Compatibility Test"
     ]
   },
   "vioserial": {
@@ -140,7 +147,8 @@
     "type": 0,
     "support": false,
     "blacklist": [
-      "DF - Embedded Signature Verification Test (Certification)"
+      "DF - Embedded Signature Verification Test (Certification)",
+      "Hardware-enforced Stack Protection Compatibility Test"
     ]
   },
   "viosock": {
@@ -151,7 +159,8 @@
     "type": 0,
     "support": false,
     "blacklist": [
-      "DF - Embedded Signature Verification Test (Certification)"
+      "DF - Embedded Signature Verification Test (Certification)",
+      "Hardware-enforced Stack Protection Compatibility Test"
     ]
   },
   "viofs": {
@@ -162,7 +171,8 @@
     "type": 0,
     "support": false,
     "blacklist": [
-      "DF - Embedded Signature Verification Test (Certification)"
+      "DF - Embedded Signature Verification Test (Certification)",
+      "Hardware-enforced Stack Protection Compatibility Test"
     ]
   },
   "viogpu": {
@@ -178,7 +188,8 @@
       "Test for EDID Requirements (Manual)",
       "Multimon minimum resolution check - Multihead",
       "WDDM HPD Notification Test (Manual)",
-      "Check Resolution for Dualview (WoW64) - multihead"
+      "Check Resolution for Dualview (WoW64) - multihead",
+      "Hardware-enforced Stack Protection Compatibility Test"
     ]
   },
   "fwcfg64": {
