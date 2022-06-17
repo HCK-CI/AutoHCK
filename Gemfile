@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '>= 2.6.5p114'
+ruby '>= 2.6.5'
 
 gem 'activesupport'
 gem 'curb'
