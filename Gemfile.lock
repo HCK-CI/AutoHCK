@@ -165,7 +165,6 @@ DEPENDENCIES
   net-telnet
   octokit
   openssl
-  rake
   rspec
   rspec_junit_formatter
   rtoolsHCK!
