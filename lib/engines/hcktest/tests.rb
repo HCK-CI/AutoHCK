@@ -23,7 +23,7 @@ module AutoHCK
       @support = support
       @logger = project.logger
       @playlist = Playlist.new(client, project, target, tools, @client.kit)
-      @tests_dump = {}
+      @tests_extra = {}
     end
 
     def list_tests(log: false)
@@ -79,6 +79,9 @@ module AutoHCK
     def queue_test(test, wait: false)
       @tools.queue_test(test['id'], @target['key'], @client.name, @tag,
                         test_support(test))
+
+      @tests_extra[test['id']] ||= {}
+
       return unless wait
 
       wait_queued_test(test['id'])
@@ -149,7 +152,7 @@ module AutoHCK
 
     def summary_results_log
       @tests.reduce('') do |sum, test|
-        extra_info = @tests_dump.keys.include?(test['id']) ? '(with Minidump)' : ''
+        extra_info = @tests_extra.dig(test['id'], 'dump') ? '(with Minidump)' : ''
         sum + "#{test['status']}: #{test['name']} [#{test['estimatedruntime']}] #{extra_info}\n"
       end
     end
@@ -168,9 +171,9 @@ module AutoHCK
       r_name = new_filename + File.extname(test_logs_path)
       @project.result_uploader.upload_file(test_logs_path, r_name)
 
-      if @tests_dump.keys.include? test_id
+      if @tests_extra.dig(test_id, 'dump')
         r_name = "Minidump: #{testname}.zip"
-        @project.result_uploader.upload_file(@tests_dump[test_id], r_name)
+        @project.result_uploader.upload_file(@tests_extra.dig(test_id, 'dump'), r_name)
       end
 
       update_summary_results_log
@@ -212,7 +215,7 @@ module AutoHCK
 
       if collected_client || collected_support
         create_zip_from_directory(l_zip_path, l_tmp_path)
-        @tests_dump[id] = l_zip_path
+        @tests_extra[id]['dump'] = l_zip_path
       end
 
       FileUtils.rm_rf(l_tmp_path)
