@@ -66,18 +66,22 @@ module AutoHCK
       @support.name if support_needed?(test)
     end
 
+    def wait_queued_test(id)
+      loop do
+        sleep 5
+        test = @tools.get_test_info(id, @target['key'], @client.name, @tag)
+        break if test['executionstate'] != 'NotRunning'
+        break if test['status'] == 'InQueue'
+        break if test_finished?(test)
+      end
+    end
+
     def queue_test(test, wait: false)
       @tools.queue_test(test['id'], @target['key'], @client.name, @tag,
                         test_support(test))
       return unless wait
 
-      loop do
-        sleep 5
-        test = @tools.get_test_info(test['id'], @target['key'], @client.name, @tag)
-        break if test['executionstate'] != 'NotRunning'
-        break if test['status'] == 'InQueue'
-        break if test_finished?(test)
-      end
+      wait_queued_test(test['id'])
     end
 
     def current_test
