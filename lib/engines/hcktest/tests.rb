@@ -118,9 +118,11 @@ module AutoHCK
       "Test information page: #{url}#{test['id']}"
     end
 
-    def print_test_info_when_start(test)
+    def on_test_start(test)
       @logger.info('>>> Currently running: '\
                   "#{test['name']} [#{test['estimatedruntime']}]")
+
+      @tests_extra[test['id']]['started_at'] = DateTime.now
     end
 
     def print_tests_stats
@@ -269,7 +271,7 @@ module AutoHCK
         check_new_finished_tests
         if current_test != running
           running = current_test
-          print_test_info_when_start(running) if running
+          on_test_start(running) if running
         end
         @last_done = done_tests
         sleep HANDLE_TESTS_POLLING_INTERVAL
