@@ -81,6 +81,7 @@ module AutoHCK
                         test_support(test))
 
       @tests_extra[test['id']] ||= {}
+      @tests_extra[test['id']]['queued_at'] = DateTime.now
 
       return unless wait
 
