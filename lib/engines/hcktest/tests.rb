@@ -198,15 +198,17 @@ module AutoHCK
     end
 
     def collect_memory_dumps(test)
-      l_zip_path = "#{@project.workspace_path}/memory_dump_#{test['id']}.zip"
-      l_tmp_path = "#{@project.workspace_path}/tmp_#{test['id']}"
+      id = test['id']
+
+      l_zip_path = "#{@project.workspace_path}/memory_dump_#{id}.zip"
+      l_tmp_path = "#{@project.workspace_path}/tmp_#{id}"
 
       collected_client = collect_memory_dump(@client.name, "#{l_tmp_path}/#{@client.name}")
       collected_support = collect_memory_dump(@support.name, "#{l_tmp_path}/#{@support.name}") unless @support.nil?
 
       if collected_client || collected_support
         create_zip_from_directory(l_zip_path, l_tmp_path)
-        @tests_dump[test['id']] = l_zip_path
+        @tests_dump[id] = l_zip_path
       end
 
       FileUtils.rm_rf(l_tmp_path)
