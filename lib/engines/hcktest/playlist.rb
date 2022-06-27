@@ -1,9 +1,13 @@
 # frozen_string_literal: true
 
+require './lib/auxiliary/time_helper'
+
 # AutoHCK module
 module AutoHCK
   # Playlist class
   class Playlist
+    include Helper
+
     attr_reader :blacklisted
 
     def initialize(client, project, target, tools, kit)
@@ -46,11 +50,6 @@ module AutoHCK
 
       @logger.info("Applying microsoft's playlist") if log
       workspace_file
-    end
-
-    def time_to_seconds(time)
-      time.split(':').reverse.map.with_index { |a, i| a.to_i * (60**i) }
-          .reduce(:+)
     end
 
     def sort_by_duration
