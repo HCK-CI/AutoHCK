@@ -17,6 +17,7 @@ module AutoHCK
     VERIFY_TARGET_RETRIES = 5
     VERIFY_TARGET_SLEEP = 5
     QUEUE_TEST_TIMEOUT = '00:15:00'
+    RUNNING_TEST_TIMEOUT = '00:15:00'
 
     def initialize(client, support, project, target, tools)
       @client = client
@@ -82,6 +83,25 @@ module AutoHCK
 
       @tests_extra[@last_queued_id]['status'] = 'Hangs on at queued state?'
       @logger.warn("Test was queued #{seconds_to_time(diff)} ago! HCK hangs on?")
+
+      update_summary_results_log
+    end
+
+    def check_test_duration_time
+      return if (test = current_test).nil?
+
+      id = test['id']
+      duration = test['duration']
+      started_at = @tests_extra[id]['started_at']
+
+      return if started_at.nil?
+
+      diff = time_diff(started_at, DateTime.now)
+
+      return if diff < 2 * duration + time_to_seconds(RUNNING_TEST_TIMEOUT)
+
+      @tests_extra[id]['status'] = 'Hangs on at running state?'
+      @logger.warn("Test was running #{seconds_to_time(diff)} ago! HCK hangs on?")
 
       update_summary_results_log
     end
@@ -255,6 +275,8 @@ module AutoHCK
 
     def handle_finished_tests(tests)
       tests.each do |test|
+        @tests_extra[test['id']]['status'] = nil
+
         @project.github.update(tests_stats) if @project.github&.connected?
 
         collect_memory_dumps(test)
@@ -300,6 +322,7 @@ module AutoHCK
         reset_clients_to_ready_state
         check_new_finished_tests
         check_test_queued_time
+        check_test_duration_time
         if current_test != running
           running = current_test
           on_test_start(running) if running
