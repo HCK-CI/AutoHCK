@@ -71,6 +71,13 @@ module AutoHCK
       @support.name if support_needed?(test)
     end
 
+    def set_test_status(id, status)
+      return if @tests_extra.dig(id, 'status') == status
+
+      @tests_extra[id]['status'] = status
+      update_summary_results_log
+    end
+
     def check_test_queued_time
       # We can't compare test objects directly because the list_tests
       # function updates the test object but the current_test function
@@ -81,10 +88,8 @@ module AutoHCK
 
       return if diff < time_to_seconds(QUEUE_TEST_TIMEOUT)
 
-      @tests_extra[@last_queued_id]['status'] = 'Hangs on at queued state?'
       @logger.warn("Test was queued #{seconds_to_time(diff)} ago! HCK hangs on?")
-
-      update_summary_results_log
+      set_test_status(@last_queued_id, 'Hangs on at queued state?')
     end
 
     def check_test_duration_time
@@ -100,10 +105,8 @@ module AutoHCK
 
       return if diff < 2 * duration + time_to_seconds(RUNNING_TEST_TIMEOUT)
 
-      @tests_extra[id]['status'] = 'Hangs on at running state?'
       @logger.warn("Test was running #{seconds_to_time(diff)} ago! HCK hangs on?")
-
-      update_summary_results_log
+      set_test_status(id, 'Hangs on at running state?')
     end
 
     def wait_queued_test(id)
