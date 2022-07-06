@@ -80,7 +80,10 @@ module AutoHCK
 
       return if diff < time_to_seconds(QUEUE_TEST_TIMEOUT)
 
+      @tests_extra[@last_queued_id]['status'] = 'Hangs on at queued state?'
       @logger.warn("Test was queued #{seconds_to_time(diff)} ago! HCK hangs on?")
+
+      update_summary_results_log
     end
 
     def wait_queued_test(id)
@@ -145,6 +148,9 @@ module AutoHCK
                   "#{test['name']} [#{test['estimatedruntime']}]")
 
       @tests_extra[test['id']]['started_at'] = DateTime.now
+      @tests_extra[test['id']]['status'] = nil
+
+      update_summary_results_log
     end
 
     def print_tests_stats
@@ -178,7 +184,8 @@ module AutoHCK
     def summary_results_log
       @tests.reduce('') do |sum, test|
         extra_info = @tests_extra.dig(test['id'], 'dump') ? '(with Minidump)' : ''
-        sum + "#{test['status']}: #{test['name']} [#{test['estimatedruntime']}] #{extra_info}\n"
+        status = @tests_extra.dig(test['id'], 'status') || test['status']
+        sum + "#{status}: #{test['name']} [#{test['estimatedruntime']}] #{extra_info}\n"
       end
     end
 
