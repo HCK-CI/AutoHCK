@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
+require 'date'
 require 'fileutils'
 require './lib/engines/hcktest/playlist'
+require './lib/auxiliary/time_helper'
 require './lib/auxiliary/zip_helper'
 
 # AutoHCK module
@@ -14,6 +16,8 @@ module AutoHCK
     APPLYING_FILTERS_INTERVAL = 50
     VERIFY_TARGET_RETRIES = 5
     VERIFY_TARGET_SLEEP = 5
+    QUEUE_TEST_TIMEOUT = '00:15:00'
+
     def initialize(client, support, project, target, tools)
       @client = client
       @project = project
@@ -66,10 +70,26 @@ module AutoHCK
       @support.name if support_needed?(test)
     end
 
+    def check_test_queued_time
+      # We can't compare test objects directly because the list_tests
+      # function updates the test object but the current_test function
+      # returns the pure object.
+      return if @last_queued_id == current_test&.dig('id')
+
+      diff = time_diff(@tests_extra[@last_queued_id]['queued_at'], DateTime.now)
+
+      return if diff < time_to_seconds(QUEUE_TEST_TIMEOUT)
+
+      @logger.warn("Test was queued #{seconds_to_time(diff)} ago! HCK hangs on?")
+    end
+
     def wait_queued_test(id)
       loop do
         sleep 5
         test = @tools.get_test_info(id, @target['key'], @client.name, @tag)
+
+        check_test_queued_time
+
         break if test['executionstate'] != 'NotRunning'
         break if test['status'] == 'InQueue'
         break if test_finished?(test)
@@ -82,6 +102,8 @@ module AutoHCK
 
       @tests_extra[test['id']] ||= {}
       @tests_extra[test['id']]['queued_at'] = DateTime.now
+
+      @last_queued_id = test['id']
 
       return unless wait
 
@@ -234,6 +256,7 @@ module AutoHCK
         archive_test_results(test)
       end
       print_tests_stats
+      @last_queued_id = nil
     end
 
     def reset_clients_to_ready_state
@@ -269,6 +292,7 @@ module AutoHCK
         keep_clients_alive
         reset_clients_to_ready_state
         check_new_finished_tests
+        check_test_queued_time
         if current_test != running
           running = current_test
           on_test_start(running) if running
