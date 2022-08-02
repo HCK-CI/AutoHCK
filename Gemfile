@@ -19,11 +19,6 @@ gem 'rubyzip'
 gem 'sentry-ruby'
 gem 'sqlite3'
 
-group :development do
-  gem 'debase'
-  gem 'ruby-debug-ide'
-end
-
 group :test do
   gem 'code-scanning-rubocop'
   gem 'rspec'

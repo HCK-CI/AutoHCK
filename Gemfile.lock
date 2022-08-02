@@ -26,9 +26,6 @@ GEM
       rubocop (~> 1.0)
     concurrent-ruby (1.1.9)
     curb (1.0.1)
-    debase (0.2.4.1)
-      debase-ruby_core_source (>= 0.10.2)
-    debase-ruby_core_source (0.10.12)
     diff-lcs (1.4.4)
     dotenv (2.7.6)
     dropbox_api (0.1.20)
@@ -81,7 +78,6 @@ GEM
     public_suffix (4.0.6)
     rack (2.2.3.1)
     rainbow (3.0.0)
-    rake (13.0.3)
     rdoc (6.4.0)
       psych (>= 4.0.0)
     regexp_parser (2.1.1)
@@ -112,8 +108,6 @@ GEM
       unicode-display_width (>= 1.4.0, < 3.0)
     rubocop-ast (1.4.1)
       parser (>= 2.7.1.5)
-    ruby-debug-ide (0.7.3)
-      rake (>= 0.8.1)
     ruby-progressbar (1.11.0)
     ruby2_keywords (0.0.4)
     rubyntlm (0.6.3)
@@ -156,7 +150,6 @@ DEPENDENCIES
   activesupport
   code-scanning-rubocop
   curb
-  debase
   dotenv
   dropbox_api
   filelock
@@ -169,7 +162,6 @@ DEPENDENCIES
   rspec_junit_formatter
   rtoolsHCK!
   rubocop (= 1.9.1)
-  ruby-debug-ide
   rubyzip
   sentry-ruby
   sqlite3
