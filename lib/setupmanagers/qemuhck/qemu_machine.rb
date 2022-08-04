@@ -279,10 +279,7 @@ module AutoHCK
       case device_info['type']
       when 'network'
         dev = @nm.test_device_command(device_info['name'], full_replacement_list)
-        bridge_start, bridge_stop = @nm.test_bridge_command
         @device_commands << dev
-        @nm_commands_start << bridge_start
-        @nm_commands_stop << bridge_stop
       else
         cmd = device_info['command_line'].join(' ')
         @device_commands << replace_string_recursive(cmd, full_replacement_list)
@@ -314,6 +311,10 @@ module AutoHCK
       return unless @options['client_id'].zero?
 
       bridge_start, bridge_stop = @nm.control_bridge_command
+      @nm_commands_start << bridge_start
+      @nm_commands_stop << bridge_stop
+
+      bridge_start, bridge_stop = @nm.test_bridge_command
       @nm_commands_start << bridge_start
       @nm_commands_stop << bridge_stop
 
