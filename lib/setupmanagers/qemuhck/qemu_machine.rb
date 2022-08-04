@@ -278,10 +278,11 @@ module AutoHCK
     def process_device(device_info)
       case device_info['type']
       when 'network'
-        dev, run_start, run_stop = @nm.test_device_command(device_info['name'], full_replacement_list)
+        dev = @nm.test_device_command(device_info['name'], full_replacement_list)
+        bridge_start, bridge_stop = @nm.test_bridge_command
         @device_commands << dev
-        @nm_commands_start << run_start
-        @nm_commands_stop << run_stop
+        @nm_commands_start << bridge_start
+        @nm_commands_stop << bridge_stop
       else
         cmd = device_info['command_line'].join(' ')
         @device_commands << replace_string_recursive(cmd, full_replacement_list)
@@ -291,32 +292,30 @@ module AutoHCK
     def process_optional_hck_network
       return unless @config['transfer_net_enabled']
 
-      dev, run_start, run_stop = @nm.transfer_device_command(@config['transfer_net_device'],
-                                                             @config['share_on_host_net'],
-                                                             @config['share_on_host_path'],
-                                                             full_replacement_list)
+      dev = @nm.transfer_device_command(@config['transfer_net_device'],
+                                        @config['share_on_host_net'],
+                                        @config['share_on_host_path'],
+                                        full_replacement_list)
       @device_commands << dev
-      @nm_commands_start << run_start
-      @nm_commands_stop << run_stop
     end
 
     def process_world_hck_network
-      dev, run_start, run_stop = @nm.world_device_command(option_config('world_net_device'),
-                                                          @config['world_net_bridge'],
-                                                          full_replacement_list)
+      dev = @nm.world_device_command(option_config('world_net_device'),
+                                     @config['world_net_bridge'],
+                                     full_replacement_list)
       @device_commands << dev
-      @nm_commands_start << run_start
-      @nm_commands_stop << run_stop
     end
 
     def process_hck_network
-      dev, run_start, run_stop = @nm.control_device_command(option_config('ctrl_net_device'),
-                                                            full_replacement_list)
+      dev = @nm.control_device_command(option_config('ctrl_net_device'),
+                                       full_replacement_list)
       @device_commands << dev
-      @nm_commands_start << run_start
-      @nm_commands_stop << run_stop
 
       return unless @options['client_id'].zero?
+
+      bridge_start, bridge_stop = @nm.control_bridge_command
+      @nm_commands_start << bridge_start
+      @nm_commands_stop << bridge_stop
 
       @nm_commands_start << @nm.disable_bridge_nf
 
