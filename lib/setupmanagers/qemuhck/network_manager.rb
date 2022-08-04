@@ -125,7 +125,11 @@ module AutoHCK
         cmd, replacement_list = device_info(type, device_name, options, qemu_replacement_list)
         create_net_up_script(replacement_list.merge({ '@bridge_name@' => @control_bridge }))
 
-        [cmd, create_bridge_commands(@control_bridge), remove_bridge_commands(@control_bridge)]
+        cmd
+      end
+
+      def control_bridge_command
+        [create_bridge_commands(@control_bridge), remove_bridge_commands(@control_bridge)]
       end
 
       def world_device_command(device_name, bridge_name, qemu_replacement_list = {})
@@ -142,7 +146,7 @@ module AutoHCK
         cmd, replacement_list = device_info(type, device_name, options, qemu_replacement_list)
         create_net_up_script(replacement_list.merge({ '@bridge_name@' => bridge_name }))
 
-        [cmd, nil, nil]
+        cmd
       end
 
       def test_device_command(device_name, qemu_replacement_list = {})
@@ -159,7 +163,11 @@ module AutoHCK
         cmd, replacement_list = device_info(type, device_name, options, qemu_replacement_list)
         create_net_up_script(replacement_list.merge({ '@bridge_name@' => @test_bridge }))
 
-        [cmd, create_bridge_commands(@test_bridge), remove_bridge_commands(@test_bridge)]
+        cmd
+      end
+
+      def test_bridge_command
+        [create_bridge_commands(@test_bridge), remove_bridge_commands(@test_bridge)]
       end
 
       def transfer_device_command(device_name, transfer_net, share_path, qemu_replacement_list = {})
@@ -177,7 +185,7 @@ module AutoHCK
 
         cmd, = device_info(type, device_name, options, qemu_replacement_list)
 
-        [cmd, nil, nil]
+        cmd
       end
 
       def close; end
