@@ -10,7 +10,7 @@ module AutoHCK
 
     def self.clean_threads
       Thread.list.each do |thread|
-        thread.exit unless Thread.main.eql?(thread)
+        thread.exit unless Thread.current.eql?(thread) && Thread.main.eql?(thread)
       end
     end
 
@@ -26,10 +26,12 @@ module AutoHCK
       Signal.trap(signal) do
         write_log("SIG#{signal}(*) received, ignoring...")
       end
-      @project&.handle_cancel
-      @project&.close
-      clean_threads
-      exit
+      Thread.start do
+        @project&.handle_cancel
+        @project&.close
+        clean_threads
+        exit
+      end
     end
 
     @sig_status = {}
