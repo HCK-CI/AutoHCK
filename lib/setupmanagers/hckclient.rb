@@ -214,6 +214,7 @@ module AutoHCK
       @logger.info("Aborting HLKClient #{@name}")
 
       @setup_manager.abort_client(@name)
+      synchronize(exit: true)
     end
   end
 end
