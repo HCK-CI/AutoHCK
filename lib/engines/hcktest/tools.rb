@@ -61,16 +61,8 @@ module AutoHCK
         @mutex = mutex
       end
 
-      def method_missing(method, *args, &block)
-        if @delegate.respond_to?(method)
-          @mutex.synchronize { @delegate.send(method, *args, &block) }
-        else
-          super
-        end
-      end
-
-      def respond_to_missing?(method, *args)
-        @delegate.respond_to?(method) || super
+      def synchronize
+        @mutex.synchronize { yield @delegate }
       end
     end
 
@@ -90,7 +82,9 @@ module AutoHCK
       stream.strip.lines.map { |line| "\n   -- #{line.rstrip}" }.join
     end
 
-    def handle_results(results)
+    def act_with_tools(&block)
+      results = @tools.synchronize(&block)
+
       if results['result'] == 'Failure'
         if results['message']
           failure_message = prep_stream_for_log(results['message'])
@@ -125,55 +119,55 @@ module AutoHCK
 
     def create_pool(tag)
       retry_tools_command(__method__) do
-        handle_results(@tools.create_pool(tag))
+        act_with_tools { _1.create_pool(tag) }
       end
     end
 
     def delete_pool(tag)
       retry_tools_command(__method__) do
-        handle_results(@tools.delete_pool(tag))
+        act_with_tools { _1.delete_pool(tag) }
       end
     end
 
     def create_project(tag)
       retry_tools_command(__method__) do
-        handle_results(@tools.create_project(tag))
+        act_with_tools { _1.create_project(tag) }
       end
     end
 
     def delete_project(tag)
       retry_tools_command(__method__) do
-        handle_results(@tools.delete_project(tag))
+        act_with_tools { _1.delete_project(tag) }
       end
     end
 
     def list_pools
       retry_tools_command(__method__) do
-        handle_results(@tools.list_pools)
+        act_with_tools { _1.list_pools }
       end
     end
 
     def create_project_target(key, tag, machine)
       retry_tools_command(__method__) do
-        handle_results(@tools.create_project_target(key, tag, machine, tag))
+        act_with_tools { _1.create_project_target(key, tag, machine, tag) }
       end
     end
 
     def list_machine_targets(machine, pool)
       retry_tools_command(__method__) do
-        handle_results(@tools.list_machine_targets(machine, pool))
+        act_with_tools { _1.list_machine_targets(machine, pool) }
       end
     end
 
     def delete_machine(machine, pool)
       retry_tools_command(__method__) do
-        handle_results(@tools.delete_machine(machine, pool))
+        act_with_tools { _1.delete_machine(machine, pool) }
       end
     end
 
     def run_on_machine(machine, desc, cmd)
       retries ||= 0
-      ret = handle_results(@tools.run_on_machine(machine, cmd))
+      ret = act_with_tools { _1.run_on_machine(machine, cmd) }
 
       return ret if ret
 
@@ -190,7 +184,7 @@ module AutoHCK
 
     def upload_to_machine(machine, l_directory, r_directory = nil)
       retries ||= 0
-      ret = handle_results(@tools.upload_to_machine(machine, l_directory, r_directory))
+      ret = act_with_tools { _1.upload_to_machine(machine, l_directory, r_directory) }
 
       return ret if ret
 
@@ -207,7 +201,7 @@ module AutoHCK
 
     def download_from_machine(machine, r_path, l_path)
       retries ||= 0
-      ret = handle_results(@tools.download_from_machine(machine, r_path, l_path))
+      ret = act_with_tools { _1.download_from_machine(machine, r_path, l_path) }
 
       return ret if ret
 
@@ -224,7 +218,7 @@ module AutoHCK
 
     def exists_on_machine?(machine, r_path)
       retries ||= 0
-      ret = handle_results(@tools.exists_on_machine?(machine, r_path))
+      ret = act_with_tools { _1.exists_on_machine?(machine, r_path) }
 
       return ret unless ret.nil?
 
@@ -241,7 +235,7 @@ module AutoHCK
 
     def delete_on_machine(machine, r_path)
       retries ||= 0
-      ret = handle_results(@tools.delete_on_machine(machine, r_path))
+      ret = act_with_tools { _1.delete_on_machine(machine, r_path) }
 
       return ret if ret
 
@@ -258,7 +252,7 @@ module AutoHCK
 
     def restart_machine(machine)
       retries ||= 0
-      ret = handle_results(@tools.machine_shutdown(machine, restart: true))
+      ret = act_with_tools { _1.machine_shutdown(machine, restart: true) }
 
       return ret if ret
 
@@ -274,7 +268,7 @@ module AutoHCK
 
     def shutdown_machine(machine)
       retries ||= 0
-      ret = handle_results(@tools.machine_shutdown(machine))
+      ret = act_with_tools { _1.machine_shutdown(machine) }
 
       return ret if ret
 
@@ -290,13 +284,13 @@ module AutoHCK
 
     def shutdown
       retry_tools_command(__method__) do
-        handle_results(@tools.shutdown)
+        act_with_tools { _1.shutdown }
       end
     end
 
     def move_machine(machine, from, to)
       retry_tools_command(__method__) do
-        handle_results(@tools.move_machine(machine, from, to))
+        act_with_tools { _1.move_machine(machine, from, to) }
       end
     end
 
@@ -305,18 +299,17 @@ module AutoHCK
 
     def set_machine_ready(machine, pool)
       retry_tools_command(__method__) do
-        handle_results(@tools.set_machine_state(machine,
-                                                pool,
-                                                'ready',
-                                                SET_MACHINE_READY_TIMEOUT))
+        act_with_tools do
+          _1.set_machine_state(machine, pool, 'ready', SET_MACHINE_READY_TIMEOUT)
+        end
       end
     end
 
     def install_machine_driver_package(machine, method, driver_path, file, options = {})
       retries ||= 0
-      ret = handle_results(@tools.install_machine_driver_package(machine,
-                                                                 driver_path,
-                                                                 method, file, options))
+      ret = act_with_tools do
+        _1.install_machine_driver_package(machine, driver_path, method, file, options)
+      end
 
       return ret if ret
 
@@ -333,40 +326,43 @@ module AutoHCK
 
     def list_tests(key, machine, tag, playlist)
       retry_tools_command(__method__) do
-        handle_results(@tools.list_tests(key, tag, machine, tag, nil, nil,
-                                         playlist))
+        act_with_tools do
+          _1.list_tests(key, tag, machine, tag, nil, nil, playlist)
+        end
       end
     end
 
     def get_test_info(id, key, machine, tag)
       retry_tools_command(__method__) do
-        handle_results(@tools.get_test_info(id, key, tag, machine, tag))
+        act_with_tools { _1.get_test_info(id, key, tag, machine, tag) }
       end
     end
 
     def queue_test(test_id, target_key, machine, tag, support)
       retry_tools_command(__method__) do
-        handle_results(@tools.queue_test(test_id, target_key, tag, machine, tag,
-                                         support))
+        act_with_tools do
+          _1.queue_test(test_id, target_key, tag, machine, tag, support)
+        end
       end
     end
 
     def update_filters(filters_path)
       retry_tools_command(__method__) do
-        handle_results(@tools.update_filters(filters_path))
+        act_with_tools { _1.update_filters(filters_path) }
       end
     end
 
     def apply_project_filters(project)
       retry_tools_command(__method__) do
-        handle_results(@tools.apply_project_filters(project))
+        act_with_tools { _1.apply_project_filters(project) }
       end
     end
 
     def zip_test_result_logs(test_id, target_key, machine, tag)
       retries ||= 0
-      ret = handle_results(@tools.zip_test_result_logs(-1, test_id, target_key,
-                                                       tag, machine, tag))
+      ret = act_with_tools do
+        _1.zip_test_result_logs(-1, test_id, target_key, tag, machine, tag)
+      end
 
       return ret if ret
 
@@ -384,24 +380,24 @@ module AutoHCK
 
     def create_project_package(project, handler = nil)
       retry_tools_command(__method__) do
-        handle_results(@tools.create_project_package(project, handler))
+        act_with_tools { _1.create_project_package(project, handler) }
       end
     end
 
     def connection_check
       retry_tools_command(__method__) do
-        handle_results(@tools.connection_check)
+        act_with_tools { _1.connection_check }
       end
     end
 
     def reconnect
       retry_tools_command(__method__) do
-        handle_results(@tools.reconnect)
+        act_with_tools { _1.reconnect }
       end
     end
 
     def close
-      @tools&.close
+      @tools&.synchronize { _1.close }
       @tools = nil
     end
 
