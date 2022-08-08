@@ -29,7 +29,6 @@ begin
     begin
       Trap.project = @project
       @project.run if @project.prepare
-      @project.close
     rescue StandardError => e
       Signal.trap('TERM') do
         @project.logger.warn('SIGTERM(*) received, ignoring...')
@@ -37,8 +36,9 @@ begin
       Sentry.capture_exception(e)
       @project.log_exception(e, 'fatal')
       @project.handle_error
-      @project.close
       exit(1)
+    ensure
+      @project.close
     end
   end
 rescue StandardError => e

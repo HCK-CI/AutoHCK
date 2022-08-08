@@ -21,7 +21,6 @@ module AutoHCK
         write_log("SIG#{signal}(*) received, ignoring...")
       end
       @project&.handle_cancel
-      @project&.close
       exit
     end
 
