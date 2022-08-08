@@ -4,39 +4,45 @@
 require 'bundler/setup'
 require 'dotenv/load'
 require './lib/config/sentry'
-require 'filelock'
-require './lib/cli'
-require './lib/project'
-require './lib/trap'
 
-# AutoHCK module
-module AutoHCK
-  cli = CLI.new
-  cli.parse(ARGV)
+begin
+  require 'filelock'
+  require './lib/cli'
+  require './lib/project'
+  require './lib/trap'
 
-  ENV.store 'LC_ALL', 'en_US.UTF-8'
+  # AutoHCK module
+  module AutoHCK
+    cli = CLI.new
+    cli.parse(ARGV)
 
-  AUTOHCK_RETRIES = 5
+    ENV.store 'LC_ALL', 'en_US.UTF-8'
 
-  Trap.init_traps(%w[TERM INT])
+    AUTOHCK_RETRIES = 5
 
-  Thread.abort_on_exception = true
-  Thread.report_on_exception = false
+    Trap.init_traps(%w[TERM INT])
 
-  begin
-    @project = Project.new(cli)
-    Trap.project = @project
-    @project.run if @project.prepare
-    @project.close
-  rescue StandardError => e
-    Signal.trap('TERM') do
-      @project&.logger&.warn('SIGTERM(*) received, ignoring...')
+    Thread.abort_on_exception = true
+    Thread.report_on_exception = false
+
+    begin
+      @project = Project.new(cli)
+      Trap.project = @project
+      @project.run if @project.prepare
+      @project.close
+    rescue StandardError => e
+      Signal.trap('TERM') do
+        @project&.logger&.warn('SIGTERM(*) received, ignoring...')
+      end
+      Sentry.capture_exception(e)
+      @project&.log_exception(e, 'fatal')
+      @project&.handle_error
+      @project&.close
+      Trap.clean_threads
+      exit(1)
     end
-    Sentry.capture_exception(e)
-    @project&.log_exception(e, 'fatal')
-    @project&.handle_error
-    @project&.close
-    Trap.clean_threads
-    exit(1)
   end
+rescue StandardError => e
+  Sentry.capture_exception(e)
+  raise
 end
