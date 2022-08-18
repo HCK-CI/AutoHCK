@@ -63,8 +63,9 @@ module AutoHCK
       @drive_cache_options = []
       @define_variables = {}
       @run_opts = {}
-      @nm_commands_start = []
-      @nm_commands_stop = []
+      @hostfwds = []
+
+      @pid = nil
     end
 
     def load_options(options)
@@ -219,14 +220,6 @@ module AutoHCK
       Json.read_json(device_json, @logger)
     end
 
-    def normalize_nm_lists
-      @nm_commands_start.flatten!
-      @nm_commands_start.compact!
-
-      @nm_commands_stop.flatten!
-      @nm_commands_stop.compact!
-    end
-
     def normalize_lists
       @device_commands.flatten!
       @device_commands.compact!
@@ -248,8 +241,6 @@ module AutoHCK
 
       @drive_cache_options.flatten!
       @drive_cache_options.compact!
-
-      normalize_nm_lists
     end
 
     def load_device_info(device_info)
@@ -293,7 +284,6 @@ module AutoHCK
 
     def process_world_hck_network
       dev = @nm.world_device_command(option_config('world_net_device'),
-                                     @config['world_net_bridge'],
                                      full_replacement_list)
       @device_commands << dev
     end
@@ -304,16 +294,6 @@ module AutoHCK
       @device_commands << dev
 
       return unless @options['client_id'].zero?
-
-      bridge_start, bridge_stop = @nm.control_bridge_command
-      @nm_commands_start << bridge_start
-      @nm_commands_stop << bridge_stop
-
-      bridge_start, bridge_stop = @nm.test_bridge_command
-      @nm_commands_start << bridge_start
-      @nm_commands_stop << bridge_stop
-
-      @nm_commands_start << @nm.disable_bridge_nf
 
       process_world_hck_network
 
@@ -376,10 +356,8 @@ module AutoHCK
       ].compact
     end
 
-    def read_world_ip
-      @nm.read_world_ip option_config('world_net_device'),
-                        @config['world_net_bridge'],
-                        full_replacement_list
+    def find_world_ip
+      @nm.find_world_ip option_config('world_net_device'), full_replacement_list
     end
 
     def dump_config
@@ -441,11 +419,31 @@ module AutoHCK
       @logger.info("#{@run_name} started with PID #{@pid}")
     end
 
-    def run_pre_start_commands
-      @nm_commands_start.each do |cmd|
-        run_cmd(cmd)
+    def add_hostfwd
+      [@monitor_port, @vnc_port].each do
+        @hostfwds << @options['slirp'].run({
+                                             'execute' => 'add_hostfwd',
+                                             'arguments' => {
+                                               'proto' => 'tcp',
+                                               'host_port' => _1,
+                                               'guest_port' => _1
+                                             }
+                                           })
+      end
+    end
+
+    def remove_hostfwd
+      @hostfwds.each do
+        @options['slirp'].run({
+                                'execute' => 'remove_hostfwd',
+                                'arguments' => _1
+                              })
       end
 
+      @hostfwds.clear
+    end
+
+    def run_pre_start_commands
       @pre_start_commands.each do |dirty_cmd|
         cmd = replace_string_recursive(dirty_cmd, full_replacement_list)
         run_cmd(cmd)
@@ -455,10 +453,6 @@ module AutoHCK
     def run_post_stop_commands
       @post_stop_commands.each do |dirty_cmd|
         cmd = replace_string_recursive(dirty_cmd, full_replacement_list)
-        run_cmd_no_fail(cmd)
-      end
-
-      @nm_commands_stop.each do |cmd|
         run_cmd_no_fail(cmd)
       end
     end
@@ -516,9 +510,6 @@ module AutoHCK
       content = [
         "#!/usr/bin/env bash\n",
 
-        "\n\n# QEMU network manager pre start commands\n",
-        merge_commands_array(@nm_commands_start),
-
         "\n\n# QEMU pre start commands\n",
         merge_commands_array(@pre_start_commands),
 
@@ -526,10 +517,7 @@ module AutoHCK
         replace_string_recursive(dirty_command.join(" \\\n"), full_replacement_list),
 
         "\n\n# QEMU post stop commands\n",
-        merge_commands_array(@post_stop_commands),
-
-        "\n\n# QEMU network manager post stop commands\n",
-        merge_commands_array(@nm_commands_stop)
+        merge_commands_array(@post_stop_commands)
       ]
 
       create_run_script(file_name, content.join)
@@ -549,6 +537,7 @@ module AutoHCK
       if @run_opts[:dump_only]
         dump_commands
       else
+        add_hostfwd
         run_pre_start_commands
         run_vm
       end
@@ -626,6 +615,7 @@ module AutoHCK
     def close
       return if @run_opts[:dump_only]
 
+      remove_hostfwd
       vm_abort
       @nm.close
       run_post_stop_commands

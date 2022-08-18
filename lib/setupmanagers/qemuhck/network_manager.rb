@@ -22,9 +22,6 @@ module AutoHCK
         @logger = logger
         @dev_id = 0
 
-        @control_bridge = "br_ctrl_#{id}"
-        @test_bridge = "br_test_#{id}"
-
         @config = Json.read_json(CONFIG_JSON, @logger)
       end
 
@@ -38,49 +35,25 @@ module AutoHCK
         Json.read_json(device_json, @logger)
       end
 
-      def read_world_ip(device_name, bridge_name, qemu_replacement_list = {})
+      def find_world_ip(*args)
+        UDPSocket.open do |socket|
+          (15..30).map { socket.send('', 0, "10.0.2.#{_1}", 9) }
+        end
+
+        read_world_ip(*args)
+      end
+
+      def read_world_ip(device_name, qemu_replacement_list = {})
         device = read_device(device_name)
         type_config = @config['devices']['world']
         replacement_list = device_replacement_list('world', device, type_config, qemu_replacement_list)
         mac = replace_string_recursive(type_config['mac'], replacement_list)
 
         line = File.readlines('/proc/net/arp')[1..].map(&:split).find do
-          _1[3] == mac && _1[5] == bridge_name
+          _1[3] == mac && _1[5] == 'br_world'
         end
 
         line&.first
-      end
-
-      def create_bridge_commands(bridge, tx_queue_len = 0)
-        cmd = [
-          "brctl show #{bridge} 1>/dev/null 2>&1 || brctl addbr #{bridge}",
-          "ifconfig #{bridge} up"
-        ]
-
-        cmd << "ifconfig #{bridge} txqueuelen #{tx_queue_len}" if tx_queue_len.positive?
-
-        cmd
-      end
-
-      def remove_bridge_commands(bridge)
-        [
-          "ifconfig #{bridge} down",
-          "brctl delbr #{bridge}"
-        ]
-      end
-
-      def disable_bridge_nf_commands
-        [
-          'sysctl -e net.bridge.bridge-nf-call-arptables=0',
-          'sysctl -e net.bridge.bridge-nf-call-ip6tables=0',
-          'sysctl -e net.bridge.bridge-nf-call-iptables=0'
-        ]
-      end
-
-      def disable_bridge_nf
-        @logger.info('Disabling bridge-netfilter')
-
-        disable_bridge_nf_commands
       end
 
       def net_addr_cmd(addr)
@@ -137,16 +110,12 @@ module AutoHCK
         }
 
         cmd, replacement_list = device_command_info(type, device_name, options, qemu_replacement_list)
-        create_net_up_script(replacement_list.merge({ '@bridge_name@' => @control_bridge }))
+        create_net_up_script(replacement_list.merge({ '@bridge_name@' => 'br_ctrl' }))
 
         cmd
       end
 
-      def control_bridge_command
-        [create_bridge_commands(@control_bridge), remove_bridge_commands(@control_bridge)]
-      end
-
-      def world_device_command(device_name, bridge_name, qemu_replacement_list = {})
+      def world_device_command(device_name, qemu_replacement_list = {})
         type = __method__.to_s.split('_').first
 
         netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no'
@@ -158,7 +127,7 @@ module AutoHCK
         }
 
         cmd, replacement_list = device_command_info(type, device_name, options, qemu_replacement_list)
-        create_net_up_script(replacement_list.merge({ '@bridge_name@' => bridge_name }))
+        create_net_up_script(replacement_list.merge({ '@bridge_name@' => 'br_world' }))
 
         cmd
       end
@@ -175,13 +144,9 @@ module AutoHCK
         }
 
         cmd, replacement_list = device_command_info(type, device_name, options, qemu_replacement_list)
-        create_net_up_script(replacement_list.merge({ '@bridge_name@' => @test_bridge }))
+        create_net_up_script(replacement_list.merge({ '@bridge_name@' => 'br_test' }))
 
         cmd
-      end
-
-      def test_bridge_command
-        [create_bridge_commands(@test_bridge), remove_bridge_commands(@test_bridge)]
       end
 
       def transfer_device_command(device_name, transfer_net, share_path, qemu_replacement_list = {})

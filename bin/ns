@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'bundler/setup'
+require 'English'
+require 'fileutils'
+require 'tmpdir'
+
+e_read, e_write = IO.pipe
+r_read, r_write = IO.pipe
+e_read.close_on_exec = false
+r_write.close_on_exec = false
+parent = Process.pid
+a_dir = Dir.mktmpdir('autohck')
+a = File.join(a_dir, 'sock')
+
+fork do
+  e_write.close
+  r_read.close
+  Process.setpgid 0, 0
+  e_read.read 1
+
+  slirp = spawn('slirp4netns', '-r', r_write.fileno.to_s,
+                '-a', a, parent.to_s, 'tap_host')
+  begin
+    r_write.close
+    e_read.read 1
+  ensure
+    Process.kill 9, slirp
+    Process.wait
+
+    warn "slirp4nents: unexpected exit status #{$CHILD_STATUS.exitstatus}" if $CHILD_STATUS.termsig != 9
+  end
+ensure
+  e_read.close
+  FileUtils.remove_entry_secure a_dir
+end
+
+e_read.close
+r_write.close
+e_write.close_on_exec = false
+r_read.close_on_exec = false
+
+ENV['AUTOHCK_SLIRP'] = a
+
+exec 'unshare', '--user', '--map-root-user', '--net', '--mount',
+     File.join(__dir__, 'ns_unshared'), e_write.fileno.to_s, r_read.fileno.to_s,
+     *(ARGV.empty? ? ['sh'] : ARGV)
