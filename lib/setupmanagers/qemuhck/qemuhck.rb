@@ -3,6 +3,7 @@
 require './lib/exceptions'
 require './lib/auxiliary/json_helper'
 require './lib/auxiliary/host_helper'
+require './lib/setupmanagers/qemuhck/slirp'
 require './lib/setupmanagers/qemuhck/qemu_machine'
 
 # AutoHCK module
@@ -17,6 +18,15 @@ module AutoHCK
     STUDIO = 'st'
 
     def initialize(project)
+      initialize_project project
+
+      @slirp = Slirp.new(ENV['AUTOHCK_SLIRP'])
+      @clients_vm = {}
+      initialize_studio_vm
+      initialize_clients_vm
+    end
+
+    def initialize_project(project)
       @project = project
 
       @id = project.id
@@ -28,10 +38,6 @@ module AutoHCK
 
       @devices = @drivers&.map { |driver| driver['device'] }
       @kit = @platform['kit']
-
-      @clients_vm = {}
-      initialize_studio_vm
-      initialize_clients_vm
     end
 
     def initialize_studio_vm
@@ -41,6 +47,7 @@ module AutoHCK
                                      'workspace_path' => @workspace_path,
                                      'image_name' => @platform['st_image'],
                                      'logger' => @logger,
+                                     'slirp' => @slirp,
                                      'iso_path' => @project.config['iso_path']
                                    })
     end
@@ -75,6 +82,7 @@ module AutoHCK
                                      'memory' => v['memory'],
                                      'devices_list' => @devices,
                                      'logger' => @logger,
+                                     'slirp' => @slirp,
                                      'iso_path' => @project.config['iso_path']
                                    })
         @clients_vm[v['name']] = QemuMachine.new(vm_options)
@@ -173,7 +181,7 @@ module AutoHCK
     end
 
     def create_studio
-      @studio = HCKStudio.new(@project, self) { @studio_vm.read_world_ip }
+      @studio = HCKStudio.new(@project, self) { @studio_vm.find_world_ip }
     end
 
     def create_client(name)
