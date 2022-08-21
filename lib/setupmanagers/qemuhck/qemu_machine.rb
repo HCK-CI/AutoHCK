@@ -3,7 +3,7 @@
 require 'mono_logger'
 
 require_relative './network_manager'
-require_relative './monitor'
+require_relative './qmp'
 require_relative './exceptions'
 
 require_relative '../../auxiliary/json_helper'
@@ -46,8 +46,6 @@ module AutoHCK
       init_config
       apply_states
       init_ports
-
-      @monitor = Monitor.new(@run_name, @monitor_port, @logger)
 
       @base_image_path = Pathname.new(@config['images_path']).join(@options['image_name'])
 
@@ -203,6 +201,7 @@ module AutoHCK
         '@vnc_id@' => @vnc_id,
         '@vnc_port@' => @vnc_port,
         '@qemu_monitor_port@' => @monitor_port,
+        '@qmp_fd@' => @qmp.socket.fileno,
         '@image_path@' => image_path
       }.merge(config_replacement_list)
         .merge(machine_replacement_list)
@@ -421,7 +420,8 @@ module AutoHCK
 
     def run_qemu
       cmd = replace_string_recursive(dirty_command.join(' '), full_replacement_list)
-      qemu = CmdRun.new(@logger, cmd)
+      cmd += " -chardev socket,id=qmp,fd=#{@qmp.socket.fileno},server=off -mon chardev=qmp,mode=control"
+      qemu = CmdRun.new(@logger, cmd, { @qmp.socket.fileno => @qmp.socket.fileno })
       @pid = qemu.pid
 
       @qemu_thread = Thread.new do
@@ -509,6 +509,7 @@ module AutoHCK
       file_name = "#{@workspace_path}/#{@run_name}_manual.sh"
       content = [
         "#!/usr/bin/env bash\n",
+
         "\n\n# QEMU network manager pre start commands\n",
         merge_commands_array(@nm_commands_start),
 
@@ -529,6 +530,7 @@ module AutoHCK
     end
 
     def run(run_opts = nil)
+      @qmp = QMP.new(@run_name, @logger)
       @run_opts = validate_run_opts(run_opts.to_h)
       create_snapshot if @run_opts[:create_snapshot]
 
@@ -568,7 +570,7 @@ module AutoHCK
 
     def soft_abort
       SOFT_ABORT_RETRIES.times do
-        @monitor.powerdown
+        @qmp.powerdown
         sleep ABORT_SLEEP
 
         return true unless alive?
@@ -579,7 +581,7 @@ module AutoHCK
     end
 
     def hard_abort
-      @monitor.quit
+      @qmp.quit
 
       sleep ABORT_SLEEP
       return true unless alive?
@@ -599,6 +601,7 @@ module AutoHCK
 
       @logger.info("#{@run_name} hard abort failed, force aborting...")
 
+      @qmp.close
       @qemu_thread.exit
       Process.kill('KILL', @pid)
     end
