@@ -376,6 +376,12 @@ module AutoHCK
       ].compact
     end
 
+    def read_world_ip
+      @nm.read_world_ip option_config('world_net_device'),
+                        @config['world_net_bridge'],
+                        full_replacement_list
+    end
+
     def dump_config
       config = [
         'Setup configuration:',

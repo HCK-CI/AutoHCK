@@ -10,7 +10,6 @@ gem 'dotenv'
 gem 'dropbox_api'
 gem 'filelock'
 gem 'mono_logger'
-gem 'net-ping'
 gem 'octokit'
 gem 'openssl', require: false
 gem 'rtoolsHCK', git: 'https://github.com/HCK-CI/rtoolsHCK.git', tag: 'v0.3.1'

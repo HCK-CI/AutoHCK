@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'net/ping'
 require './lib/engines/hcktest/tools'
 
 # AutoHCK module
@@ -13,18 +12,16 @@ module AutoHCK
     CONNECT_RETRIES = 5
     CONNECT_RETRY_SLEEP = 10
 
-    def initialize(project, setup_manager, ip)
+    def initialize(project, setup_manager, &ip_getter)
       @project = project
       @tag = project.engine.tag
       @setup_manager = setup_manager
-      @ip = ip
+      @ip_getter = ip_getter
       @logger = project.logger
-      @logger.debug("HCKStudio ip: #{ip}")
     end
 
     def up?
-      check = Net::Ping::External.new(@ip)
-      check.ping?
+      !@ip_getter.call.nil?
     end
 
     def create_snapshot
@@ -72,7 +69,7 @@ module AutoHCK
       retries ||= 0
       begin
         @logger.info('Initiating connection to studio')
-        @tools = Tools.new(@project, @ip, @clients)
+        @tools = Tools.new(@project, @ip_getter.call, @clients)
       rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH, RToolsHCKConnectionError
         raise StudioConnectError, 'Initiating connection to studio failed'
       end
