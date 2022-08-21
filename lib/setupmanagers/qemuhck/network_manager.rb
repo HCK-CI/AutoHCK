@@ -38,6 +38,19 @@ module AutoHCK
         Json.read_json(device_json, @logger)
       end
 
+      def read_world_ip(device_name, bridge_name, qemu_replacement_list = {})
+        device = read_device(device_name)
+        type_config = @config['devices']['world']
+        replacement_list = device_replacement_list('world', device, type_config, qemu_replacement_list)
+        mac = replace_string_recursive(type_config['mac'], replacement_list)
+
+        line = File.readlines('/proc/net/arp')[1..].map(&:split).find do
+          _1[3] == mac && _1[5] == bridge_name
+        end
+
+        line&.first
+      end
+
       def create_bridge_commands(bridge, tx_queue_len = 0)
         cmd = [
           "brctl show #{bridge} 1>/dev/null 2>&1 || brctl addbr #{bridge}",
@@ -74,7 +87,7 @@ module AutoHCK
         addr.nil? ? '' : ",addr=#{addr}"
       end
 
-      def device_replacement_list(type, device_info, device_options, device_config, qemu_replacement_list)
+      def device_replacement_list(type, device_info, device_config, qemu_replacement_list)
         replacement_list = {
           '@net_if_name@' => device_config['ifname'],
           '@net_up_script@' => "@workspace@/#{type}_ifup_@run_id@.sh",
@@ -82,18 +95,19 @@ module AutoHCK
           '@net_addr@' => net_addr_cmd(device_config['address']),
           '@bus_name@' => device_config['bus_name'],
           '@device_id@' => format('%02x', @dev_id)
-        }.merge(device_options)
+        }
 
         qemu_replacement_list.merge(device_info['define_variables'].to_h).merge(replacement_list)
       end
 
-      def device_info(type, device_name, device_options, qemu_replacement_list)
+      def device_command_info(type, device_name, command_options, qemu_replacement_list)
         @dev_id += 1
 
         device = read_device(device_name)
         type_config = @config['devices'][type]
 
-        replacement_list = device_replacement_list(type, device, device_options, type_config, qemu_replacement_list)
+        replacement_list = device_replacement_list(type, device, type_config, qemu_replacement_list)
+        replacement_list.merge! command_options
         device_command = replace_string_recursive(device['command_line'].join(' '), replacement_list)
 
         @logger.debug("Device #{device_name} used as #{type} device")
@@ -122,7 +136,7 @@ module AutoHCK
           '@netdev_options@' => netdev_options
         }
 
-        cmd, replacement_list = device_info(type, device_name, options, qemu_replacement_list)
+        cmd, replacement_list = device_command_info(type, device_name, options, qemu_replacement_list)
         create_net_up_script(replacement_list.merge({ '@bridge_name@' => @control_bridge }))
 
         cmd
@@ -143,7 +157,7 @@ module AutoHCK
           '@netdev_options@' => netdev_options
         }
 
-        cmd, replacement_list = device_info(type, device_name, options, qemu_replacement_list)
+        cmd, replacement_list = device_command_info(type, device_name, options, qemu_replacement_list)
         create_net_up_script(replacement_list.merge({ '@bridge_name@' => bridge_name }))
 
         cmd
@@ -160,7 +174,7 @@ module AutoHCK
           '@netdev_options@' => netdev_options
         }
 
-        cmd, replacement_list = device_info(type, device_name, options, qemu_replacement_list)
+        cmd, replacement_list = device_command_info(type, device_name, options, qemu_replacement_list)
         create_net_up_script(replacement_list.merge({ '@bridge_name@' => @test_bridge }))
 
         cmd
@@ -183,7 +197,7 @@ module AutoHCK
           '@netdev_options@' => netdev_options
         }
 
-        cmd, = device_info(type, device_name, options, qemu_replacement_list)
+        cmd, = device_command_info(type, device_name, options, qemu_replacement_list)
 
         cmd
       end

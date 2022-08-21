@@ -173,8 +173,7 @@ module AutoHCK
     end
 
     def create_studio
-      studio_ip = @project.config['ip_segment'] + @project.id.to_str
-      @studio = HCKStudio.new(@project, self, studio_ip)
+      @studio = HCKStudio.new(@project, self) { @studio_vm.read_world_ip }
     end
 
     def create_client(name)
