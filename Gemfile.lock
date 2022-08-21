@@ -58,7 +58,6 @@ GEM
     multi_xml (0.6.0)
     multipart-post (2.1.1)
     net-ping (2.0.8)
-    net-telnet (0.2.0)
     nori (2.6.0)
     oauth2 (1.4.7)
       faraday (>= 0.8, < 2.0)
@@ -155,7 +154,6 @@ DEPENDENCIES
   filelock
   mono_logger
   net-ping
-  net-telnet
   octokit
   openssl
   rspec

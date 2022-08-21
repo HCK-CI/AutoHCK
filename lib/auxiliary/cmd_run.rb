@@ -8,7 +8,7 @@ module AutoHCK
   class CmdRun
     attr_reader :pid
 
-    def initialize(logger, cmd)
+    def initialize(logger, cmd, options = {})
       logger.info("Run command: #{cmd}")
       @cmd = cmd
       @logger = logger
@@ -16,7 +16,7 @@ module AutoHCK
       @stdout.unlink
       @stderr = Tempfile.new
       @stderr.unlink
-      @pid = spawn(@cmd, out: @stdout, err: @stderr, pgroup: 0)
+      @pid = spawn(@cmd, out: @stdout, err: @stderr, pgroup: 0, **options)
     end
 
     def wait(flags = 0)
