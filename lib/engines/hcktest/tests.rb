@@ -13,7 +13,6 @@ module AutoHCK
     include Helper
 
     HANDLE_TESTS_POLLING_INTERVAL = 10
-    APPLYING_FILTERS_INTERVAL = 50
     VERIFY_TARGET_RETRIES = 5
     VERIFY_TARGET_SLEEP = 5
     QUEUE_TEST_TIMEOUT = '00:15:00'
@@ -309,7 +308,6 @@ module AutoHCK
     def apply_filters
       @logger.info('Applying filters on finished tests')
       @tools.apply_project_filters(@tag)
-      sleep APPLYING_FILTERS_INTERVAL
     end
 
     def check_new_finished_tests
