@@ -6,6 +6,8 @@ require 'tempfile'
 module AutoHCK
   # CmdRun class
   class CmdRun
+    attr_reader :pid
+
     def initialize(logger, cmd)
       @cmd = cmd.join(' ')
       logger.info("Run command: #{@cmd}")
