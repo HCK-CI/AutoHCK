@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'tempfile'
 require 'mono_logger'
 
 require_relative './network_manager'
@@ -68,8 +67,6 @@ module AutoHCK
       @run_opts = {}
       @nm_commands_start = []
       @nm_commands_stop = []
-
-      @pid = nil
     end
 
     def load_options(options)
@@ -206,7 +203,6 @@ module AutoHCK
         '@vnc_id@' => @vnc_id,
         '@vnc_port@' => @vnc_port,
         '@qemu_monitor_port@' => @monitor_port,
-        '@pid_file@' => @pid_file&.path,
         '@image_path@' => image_path
       }.merge(config_replacement_list)
         .merge(machine_replacement_list)
@@ -356,7 +352,7 @@ module AutoHCK
         '-nodefaults -no-user-config -usb -device usb-tablet -vnc :@vnc_id@ ',
         '-global kvm-pit.lost_tick_policy=discard -rtc base=localtime,clock=host,driftfix=slew ',
         '-global @disable_s3_param@=@disable_s3_value@ -global @disable_s4_param@=@disable_s4_value@ ',
-        '-monitor telnet::@qemu_monitor_port@,server,nowait -monitor vc -pidfile @pid_file@'
+        '-monitor telnet::@qemu_monitor_port@,server,nowait -monitor vc'
       ]
     end
 
@@ -379,15 +375,6 @@ module AutoHCK
         *iso_cmd,
         "-name #{@run_name}"
       ].compact
-    end
-
-    def retrieve_pid
-      Timeout.timeout(10) do
-        sleep 1 while File.zero?(@pid_file.path)
-      end
-      @pid_file.read.strip.to_i
-    rescue Timeout::Error
-      nil
     end
 
     def dump_config
@@ -434,29 +421,18 @@ module AutoHCK
 
     def run_qemu
       cmd = replace_string_recursive(dirty_command.join(' '), full_replacement_list)
+      qemu = CmdRun.new(@logger, [cmd])
+      @pid = qemu.pid
 
       @qemu_thread = Thread.new do
-        run_cmd([cmd])
+        qemu.wait_no_fail
       end
     end
 
     def run_vm
       dump_config
-
-      @pid_file = Tempfile.new(@run_name)
-
       run_qemu
-      sleep 5
-      @pid = retrieve_pid
-
-      if @pid.nil?
-        @logger.error("#{@run_name} is not alive")
-        raise MachineRunError, "Could not start #{@run_name}"
-      end
-
       @logger.info("#{@run_name} started with PID #{@pid}")
-
-      @pid
     end
 
     def run_pre_start_commands
@@ -530,8 +506,6 @@ module AutoHCK
     def dump_commands
       dump_config
 
-      @pid_file = Tempfile.new(@run_name)
-
       file_name = "#{@workspace_path}/#{@run_name}_manual.sh"
       content = [
         "#!/usr/bin/env bash\n",
@@ -586,9 +560,7 @@ module AutoHCK
       return if alive?
 
       @logger.info("Starting #{@run_name}")
-      @pid = run_vm
-      e_message = "New PID for #{@run_name} could not be retrieved"
-      raise MachineRunError, e_message if @pid.nil?
+      run_vm
 
       @logger.info("#{@run_name} new PID is #{@pid}")
       raise MachineRunError, "Could not start #{@run_name}" unless alive?
