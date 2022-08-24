@@ -421,7 +421,7 @@ module AutoHCK
 
     def run_qemu
       cmd = replace_string_recursive(dirty_command.join(' '), full_replacement_list)
-      qemu = CmdRun.new(@logger, [cmd])
+      qemu = CmdRun.new(@logger, cmd)
       @pid = qemu.pid
 
       @qemu_thread = Thread.new do
@@ -437,23 +437,23 @@ module AutoHCK
 
     def run_pre_start_commands
       @nm_commands_start.each do |cmd|
-        run_cmd([cmd])
+        run_cmd(cmd)
       end
 
       @pre_start_commands.each do |dirty_cmd|
         cmd = replace_string_recursive(dirty_cmd, full_replacement_list)
-        run_cmd([cmd])
+        run_cmd(cmd)
       end
     end
 
     def run_post_stop_commands
       @post_stop_commands.each do |dirty_cmd|
         cmd = replace_string_recursive(dirty_cmd, full_replacement_list)
-        run_cmd_no_fail([cmd])
+        run_cmd_no_fail(cmd)
       end
 
       @nm_commands_stop.each do |cmd|
-        run_cmd_no_fail([cmd])
+        run_cmd_no_fail(cmd)
       end
     end
 
@@ -467,12 +467,12 @@ module AutoHCK
     end
 
     def create_image
-      run_cmd(["#{@config['qemu_img_bin']} create -f qcow2", @base_image_path, '150G'])
+      run_cmd("#{@config['qemu_img_bin']} create -f qcow2 #{@base_image_path} 150G")
     end
 
     def create_snapshot
       @logger.info("Creating #{@run_name} snapshot file")
-      run_cmd(["#{@config['qemu_img_bin']} create -f qcow2 -F qcow2 -b", @base_image_path, snapshot_path])
+      run_cmd("#{@config['qemu_img_bin']} create -f qcow2 -F qcow2 -b #{@base_image_path} #{snapshot_path}")
     end
 
     def delete_snapshot

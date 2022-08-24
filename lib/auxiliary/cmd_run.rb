@@ -9,8 +9,8 @@ module AutoHCK
     attr_reader :pid
 
     def initialize(logger, cmd)
-      @cmd = cmd.join(' ')
-      logger.info("Run command: #{@cmd}")
+      logger.info("Run command: #{cmd}")
+      @cmd = cmd
       @logger = logger
       @stdout = Tempfile.new
       @stdout.unlink
