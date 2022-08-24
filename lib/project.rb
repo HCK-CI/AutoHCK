@@ -2,7 +2,6 @@
 
 require 'fileutils'
 require 'mono_logger'
-require 'tempfile'
 require './lib/engines/engine'
 require './lib/setupmanagers/setupmanager'
 require './lib/auxiliary/github'
@@ -80,9 +79,8 @@ module AutoHCK
     end
 
     def init_multilog(debug)
-      @temp_pre_logger_file = Tempfile.new('')
-      @temp_pre_logger_file.sync = true
-      @pre_logger = MonoLogger.new(@temp_pre_logger_file)
+      @temp_pre_logger = StringIO.new
+      @pre_logger = MonoLogger.new(@temp_pre_logger)
       @stdout_logger = MonoLogger.new($stdout)
       @logger = MultiLogger.new(@pre_logger, @stdout_logger)
       @logger.level = debug ? 'DEBUG' : 'INFO'
@@ -91,9 +89,8 @@ module AutoHCK
     def append_multilog(logfile_name)
       @logfile_name = logfile_name
       @logfile_path = "#{workspace_path}/#{@logfile_name}"
-      FileUtils.cp(@temp_pre_logger_file.path, @logfile_path)
+      IO.copy_stream @temp_pre_logger, @logfile_path
       @pre_logger.close
-      @temp_pre_logger_file.unlink
       @logger.remove_logger(@pre_logger)
       @pre_logger = MonoLogger.new(@logfile_path)
       @logger.add_logger(@pre_logger)
