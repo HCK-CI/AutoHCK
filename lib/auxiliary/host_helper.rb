@@ -4,52 +4,18 @@ require 'English'
 require 'tempfile'
 
 require_relative '../exceptions'
+require_relative './cmd_run'
 
 # AutoHCK module
 module AutoHCK
   # Helper module
   module Helper
-    def temp_file
-      file = Tempfile.new('')
-      yield(file)
-    ensure
-      file.close
-      file.unlink
-    end
-
-    def prep_log_stream(stream)
-      stream.strip.lines.map { |line| "\n   -- #{line.rstrip}" }.join
-    end
-
-    def log_stdout_stderr(stdout, stderr)
-      @logger.info("Info dump:#{prep_log_stream(stdout)}") unless stdout.empty?
-      return if stderr.empty?
-
-      @logger.warn("Error dump:#{prep_log_stream(stderr)}")
-    end
-
     def run_cmd(cmd)
-      @logger.info("Run command: #{cmd.join(' ')}")
-      temp_file do |stdout|
-        temp_file do |stderr|
-          _, status = Process.wait2(spawn(cmd.join(' '), out: stdout.path, err: stderr.path))
-          log_stdout_stderr(stdout.read, stderr.read)
-          e_message = "Failed to run: #{cmd.join(' ')}"
-          raise CmdRunError, e_message unless status&.exitstatus&.zero?
-        end
-      end
+      CmdRun.new(@logger, cmd).wait
     end
 
     def run_cmd_no_fail(cmd)
-      @logger.info("Run command: #{cmd.join(' ')}")
-      temp_file do |stdout|
-        temp_file do |stderr|
-          _, status = Process.wait2(spawn(cmd.join(' '), out: stdout.path, err: stderr.path))
-          log_stdout_stderr(stdout.read, stderr.read)
-          @logger.info("Command finished with code: #{status&.exitstatus}")
-          status&.exitstatus
-        end
-      end
+      CmdRun.new(@logger, cmd).wait_no_fail
     end
 
     def file_gsub(src, dst, gsub_list)
