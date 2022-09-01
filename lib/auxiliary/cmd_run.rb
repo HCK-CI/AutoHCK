@@ -16,7 +16,7 @@ module AutoHCK
       @stdout.unlink
       @stderr = Tempfile.new
       @stderr.unlink
-      @pid = spawn(@cmd, out: @stdout, err: @stderr)
+      @pid = spawn(@cmd, out: @stdout, err: @stderr, pgroup: 0)
     end
 
     def wait(flags = 0)
