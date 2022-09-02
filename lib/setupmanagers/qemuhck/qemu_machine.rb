@@ -571,9 +571,8 @@ module AutoHCK
     def soft_abort
       SOFT_ABORT_RETRIES.times do
         @qmp.powerdown
-        sleep ABORT_SLEEP
 
-        return true unless alive?
+        return true unless @qemu_thread.join(ABORT_SLEEP).nil?
 
         @logger.debug("Powerdown was sent, but #{@run_name} is still alive :(")
       end
@@ -583,8 +582,7 @@ module AutoHCK
     def hard_abort
       @qmp.quit
 
-      sleep ABORT_SLEEP
-      return true unless alive?
+      return true unless @qemu_thread.join(ABORT_SLEEP).nil?
 
       @logger.debug("Quit was sent, but #{@run_name} is still alive :(")
       false
@@ -601,9 +599,14 @@ module AutoHCK
 
       @logger.info("#{@run_name} hard abort failed, force aborting...")
 
+      begin
+        Process.kill('KILL', @pid)
+      rescue Errno::ESRCH
+        # QEMU thread has not finished but the process has already been reaped.
+      end
+
       @qmp.close
-      @qemu_thread.exit
-      Process.kill('KILL', @pid)
+      @qemu_thread.join
     end
 
     def clean_last_run
