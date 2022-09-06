@@ -21,10 +21,10 @@ jobs:
     - name: Setup libcurl-devel
       run: sudo apt-get -y install libcurl4 libcurl3-gnutls libcurl4-openssl-dev
 
-    - name: Set up Ruby 2.6.5
+    - name: Set up Ruby 2.7.6
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.6.5
+        ruby-version: 2.7.6
         bundler-cache: true
 
     - name: Install dependencies
