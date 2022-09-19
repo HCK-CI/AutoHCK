@@ -289,9 +289,10 @@ module AutoHCK
 
         print_test_results(test)
         archive_test_results(test)
+
+        @last_queued_id = nil if test['id'] == @last_queued_id
       end
       print_tests_stats
-      @last_queued_id = nil
     end
 
     def reset_clients_to_ready_state
