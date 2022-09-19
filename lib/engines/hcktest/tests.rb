@@ -82,6 +82,9 @@ module AutoHCK
       # We can't compare test objects directly because the list_tests
       # function updates the test object but the current_test function
       # returns the pure object.
+
+      @logger.debug("Checking queued time for test id: #{@last_queued_id}. Current test: #{current_test}")
+
       return if @last_queued_id == current_test&.dig('id')
 
       diff = time_diff(@tests_extra[@last_queued_id]['queued_at'], DateTime.now)
@@ -347,7 +350,7 @@ module AutoHCK
       @total = @tests.count
       tests = @tests
       tests.each do |test|
-        @logger.info("Adding to queue: #{test['name']} [#{test['estimatedruntime']}]")
+        @logger.info("Adding to queue: #{test['name']} (#{test['id']}) [#{test['estimatedruntime']}]")
         queue_test(test, wait: true)
         list_tests
         handle_test_running
