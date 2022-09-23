@@ -97,28 +97,12 @@ module AutoHCK
       @studio_vm.create_image
     end
 
-    def create_studio_snapshot
-      @studio_vm.create_snapshot
-    end
-
-    def delete_studio_snapshot
-      @studio_vm.delete_snapshot
-    end
-
     def check_client_image_exist(name)
       @clients_vm[name].check_image_exist
     end
 
     def create_client_image(name)
       @clients_vm[name].create_image
-    end
-
-    def create_client_snapshot(name)
-      @clients_vm[name].create_snapshot
-    end
-
-    def delete_client_snapshot(name)
-      @clients_vm[name].delete_snapshot
     end
 
     def studio_option_config(option)

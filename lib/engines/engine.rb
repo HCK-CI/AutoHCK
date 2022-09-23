@@ -73,9 +73,5 @@ module AutoHCK
     def result_uploader_needed?
       @engine.result_uploader_needed?
     end
-
-    def close
-      @engine.close
-    end
   end
 end
