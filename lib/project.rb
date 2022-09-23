@@ -182,7 +182,6 @@ module AutoHCK
       @result_uploader&.upload_file(@logfile_path, 'AutoHCK.log')
 
       @setup_manager&.close
-      @engine&.close
       release_id
     end
   end

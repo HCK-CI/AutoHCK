@@ -197,7 +197,7 @@ module AutoHCK
           sleep 5 while st.alive?
         end
       ensure
-        st.abort
+        st.clean_last_run
       end
     end
 
@@ -208,7 +208,6 @@ module AutoHCK
     end
 
     def install_clients
-      @project.setup_manager.create_studio_snapshot
       st = run_studio
       begin
         cl = @clients_name.map { |c| install_client(c) }
@@ -220,10 +219,10 @@ module AutoHCK
             end
           end
         ensure
-          cl.each(&:abort)
+          cl.each(&:clean_last_run)
         end
       ensure
-        st.abort
+        st.clean_last_run
       end
     end
 
@@ -326,23 +325,6 @@ module AutoHCK
 
       prepare_client_iso
       install_clients
-    end
-
-    def cleanup_studio
-      @project&.setup_manager&.delete_studio_snapshot
-    end
-
-    def cleanup_clients
-      @clients_name.each do |client|
-        @project&.setup_manager&.delete_client_snapshot(client)
-      end
-    end
-
-    def close
-      @logger.debug('HCKInstall: close')
-
-      cleanup_clients
-      cleanup_studio
     end
   end
 end

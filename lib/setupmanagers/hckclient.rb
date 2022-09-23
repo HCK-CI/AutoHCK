@@ -27,14 +27,6 @@ module AutoHCK
       @pool = 'Default Pool'
     end
 
-    def create_snapshot
-      @setup_manager.create_client_snapshot(@name)
-    end
-
-    def delete_snapshot
-      @setup_manager.delete_client_snapshot(@name)
-    end
-
     def run(run_opts = nil)
       @setup_manager.run(@name, run_opts)
     end

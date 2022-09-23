@@ -269,7 +269,5 @@ module AutoHCK
     def result_uploader_needed?
       true
     end
-
-    def close; end
   end
 end

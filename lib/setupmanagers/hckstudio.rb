@@ -24,14 +24,6 @@ module AutoHCK
       !@ip_getter.call.nil?
     end
 
-    def create_snapshot
-      @setup_manager.create_studio_snapshot
-    end
-
-    def delete_snapshot
-      @setup_manager.delete_studio_snapshot
-    end
-
     def create_pool
       @logger.info('Creating pool')
       @tools.create_pool(@tag)

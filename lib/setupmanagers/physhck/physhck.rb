@@ -37,28 +37,12 @@ module AutoHCK
       @logger.info('Image creating is currently not supported for physical machines')
     end
 
-    def create_studio_snapshot
-      @logger.info('Snapshots are currently not supported for physical machines')
-    end
-
-    def delete_studio_snapshot
-      @logger.info('Snapshots are currently not supported for physical machines')
-    end
-
     def check_client_image_exist(_name)
       @logger.info('Image checking is currently not supported for physical machines')
     end
 
     def create_client_image(_name)
       @logger.info('Image creating is currently not supported for physical machines')
-    end
-
-    def create_client_snapshot(_name)
-      @logger.info('Snapshots are currently not supported for physical machines')
-    end
-
-    def delete_client_snapshot(_name)
-      @logger.info('Snapshots are currently not supported for physical machines')
     end
 
     def run(*)
