@@ -238,9 +238,15 @@ module AutoHCK
     end
 
     def auto_run
-      client = @client1
-      client.run_tests
-      client.create_package
+      run_and_configure_setup
+      begin
+        client = @client1
+        client.run_tests
+        client.create_package
+      ensure
+        @clients&.values&.map(&:abort)
+        @studio&.abort
+      end
     end
 
     def run
@@ -256,8 +262,6 @@ module AutoHCK
 
         @project.logger.info("Find all scripts in folder: #{@project.workspace_path}")
       else
-        run_and_configure_setup
-
         auto_run
       end
     end
@@ -266,11 +270,6 @@ module AutoHCK
       true
     end
 
-    def close
-      @project.logger.info('Closing HCK test engine')
-
-      @clients&.values&.map(&:abort)
-      @studio&.abort
-    end
+    def close; end
   end
 end
