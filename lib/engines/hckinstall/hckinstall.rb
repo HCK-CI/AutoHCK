@@ -187,14 +187,17 @@ module AutoHCK
     def install_studio
       @project.setup_manager.create_studio_image
 
-      @st = run_studio([
-                         @setup_studio_iso,
-                         @studio_iso_info['path']
-                       ], snapshot: false)
-
-      Timeout.timeout(@studio_install_timeout) do
-        @logger.info('Waiting for studio installation finished')
-        sleep 5 while @st.alive?
+      st = run_studio([
+                        @setup_studio_iso,
+                        @studio_iso_info['path']
+                      ], snapshot: false)
+      begin
+        Timeout.timeout(@studio_install_timeout) do
+          @logger.info('Waiting for studio installation finished')
+          sleep 5 while st.alive?
+        end
+      ensure
+        st.abort
       end
     end
 
@@ -206,15 +209,21 @@ module AutoHCK
 
     def install_clients
       @project.setup_manager.create_studio_snapshot
-      @st = run_studio
-
-      @cl = @clients_name.map { |c| install_client(c) }
-
-      @cl.each do |client|
-        Timeout.timeout(@client_install_timeout) do
-          @logger.info("Waiting for #{client.name} installation finished")
-          sleep 5 while client.alive?
+      st = run_studio
+      begin
+        cl = @clients_name.map { |c| install_client(c) }
+        begin
+          cl.each do |client|
+            Timeout.timeout(@client_install_timeout) do
+              @logger.info("Waiting for #{client.name} installation finished")
+              sleep 5 while client.alive?
+            end
+          end
+        ensure
+          cl.each(&:abort)
         end
+      ensure
+        st.abort
       end
     end
 
@@ -320,12 +329,10 @@ module AutoHCK
     end
 
     def cleanup_studio
-      @st&.abort
       @project&.setup_manager&.delete_studio_snapshot
     end
 
     def cleanup_clients
-      @cl&.map(&:abort)
       @clients_name.each do |client|
         @project&.setup_manager&.delete_client_snapshot(client)
       end
