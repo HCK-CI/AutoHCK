@@ -166,8 +166,6 @@ module AutoHCK
 
         cmd
       end
-
-      def close; end
     end
   end
 end

@@ -617,7 +617,6 @@ module AutoHCK
 
       remove_hostfwd
       vm_abort
-      @nm.close
       run_post_stop_commands
     end
   end
