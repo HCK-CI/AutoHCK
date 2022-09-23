@@ -608,7 +608,7 @@ module AutoHCK
       return if @pid.nil?
 
       @logger.info("Cleaning last #{@run_name} run")
-      vm_abort
+      close
       delete_snapshot
     end
 
