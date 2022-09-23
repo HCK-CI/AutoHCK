@@ -212,8 +212,8 @@ module AutoHCK
       begin
         cl = @clients_name.map { |c| install_client(c) }
         begin
-          cl.each do |client|
-            Timeout.timeout(@client_install_timeout) do
+          Timeout.timeout(@client_install_timeout) do
+            cl.each do |client|
               @logger.info("Waiting for #{client.name} installation finished")
               sleep 5 while client.alive?
             end
