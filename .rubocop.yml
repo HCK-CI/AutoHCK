@@ -4,6 +4,9 @@ Metrics/ClassLength:
 Metrics/MethodLength:
   Max: 20
 
+Naming/InclusiveLanguage:
+  Enabled: True
+
 # Excluding spec files
 AllCops:
   NewCops: enable
