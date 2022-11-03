@@ -8,7 +8,7 @@ module AutoHCK
   class Playlist
     include Helper
 
-    attr_reader :blacklisted
+    attr_reader :ignored_list
 
     def initialize(client, project, target, tools, kit)
       @machine = client.name
@@ -29,7 +29,7 @@ module AutoHCK
       raise ListTestsError, 'Failed to list tests' unless @tests
 
       custom_playlist(log)
-      custom_blacklist(log)
+      custom_ignore_list(log)
       sort_by_duration
     end
 
@@ -68,20 +68,20 @@ module AutoHCK
       @logger.info("Applying custom playlist, #{count} tests.") if log
     end
 
-    def custom_blacklist(log)
-      blacklist = @project.engine.target['blacklist']
-      @blacklisted = []
-      if blacklist
+    def custom_ignore_list(log)
+      ignore_list = @project.engine.target['ignore_list']
+      @ignored_list = []
+      if ignore_list
         @tests.reject! do |test|
-          if blacklist.include?(test['name'])
-            @blacklisted << test
+          if ignore_list.include?(test['name'])
+            @ignored_list << test
             true
           else
             false
           end
         end
       end
-      @logger.info('Applying custom blacklist') if log && blacklist
+      @logger.info('Applying custom ignore list') if log && ignore_list
     end
   end
 end

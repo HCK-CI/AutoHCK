@@ -14,5 +14,5 @@
     "vioserial"
   ],
   // "playlist": [],
-  "blacklist": []
+  "ignore_list": []
 }
