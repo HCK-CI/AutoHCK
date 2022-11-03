@@ -118,7 +118,7 @@ module AutoHCK
           'name' => @clients.values[0].name,
           'type' => @svvp_info['type'],
           'playlist' => @svvp_info['playlist'],
-          'blacklist' => @svvp_info['blacklist']
+          'ignore_list' => @svvp_info['ignore_list']
         }
       else
         driver = drivers.first
@@ -126,7 +126,7 @@ module AutoHCK
           'name' => driver['name'],
           'type' => driver['type'],
           'playlist' => driver['playlist'],
-          'blacklist' => driver['blacklist']
+          'ignore_list' => driver['ignore_list']
         }
       end
     end

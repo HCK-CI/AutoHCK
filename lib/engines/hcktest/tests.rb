@@ -197,8 +197,8 @@ module AutoHCK
       @logger.info('Skipping archiving test result logs')
     end
 
-    def summary_blacklisted_log
-      @playlist.blacklisted.reduce('') do |sum, test|
+    def summary_ignored_list_log
+      @playlist.ignored_list.reduce('') do |sum, test|
         sum + "Skipped: #{test['name']} [#{test['estimatedruntime']}]\n"
       end
     end
@@ -212,7 +212,7 @@ module AutoHCK
     end
 
     def update_summary_results_log
-      logs = summary_blacklisted_log
+      logs = summary_ignored_list_log
       logs += summary_results_log
 
       @logger.info('Tests results logs updated via the result uploader')

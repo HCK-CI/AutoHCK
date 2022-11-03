@@ -19,7 +19,7 @@
         "run": "Rename-NetAdapter -Name (Get-NetAdapter -InterfaceDescription 'Red Hat VirtIO Ethernet Adapter').Name -NewName 'SupportDevice0'"
       }
     ],
-    "blacklist": [
+    "ignore_list": [
       "NDISTest 6.5 - [2 Machine] - MPE_Ethernet.xml",
       "NDISTest 6.0 - [1 Machine] - 1c_Mini6RSSOids",
       "PrivateCloudSimulator - Device.Network.LAN.10GbOrGreater",
@@ -45,7 +45,7 @@
         "run": "Set-Disk -Number 1 -IsReadonly $False"
       }
     ],
-    "blacklist": [
+    "ignore_list": [
       "Flush Test",
       "DF - Embedded Signature Verification Test (Certification)",
       "Thin Provisioning SCSI Compliance Test (LOGO)",
@@ -62,7 +62,7 @@
     "install_method": "PNP",
     "type": 0,
     "support": false,
-    "blacklist": [
+    "ignore_list": [
       "DF - Embedded Signature Verification Test (Certification)",
       "Hardware-enforced Stack Protection Compatibility Test"
     ]
@@ -74,7 +74,7 @@
     "install_method": "PNP",
     "type": 0,
     "support": false,
-    "blacklist": [
+    "ignore_list": [
       "DF - Embedded Signature Verification Test (Certification)",
       "Hardware-enforced Stack Protection Compatibility Test"
     ]
@@ -86,7 +86,7 @@
     "install_method": "PNP",
     "type": 0,
     "support": false,
-    "blacklist": [
+    "ignore_list": [
       "DF - Embedded Signature Verification Test (Certification)",
       "Hardware-enforced Stack Protection Compatibility Test"
     ]
@@ -108,7 +108,7 @@
         "run": "Set-Disk -Number 1 -IsReadonly $False"
       }
     ],
-    "blacklist": [
+    "ignore_list": [
       "Flush Test",
       "DF - Embedded Signature Verification Test (Certification)",
       "Storage HBA Firmware Update",
@@ -125,7 +125,7 @@
     "install_method": "PNP",
     "type": 0,
     "support": false,
-    "blacklist": [
+    "ignore_list": [
       "DF - Embedded Signature Verification Test (Certification)",
       "Hardware-enforced Stack Protection Compatibility Test"
     ]
@@ -137,7 +137,7 @@
     "install_method": "PNP",
     "type": 0,
     "support": false,
-    "blacklist": [
+    "ignore_list": [
       "DF - Embedded Signature Verification Test (Certification)",
       "Hardware-enforced Stack Protection Compatibility Test"
     ]
@@ -149,7 +149,7 @@
     "install_method": "PNP",
     "type": 0,
     "support": false,
-    "blacklist": [
+    "ignore_list": [
       "DF - Embedded Signature Verification Test (Certification)",
       "Hardware-enforced Stack Protection Compatibility Test"
     ]
@@ -161,7 +161,7 @@
     "install_method": "PNP",
     "type": 0,
     "support": false,
-    "blacklist": [
+    "ignore_list": [
       "DF - Embedded Signature Verification Test (Certification)",
       "Hardware-enforced Stack Protection Compatibility Test"
     ]
@@ -173,7 +173,7 @@
     "install_method": "PNP",
     "type": 0,
     "support": false,
-    "blacklist": [
+    "ignore_list": [
       "DF - Embedded Signature Verification Test (Certification)",
       "Hardware-enforced Stack Protection Compatibility Test"
     ]
@@ -186,7 +186,7 @@
     "type": 0,
     "support": false,
     "enlightenments_state": "on",
-    "blacklist": [
+    "ignore_list": [
       "DF - Embedded Signature Verification Test (Certification)",
       "Test for EDID Requirements (Manual)",
       "Multimon minimum resolution check - Multihead",
@@ -202,7 +202,7 @@
     "install_method": "PNP",
     "type": 0,
     "support": false,
-    "blacklist": [
+    "ignore_list": [
       "Hardware-enforced Stack Protection Compatibility Test"
     ]
   },
@@ -225,7 +225,7 @@
         "run": "Rename-NetAdapter -Name (Get-NetAdapter -InterfaceDescription 'TAP-Windows Adapter V9').Name -NewName 'SupportDevice0'"
       }
     ],
-    "blacklist": [
+    "ignore_list": [
       "NDISTest 6.0 - [2 Machine] - 2c_Priority",
       "NDISTest 6.0 - [2 Machine] - 2c_Mini6Stress",
       "Static Tools Logo Test",
@@ -240,7 +240,7 @@
     "install_cert": true,
     "install_command": "@driver_dir@/devcon.exe install @inf_path@ ovpn-dco",
     "type": 0,
-    "blacklist": [
+    "ignore_list": [
       "Static Tools Logo Test",
       "Hardware-enforced Stack Protection Compatibility Test"
     ]
