@@ -3,8 +3,43 @@
 
 require 'bundler/setup'
 require 'English'
+require 'etc'
+require 'fiddle/import'
 require 'fileutils'
 require 'tmpdir'
+
+# util-linux 2.36 ships handy unshare command with --map-user option, but
+# unfortunately it is not available on some supported systems so implement the
+# feature by ourselves. --map-root-user option cannot be an alternative because
+# it conflicts with newgidmap.
+module Libc
+  CLONE_NEWNS = 0x00020000
+  CLONE_NEWUSER = 0x10000000
+  CLONE_NEWNET = 0x40000000
+
+  extend Fiddle::Importer
+  dlload 'libc.so.6'
+  extern 'int unshare(int)'
+end
+
+euid = Process.euid
+if euid != 0
+  pwname = Etc.getpwuid(Process.uid).name
+
+  # getsubids is not available on some supported systems.
+  subid_start, subid_count = File.open('/etc/subgid') do |file|
+    begin
+      file.readline while file.readline(':', chomp: true) != pwname
+    rescue EOFError
+      abort <<~MESSAGE
+        subgid delegation is not set up for the current user.
+        See newgidmap(1) for details.
+      MESSAGE
+    end
+
+    [file.readline(':', chomp: true), file.readline(chomp: true)]
+  end
+end
 
 e_read, e_write = IO.pipe
 r_read, r_write = IO.pipe
@@ -19,6 +54,13 @@ fork do
   r_read.close
   Process.setpgid 0, 0
   e_read.read 1
+
+  if euid != 0
+    # Call newgidmap so that virtiofsd can use setgroups() to drop subgroups.
+    # unshare command in util-linux 2.38 can call newgidmap by its own, but
+    # unfortunately it is not available on some supported systems.
+    system 'newgidmap', parent.to_s, subid_start, subid_start, subid_count, exception: true
+  end
 
   slirp = spawn('slirp4netns', '-r', r_write.fileno.to_s,
                 '-a', a, parent.to_s, 'tap_host')
@@ -43,6 +85,25 @@ r_read.close_on_exec = false
 
 ENV['AUTOHCK_SLIRP'] = a
 
-exec 'unshare', '--user', '--map-root-user', '--net', '--mount',
-     File.join(__dir__, 'ns_unshared'), e_write.fileno.to_s, r_read.fileno.to_s,
+# Create a namespace for two purposes:
+# - Isolated networking
+#   AutoHCK requires several bridges and an isolated network namespace allows to
+#   set up them reliably without requiring privileges and polluting the root
+#   namespace.
+#   CLONE_NEWNET creates an isolated network namespace.
+#   CLONE_NEWNS allows to mount /etc/resolv.conf so that it points to
+#   slirp4netns.
+#   CLONE_NEWUSER allows to be the superuser to configure the namespace.
+# - Run virtiofsd without privileges
+#   virtiofsd needs to be able to set its UID and GID to perform file operations
+#   on behalf of the guest user or group.
+#   CLONE_NEWUSER allows to be the superuser to set UID and GID.
+flags = Libc::CLONE_NEWNS | Libc::CLONE_NEWNET
+flags |= Libc::CLONE_NEWUSER if euid != 0
+raise SystemCallError, Fiddle.last_error if Libc.unshare(flags) != 0
+
+# Map the superuser to the current effective user.
+File.write '/proc/self/uid_map', "0 #{euid} 1" if euid != 0
+
+exec File.join(__dir__, 'ns_unshared'), e_write.fileno.to_s, r_read.fileno.to_s,
      *(ARGV.empty? ? ['sh'] : ARGV)
