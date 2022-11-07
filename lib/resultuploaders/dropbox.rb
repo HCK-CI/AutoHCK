@@ -79,9 +79,7 @@ module AutoHCK
     def save_token(token)
       @logger&.info('Dropbox token to be saved in the local file')
 
-      File.open(TOKEN_JSON, 'w') do |f|
-        f.write(token.to_hash.to_json)
-      end
+      File.write(TOKEN_JSON, token.to_hash.to_json)
     end
 
     def load_token
@@ -132,7 +130,7 @@ module AutoHCK
 
     def upload_file(l_path, r_name)
       handle_exceptions(__method__) do
-        content = IO.read(l_path)
+        content = File.read(l_path)
         r_path = "#{@path}/#{r_name}"
         @dropbox.upload(r_path, content)
       end

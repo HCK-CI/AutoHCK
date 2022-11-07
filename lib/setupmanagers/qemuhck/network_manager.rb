@@ -94,7 +94,7 @@ module AutoHCK
 
         full_name = replace_string_recursive('@net_up_script@', replacement_list)
         file_content = replace_string_recursive(script_data, replacement_list)
-        File.open(full_name, 'w') { |f| f.write(file_content) }
+        File.write(full_name, file_content)
         FileUtils.chmod(0o755, full_name)
       end
 

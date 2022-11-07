@@ -393,7 +393,7 @@ module AutoHCK
     end
 
     def create_run_script(file_name, file_content)
-      File.open(file_name, 'w') { |f| f.write(file_content) }
+      File.write(file_name, file_content)
       FileUtils.chmod(0o755, file_name)
     end
 
