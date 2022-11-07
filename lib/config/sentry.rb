@@ -31,9 +31,10 @@ module AutoHCK
     # of transactions for performance monitoring.
     config.traces_sample_rate = 1.0
 
-    unless ENV['SENTRY_TRANSPORT_SSL_CA'].nil?
-      if File.exist?(ENV['SENTRY_TRANSPORT_SSL_CA'])
-        config.transport.ssl_ca_file = ENV['SENTRY_TRANSPORT_SSL_CA']
+    ssl_ca = ENV.fetch('SENTRY_TRANSPORT_SSL_CA', nil)
+    unless ssl_ca.nil?
+      if File.exist?(ssl_ca)
+        config.transport.ssl_ca_file = ssl_ca
       else
         MonoLogger.new($stdout).warn('SENTRY_TRANSPORT_SSL_CA environment specified, but file does not exist')
       end
