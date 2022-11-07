@@ -20,7 +20,7 @@ module AutoHCK
     def initialize(project)
       initialize_project project
 
-      @slirp = Slirp.new(ENV['AUTOHCK_SLIRP'])
+      @slirp = Slirp.new(ENV.fetch('AUTOHCK_SLIRP'))
       @clients_vm = {}
       initialize_studio_vm
       initialize_clients_vm

@@ -22,8 +22,8 @@ module AutoHCK
 
       @config = Json.read_json(CONFIG_JSON, @logger)
 
-      @client_id = ENV['AUTOHCK_DROPBOX_CLIENT_ID']
-      @client_secret = ENV['AUTOHCK_DROPBOX_CLIENT_SECRET']
+      @client_id = ENV.fetch('AUTOHCK_DROPBOX_CLIENT_ID')
+      @client_secret = ENV.fetch('AUTOHCK_DROPBOX_CLIENT_SECRET')
 
       @action_retries = @config['action_retries']
       @action_retry_sleep = @config['action_retry_sleep']

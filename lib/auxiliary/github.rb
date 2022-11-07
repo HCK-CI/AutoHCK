@@ -19,8 +19,8 @@ module AutoHCK
     end
 
     def connect
-      login = ENV['AUTOHCK_GITHUB_LOGIN']
-      password = ENV['AUTOHCK_GITHUB_TOKEN']
+      login = ENV.fetch('AUTOHCK_GITHUB_LOGIN')
+      password = ENV.fetch('AUTOHCK_GITHUB_TOKEN')
       @github = Octokit::Client.new(login: login, password: password)
       @logger.info("Connected to github with: #{@github.user.login}")
       @api_connected = true
