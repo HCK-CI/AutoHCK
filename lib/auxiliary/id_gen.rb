@@ -16,9 +16,12 @@ module AutoHCK
 
     def load_data
       ids = Array.new(@range.last + 1 - @range.first, true)
-      @conn.execute 'CREATE TABLE IF NOT EXISTS ActiveIds('\
-                  'IdNumber INT PRIMARY KEY NOT NULL, PID INT NOT NULL,'\
-                  'Time TIMESTAMP NOT NULL)'
+      @conn.execute <<~SQL
+        CREATE TABLE IF NOT EXISTS ActiveIds(
+          IdNumber INT PRIMARY KEY NOT NULL, PID INT NOT NULL,
+          Time TIMESTAMP NOT NULL
+        )
+      SQL
       fetch_data(ids)
       ids
     rescue SQLite3::Exception
@@ -74,8 +77,10 @@ module AutoHCK
     end
 
     def kill_if_alive(now)
-      res = @conn.execute 'SELECT PID FROM ActiveIds WHERE'\
-                          "(#{now} - Time) > #{@threshold}"
+      res = @conn.execute <<~SQL
+        SELECT PID FROM ActiveIds
+        WHERE (#{now} - Time) > #{@threshold}
+      SQL
       res.each do |row|
         pid = row[0].to_i
         check_cmd = "sudo ps -ef | grep #{pid} | grep auto_hck | grep -v grep"
