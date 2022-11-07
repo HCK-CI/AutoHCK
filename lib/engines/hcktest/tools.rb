@@ -143,7 +143,7 @@ module AutoHCK
 
     def list_pools
       retry_tools_command(__method__) do
-        act_with_tools { _1.list_pools }
+        act_with_tools(&:list_pools)
       end
     end
 
@@ -284,7 +284,7 @@ module AutoHCK
 
     def shutdown
       retry_tools_command(__method__) do
-        act_with_tools { _1.shutdown }
+        act_with_tools(&:shutdown)
       end
     end
 
@@ -299,17 +299,13 @@ module AutoHCK
 
     def set_machine_ready(machine, pool)
       retry_tools_command(__method__) do
-        act_with_tools do
-          _1.set_machine_state(machine, pool, 'ready', SET_MACHINE_READY_TIMEOUT)
-        end
+        act_with_tools { _1.set_machine_state(machine, pool, 'ready', SET_MACHINE_READY_TIMEOUT) }
       end
     end
 
     def install_machine_driver_package(machine, method, driver_path, file, options = {})
       retries ||= 0
-      ret = act_with_tools do
-        _1.install_machine_driver_package(machine, driver_path, method, file, options)
-      end
+      ret = act_with_tools { _1.install_machine_driver_package(machine, driver_path, method, file, options) }
 
       return ret if ret
 
@@ -326,9 +322,7 @@ module AutoHCK
 
     def list_tests(key, machine, tag, playlist)
       retry_tools_command(__method__) do
-        act_with_tools do
-          _1.list_tests(key, tag, machine, tag, nil, nil, playlist)
-        end
+        act_with_tools { _1.list_tests(key, tag, machine, tag, nil, nil, playlist) }
       end
     end
 
@@ -340,9 +334,7 @@ module AutoHCK
 
     def queue_test(test_id, target_key, machine, tag, support)
       retry_tools_command(__method__) do
-        act_with_tools do
-          _1.queue_test(test_id, target_key, tag, machine, tag, support)
-        end
+        act_with_tools { _1.queue_test(test_id, target_key, tag, machine, tag, support) }
       end
     end
 
@@ -360,9 +352,7 @@ module AutoHCK
 
     def zip_test_result_logs(test_id, target_key, machine, tag)
       retries ||= 0
-      ret = act_with_tools do
-        _1.zip_test_result_logs(-1, test_id, target_key, tag, machine, tag)
-      end
+      ret = act_with_tools { _1.zip_test_result_logs(-1, test_id, target_key, tag, machine, tag) }
 
       return ret if ret
 
@@ -386,18 +376,18 @@ module AutoHCK
 
     def connection_check
       retry_tools_command(__method__) do
-        act_with_tools { _1.connection_check }
+        act_with_tools(&:connection_check)
       end
     end
 
     def reconnect
       retry_tools_command(__method__) do
-        act_with_tools { _1.reconnect }
+        act_with_tools(&:reconnect)
       end
     end
 
     def close
-      @tools&.synchronize { _1.close }
+      @tools&.synchronize(&:close)
       @tools = nil
     end
 
