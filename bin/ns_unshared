@@ -8,8 +8,8 @@ require 'fileutils'
   '/proc/sys/net/bridge/bridge-nf-call-arptables',
   '/proc/sys/net/bridge/bridge-nf-call-ip6tables',
   '/proc/sys/net/bridge/bridge-nf-call-iptables'
-].each do
-  File.write _1, '0'
+].each do |file|
+  File.write file, '0'
 rescue Errno::ENOENT
   # br_netfilter is not loaded
 end
@@ -36,11 +36,11 @@ return if r.nil?
   %w[ip link set br_ctrl up],
   %w[ip link add br_test type bridge],
   %w[ip link set br_test up]
-].each do
-  Process.wait spawn(*_1)
+].each do |cmd|
+  Process.wait spawn(*cmd)
   raise $CHILD_STATUS.to_s unless $CHILD_STATUS.success?
 rescue StandardError
-  raise "#{_1}: command failed"
+  raise "#{cmd}: command failed"
 end
 
 exec(*ARGV[2..])

@@ -49,11 +49,11 @@ module AutoHCK
         replacement_list = device_replacement_list('world', device, type_config, qemu_replacement_list)
         mac = replace_string_recursive(type_config['mac'], replacement_list)
 
-        line = File.readlines('/proc/net/arp')[1..].map(&:split).find do
-          _1[3] == mac && _1[5] == 'br_world'
+        found = File.readlines('/proc/net/arp')[1..].map(&:split).find do |candidate|
+          candidate[3] == mac && candidate[5] == 'br_world'
         end
 
-        line&.first
+        found&.first
       end
 
       def net_addr_cmd(addr)

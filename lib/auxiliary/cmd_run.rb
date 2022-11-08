@@ -20,15 +20,15 @@ module AutoHCK
     end
 
     def wait(flags = 0)
-      wait_for_status(flags) do
+      wait_for_status(flags) do |status|
         e_message = "Failed to run: #{@cmd}"
-        raise CmdRunError, e_message unless _1.exitstatus.zero?
+        raise CmdRunError, e_message unless status.exitstatus.zero?
       end
     end
 
     def wait_no_fail(flags = 0)
-      wait_for_status(flags) do
-        @logger.info("Command finished with code: #{_1.exitstatus}")
+      wait_for_status(flags) do |status|
+        @logger.info("Command finished with code: #{status.exitstatus}")
       end
     end
 
