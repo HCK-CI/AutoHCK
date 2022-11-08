@@ -205,8 +205,7 @@ module AutoHCK
       configure_setup_and_synchronize
     rescue AutoHCKError => e
       synchronize_clients(exit: true)
-      @project.logger.warn("Running and configuring setup failed: (#{e.class}) "\
-                        "#{e.message}")
+      @project.logger.warn("Running and configuring setup failed: (#{e.class}) #{e.message}")
       raise e unless (retries += 1) < AUTOHCK_RETRIES
 
       clean_last_run_machines

@@ -170,8 +170,7 @@ module AutoHCK
     end
 
     def on_test_start(test)
-      @logger.info('>>> Currently running: '\
-                  "#{test['name']} [#{test['estimatedruntime']}]")
+      @logger.info(">>> Currently running: #{test['name']} [#{test['estimatedruntime']}]")
 
       @tests_extra[test['id']]['started_at'] = DateTime.now
       @tests_extra[test['id']]['status'] = nil
@@ -181,8 +180,7 @@ module AutoHCK
 
     def print_tests_stats
       stats = tests_stats
-      @logger.info("<<< Passed: #{stats['passed']} | Failed: #{stats['failed']} | "\
-                   "InQueue: #{stats['inqueue']}")
+      @logger.info("<<< Passed: #{stats['passed']} | Failed: #{stats['failed']} | InQueue: #{stats['inqueue']}")
     end
 
     def print_test_results(test)

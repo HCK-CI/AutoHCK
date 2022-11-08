@@ -42,8 +42,7 @@ module AutoHCK
 
       @logger.info("Reconfiguring client #{@machine}...")
       @client.reconfigure_machine
-      @logger.info("Trying again to add target #{@name} on #{@machine} to "\
-                  "project #{tag}")
+      @logger.info("Trying again to add target #{@name} on #{@machine} to project #{tag}")
       retry
     end
 
