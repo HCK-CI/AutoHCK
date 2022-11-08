@@ -87,7 +87,7 @@ module AutoHCK
     end
 
     def init_ports
-      port_offset = (MAX_CLIENT_ID + 1) * (@options['id'] - 1) + @options['client_id']
+      port_offset = ((MAX_CLIENT_ID + 1) * (@options['id'] - 1)) + @options['client_id']
       @monitor_port = MONITOR_BASE_PORT + port_offset
       @vnc_id = 1 + port_offset
       @vnc_port = VNC_BASE_PORT + @vnc_id

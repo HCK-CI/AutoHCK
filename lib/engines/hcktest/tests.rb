@@ -106,7 +106,7 @@ module AutoHCK
 
       diff = time_diff(started_at, DateTime.now)
 
-      return if diff < 2 * duration + time_to_seconds(RUNNING_TEST_TIMEOUT)
+      return if diff < (2 * duration) + time_to_seconds(RUNNING_TEST_TIMEOUT)
 
       @logger.warn("Test was running #{seconds_to_time(diff)} ago! HCK hangs on?")
       set_test_status(id, 'Hangs on at running state?')
