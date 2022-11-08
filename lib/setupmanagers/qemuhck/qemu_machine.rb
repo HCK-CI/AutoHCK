@@ -420,23 +420,23 @@ module AutoHCK
     end
 
     def add_hostfwd
-      [@monitor_port, @vnc_port].each do
+      [@monitor_port, @vnc_port].each do |port|
         @hostfwds << @options['slirp'].run({
                                              'execute' => 'add_hostfwd',
                                              'arguments' => {
                                                'proto' => 'tcp',
-                                               'host_port' => _1,
-                                               'guest_port' => _1
+                                               'host_port' => port,
+                                               'guest_port' => port
                                              }
                                            })
       end
     end
 
     def remove_hostfwd
-      @hostfwds.each do
+      @hostfwds.each do |fwd_id|
         @options['slirp'].run({
                                 'execute' => 'remove_hostfwd',
-                                'arguments' => _1
+                                'arguments' => fwd_id
                               })
       end
 
