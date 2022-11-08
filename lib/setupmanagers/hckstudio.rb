@@ -113,7 +113,7 @@ module AutoHCK
 
     def abort
       @logger.info('Aborting HLK Studio')
-      @tools&.close unless @tools.nil?
+      @tools&.close
       @setup_manager.abort_studio
     end
 
