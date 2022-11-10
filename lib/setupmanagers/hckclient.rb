@@ -190,8 +190,8 @@ module AutoHCK
     end
 
     def not_ready?
-      @studio.list_pools.detect { |pool| pool['name'].eql?(@pool) }['machines']\
-             .detect { |machine| machine['name'].eql?(@name) }['state']\
+      @studio.list_pools.detect { |pool| pool['name'].eql?(@pool) }['machines']
+             .detect { |machine| machine['name'].eql?(@name) }['state']
              .eql?('NotReady')
     end
 
