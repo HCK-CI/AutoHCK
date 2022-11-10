@@ -32,8 +32,8 @@ module AutoHCK
         perform_trap(signal)
       else
         @sig_timestamps[signal] = time
-        write_log("SIG#{signal}(1) received, aborting if another SIG#{signal} is"\
-                            ' received in the span of the next one second')
+        write_log("SIG#{signal}(1) received")
+        write_log("Aborting if another SIG#{signal} is received in the span of the next one second")
       end
     end
 
