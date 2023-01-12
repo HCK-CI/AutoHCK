@@ -28,6 +28,26 @@
       "Hardware-enforced Stack Protection Compatibility Test"
     ]
   },
+  "igb": {
+    "name": "Intel(R) 82576 Gigabit Dual Port Network Connection",
+    "device": "igb",
+    "type": 0,
+    "install_method": "no-drv",
+    "support": true,
+    "pretestcommands": [
+      {
+        "desc": "Rename igb ethernet adapter to SupportDevice0",
+        "run": "Rename-NetAdapter -Name (Get-NetAdapter -InterfaceDescription 'Intel(R) 82576 Gigabit Dual Port Network Connection').Name -NewName 'SupportDevice0'"
+      }
+    ],
+    "ignore_list": [
+      "NDISTest 6.5 - [2 Machine] - GlitchFreeDevice",
+      "NDISTest 6.5 - [2 Machine] - VMQReceiveQueueStateChecking",
+      "NDISTest 6.5 - [2 Machine] - VMQPowerManagement",
+      "NDISTest 6.0 - [1 Machine] - 1c_Mini6PerfSend",
+      "Hardware-enforced Stack Protection Compatibility Test"
+    ]
+  },
   "viostor": {
     "name": "Red Hat VirtIO SCSI Disk Device",
     "device": "virtio-blk-pci",
