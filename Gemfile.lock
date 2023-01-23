@@ -12,7 +12,7 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (6.1.4.1)
+    activesupport (6.1.7.1)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (>= 1.6, < 2)
       minitest (>= 5.1)
@@ -24,7 +24,7 @@ GEM
     builder (3.2.4)
     code-scanning-rubocop (0.6.1)
       rubocop (~> 1.0)
-    concurrent-ruby (1.1.9)
+    concurrent-ruby (1.1.10)
     curb (1.0.1)
     diff-lcs (1.4.4)
     dotenv (2.7.6)
@@ -45,7 +45,7 @@ GEM
       builder (>= 2.1.2)
       rexml (~> 3.0)
     httpclient (2.8.3)
-    i18n (1.8.10)
+    i18n (1.12.0)
       concurrent-ruby (~> 1.0)
     json (2.6.2)
     jwt (2.2.3)
@@ -53,7 +53,7 @@ GEM
     logging (2.3.1)
       little-plugger (~> 1.1)
       multi_json (~> 1.14)
-    minitest (5.14.4)
+    minitest (5.17.0)
     mono_logger (1.1.1)
     multi_json (1.15.0)
     multi_xml (0.6.0)
@@ -124,7 +124,7 @@ GEM
       faraday
     sqlite3 (1.4.2)
     stringio (3.0.2)
-    tzinfo (2.0.4)
+    tzinfo (2.0.5)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.3.0)
     winrm (2.3.4)
@@ -141,7 +141,7 @@ GEM
       logging (>= 1.6.1, < 3.0)
       rubyzip (~> 2.0)
       winrm (~> 2.0)
-    zeitwerk (2.4.2)
+    zeitwerk (2.6.6)
 
 PLATFORMS
   ruby
