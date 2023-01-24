@@ -78,22 +78,12 @@ module AutoHCK
       update_summary_results_log
     end
 
-    def add_missing_test_extra
-      return unless @tests_extra[@last_queued_id].nil?
-
-      @logger.warn('Test extra information is empty!')
-
-      @tests_extra[@last_queued_id] ||= {}
-      @tests_extra[@last_queued_id]['queued_at'] = DateTime.now
-    end
-
     def check_test_queued_time
       # We can't compare test objects directly because the list_tests
       # function updates the test object but the current_test function
       # returns the pure object.
 
       @logger.debug("Checking queued time for test id: #{@last_queued_id}. Current test: #{current_test}")
-      @logger.debug("Test extra information: #{@tests_extra[@last_queued_id]}")
 
       return if @last_queued_id == current_test&.dig('id')
 
@@ -180,10 +170,8 @@ module AutoHCK
     end
 
     def on_test_start(test)
-      @logger.info(">>> Currently running: #{test['name']} (#{test['id']}) [#{test['estimatedruntime']}]")
-      @logger.debug("Current last queued test id = #{@last_queued_id}")
+      @logger.info(">>> Currently running: #{test['name']} [#{test['estimatedruntime']}]")
 
-      @last_queued_id = test['id']
       @tests_extra[test['id']]['started_at'] = DateTime.now
       @tests_extra[test['id']]['status'] = nil
 
@@ -338,7 +326,6 @@ module AutoHCK
         keep_clients_alive
         reset_clients_to_ready_state
         check_new_finished_tests
-        add_missing_test_extra
         check_test_queued_time
         check_test_duration_time
         if current_test != running
