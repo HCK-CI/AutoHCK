@@ -84,8 +84,13 @@ module AutoHCK
       # returns the pure object.
 
       @logger.debug("Checking queued time for test id: #{@last_queued_id}. Current test: #{current_test}")
+      @logger.debug("Test extra information: #{@tests_extra[@last_queued_id]}")
 
-      return if @last_queued_id == current_test&.dig('id')
+      # When @last_queued_id is nil then all queued tests are running or finished
+      return if @last_queued_id.nil?
+
+      # When 'started_at' is not nil then last queued test is running or finished
+      return unless @tests_extra[@last_queued_id]['started_at'].nil?
 
       diff = time_diff(@tests_extra[@last_queued_id]['queued_at'], DateTime.now)
 
