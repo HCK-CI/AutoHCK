@@ -52,6 +52,7 @@ GEM
     logging (2.3.1)
       little-plugger (~> 1.1)
       multi_json (~> 1.14)
+    mini_portile2 (2.8.1)
     minitest (5.17.0)
     mono_logger (1.1.1)
     multi_json (1.15.0)
@@ -121,7 +122,8 @@ GEM
     sentry-ruby-core (4.7.1)
       concurrent-ruby
       faraday
-    sqlite3 (1.4.2)
+    sqlite3 (1.6.0)
+      mini_portile2 (~> 2.8.0)
     stringio (3.0.2)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
