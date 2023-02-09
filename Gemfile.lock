@@ -26,7 +26,7 @@ GEM
     concurrent-ruby (1.2.0)
     curb (1.0.5)
     diff-lcs (1.5.0)
-    dotenv (2.7.6)
+    dotenv (2.8.1)
     dropbox_api (0.1.21)
       faraday (< 3.0)
       oauth2 (~> 1.1)
