@@ -25,6 +25,10 @@ r_read.close
 return if r.nil?
 
 [
+  # unshare command recursively converts / to private by default, but we need to
+  # do that by ourselves because we use the bare unshare syscall.
+  ['mount', '--make-rprivate', '/'],
+
   ['mount', '--bind', File.join(__dir__, '..', 'resolv.conf'), '/etc/resolv.conf'],
   %w[ip link set tap_host up],
   %w[ip link add br_world type bridge],
