@@ -5,14 +5,14 @@
   "clients": {
     "c1": {
       "name": "CL1",
-      "cpus": "2",
+      "cpus": "4",
       "memory": "2G",
       "winrm_port": "4002",
       "image": "HLK1703-C1-Win10_1607x86.qcow2"
     },
     "c2": {
       "name": "CL2",
-      "cpus": "2",
+      "cpus": "4",
       "memory": "2G",
       "winrm_port": "4003",
       "image": "HLK1703-C2-Win10_1607x86.qcow2"
