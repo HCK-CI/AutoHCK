@@ -50,6 +50,12 @@ viofs:
     - viofs/
   exclude:
     - viofs/svc/
+    - viofs/LICENSE
+viofssvc:
+  include:
+    - viofs/
+  exclude:
+    - viofs/LICENSE
 viogpu:
   include:
     - viogpu/
