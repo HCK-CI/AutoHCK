@@ -138,10 +138,15 @@ module AutoHCK
       @result_uploader.create_project_folder
     end
 
+    def github_handling_context
+      "#{@options.test.gthb_context_prefix}#{@engine.tag}#{@options.test.gthb_context_suffix}"
+    end
+
     def github_handling(commit)
       return true if commit.to_s.empty?
 
-      @github = Github.new(@config, @logger, @result_uploader.url, @engine.tag, commit)
+      @github = Github.new(@config, @logger, @result_uploader.url, github_handling_context,
+                           commit)
       raise GithubCommitInvalid unless @github.connected?
 
       @github.find_pr
