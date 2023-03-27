@@ -74,7 +74,8 @@ module AutoHCK
 
     # class TestOptions
     class TestOptions
-      attr_accessor :platform, :drivers, :driver_path, :commit, :diff_file, :svvp, :manual
+      attr_accessor :platform, :drivers, :driver_path, :commit, :diff_file, :svvp, :manual,
+                    :gthb_context_prefix, :gthb_context_suffix
 
       def create_parser
         OptionParser.new do |parser|
@@ -96,6 +97,8 @@ module AutoHCK
         diff_file_option(parser)
         svvp_option(parser)
         manual_option(parser)
+        gthb_context_prefix_option(parser)
+        gthb_context_suffix_option(parser)
       end
 
       def platform_option(parser)
@@ -144,6 +147,20 @@ module AutoHCK
         parser.on('--manual', TrueClass,
                   'Run and prepare the machine for tests, but do not run the tests themselves') do |manual|
           @manual = manual
+        end
+      end
+
+      def gthb_context_prefix_option(parser)
+        parser.on('--gthb_context_prefix <gthb_context_prefix>', String,
+                  'Add custom prefix for GitHub CI results context') do |gthb_context_prefix|
+          @gthb_context_prefix = gthb_context_prefix
+        end
+      end
+
+      def gthb_context_suffix_option(parser)
+        parser.on('--gthb_context_suffix <gthb_context_suffix>', String,
+                  'Add custom suffix for GitHub CI results context') do |gthb_context_suffix|
+          @gthb_context_suffix = gthb_context_suffix
         end
       end
     end
