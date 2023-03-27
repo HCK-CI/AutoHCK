@@ -122,7 +122,7 @@ GEM
     sentry-ruby-core (4.7.1)
       concurrent-ruby
       faraday
-    sqlite3 (1.6.1)
+    sqlite3 (1.6.2)
       mini_portile2 (~> 2.8.0)
     stringio (3.0.2)
     tzinfo (2.0.6)
