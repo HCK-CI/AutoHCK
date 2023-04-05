@@ -41,10 +41,8 @@
       }
     ],
     "ignore_list": [
-      "NDISTest 6.5 - [2 Machine] - GlitchFreeDevice",
       "NDISTest 6.5 - [2 Machine] - VMQReceiveQueueStateChecking",
       "NDISTest 6.5 - [2 Machine] - VMQPowerManagement",
-      "NDISTest 6.0 - [1 Machine] - 1c_Mini6PerfSend",
       "Hardware-enforced Stack Protection Compatibility Test"
     ]
   },
