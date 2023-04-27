@@ -131,10 +131,13 @@ module AutoHCK
     def apply_states
       @states_config.each do |name, state|
         state_value = option_config(name)
+        @logger.debug("Processing state #{name}, value #{state_value}")
         next if state[state_value.to_s].nil?
 
         state[state_value.to_s].each do |key, value|
           var = :"@#{key}"
+          @logger.debug("State key variable #{var}")
+
           next unless defined? var
 
           case (var_value = instance_variable_get var)
