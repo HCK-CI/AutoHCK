@@ -203,7 +203,7 @@
     "install_method": "PNP",
     "type": 0,
     "support": false,
-    "enlightenments_state": "on",
+    "enlightenments_state": true,
     "ignore_list": [
       "DF - Embedded Signature Verification Test (Certification)",
       "Test for EDID Requirements (Manual)",

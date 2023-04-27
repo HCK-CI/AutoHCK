@@ -2,8 +2,8 @@
   "name": "Win10_1903x64_q35_viommu",
   "kit": "HLK1903",
   "machine_type": "q35",
-  "viommu": "on",
-  "enlightenments_state": "on",
+  "viommu_state": true,
+  "enlightenments_state": true,
   "device_extra": "",
   "st_image": "HLK1903.qcow2",
   "clients": {
