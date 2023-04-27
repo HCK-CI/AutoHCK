@@ -59,6 +59,7 @@ module AutoHCK
       @device_commands = []
       @machine_extra_param = []
       @device_extra_param = []
+      @iommu_device_param = []
       @cpu_options = []
       @drive_cache_options = []
       @define_variables = {}
@@ -184,6 +185,7 @@ module AutoHCK
       {
         '@machine_extra_param@' => @machine_extra_param.join,
         '@device_extra_param@' => @device_extra_param.join,
+        '@iommu_device_param@' => @iommu_device_param.join,
         '@cpu_options@' => @cpu_options.join,
         '@drive_cache_options@' => @drive_cache_options.join
       }
@@ -229,6 +231,9 @@ module AutoHCK
 
       @device_extra_param.flatten!
       @device_extra_param.compact!
+
+      @iommu_device_param.flatten!
+      @iommu_device_param.compact!
 
       @pre_start_commands.flatten!
       @pre_start_commands.compact!

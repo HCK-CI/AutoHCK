@@ -1,4 +1,4 @@
 {
   "name": "virtio-balloon-pci",
-  "command_line": ["-device virtio-balloon-pci@device_extra_param@,bus=@bus_name@.0"]
+  "command_line": ["-device virtio-balloon-pci@device_extra_param@@iommu_device_param@,bus=@bus_name@.0"]
 }
