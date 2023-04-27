@@ -22,6 +22,7 @@ module AutoHCK
     ISO_JSON = 'lib/engines/hckinstall/iso.json'
     KIT_JSON = 'lib/engines/hckinstall/kit.json'
     STUDIO_PLATFORM_JSON = 'lib/engines/hckinstall/studio_platform.json'
+    FW_JSON = 'lib/setupmanagers/qemuhck/fw.json'
     ENGINE_MODE = 'install'
 
     def initialize(project)
@@ -245,9 +246,9 @@ module AutoHCK
       product_key == '' || product_key.nil? ? '' : "<Key>#{product_key}</Key>"
     end
 
-    def build_answer_file_path(file, fw_type)
+    def build_answer_file_path(file, disk_config)
       paths = [
-        @hck_setup_scripts_path + "/answer-files/#{file}.#{fw_type}.in",
+        @hck_setup_scripts_path + "/answer-files/#{file}.#{disk_config}.in",
         @hck_setup_scripts_path + "/answer-files/#{file}.in"
       ]
 
@@ -256,16 +257,33 @@ module AutoHCK
       end
     end
 
+    def load_fw_disk_config(fw_type)
+      fws = Json.read_json(FW_JSON, @logger)
+      @logger.info("Loading FW: #{fw_type}")
+      res = fws[fw_type]
+
+      unless res
+        @logger.fatal("#{@fw_name} does not exist")
+        raise(InvalidConfigFile, "#{@fw_name} does not exist")
+      end
+
+      res['disk_config']
+    end
+
     def build_studio_answer_file_path(file)
       fw_type = @project.setup_manager.studio_option_config('fw_type')
 
-      build_answer_file_path(file, fw_type)
+      disk_config = load_fw_disk_config(fw_type)
+
+      build_answer_file_path(file, disk_config)
     end
 
     def build_client_answer_file_path(file)
       fw_type = @project.setup_manager.client_option_config(@clients_name.first, 'fw_type')
 
-      build_answer_file_path(file, fw_type)
+      disk_config = load_fw_disk_config(fw_type)
+
+      build_answer_file_path(file, disk_config)
     end
 
     def prepare_studio_iso
