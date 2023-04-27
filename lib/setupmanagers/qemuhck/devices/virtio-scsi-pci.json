@@ -2,7 +2,7 @@
   "name": "virtio-scsi-pci",
   "command_line": [
     "-drive file=@test_image_path@,if=none,format=qcow2,id=virtio_scsi_@run_id@_@client_id@@drive_cache_options@",
-    "-device virtio-scsi-pci@device_extra_param@,id=scsi,bus=@bus_name@.0",
+    "-device virtio-scsi-pci@device_extra_param@@iommu_device_param@,id=scsi,bus=@bus_name@.0",
     "-device scsi-hd,drive=virtio_scsi_@run_id@_@client_id@,serial=@client_id@0@run_id@"
   ],
   "define_variables": {
