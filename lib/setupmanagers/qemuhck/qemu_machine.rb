@@ -343,7 +343,7 @@ module AutoHCK
     def fw_cmd
       cmd = []
 
-      cmd << "-drive if=pflash,format=raw,readonly,file=#{@fw['binary']}" if @fw['binary']
+      cmd << "-drive if=pflash,format=raw,readonly=on,file=#{@fw['binary']}" if @fw['binary']
       cmd << "-drive if=pflash,format=raw,file=#{@fw['nvram']}" if @fw['nvram']
 
       cmd
