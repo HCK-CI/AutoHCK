@@ -24,7 +24,7 @@ module AutoHCK
 
     # class CommonOptions
     class CommonOptions
-      attr_accessor :debug, :config
+      attr_accessor :debug, :config, :client_world_net
 
       def create_parser(sub_parser)
         OptionParser.new do |parser|
@@ -44,8 +44,10 @@ module AutoHCK
       def define_options(parser)
         @debug = false
         @config = nil
+        @client_world_net = false
         debug_option(parser)
         config_option(parser)
+        client_world_net_option(parser)
         version_option(parser)
       end
 
@@ -60,6 +62,13 @@ module AutoHCK
         parser.on('--config <override.json>', String,
                   'Path to custom override.json file') do |config|
           @config = config
+        end
+      end
+
+      def client_world_net_option(parser)
+        parser.on('--client_world_net', TrueClass,
+                  'Attach world bridge to clients VM') do |client_world_net|
+          @client_world_net = client_world_net
         end
       end
 
