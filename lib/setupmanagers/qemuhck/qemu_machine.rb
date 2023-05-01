@@ -301,11 +301,11 @@ module AutoHCK
                                        full_replacement_list)
       @device_commands << dev
 
+      process_optional_hck_network
+
       return unless @options['client_id'].zero?
 
       process_world_hck_network
-
-      process_optional_hck_network
     end
 
     def process_devices
