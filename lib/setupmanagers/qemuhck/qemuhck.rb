@@ -77,7 +77,8 @@ module AutoHCK
         'devices_list' => @devices,
         'logger' => @logger,
         'slirp' => @slirp,
-        'iso_path' => @project.config['iso_path']
+        'iso_path' => @project.config['iso_path'],
+        'client_world_net' => @project.options.common.client_world_net
       }
     end
 

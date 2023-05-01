@@ -303,7 +303,7 @@ module AutoHCK
 
       process_optional_hck_network
 
-      return unless @options['client_id'].zero?
+      return unless @options['client_id'].zero? || option_config('client_world_net')
 
       process_world_hck_network
     end
