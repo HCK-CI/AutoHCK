@@ -216,7 +216,10 @@ module AutoHCK
           Timeout.timeout(@client_install_timeout) do
             cl.each do |client|
               @logger.info("Waiting for #{client.name} installation finished")
-              sleep 5 while client.alive?
+              while client.alive?
+                @project.setup_manager.keep_studio_alive
+                sleep 5
+              end
             end
           end
         ensure
