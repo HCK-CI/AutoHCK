@@ -70,21 +70,26 @@ module AutoHCK
       options
     end
 
+    def client_vm_common_options
+      {
+        'id' => @id.to_i,
+        'workspace_path' => @workspace_path,
+        'devices_list' => @devices,
+        'logger' => @logger,
+        'slirp' => @slirp,
+        'iso_path' => @project.config['iso_path']
+      }
+    end
+
     def initialize_clients_vm
       options = drivers_options.merge(platform_options)
       @platform['clients'].each_with_index do |(_k, v), i|
         vm_options = options.merge({
-                                     'id' => @id.to_i,
-                                     'client_id' => i + 1,
-                                     'workspace_path' => @workspace_path,
-                                     'image_name' => v['image'],
-                                     'cpu_count' => v['cpus'],
-                                     'memory' => v['memory'],
-                                     'devices_list' => @devices,
-                                     'logger' => @logger,
-                                     'slirp' => @slirp,
-                                     'iso_path' => @project.config['iso_path']
-                                   })
+          'client_id' => i + 1,
+          'image_name' => v['image'],
+          'cpu_count' => v['cpus'],
+          'memory' => v['memory']
+        }.merge(client_vm_common_options))
         @clients_vm[v['name']] = QemuMachine.new(vm_options)
       end
     end
