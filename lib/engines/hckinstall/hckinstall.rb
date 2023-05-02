@@ -185,7 +185,7 @@ module AutoHCK
       cl
     end
 
-    def install_studio
+    def run_studio_installer
       @project.setup_manager.create_studio_image
 
       st = run_studio([
@@ -202,16 +202,16 @@ module AutoHCK
       end
     end
 
-    def install_client(name)
+    def run_client_installer(name)
       @project.setup_manager.create_client_image(name)
 
       run_client(name, snapshot: false)
     end
 
-    def install_clients
+    def run_clients_installer
       st = run_studio
       begin
-        cl = @clients_name.map { |c| install_client(c) }
+        cl = @clients_name.map { |c| run_client_installer(c) }
         begin
           Timeout.timeout(@client_install_timeout) do
             cl.each do |client|
@@ -289,7 +289,7 @@ module AutoHCK
       build_answer_file_path(file, disk_config)
     end
 
-    def prepare_studio_iso
+    def prepare_studio_installer
       product_key = @studio_iso_info.dig('studio', 'product_key')
 
       replacement_list = {
@@ -305,7 +305,7 @@ module AutoHCK
       create_iso(@setup_studio_iso, [@hck_setup_scripts_path])
     end
 
-    def prepare_client_iso
+    def prepare_client_installer
       product_key = @client_iso_info.dig('client', 'product_key')
 
       replacement_list = {
@@ -325,26 +325,38 @@ module AutoHCK
       "install-#{@project.options.install.platform}"
     end
 
+    def install_studio
+      if @project.setup_manager.check_studio_image_exist
+        if @project.options.install.force
+          @logger.info('HCKInstall: Studio image exist, force reinstall started')
+
+          prepare_studio_installer
+          run_studio_installer
+        else
+          @logger.info('HCKInstall: Studio image exist, installation skipped')
+        end
+      else
+        prepare_studio_installer
+        run_studio_installer
+      end
+    end
+
+    def install_clients
+      if @project.options.install.skip_client
+        @logger.info('HCKInstall: Client image installation skipped')
+        return
+      end
+
+      prepare_client_installer
+      run_clients_installer
+    end
+
     def run
       @logger.debug('HCKInstall: run')
 
       prepare_setup_scripts_config
 
-      if @project.setup_manager.check_studio_image_exist
-        if @project.options.install.force
-          @logger.info('HCKInstall: Studio image exist, force reinstall started')
-
-          prepare_studio_iso
-          install_studio
-        else
-          @logger.info('HCKInstall: Studio image exist, installation skipped')
-        end
-      else
-        prepare_studio_iso
-        install_studio
-      end
-
-      prepare_client_iso
+      install_studio
       install_clients
     end
   end
