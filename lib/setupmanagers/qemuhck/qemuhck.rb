@@ -14,7 +14,7 @@ module AutoHCK
 
     attr_reader :kit
 
-    OPT_NAMES = %w[viommu_state enlightenments_state vhost_state machine_type fw_type].freeze
+    OPT_NAMES = %w[viommu_state enlightenments_state vhost_state machine_type fw_type cpu].freeze
     STUDIO = 'st'
 
     def initialize(project)
