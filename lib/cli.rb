@@ -176,7 +176,7 @@ module AutoHCK
 
     # class InstallOptions
     class InstallOptions
-      attr_accessor :platform, :force
+      attr_accessor :platform, :force, :skip_client
 
       def create_parser
         OptionParser.new do |parser|
@@ -192,9 +192,11 @@ module AutoHCK
 
       def define_options(parser)
         @force = false
+        @skip_client = false
 
         platform_option(parser)
         force_option(parser)
+        skip_client_option(parser)
       end
 
       def platform_option(parser)
@@ -208,6 +210,13 @@ module AutoHCK
         parser.on('-f', '--force', TrueClass,
                   'Install all VM, replace studio if exist') do |force|
           @force = force
+        end
+      end
+
+      def skip_client_option(parser)
+        parser.on('--skip_client', TrueClass,
+                  'Skip client images installation') do |skip_client|
+          @skip_client = skip_client
         end
       end
     end
