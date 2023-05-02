@@ -12,6 +12,7 @@
   "share_on_host_net": "192.168.101",
   "share_on_host_path": "/root/Prometheus/fs_share",
   "platforms_defaults": {
+    "cpu": "qemu64",
     "cpu_count": 2,
     "memory": "4G",
     "cpu_model": 13,
