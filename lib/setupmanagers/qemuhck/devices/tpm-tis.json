@@ -6,8 +6,8 @@
     "-device tpm-tis,tpmdev=tpm0"
   ],
   "define_variables": {
-    "@tpm_state_dir@": "/tmp/swtpm_state_@run_id@_@client_id@",
-    "@tpm_socket@": "@tpm_state_dir@/sock"
+    "@tpm_state_dir@": "@workspace@/swtpm_state_@run_id@_@client_id@",
+    "@tpm_socket@": "/tmp/swtpm_@run_id@_@client_id@_sock"
   },
   "pre_start_commands": [
     "mkdir -p @tpm_state_dir@",
