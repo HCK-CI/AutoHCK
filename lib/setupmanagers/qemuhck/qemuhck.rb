@@ -71,7 +71,7 @@ module AutoHCK
     end
 
     def client_vm_common_options
-      {
+      base = {
         'id' => @id.to_i,
         'workspace_path' => @workspace_path,
         'devices_list' => @devices,
@@ -80,6 +80,16 @@ module AutoHCK
         'iso_path' => @project.config['iso_path'],
         'client_world_net' => @project.options.common.client_world_net
       }
+
+      fw_type = @platform["#{@project.options.mode}_fw_type"]
+      unless fw_type.nil?
+        @logger.warn(
+          "Platform has #{@project.options.mode}_fw_type = #{fw_type}, force to use it instead of #{base['fw_type']}"
+        )
+        base['fw_type'] = fw_type
+      end
+
+      base
     end
 
     def initialize_clients_vm
