@@ -23,6 +23,7 @@ module AutoHCK
     KIT_JSON = 'lib/engines/hckinstall/kit.json'
     STUDIO_PLATFORM_JSON = 'lib/engines/hckinstall/studio_platform.json'
     FW_JSON = 'lib/setupmanagers/qemuhck/fw.json'
+    DRIVERS_JSON = 'drivers.json'
     ENGINE_MODE = 'install'
 
     def initialize(project)
@@ -148,8 +149,35 @@ module AutoHCK
       @client_iso_info['path'].chomp!('/')
     end
 
+    def find_drivers
+      drivers_info = Json.read_json(DRIVERS_JSON, @project.logger)
+
+      @project.options.install.drivers.map do |short_name|
+        @project.logger.info("Loading driver: #{short_name}")
+        driver = drivers_info[short_name]
+
+        unless driver
+          @project.logger.fatal("#{short_name} does not exist")
+          raise(InvalidConfigFile, "#{short_name} does not exist")
+        end
+
+        driver['short'] = short_name
+        driver
+      end
+    end
+
     def drivers
-      nil
+      drivers = find_drivers
+
+      drivers.each do |driver|
+        next if driver['install_method'] == 'no-drv'
+
+        msg = "Can't install #{driver['short']} driver for device #{driver['device']} in install mode"
+        @project.logger.fatal(msg)
+        raise(InvalidConfigFile, msg)
+      end
+
+      drivers
     end
 
     def target
