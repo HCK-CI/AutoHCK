@@ -18,5 +18,9 @@
   "HLK2022": {
     "download_url": "https://go.microsoft.com/fwlink/?linkid=2164257",
     "extra_software": [ "FOD_2022", "Test-NETHLK", "winfsp" ]
+  },
+  "HLK11_22H2": {
+    "download_url": "https://go.microsoft.com/fwlink/?linkid=2195974",
+    "extra_software": [ "winfsp" ]
   }
 }
