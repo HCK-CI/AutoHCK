@@ -176,7 +176,7 @@ module AutoHCK
 
     # class InstallOptions
     class InstallOptions
-      attr_accessor :platform, :force, :skip_client
+      attr_accessor :platform, :force, :skip_client, :drivers
 
       def create_parser
         OptionParser.new do |parser|
@@ -193,10 +193,12 @@ module AutoHCK
       def define_options(parser)
         @force = false
         @skip_client = false
+        @drivers = []
 
         platform_option(parser)
         force_option(parser)
         skip_client_option(parser)
+        drivers_option(parser)
       end
 
       def platform_option(parser)
@@ -217,6 +219,13 @@ module AutoHCK
         parser.on('--skip_client', TrueClass,
                   'Skip client images installation') do |skip_client|
           @skip_client = skip_client
+        end
+      end
+
+      def drivers_option(parser)
+        parser.on('-d', '--drivers <drivers_list>', Array,
+                  'List of driver attach in install') do |drivers|
+          @drivers = drivers
         end
       end
     end
