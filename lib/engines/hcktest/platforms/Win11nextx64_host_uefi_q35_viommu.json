@@ -1,0 +1,27 @@
+{
+  "name": "Win11nextx64_host_uefi_q35_viommu",
+  "kit": "HLK11_22H2",
+  "fw_type": "uefi",
+  "install_fw_type": "uefi_sb",
+  "machine_type": "q35",
+  "viommu_state": true,
+  "enlightenments_state": true,
+  "cpu": "host",
+  "st_image": "HLK11_22H2.qcow2",
+  "clients": {
+    "c1": {
+      "name": "CL1",
+      "cpus": "4",
+      "memory": "4G",
+      "winrm_port": "4002",
+      "image": "HLK11_22H2-C1-Win11nextx64-uefi-q35-viommu.qcow2"
+    },
+    "c2": {
+      "name": "CL2",
+      "cpus": "4",
+      "memory": "4G",
+      "winrm_port": "4003",
+      "image": "HLK11_22H2-C2-Win11nextx64-uefi-q35-viommu.qcow2"
+    }
+  }
+}
