@@ -39,7 +39,7 @@ module AutoHCK
       if SetupManagerFactory.can_create?(@type)
         @setupmanager = SetupManagerFactory.create(@type, @project)
       else
-        @logger.warn("Unkown type setup mainager #{@type}, Exiting...")
+        @logger.warn("Unkown type setup manager #{@type}, Exiting...")
         raise SetupManagerError, "Unkown type setup manager #{@type}"
       end
     end
