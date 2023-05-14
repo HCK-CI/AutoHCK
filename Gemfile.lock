@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/HCK-CI/rtoolsHCK.git
-  revision: 6b4d576824f85e7fd21f9bcd50d470d6c7c12d41
-  tag: v0.3.1
+  revision: cbeacfc770a925a8d10c8eaeba4440950b00aa71
+  tag: v0.3.4
   specs:
-    rtoolsHCK (0.3.1)
+    rtoolsHCK (0.3.4)
       bundler
       rdoc
       winrm (= 2.3.4)
@@ -30,7 +30,7 @@ GEM
     dropbox_api (0.1.21)
       faraday (< 3.0)
       oauth2 (~> 1.1)
-    erubi (1.11.0)
+    erubi (1.12.0)
     faraday (2.7.4)
       faraday-net_http (>= 2.0, < 3.1)
       ruby2_keywords (>= 0.0.4)
@@ -70,12 +70,12 @@ GEM
     parallel (1.23.0)
     parser (3.2.2.1)
       ast (~> 2.4.1)
-    psych (4.0.4)
+    psych (5.1.0)
       stringio
     public_suffix (5.0.1)
     rack (3.0.6.1)
     rainbow (3.1.1)
-    rdoc (6.4.0)
+    rdoc (6.5.0)
       psych (>= 4.0.0)
     regexp_parser (2.8.0)
     rexml (3.2.5)
@@ -122,7 +122,7 @@ GEM
       faraday
     sqlite3 (1.6.2)
       mini_portile2 (~> 2.8.0)
-    stringio (3.0.2)
+    stringio (3.0.6)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.4.2)
