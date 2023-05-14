@@ -18,6 +18,7 @@ module AutoHCK
     VERIFY_TARGET_SLEEP = 5
     QUEUE_TEST_TIMEOUT = '00:15:00'
     RUNNING_TEST_TIMEOUT = '00:15:00'
+    SUMMARY_LOG_FILE = 'logs.txt'
 
     def initialize(client, support, project, target, tools)
       @client = client
@@ -223,7 +224,8 @@ module AutoHCK
       logs += summary_results_log
 
       @logger.info('Tests results logs updated via the result uploader')
-      @project.result_uploader.update_file_content(logs, 'logs.txt')
+      @project.result_uploader.update_file_content(logs, SUMMARY_LOG_FILE)
+      File.write("#{@project.workspace_path}/#{SUMMARY_LOG_FILE}", logs)
     end
 
     def update_remote(test_id, test_logs_path, status, testname)
