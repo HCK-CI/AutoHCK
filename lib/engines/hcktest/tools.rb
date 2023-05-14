@@ -51,6 +51,9 @@ module AutoHCK
     # A custom ShutdownMachine error exception
     class ShutdownMachineError < AutoHCKError; end
 
+    # A custom SystemInfoMachineError error exception
+    class SystemInfoMachineError < AutoHCKError; end
+
     # A custom InstallMachineDriverPackage error exception
     class InstallMachineDriverPackageError < AutoHCKError; end
 
@@ -279,6 +282,22 @@ module AutoHCK
 
       sleep ACTION_RETRY_SLEEP
       @logger.info("Trying again to shutdown machine #{machine}")
+      retry
+    end
+
+    def get_machine_system_info(machine, output_format = 'CSV')
+      retries ||= 0
+      ret = act_with_tools { _1.get_machine_system_info(machine, output_format) }
+
+      return ret if ret
+
+      raise SystemInfoMachineError, "Getting machine #{machine} system info failed"
+    rescue SystemInfoMachineError => e
+      @logger.warn(e.message)
+      raise unless (retries += 1) < ACTION_RETRIES
+
+      sleep ACTION_RETRY_SLEEP
+      @logger.info("Trying again to get machine #{machine} system info")
       retry
     end
 
