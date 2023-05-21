@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
+require 'erb'
 require 'date'
 require 'fileutils'
 require './lib/engines/hcktest/playlist'
+require './lib/auxiliary/sysinfo_parser'
 require './lib/auxiliary/time_helper'
 require './lib/auxiliary/zip_helper'
 
@@ -19,6 +21,7 @@ module AutoHCK
     QUEUE_TEST_TIMEOUT = '00:15:00'
     RUNNING_TEST_TIMEOUT = '00:15:00'
     SUMMARY_LOG_FILE = 'logs.txt'
+    RESULTS_FILE = 'results.html'
 
     def initialize(client, support, project, target, tools)
       @client = client
@@ -30,6 +33,8 @@ module AutoHCK
       @logger = project.logger
       @playlist = Playlist.new(client, project, target, tools, @client.kit)
       @tests_extra = {}
+
+      @results_template = ERB.new(File.read('lib/templates/report.html.erb'))
     end
 
     def list_tests(log: false)
@@ -159,6 +164,7 @@ module AutoHCK
 
       { 'current' => current_test, 'passed' => cnt_passed,
         'failed' => cnt_failed, 'inqueue' => @total - cnt_passed - cnt_failed,
+        'skipped' => @playlist.ignored_list.count,
         'currentcount' => done_tests.count + 1, 'total' => @total }
     end
 
@@ -205,6 +211,25 @@ module AutoHCK
       @logger.info('Skipping archiving test result logs')
     end
 
+    def generate_report
+      data = {
+        'tag' => @tag,
+        'test_stats' => tests_stats,
+        'ignored_tests' => @playlist.ignored_list,
+        'tests' => @tests,
+        'url' => @project.result_uploader.url,
+        'system_info' => {
+          'guest' => @clients_system_info
+        }
+      }
+
+      results_file = "#{@project.workspace_path}/#{RESULTS_FILE}"
+
+      File.write(results_file, @results_template.result_with_hash(data))
+      @project.result_uploader.delete_file(RESULTS_FILE)
+      @project.result_uploader.upload_file(results_file, RESULTS_FILE)
+    end
+
     def summary_ignored_list_log
       @playlist.ignored_list.reduce('') do |sum, test|
         sum + "Skipped: #{test['name']} [#{test['estimatedruntime']}]\n"
@@ -226,6 +251,8 @@ module AutoHCK
       @logger.info('Tests results logs updated via the result uploader')
       @project.result_uploader.update_file_content(logs, SUMMARY_LOG_FILE)
       File.write("#{@project.workspace_path}/#{SUMMARY_LOG_FILE}", logs)
+
+      generate_report
     end
 
     def update_remote(test_id, test_logs_path, status, testname)
@@ -351,9 +378,41 @@ module AutoHCK
       @project.result_uploader.upload_file(res['hostprojectpackagepath'], r_name)
     end
 
+    def build_system_info(info)
+      @clients_system_info ||= {}
+
+      system_info = {
+        'Host' => info['Host Name'],
+        'OS' => "#{info['OS Name']} #{info['OS Version']}",
+        'System' => "#{info['System Manufacturer']} #{info['System Model']} #{info['System Type']}",
+        'CPU' => info['Processor(s)'].join(' '),
+        'Memory' => info['Total Physical Memory'],
+        'BIOS' => info['BIOS Version']
+      }
+
+      @clients_system_info[info['Host Name']] = system_info
+    end
+
+    def load_clients_system_info
+      parser = SysInfoParser.new
+
+      client_sysinfo = parser.parse(@tools.get_machine_system_info(@client.name))
+      build_system_info(client_sysinfo)
+
+      return if @support.nil?
+
+      support_sysinfo = parser.parse(@tools.get_machine_system_info(@support.name))
+      build_system_info(support_sysinfo)
+    end
+
     def run
-      @last_done = []
       @total = @tests.count
+
+      load_clients_system_info
+      update_summary_results_log
+
+      @last_done = []
+
       tests = @tests
       tests.each do |test|
         @logger.info("Adding to queue: #{test['name']} (#{test['id']}) [#{test['estimatedruntime']}]")
