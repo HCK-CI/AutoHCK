@@ -268,8 +268,12 @@ module AutoHCK
         kit_type: kit_type,
         hlk_kit_ver: kit_version
       }
-      download_kit_installer(@kit_info['download_url'],
-                             "#{kit_type}#{kit_version}", @hck_setup_scripts_path)
+
+      unless @kit_info['download_url'].nil?
+        download_kit_installer(@kit_info['download_url'],
+                               "#{kit_type}#{kit_version}", @hck_setup_scripts_path)
+      end
+
       create_setup_scripts_config(@hck_setup_scripts_path, config)
     end
 
