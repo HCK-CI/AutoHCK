@@ -22,5 +22,8 @@
   "HLK11_22H2": {
     "download_url": "https://go.microsoft.com/fwlink/?linkid=2195974",
     "extra_software": [ "winfsp" ]
+  },
+  "HLK11_next": {
+    "extra_software": [ "Disable_SNV", "winfsp" ]
   }
 }
