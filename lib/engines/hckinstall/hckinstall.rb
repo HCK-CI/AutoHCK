@@ -274,6 +274,15 @@ module AutoHCK
                                "#{kit_type}#{kit_version}", @hck_setup_scripts_path)
       end
 
+      installers = [
+        "#{@hck_setup_scripts_path}/Kits/#{kit_type}#{kit_version}Setup.exe",
+        "#{@hck_setup_scripts_path}/Kits/#{kit_type}#{kit_version}/#{kit_type}Setup.exe"
+      ]
+
+      raise unless (file = installers.find { File.exist? _1 })
+
+      @logger.info("HLK installer #{file} was found")
+
       create_setup_scripts_config(@hck_setup_scripts_path, config)
     end
 
