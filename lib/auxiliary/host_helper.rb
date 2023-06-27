@@ -4,7 +4,7 @@ require 'English'
 require 'tempfile'
 
 require_relative '../exceptions'
-require_relative './cmd_run'
+require_relative 'cmd_run'
 
 # AutoHCK module
 module AutoHCK
