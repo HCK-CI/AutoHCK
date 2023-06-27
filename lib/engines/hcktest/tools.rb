@@ -110,7 +110,6 @@ module AutoHCK
         @logger.warn("Running HLK tools command (#{action}) failed")
         sleep ACTION_RETRY_SLEEP
         @logger.info("Trying again to run HLK tools command (#{action})")
-
       rescue StandardError => e
         @logger.warn("Running HLK tools command (#{action}) failed with #{e}")
         sleep ACTION_RETRY_SLEEP

@@ -2,9 +2,9 @@
 
 require 'mono_logger'
 
-require_relative './network_manager'
-require_relative './qmp'
-require_relative './exceptions'
+require_relative 'network_manager'
+require_relative 'qmp'
+require_relative 'exceptions'
 
 require_relative '../../auxiliary/json_helper'
 require_relative '../../auxiliary/host_helper'
