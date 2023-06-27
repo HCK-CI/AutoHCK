@@ -54,6 +54,7 @@ module AutoHCK
 
     def define_local_variables
       @devices_list = []
+      @config_commands = []
       @pre_start_commands = []
       @post_stop_commands = []
       @device_commands = []
@@ -228,7 +229,7 @@ module AutoHCK
 
     def normalize_lists
       [@device_commands, @machine_extra_param, @device_extra_param, @iommu_device_param,
-       @pre_start_commands, @post_stop_commands, @cpu_options,
+       @config_commands, @pre_start_commands, @post_stop_commands, @cpu_options,
        @drive_cache_options].each do |arr|
         arr.flatten!
         arr.compact!
@@ -408,6 +409,7 @@ module AutoHCK
 
     def run_vm
       dump_config
+      run_pre_start_commands
       run_qemu
       @logger.info("#{@run_name} started with PID #{@pid}")
     end
@@ -434,6 +436,13 @@ module AutoHCK
       end
 
       @hostfwds.clear
+    end
+
+    def run_config_commands
+      @config_commands.each do |dirty_cmd|
+        cmd = replace_string_recursive(dirty_cmd, full_replacement_list)
+        run_cmd(cmd)
+      end
     end
 
     def run_pre_start_commands
@@ -514,6 +523,18 @@ module AutoHCK
       ]
 
       create_run_script(file_name, content.join)
+
+      return if @config_commands.empty?
+
+      file_name = "#{@workspace_path}/#{@run_name}_config.sh"
+      content = [
+        "#!/usr/bin/env bash\n",
+
+        "\n\n# QEMU config commands\n",
+        merge_commands_array(@config_commands)
+      ]
+
+      create_run_script(file_name, content.join)
     end
 
     def run(run_opts = nil)
@@ -531,7 +552,7 @@ module AutoHCK
         dump_commands
       else
         add_hostfwd
-        run_pre_start_commands
+        run_config_commands
         run_vm
       end
     end
