@@ -17,7 +17,12 @@ module AutoHCK
       @tools = tools
       @logger = project.logger
       @kit = kit
-      @ms_playlist = ms_playlist(true)
+
+      @playlist = if @project.options.test.playlist.nil?
+                    ms_playlist(true)
+                  else
+                    custom_playlist
+                  end
     end
 
     # A custom ListTests error exception
@@ -25,7 +30,7 @@ module AutoHCK
 
     def list_tests(log)
       @tests = @tools.list_tests(@target['key'], @machine, @project.engine.tag,
-                                 @ms_playlist)
+                                 @playlist)
       raise ListTestsError, 'Failed to list tests' unless @tests
 
       custom_select_test_names(log)
@@ -49,6 +54,17 @@ module AutoHCK
       FileUtils.cp(file, workspace_file)
 
       @logger.info("Applying microsoft's playlist") if log
+      workspace_file
+    end
+
+    def custom_playlist
+      playlist = @project.options.test.playlist
+
+      workspace_file = "#{@project.workspace_path}/playlist_#{@kit[3..]}.xml"
+
+      FileUtils.cp(playlist, workspace_file)
+
+      @logger.info("Applying custom kit playlist from #{playlist}")
       workspace_file
     end
 
