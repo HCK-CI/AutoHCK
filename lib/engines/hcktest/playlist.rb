@@ -92,19 +92,26 @@ module AutoHCK
     end
 
     def custom_reject_test_names(log)
-      reject_test_names = @project.engine.target['reject_test_names']
+      user_reject_test_names_file = @project.options.test.reject_test_names
+
+      reject_test_names = if user_reject_test_names_file.nil?
+                            @project.engine.target['reject_test_names']
+                          else
+                            File.readlines(user_reject_test_names_file, chomp: true)
+                          end
+
       @rejected_test = []
-      if reject_test_names
-        @tests.reject! do |test|
-          if reject_test_names.include?(test['name'])
-            @rejected_test << test
-            true
-          else
-            false
-          end
+      return unless reject_test_names
+
+      @tests.reject! do |test|
+        if reject_test_names.include?(test['name'])
+          @rejected_test << test
+          true
+        else
+          false
         end
       end
-      @logger.info('Applying custom rejected test names') if log && reject_test_names
+      @logger.info('Applying custom rejected test names') if log
     end
   end
 end
