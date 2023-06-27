@@ -28,7 +28,7 @@ module AutoHCK
                                  @ms_playlist)
       raise ListTestsError, 'Failed to list tests' unless @tests
 
-      custom_playlist(log)
+      custom_select_test_names(log)
       custom_ignore_list(log)
       sort_by_duration
     end
@@ -59,13 +59,20 @@ module AutoHCK
       @tests.sort_by! { |test| test['duration'] }
     end
 
-    def custom_playlist(log)
-      playlist = @project.engine.target['playlist']
-      return unless playlist
+    def custom_select_test_names(log)
+      user_select_test_names_file = @project.options.test.select_test_names
 
-      @tests.select! { |test| playlist.include?(test['name']) }
+      select_test_names = if user_select_test_names_file.nil?
+                            @project.engine.target['select_test_names']
+                          else
+                            File.readlines(user_select_test_names_file, chomp: true)
+                          end
+
+      return unless select_test_names
+
+      @tests.select! { |test| select_test_names.include?(test['name']) }
       count = @tests.count
-      @logger.info("Applying custom playlist, #{count} tests.") if log
+      @logger.info("Applying custom selected test names, #{count} tests.") if log
     end
 
     def custom_ignore_list(log)
