@@ -84,7 +84,8 @@ module AutoHCK
     # class TestOptions
     class TestOptions
       attr_accessor :platform, :drivers, :driver_path, :commit, :diff_file, :svvp, :manual,
-                    :gthb_context_prefix, :gthb_context_suffix, :playlist, :select_test_names
+                    :gthb_context_prefix, :gthb_context_suffix, :playlist, :select_test_names,
+                    :reject_test_names
 
       def create_parser
         OptionParser.new do |parser|
@@ -110,6 +111,7 @@ module AutoHCK
         gthb_context_suffix_option(parser)
         playlist_option(parser)
         select_test_names_option(parser)
+        reject_test_names_option(parser)
       end
 
       def platform_option(parser)
@@ -186,6 +188,13 @@ module AutoHCK
         parser.on('--select-test-names <select_test_names>', String,
                   'Use custom user text playlist') do |select_test_names|
           @select_test_names = select_test_names
+        end
+      end
+
+      def reject_test_names_option(parser)
+        parser.on('--reject-test-names <reject_test_names>', String,
+                  'Use custom CI text ignore list') do |reject_test_names|
+          @reject_test_names = reject_test_names
         end
       end
     end
