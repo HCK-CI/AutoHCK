@@ -6,8 +6,8 @@
     "fwcfg64",
     "tpm"
   ],
-  "ignore_list": [
-    "__Windows_11_22H2_ignore_list",
+  "reject_test_names": [
+    "__Windows_11_22H2_reject_test_names",
     "Secure Boot Manual Logo Test",
     "Debug Capability Test (Logo)",
     "BitLocker Tpm+PIN+ USB and Recovery Password tests",
@@ -26,7 +26,7 @@
     "ACPI Logo Test",
     "Profile Interrupt Test",
     "Disk Stress (SYSTEM)",
-    "__Windows_Server_2022_ignore_list",
+    "__Windows_Server_2022_reject_test_names",
     "UEFI GOP mode test",
     "Verify IOMMU presence and configuration",
     "USB Generic HID Test",

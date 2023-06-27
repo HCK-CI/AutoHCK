@@ -41,7 +41,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <% ignored_tests.each_with_index do |test, idx| %>
+                    <% rejected_test.each_with_index do |test, idx| %>
                         <tr class="table-warning">
                             <th scope="row"><%= idx + 1 %></th>
                             <td><%= test['name'] %></td>

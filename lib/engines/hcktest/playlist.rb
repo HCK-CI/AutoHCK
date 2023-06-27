@@ -8,7 +8,7 @@ module AutoHCK
   class Playlist
     include Helper
 
-    attr_reader :ignored_list
+    attr_reader :rejected_test
 
     def initialize(client, project, target, tools, kit)
       @machine = client.name
@@ -34,7 +34,7 @@ module AutoHCK
       raise ListTestsError, 'Failed to list tests' unless @tests
 
       custom_select_test_names(log)
-      custom_ignore_list(log)
+      custom_reject_test_names(log)
       sort_by_duration
     end
 
@@ -91,20 +91,20 @@ module AutoHCK
       @logger.info("Applying custom selected test names, #{count} tests.") if log
     end
 
-    def custom_ignore_list(log)
-      ignore_list = @project.engine.target['ignore_list']
-      @ignored_list = []
-      if ignore_list
+    def custom_reject_test_names(log)
+      reject_test_names = @project.engine.target['reject_test_names']
+      @rejected_test = []
+      if reject_test_names
         @tests.reject! do |test|
-          if ignore_list.include?(test['name'])
-            @ignored_list << test
+          if reject_test_names.include?(test['name'])
+            @rejected_test << test
             true
           else
             false
           end
         end
       end
-      @logger.info('Applying custom ignore list') if log && ignore_list
+      @logger.info('Applying custom rejected test names') if log && reject_test_names
     end
   end
 end

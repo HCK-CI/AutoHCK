@@ -164,7 +164,7 @@ module AutoHCK
 
       { 'current' => current_test, 'passed' => cnt_passed,
         'failed' => cnt_failed, 'inqueue' => @total - cnt_passed - cnt_failed,
-        'skipped' => @playlist.ignored_list.count,
+        'skipped' => @playlist.rejected_test.count,
         'currentcount' => done_tests.count + 1, 'total' => @total }
     end
 
@@ -215,7 +215,7 @@ module AutoHCK
       data = {
         'tag' => @tag,
         'test_stats' => tests_stats,
-        'ignored_tests' => @playlist.ignored_list,
+        'rejected_test' => @playlist.rejected_test,
         'tests' => @tests,
         'url' => @project.result_uploader.url,
         'system_info' => {
@@ -230,8 +230,8 @@ module AutoHCK
       @project.result_uploader.upload_file(results_file, RESULTS_FILE)
     end
 
-    def summary_ignored_list_log
-      @playlist.ignored_list.reduce('') do |sum, test|
+    def summary_rejected_test_log
+      @playlist.rejected_test.reduce('') do |sum, test|
         sum + "Skipped: #{test['name']} [#{test['estimatedruntime']}]\n"
       end
     end
@@ -245,7 +245,7 @@ module AutoHCK
     end
 
     def update_summary_results_log
-      logs = summary_ignored_list_log
+      logs = summary_rejected_test_log
       logs += summary_results_log
 
       @logger.info('Tests results logs updated via the result uploader')
