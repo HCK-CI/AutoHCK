@@ -227,29 +227,12 @@ module AutoHCK
     end
 
     def normalize_lists
-      @device_commands.flatten!
-      @device_commands.compact!
-
-      @machine_extra_param.flatten!
-      @machine_extra_param.compact!
-
-      @device_extra_param.flatten!
-      @device_extra_param.compact!
-
-      @iommu_device_param.flatten!
-      @iommu_device_param.compact!
-
-      @pre_start_commands.flatten!
-      @pre_start_commands.compact!
-
-      @post_stop_commands.flatten!
-      @post_stop_commands.compact!
-
-      @cpu_options.flatten!
-      @cpu_options.compact!
-
-      @drive_cache_options.flatten!
-      @drive_cache_options.compact!
+      [@device_commands, @machine_extra_param, @device_extra_param, @iommu_device_param,
+       @pre_start_commands, @post_stop_commands, @cpu_options,
+       @drive_cache_options].each do |arr|
+        arr.flatten!
+        arr.compact!
+      end
     end
 
     def load_device_info(device_info)
