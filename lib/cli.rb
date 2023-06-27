@@ -84,7 +84,7 @@ module AutoHCK
     # class TestOptions
     class TestOptions
       attr_accessor :platform, :drivers, :driver_path, :commit, :diff_file, :svvp, :manual,
-                    :gthb_context_prefix, :gthb_context_suffix, :select_test_names
+                    :gthb_context_prefix, :gthb_context_suffix, :playlist, :select_test_names
 
       def create_parser
         OptionParser.new do |parser|
@@ -108,6 +108,7 @@ module AutoHCK
         manual_option(parser)
         gthb_context_prefix_option(parser)
         gthb_context_suffix_option(parser)
+        playlist_option(parser)
         select_test_names_option(parser)
       end
 
@@ -171,6 +172,13 @@ module AutoHCK
         parser.on('--gthb_context_suffix <gthb_context_suffix>', String,
                   'Add custom suffix for GitHub CI results context') do |gthb_context_suffix|
           @gthb_context_suffix = gthb_context_suffix
+        end
+      end
+
+      def playlist_option(parser)
+        parser.on('--playlist <playlist>', String,
+                  'Use custom Microsoft XML playlist') do |playlist|
+          @playlist = playlist
         end
       end
 
