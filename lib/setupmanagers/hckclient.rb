@@ -145,13 +145,19 @@ module AutoHCK
 
     def recognize_client_wait
       @logger.info("Waiting for client #{@name} to be recognized")
-      sleep 5 until machine_in_default_pool
+      until machine_in_default_pool
+        keep_alive
+        sleep 5
+      end
       @logger.info("Client #{@name} recognized")
     end
 
     def initialize_client_wait
       @logger.info("Waiting for client #{@name} initialization")
-      sleep 5 while machine_in_default_pool['state'].eql?('Initializing')
+      while machine_in_default_pool['state'].eql?('Initializing')
+        keep_alive
+        sleep 5
+      end
       @logger.info("Client #{@name} initialized")
     end
 
