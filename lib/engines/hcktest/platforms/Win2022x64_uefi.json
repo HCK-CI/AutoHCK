@@ -7,14 +7,14 @@
     "c1": {
       "name": "CL1",
       "cpus": "4",
-      "memory": "4G",
+      "memory": "8G",
       "winrm_port": "4002",
       "image": "HLK2022-C1-Win2022x64-uefi.qcow2"
     },
     "c2": {
       "name": "CL2",
       "cpus": "4",
-      "memory": "4G",
+      "memory": "8G",
       "winrm_port": "4003",
       "image": "HLK2022-C2-Win2022x64-uefi.qcow2"
     }
