@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require './lib/resultuploaders/dropbox'
+require './lib/resultuploaders/dropbox/dropbox'
 
 # AutoHCK module
 module AutoHCK
