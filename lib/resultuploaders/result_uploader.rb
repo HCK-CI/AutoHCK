@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require './lib/resultuploaders/dropbox/dropbox'
+require 'active_support'
+require 'active_support/core_ext/string/inflections'
 
 # AutoHCK module
 module AutoHCK
@@ -10,9 +11,19 @@ module AutoHCK
     # UploaderFactory
     #
     class UploaderFactory
-      UPLOADERS = {
-        dropbox: Dropbox
-      }.freeze
+      UPLOADERS = Dir.each_child(__dir__).filter_map do |uploader_name|
+        full_path = "#{__dir__}/#{uploader_name}"
+        next unless File.directory? full_path
+
+        file = "#{full_path}/#{uploader_name}.rb"
+        require file
+        # Convert 'result_uploader' (file name) -> 'ResultUploader' (class name)
+        class_name = uploader_name.camelize
+        # Convert 'ResultUploader' (class name) -> ResultUploader (declared constant)
+        # or
+        # Convert 'ResultUploader' (class name) -> AutoHCK::ResultUploader (declared constant)
+        [uploader_name, AutoHCK.const_get(class_name)]
+      end.to_h.freeze
 
       def self.create(type, project)
         UPLOADERS[type].new(project)
@@ -27,7 +38,7 @@ module AutoHCK
       @project = project
       @connected_uploaders = {}
       @uploaders = {}
-      @project.config['result_uploaders'].uniq.collect(&:to_sym).each do |type|
+      @project.config['result_uploaders'].uniq.each do |type|
         if UploaderFactory.can_create?(type)
           @uploaders[type] = UploaderFactory.create(type, @project)
         else
