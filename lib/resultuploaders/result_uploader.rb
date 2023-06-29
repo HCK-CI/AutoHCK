@@ -87,6 +87,10 @@ module AutoHCK
       @connected_uploaders.values.filter_map(&:url).first
     end
 
+    def html_url
+      @connected_uploaders.values.filter_map(&:html_url).first
+    end
+
     def close
       @connected_uploaders.each_value(&:close)
     end

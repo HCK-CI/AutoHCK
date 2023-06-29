@@ -34,6 +34,8 @@ module AutoHCK
       @url = nil
     end
 
+    def html_url; end
+
     # handle_exceptions has different logic for different exceptions,
     # so this method can not be simplified without dirty workarounds
     # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
