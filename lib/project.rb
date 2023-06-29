@@ -145,7 +145,8 @@ module AutoHCK
     def github_handling(commit)
       return true if commit.to_s.empty?
 
-      @github = Github.new(@config, @logger, @result_uploader.url, github_handling_context,
+      url = @result_uploader.html_url || @result_uploader.url
+      @github = Github.new(@config, @logger, url, github_handling_context,
                            commit)
       raise GithubCommitInvalid unless @github.connected?
 
