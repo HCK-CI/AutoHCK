@@ -84,9 +84,7 @@ module AutoHCK
     end
 
     def url
-      return nil unless @connected_uploaders.key?(:dropbox)
-
-      @connected_uploaders[:dropbox].url
+      @connected_uploaders.values.filter_map(&:url).first
     end
 
     def close
