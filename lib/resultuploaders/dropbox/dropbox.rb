@@ -5,11 +5,11 @@ require './lib/auxiliary/json_helper'
 
 # AutoHCK module
 module AutoHCK
-  TOKEN_JSON = 'lib/resultuploaders/dropbox/token.json'
-  CONFIG_JSON = 'lib/resultuploaders/dropbox/dropbox.json'
-
   # dropbox class
   class Dropbox
+    TOKEN_JSON = 'lib/resultuploaders/dropbox/token.json'
+    CONFIG_JSON = 'lib/resultuploaders/dropbox/dropbox.json'
+
     include Helper
 
     attr_reader :url
