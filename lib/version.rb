@@ -2,5 +2,5 @@
 
 # AutoHCK module
 module AutoHCK
-  VERSION = '0.11.0'
+  VERSION = '0.11.1'
 end
