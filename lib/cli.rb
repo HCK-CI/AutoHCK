@@ -85,7 +85,7 @@ module AutoHCK
     class TestOptions
       attr_accessor :platform, :drivers, :driver_path, :commit, :diff_file, :svvp, :manual,
                     :gthb_context_prefix, :gthb_context_suffix, :playlist, :select_test_names,
-                    :reject_test_names
+                    :reject_test_names, :triggers_file
 
       def create_parser
         OptionParser.new do |parser|
@@ -112,6 +112,7 @@ module AutoHCK
         playlist_option(parser)
         select_test_names_option(parser)
         reject_test_names_option(parser)
+        triggers_file_option(parser)
       end
 
       def platform_option(parser)
@@ -195,6 +196,13 @@ module AutoHCK
         parser.on('--reject-test-names <reject_test_names>', String,
                   'Use custom CI text ignore list') do |reject_test_names|
           @reject_test_names = reject_test_names
+        end
+      end
+
+      def triggers_file_option(parser)
+        parser.on('--triggers <triggers_file>', String,
+                  'Path to text file containing triggers') do |triggers_file|
+          @triggers_file = triggers_file
         end
       end
     end

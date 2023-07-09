@@ -34,8 +34,9 @@ module AutoHCK
       @id = assign_id
     end
 
-    def diff_checker(drivers, diff)
-      diff_checker = DiffChecker.new(@logger, drivers.map { |d| d['short'] }, @options.test.driver_path, diff)
+    def diff_checker(drivers, diff, triggers)
+      diff_checker = DiffChecker.new(@logger, drivers.map { |d| d['short'] },
+                                     @options.test.driver_path, diff, triggers)
       return true if diff_checker.trigger?
 
       @logger.info("Any drivers aren't changed, not running tests")
@@ -45,7 +46,7 @@ module AutoHCK
     def check_run?
       return true if @engine.drivers.nil?
 
-      diff_checker(@engine.drivers, @options.test.diff_file)
+      diff_checker(@engine.drivers, @options.test.diff_file, @options.test.triggers_file)
     end
 
     def prepare
