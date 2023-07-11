@@ -22,6 +22,7 @@ module AutoHCK
     RUNNING_TEST_TIMEOUT = '00:15:00'
     SUMMARY_LOG_FILE = 'logs.txt'
     RESULTS_FILE = 'results.html'
+    RESULTS_REPORT_SECTIONS = %w[chart guest_info rejected_test url].freeze
 
     def initialize(client, support, project, target, tools)
       @client = client
@@ -220,7 +221,8 @@ module AutoHCK
         'url' => @project.result_uploader.url,
         'system_info' => {
           'guest' => @clients_system_info
-        }
+        },
+        'sections' => RESULTS_REPORT_SECTIONS
       }
 
       results_file = "#{@project.workspace_path}/#{RESULTS_FILE}"
