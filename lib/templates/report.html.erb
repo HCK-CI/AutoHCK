@@ -78,7 +78,12 @@
         new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Skipped', 'Failed', 'Passed', 'NotRun'],
+                labels: [
+                    'Skipped',
+                    'Failed',
+                    'Passed',
+                    'NotRun'
+                ],
                 datasets: [{
                     data: [
                         <%= test_stats['skipped'] %>,
