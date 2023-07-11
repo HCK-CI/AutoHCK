@@ -194,8 +194,9 @@ module AutoHCK
       true
     end
 
-    def run_studio(iso_list = [], snapshot: true)
+    def run_studio(iso_list = [], keep_alive:, snapshot: true)
       st_opts = {
+        keep_alive: keep_alive,
         create_snapshot: snapshot,
         attach_iso_list: iso_list
       }
@@ -221,7 +222,7 @@ module AutoHCK
       st = run_studio([
                         @setup_studio_iso,
                         @studio_iso_info['path']
-                      ], snapshot: false)
+                      ], keep_alive: false, snapshot: false)
       begin
         Timeout.timeout(@studio_install_timeout) do
           @logger.info('Waiting for studio installation finished')
@@ -239,17 +240,14 @@ module AutoHCK
     end
 
     def run_clients_installer
-      st = run_studio
+      st = run_studio([], keep_alive: true)
       begin
         cl = @clients_name.map { |c| run_client_installer(c) }
         begin
           Timeout.timeout(@client_install_timeout) do
             cl.each do |client|
               @logger.info("Waiting for #{client.name} installation finished")
-              while client.alive?
-                @project.setup_manager.keep_studio_alive
-                sleep 5
-              end
+              sleep 5 while client.alive?
             end
           end
         ensure

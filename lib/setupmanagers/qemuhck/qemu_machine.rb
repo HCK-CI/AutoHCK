@@ -23,6 +23,7 @@ module AutoHCK
     MAX_CLIENT_ID = 2
 
     DEFAULT_RUN_OPTIONS = {
+      keep_alive: false,
       first_time: false,
       create_snapshot: true,
       attach_iso_list: [],
@@ -66,8 +67,6 @@ module AutoHCK
       @define_variables = {}
       @run_opts = {}
       @hostfwds = []
-
-      @pid = nil
     end
 
     def load_options(options)
@@ -405,21 +404,35 @@ module AutoHCK
     end
 
     def run_qemu
+      @logger.info("Starting #{@run_name}")
       cmd = replace_string_recursive(dirty_command.join(' '), full_replacement_list)
       cmd += " -chardev socket,id=qmp,fd=#{@qmp.socket.fileno},server=off -mon chardev=qmp,mode=control"
       qemu = CmdRun.new(@logger, cmd, { @qmp.socket.fileno => @qmp.socket.fileno })
-      @pid = qemu.pid
-
-      @qemu_thread = Thread.new do
-        qemu.wait_no_fail
-      end
+      @logger.info("#{@run_name} started with PID #{qemu.pid}")
+      qemu
     end
 
     def run_vm
       dump_config
       run_pre_start_commands
-      run_qemu
-      @logger.info("#{@run_name} started with PID #{@pid}")
+
+      @qemu_thread = Thread.new do
+        loop do
+          qemu = nil
+          Thread.handle_interrupt(Object => :on_blocking) do
+            qemu = run_qemu
+            qemu.wait_no_fail
+            qemu = nil
+          ensure
+            unless qemu.nil?
+              Process.kill 'KILL', qemu.pid
+              qemu.wait_no_fail
+            end
+          end
+
+          break unless @keep_alive
+        end
+      end
     end
 
     def add_hostfwd
@@ -530,6 +543,7 @@ module AutoHCK
     def run(run_opts = nil)
       @qmp = QMP.new(@run_name, @logger)
       @run_opts = validate_run_opts(run_opts.to_h)
+      @keep_alive = run_opts[:keep_alive]
 
       @devices_list.flatten!
       @devices_list.compact!
@@ -547,23 +561,7 @@ module AutoHCK
     end
 
     def alive?
-      return false if @pid.nil?
-
-      Process.kill(0, @pid)
-      true
-    rescue Errno::ESRCH
-      @logger.info("#{@run_name} is not alive")
-      false
-    end
-
-    def keep_alive
-      return if alive?
-
-      @logger.info("Starting #{@run_name}")
-      run_vm
-
-      @logger.info("#{@run_name} new PID is #{@pid}")
-      raise MachineRunError, "Could not start #{@run_name}" unless alive?
+      @qemu_thread.alive?
     end
 
     def soft_abort
@@ -587,6 +585,8 @@ module AutoHCK
     end
 
     def vm_abort
+      @keep_alive = false
+
       return unless alive?
 
       return if soft_abort
@@ -597,19 +597,12 @@ module AutoHCK
 
       @logger.info("#{@run_name} hard abort failed, force aborting...")
 
-      begin
-        Process.kill('KILL', @pid)
-      rescue Errno::ESRCH
-        # QEMU thread has not finished but the process has already been reaped.
-      end
-
+      @qemu_thread.kill
       @qmp.close
       @qemu_thread.join
     end
 
     def clean_last_run
-      return if @pid.nil?
-
       @logger.info("Cleaning last #{@run_name} run")
       close
       @sm.delete_boot_snapshot

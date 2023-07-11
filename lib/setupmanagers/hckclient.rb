@@ -32,10 +32,6 @@ module AutoHCK
       @setup_manager.client_alive?(@name)
     end
 
-    def keep_alive
-      @setup_manager.keep_client_alive(@name)
-    end
-
     def clean_last_run
       @setup_manager.clean_last_client_run(@name)
     end
@@ -142,19 +138,13 @@ module AutoHCK
 
     def recognize_client_wait
       @logger.info("Waiting for client #{@name} to be recognized")
-      until machine_in_default_pool
-        keep_alive
-        sleep 5
-      end
+      sleep 5 until machine_in_default_pool
       @logger.info("Client #{@name} recognized")
     end
 
     def initialize_client_wait
       @logger.info("Waiting for client #{@name} initialization")
-      while machine_in_default_pool['state'].eql?('Initializing')
-        keep_alive
-        sleep 5
-      end
+      sleep 5 while machine_in_default_pool['state'].eql?('Initializing')
       @logger.info("Client #{@name} initialized")
     end
 

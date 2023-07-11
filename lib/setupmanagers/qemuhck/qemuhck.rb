@@ -151,14 +151,6 @@ module AutoHCK
       @clients_vm[name].alive?
     end
 
-    def keep_studio_alive
-      @studio_vm.keep_alive
-    end
-
-    def keep_client_alive(name)
-      @clients_vm[name].keep_alive
-    end
-
     def clean_last_studio_run
       @studio_vm.clean_last_run
     end

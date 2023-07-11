@@ -199,7 +199,7 @@ module AutoHCK
 
       run_studio
       sleep 5 until @studio.up?
-      run_clients
+      run_clients keep_alive: true
 
       configure_setup_and_synchronize
     rescue AutoHCKError => e
