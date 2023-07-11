@@ -344,11 +344,6 @@ module AutoHCK
       @support&.reset_to_ready_state
     end
 
-    def keep_clients_alive
-      @client.keep_alive
-      @support&.keep_alive
-    end
-
     def new_done
       list_tests
       done_tests - @last_done
@@ -369,7 +364,6 @@ module AutoHCK
 
     def handle_test_running(running = nil)
       until all_tests_finished?
-        keep_clients_alive
         reset_clients_to_ready_state
         check_new_finished_tests
         check_test_queued_time
