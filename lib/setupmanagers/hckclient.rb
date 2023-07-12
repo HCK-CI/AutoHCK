@@ -24,6 +24,7 @@ module AutoHCK
       @name = name
       @kit = setup_manager.kit
       @pool = 'Default Pool'
+      @logger.info("Starting client #{name}")
       @runner = setup_manager.run_client(scope, @name, run_opts)
       scope << self
     end
