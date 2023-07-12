@@ -8,7 +8,6 @@ module AutoHCK
   class HCKStudio
     attr_reader :tools
 
-    STUDIO = 'st'
     CONNECT_RETRIES = 5
     CONNECT_RETRY_SLEEP = 10
 
@@ -81,7 +80,7 @@ module AutoHCK
     end
 
     def run(run_opts = nil)
-      @setup_manager.run(STUDIO, run_opts)
+      @setup_manager.run_studio(run_opts)
     end
 
     def alive?
