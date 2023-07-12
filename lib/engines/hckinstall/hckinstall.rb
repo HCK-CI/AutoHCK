@@ -225,10 +225,8 @@ module AutoHCK
                           @setup_studio_iso,
                           @studio_iso_info['path']
                         ], keep_alive: false, snapshot: false)
-        Timeout.timeout(@studio_install_timeout) do
-          @logger.info('Waiting for studio installation finished')
-          sleep 5 while st.alive?
-        end
+        @logger.info('Waiting for studio installation finished')
+        raise AutoHCKError, 'studio installation timed out' if st.wait(@studio_install_timeout).nil?
       end
     end
 
@@ -245,7 +243,7 @@ module AutoHCK
         Timeout.timeout(@client_install_timeout) do
           cl.each do |name, client|
             @logger.info("Waiting for #{name} installation finished")
-            sleep 5 while client.alive?
+            client.wait
           end
         end
       end
