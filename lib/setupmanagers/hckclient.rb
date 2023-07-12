@@ -189,7 +189,7 @@ module AutoHCK
     end
 
     def close
-      @logger.info("Aborting HLKClient #{@name}")
+      @logger.info("Exiting HLKClient #{@name}")
       @cooldown_thread&.exit
     end
   end
