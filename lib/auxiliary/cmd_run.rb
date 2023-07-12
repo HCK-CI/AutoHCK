@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'tempfile'
+require_relative 'resource_scope'
 
 # AutoHCK module
 module AutoHCK
@@ -42,22 +43,18 @@ module AutoHCK
       _, status = Process.wait2(@pid, flags)
       return if status.nil?
 
-      begin
-        begin
-          @stdout.rewind
-          stdout = @stdout.read
-        ensure
-          @stdout.close
-        end
+      ResourceScope.open do |scope|
+        scope << @stdout
+        scope << @stderr
 
+        @stdout.rewind
+        stdout = @stdout.read
         @stderr.rewind
         stderr = @stderr.read
-      ensure
-        @stderr.close
-      end
 
-      @logger.info("Info dump:#{prep_log_stream(stdout)}") unless stdout.empty?
-      @logger.warn("Error dump:#{prep_log_stream(stderr)}") unless stderr.empty?
+        @logger.info("Info dump:#{prep_log_stream(stdout)}") unless stdout.empty?
+        @logger.warn("Error dump:#{prep_log_stream(stderr)}") unless stderr.empty?
+      end
 
       yield status
 

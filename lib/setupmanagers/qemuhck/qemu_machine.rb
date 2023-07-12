@@ -9,12 +9,154 @@ require_relative 'exceptions'
 
 require_relative '../../auxiliary/json_helper'
 require_relative '../../auxiliary/host_helper'
+require_relative '../../auxiliary/resource_scope'
 require_relative '../../auxiliary/string_helper'
 
 # AutoHCK module
 module AutoHCK
   # QemuMachine class
   class QemuMachine
+    # Hostfwd is a class that holds ports forwarded for a run.
+    class Hostfwd
+      def initialize(slirp, ports)
+        @slirp = slirp
+        @ids = []
+        begin
+          ports.each do |port|
+            @ids << slirp.run({
+                                'execute' => 'add_hostfwd',
+                                'arguments' => {
+                                  'proto' => 'tcp',
+                                  'host_port' => port,
+                                  'guest_port' => port
+                                }
+                              })
+          end
+        rescue StandardError
+          close
+        end
+      end
+
+      def close
+        @ids.each do |id|
+          @slirp.run({
+                       'execute' => 'remove_hostfwd',
+                       'arguments' => id
+                     })
+        end
+
+        @ids.clear
+      end
+    end
+
+    # Runner is a class that represents a run.
+    class Runner
+      include Helper
+
+      # machine soft abort trials before force abort
+      SOFT_ABORT_RETRIES = 3
+      # machine abort sleep for each trial
+      ABORT_SLEEP = 30
+
+      def initialize(scope, logger, machine, run_name, run_opts)
+        @logger = logger
+        @machine = machine
+        @run_name = run_name
+        @run_opts = run_opts
+        @keep_alive = run_opts[:keep_alive]
+        @delete_snapshot = run_opts[:create_snapshot]
+        @qmp = QMP.new(scope, @run_name, @logger)
+        @machine.run_config_commands
+        run_vm
+        scope << self
+      end
+
+      def keep_snapshot
+        @delete_snapshot = false
+      end
+
+      def run_qemu
+        @logger.info("Starting #{@run_name}")
+        cmd = replace_string_recursive(@machine.dirty_command.join(' '), @machine.full_replacement_list)
+        cmd += " -chardev socket,id=qmp,fd=#{@qmp.socket.fileno},server=off -mon chardev=qmp,mode=control"
+        qemu = CmdRun.new(@logger, cmd, { @qmp.socket.fileno => @qmp.socket.fileno })
+        @logger.info("#{@run_name} started with PID #{qemu.pid}")
+        qemu
+      end
+
+      def run_vm
+        @machine.dump_config
+        @machine.run_pre_start_commands
+
+        @qemu_thread = Thread.new do
+          loop do
+            qemu = nil
+            Thread.handle_interrupt(Object => :on_blocking) do
+              qemu = run_qemu
+              qemu.wait_no_fail
+              qemu = nil
+            ensure
+              unless qemu.nil?
+                Process.kill 'KILL', qemu.pid
+                qemu.wait_no_fail
+              end
+            end
+
+            break unless @keep_alive
+          end
+        end
+      end
+
+      def alive?
+        @qemu_thread.alive?
+      end
+
+      def soft_abort
+        SOFT_ABORT_RETRIES.times do
+          @qmp.powerdown
+
+          return true unless @qemu_thread.join(ABORT_SLEEP).nil?
+
+          @logger.debug("Powerdown was sent, but #{@run_name} is still alive :(")
+        end
+        false
+      end
+
+      def hard_abort
+        @qmp.quit
+
+        return true unless @qemu_thread.join(ABORT_SLEEP).nil?
+
+        @logger.debug("Quit was sent, but #{@run_name} is still alive :(")
+        false
+      end
+
+      def vm_abort
+        @keep_alive = false
+
+        return unless alive?
+
+        return if soft_abort
+
+        @logger.info("#{@run_name} soft abort failed, hard aborting...")
+
+        return if hard_abort
+
+        @logger.info("#{@run_name} hard abort failed, force aborting...")
+
+        @qemu_thread.kill
+        @qemu_thread.join
+      end
+
+      def close
+        return if @run_opts[:dump_only]
+
+        vm_abort
+        @machine.run_post_stop_commands
+        @machine.delete_snapshot if @delete_snapshot
+      end
+    end
+
     include Helper
 
     MONITOR_BASE_PORT = 10_000
@@ -35,11 +177,6 @@ module AutoHCK
     DEVICES_JSON_DIR = 'lib/setupmanagers/qemuhck/devices'
     CONFIG_JSON = 'lib/setupmanagers/qemuhck/qemu_machine.json'
     STATES_JSON = 'lib/setupmanagers/qemuhck/states.json'
-
-    # machine soft abort trials before force abort
-    SOFT_ABORT_RETRIES = 3
-    # machine abort sleep for each trial
-    ABORT_SLEEP = 30
 
     def initialize(options)
       define_local_variables
@@ -66,7 +203,6 @@ module AutoHCK
       @drive_cache_options = []
       @define_variables = {}
       @run_opts = {}
-      @hostfwds = []
     end
 
     def load_options(options)
@@ -403,62 +539,6 @@ module AutoHCK
       create_run_script(file_path, file_content)
     end
 
-    def run_qemu
-      @logger.info("Starting #{@run_name}")
-      cmd = replace_string_recursive(dirty_command.join(' '), full_replacement_list)
-      cmd += " -chardev socket,id=qmp,fd=#{@qmp.socket.fileno},server=off -mon chardev=qmp,mode=control"
-      qemu = CmdRun.new(@logger, cmd, { @qmp.socket.fileno => @qmp.socket.fileno })
-      @logger.info("#{@run_name} started with PID #{qemu.pid}")
-      qemu
-    end
-
-    def run_vm
-      dump_config
-      run_pre_start_commands
-
-      @qemu_thread = Thread.new do
-        loop do
-          qemu = nil
-          Thread.handle_interrupt(Object => :on_blocking) do
-            qemu = run_qemu
-            qemu.wait_no_fail
-            qemu = nil
-          ensure
-            unless qemu.nil?
-              Process.kill 'KILL', qemu.pid
-              qemu.wait_no_fail
-            end
-          end
-
-          break unless @keep_alive
-        end
-      end
-    end
-
-    def add_hostfwd
-      [@monitor_port, @vnc_port].each do |port|
-        @hostfwds << @options['slirp'].run({
-                                             'execute' => 'add_hostfwd',
-                                             'arguments' => {
-                                               'proto' => 'tcp',
-                                               'host_port' => port,
-                                               'guest_port' => port
-                                             }
-                                           })
-      end
-    end
-
-    def remove_hostfwd
-      @hostfwds.each do |fwd_id|
-        @options['slirp'].run({
-                                'execute' => 'remove_hostfwd',
-                                'arguments' => fwd_id
-                              })
-      end
-
-      @hostfwds.clear
-    end
-
     def run_config_commands
       @config_commands.each do |dirty_cmd|
         cmd = replace_string_recursive(dirty_cmd, full_replacement_list)
@@ -486,6 +566,10 @@ module AutoHCK
 
     def create_image
       @sm.create_boot_image
+    end
+
+    def delete_snapshot
+      @sm.delete_boot_snapshot
     end
 
     def iso_cmd
@@ -540,8 +624,7 @@ module AutoHCK
       create_run_script(file_name, content.join)
     end
 
-    def run(run_opts = nil)
-      @qmp = QMP.new(@run_name, @logger)
+    def run(scope, run_opts = nil)
       @run_opts = validate_run_opts(run_opts.to_h)
       @keep_alive = run_opts[:keep_alive]
 
@@ -554,66 +637,12 @@ module AutoHCK
       if @run_opts[:dump_only]
         dump_commands
       else
-        add_hostfwd
-        run_config_commands
-        run_vm
+        scope.transaction do |tmp_scope|
+          hostfwd = Hostfwd.new(@options['slirp'], [@monitor_port, @vnc_port])
+          tmp_scope << hostfwd
+          Runner.new(tmp_scope, @logger, self, @run_name, @run_opts)
+        end
       end
-    end
-
-    def alive?
-      @qemu_thread.alive?
-    end
-
-    def soft_abort
-      SOFT_ABORT_RETRIES.times do
-        @qmp.powerdown
-
-        return true unless @qemu_thread.join(ABORT_SLEEP).nil?
-
-        @logger.debug("Powerdown was sent, but #{@run_name} is still alive :(")
-      end
-      false
-    end
-
-    def hard_abort
-      @qmp.quit
-
-      return true unless @qemu_thread.join(ABORT_SLEEP).nil?
-
-      @logger.debug("Quit was sent, but #{@run_name} is still alive :(")
-      false
-    end
-
-    def vm_abort
-      @keep_alive = false
-
-      return unless alive?
-
-      return if soft_abort
-
-      @logger.info("#{@run_name} soft abort failed, hard aborting...")
-
-      return if hard_abort
-
-      @logger.info("#{@run_name} hard abort failed, force aborting...")
-
-      @qemu_thread.kill
-      @qmp.close
-      @qemu_thread.join
-    end
-
-    def clean_last_run
-      @logger.info("Cleaning last #{@run_name} run")
-      close
-      @sm.delete_boot_snapshot
-    end
-
-    def close
-      return if @run_opts[:dump_only]
-
-      remove_hostfwd
-      vm_abort
-      run_post_stop_commands
     end
   end
 end

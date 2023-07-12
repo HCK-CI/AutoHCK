@@ -24,7 +24,8 @@ module AutoHCK
 
     CONFIG_JSON = 'config.json'
 
-    def initialize(options)
+    def initialize(scope, options)
+      @scope = scope
       @options = options
       Json.update_json_override(options.common.config) unless options.common.config.nil?
 
@@ -32,6 +33,7 @@ module AutoHCK
       init_class_variables
       init_workspace
       @id = assign_id
+      scope << self
     end
 
     def diff_checker(drivers, diff, triggers)
@@ -116,7 +118,7 @@ module AutoHCK
     end
 
     def assign_id
-      @id_gen = Idgen.new(@config['id_range'], @config['time_out'])
+      @id_gen = Idgen.new(@scope, @config['id_range'], @config['time_out'])
       id = @id_gen.allocate
       while id.negative?
         @logger.info('No available ID')
@@ -134,7 +136,7 @@ module AutoHCK
 
     def configure_result_uploader
       @logger.info('Initializing result uploaders')
-      @result_uploader = ResultUploader.new(self)
+      @result_uploader = ResultUploader.new(@scope, self)
       @result_uploader.connect
       @result_uploader.create_project_folder
     end
@@ -185,10 +187,7 @@ module AutoHCK
 
     def close
       @logger.debug('Closing AutoHCK project')
-
       @result_uploader&.upload_file(@logfile_path, 'AutoHCK.log')
-
-      @setup_manager&.close
       release_id
     end
   end

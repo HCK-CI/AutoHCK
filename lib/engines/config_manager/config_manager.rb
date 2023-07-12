@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'fileutils'
+require './lib/auxiliary/resource_scope'
 require './lib/resultuploaders/result_uploader'
 
 # AutoHCK module
@@ -34,9 +35,11 @@ module AutoHCK
     end
 
     def run
-      @project.logger.info('Stating result uploader token initialization')
-      @result_uploader = ResultUploader.new(@project)
-      @result_uploader.ask_token
+      ResourceScope.open do |scope|
+        @project.logger.info('Stating result uploader token initialization')
+        @result_uploader = ResultUploader.new(scope, @project)
+        @result_uploader.ask_token
+      end
     end
 
     def drivers
@@ -49,10 +52,6 @@ module AutoHCK
 
     def result_uploader_needed?
       false
-    end
-
-    def close
-      @project.logger.info('Closing helpers engine')
     end
   end
 end
