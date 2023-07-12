@@ -76,7 +76,7 @@ module AutoHCK
 
     def create_studio
       studio_ip = @setup['st_ip']
-      @studio = HCKStudio.new(@project, self, 'st') { studio_ip }
+      @studio = HCKStudio.new(@project, self) { studio_ip }
     end
 
     def create_client(name)
