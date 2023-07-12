@@ -17,6 +17,7 @@ module AutoHCK
       @ip_getter = ip_getter
       @logger = @project.logger
       @scope = scope
+      @logger.info('Starting studio')
       @runner = setup_manager.run_studio(scope, run_opts)
     end
 
