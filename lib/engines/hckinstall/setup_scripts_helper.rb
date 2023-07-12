@@ -41,24 +41,24 @@ module AutoHCK
     def create_setup_scripts_config(hck_setup_scripts_path, config)
       validate_setup_scripts_config(config)
 
-      args_file = File.open("#{hck_setup_scripts_path}/args.ps1", 'w')
-      config.each do |k, v|
-        key = k.to_s.upcase.gsub(/[^0-9a-z]/i, '')
-        case v
-        when true, false
-          value = "$#{v}"
-        when String
-          value = "'#{v}'"
-        when Integer
-          value = v
-        else
-          @logger.fatal("Unexpected value #{x} for config")
-          raise(AutoHCKError, "Unexpected value #{x} for config")
-        end
+      File.open("#{hck_setup_scripts_path}/args.ps1", 'w') do |args_file|
+        config.each do |k, v|
+          key = k.to_s.upcase.gsub(/[^0-9a-z]/i, '')
+          case v
+          when true, false
+            value = "$#{v}"
+          when String
+            value = "'#{v}'"
+          when Integer
+            value = v
+          else
+            @logger.fatal("Unexpected value #{x} for config")
+            raise(AutoHCKError, "Unexpected value #{x} for config")
+          end
 
-        args_file.write("$#{key} = #{value}\n")
+          args_file.write("$#{key} = #{value}\n")
+        end
       end
-      args_file.close
     end
   end
 end
