@@ -144,10 +144,14 @@ module AutoHCK
       Json.read_json(platform_json, @logger)
     end
 
-    def initialize_clients
+    def run_studio(run_opts = {})
+      @studio = @project.setup_manager.run_hck_studio(run_opts)
+    end
+
+    def run_clients(run_opts = {})
       @clients = {}
       @platform['clients'].each do |_name, client|
-        @clients[client['name']] = @project.setup_manager.create_client(client['name'])
+        @clients[client['name']] = @project.setup_manager.run_hck_client(client['name'], run_opts)
 
         break if @project.options.test.svvp
         break unless @drivers.any? { |d| d['support'] }
@@ -181,12 +185,6 @@ module AutoHCK
       @client1.support = @client2
     end
 
-    def run_clients
-      sleep 5 until @studio.up?
-
-      @clients.values.map(&:run)
-    end
-
     def clean_last_run_clients
       @clients.values.map(&:clean_last_run)
     end
@@ -199,7 +197,8 @@ module AutoHCK
     def run_and_configure_setup
       retries ||= 0
 
-      @studio.run
+      run_studio
+      sleep 5 until @studio.up?
       run_clients
 
       configure_setup_and_synchronize
@@ -209,7 +208,6 @@ module AutoHCK
       raise e unless (retries += 1) < AUTOHCK_RETRIES
 
       clean_last_run_machines
-      @project.setup_manager&.close
       @project.logger.info('Trying again to run and configure setup')
       retry
     end
@@ -232,8 +230,8 @@ module AutoHCK
     end
 
     def manual_run
-      @studio.run({ dump_only: true })
-      @clients.each_value { |client| client.run({ dump_only: true }) }
+      run_studio({ dump_only: true })
+      run_clients({ dump_only: true })
     end
 
     def auto_run
@@ -250,9 +248,6 @@ module AutoHCK
 
     def run
       upload_driver_package unless @driver_path.nil?
-
-      @studio = @project.setup_manager.create_studio
-      initialize_clients
 
       if @project.options.test.manual
         @project.logger.info('AutoHCK started in manual mode')

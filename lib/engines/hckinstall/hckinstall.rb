@@ -200,9 +200,7 @@ module AutoHCK
         attach_iso_list: iso_list
       }
 
-      st = @project.setup_manager.create_studio
-      st.run(st_opts)
-      st
+      @project.setup_manager.run_hck_studio(st_opts)
     end
 
     def run_client(name, snapshot: true)
@@ -214,9 +212,7 @@ module AutoHCK
         ]
       }
 
-      cl = @project.setup_manager.create_client(name)
-      cl.run(cl_opts)
-      cl
+      @project.setup_manager.run_hck_client(name, cl_opts)
     end
 
     def run_studio_installer

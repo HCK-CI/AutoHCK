@@ -17,7 +17,7 @@ module AutoHCK
     attr_reader :name, :kit
     attr_writer :support
 
-    def initialize(project, setup_manager, studio, name)
+    def initialize(project, setup_manager, studio, name, run_opts)
       @project = project
       @logger = project.logger
       @studio = studio
@@ -25,9 +25,6 @@ module AutoHCK
       @kit = setup_manager.kit
       @setup_manager = setup_manager
       @pool = 'Default Pool'
-    end
-
-    def run(run_opts = nil)
       @setup_manager.run_client(@name, run_opts)
     end
 
