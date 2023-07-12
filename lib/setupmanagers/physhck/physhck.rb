@@ -72,13 +72,13 @@ module AutoHCK
       @logger.info('Clean last run is currently not supported for physical machines')
     end
 
-    def create_studio
+    def run_hck_studio(run_opts)
       studio_ip = @setup['st_ip']
-      @studio = HCKStudio.new(@project, self) { studio_ip }
+      @studio = HCKStudio.new(@project, self, run_opts) { studio_ip }
     end
 
-    def create_client(name)
-      HCKClient.new(@project, self, @studio, name)
+    def run_hck_client(name, run_opts)
+      HCKClient.new(@project, self, @studio, name, run_opts)
     end
 
     def abort_studio

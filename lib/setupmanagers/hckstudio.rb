@@ -11,12 +11,13 @@ module AutoHCK
     CONNECT_RETRIES = 5
     CONNECT_RETRY_SLEEP = 10
 
-    def initialize(project, setup_manager, &ip_getter)
+    def initialize(project, setup_manager, run_opts, &ip_getter)
       @project = project
       @tag = project.engine.tag
       @setup_manager = setup_manager
       @ip_getter = ip_getter
       @logger = project.logger
+      @setup_manager.run_studio(run_opts)
     end
 
     def up?
@@ -77,10 +78,6 @@ module AutoHCK
       return if @tools.connection_check
 
       raise StudioConnectError, 'Tools did not pass the connection check'
-    end
-
-    def run(run_opts = nil)
-      @setup_manager.run_studio(run_opts)
     end
 
     def alive?

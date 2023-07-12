@@ -186,12 +186,12 @@ module AutoHCK
       end
     end
 
-    def create_studio
-      @studio = HCKStudio.new(@project, self) { @studio_vm.find_world_ip }
+    def run_hck_studio(run_opts)
+      @studio = HCKStudio.new(@project, self, run_opts) { @studio_vm.find_world_ip }
     end
 
-    def create_client(name)
-      HCKClient.new(@project, self, @studio, name)
+    def run_hck_client(name, run_opts)
+      HCKClient.new(@project, self, @studio, name, run_opts)
     end
   end
 end
