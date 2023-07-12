@@ -15,7 +15,6 @@ module AutoHCK
     attr_reader :kit
 
     OPT_NAMES = %w[viommu_state enlightenments_state vhost_state machine_type fw_type cpu].freeze
-    STUDIO = 'st'
 
     def initialize(project)
       initialize_project project
@@ -136,12 +135,12 @@ module AutoHCK
       @clients_vm[name].option_config(option)
     end
 
-    def run(name, run_opts = nil)
-      if name == STUDIO
-        @studio_vm.run(run_opts)
-      else
-        @clients_vm[name].run(run_opts)
-      end
+    def run_studio(run_opts = nil)
+      @studio_vm.run(run_opts)
+    end
+
+    def run_client(name, run_opts = nil)
+      @clients_vm[name].run(run_opts)
     end
 
     def studio_alive?

@@ -45,10 +45,8 @@ module AutoHCK
       @logger.info('Image creating is currently not supported for physical machines')
     end
 
-    def run(*)
-      # Physical = no pid
-      -1
-    end
+    def run_studio(*); end
+    def run_client(*); end
 
     def studio_alive?
       @logger.info('Physical machine is always alive')

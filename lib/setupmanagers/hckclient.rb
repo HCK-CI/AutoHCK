@@ -28,7 +28,7 @@ module AutoHCK
     end
 
     def run(run_opts = nil)
-      @setup_manager.run(@name, run_opts)
+      @setup_manager.run_client(@name, run_opts)
     end
 
     def alive?
