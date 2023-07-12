@@ -202,10 +202,10 @@ module AutoHCK
         attach_iso_list: iso_list
       }
 
-      @project.setup_manager.run_hck_studio(scope, st_opts)
+      @project.setup_manager.run_studio(scope, st_opts)
     end
 
-    def run_client(scope, studio, name, snapshot: true)
+    def run_client(scope, name, snapshot: true)
       cl_opts = {
         create_snapshot: snapshot,
         attach_iso_list: [
@@ -214,7 +214,7 @@ module AutoHCK
         ]
       }
 
-      @project.setup_manager.run_hck_client(scope, studio, name, cl_opts)
+      @project.setup_manager.run_client(scope, name, cl_opts)
     end
 
     def run_studio_installer
@@ -232,19 +232,19 @@ module AutoHCK
       end
     end
 
-    def run_client_installer(scope, studio, name)
+    def run_client_installer(scope, name)
       @project.setup_manager.create_client_image(name)
 
-      run_client(scope, studio, name, snapshot: false)
+      run_client(scope, name, snapshot: false)
     end
 
     def run_clients_installer
       ResourceScope.open do |scope|
-        st = run_studio(scope, [], keep_alive: true)
-        cl = @clients_name.map { |c| run_client_installer(scope, st, c) }
+        run_studio(scope, [], keep_alive: true)
+        cl = @clients_name.map { |c| [c, run_client_installer(scope, c)] }
         Timeout.timeout(@client_install_timeout) do
-          cl.each do |client|
-            @logger.info("Waiting for #{client.name} installation finished")
+          cl.each do |name, client|
+            @logger.info("Waiting for #{name} installation finished")
             sleep 5 while client.alive?
           end
         end
