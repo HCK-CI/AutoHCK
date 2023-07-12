@@ -13,7 +13,7 @@ module AutoHCK
         @logger = logger
       end
 
-      def alive?
+      def wait(...)
         @logger.info('Physical machine is always alive')
       end
 

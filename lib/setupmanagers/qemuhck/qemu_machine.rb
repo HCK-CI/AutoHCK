@@ -107,8 +107,8 @@ module AutoHCK
         end
       end
 
-      def alive?
-        @qemu_thread.alive?
+      def wait(...)
+        @qemu_thread.join(...)
       end
 
       def soft_abort
@@ -134,7 +134,7 @@ module AutoHCK
       def vm_abort
         @keep_alive = false
 
-        return unless alive?
+        return unless @qemu_thread.alive?
 
         return if soft_abort
 
