@@ -11,17 +11,14 @@ module AutoHCK
     class QMP
       attr_reader :socket
 
-      def initialize(name, logger)
+      def initialize(scope, name, logger)
         @name = name
         @logger = logger
         @negotiated = false
         @logger.info("Initiating QMP session for #{name}")
         @socket, @socket_internal = UNIXSocket.pair
-      end
-
-      def close
-        @socket.close
-        @socket_internal.close
+        scope << @socket
+        scope << @socket_internal
       end
 
       def quit

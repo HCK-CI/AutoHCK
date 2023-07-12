@@ -5,6 +5,12 @@ module AutoHCK
   # A custom AutoHCK error exception
   class AutoHCKError < StandardError; end
 
+  # A custom AutoHCK interrupt exception that can be safely blocked with
+  # Thread.handle_interrupt without blocking the other exceptions.
+  # rubocop:disable Lint/InheritException
+  class AutoHCKInterrupt < Exception; end
+  # rubocop:enable Lint/InheritException
+
   # A custom GithubCommitInvalid error exception
   class GithubCommitInvalid < AutoHCKError; end
 

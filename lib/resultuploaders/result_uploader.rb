@@ -34,7 +34,8 @@ module AutoHCK
       end
     end
 
-    def initialize(project)
+    def initialize(scope, project)
+      @scope = scope
       @project = project
       @connected_uploaders = {}
       @uploaders = {}
@@ -55,6 +56,7 @@ module AutoHCK
       @uploaders.each_pair do |type, uploader|
         if uploader.connect
           @connected_uploaders[type] = uploader
+          @scope << uploader
         else
           @project.logger.info("#{type} connection failed, (ignoring)")
         end
@@ -89,10 +91,6 @@ module AutoHCK
 
     def html_url
       @connected_uploaders.values.filter_map(&:html_url).first
-    end
-
-    def close
-      @connected_uploaders.each_value(&:close)
     end
   end
 end

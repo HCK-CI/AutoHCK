@@ -7,6 +7,7 @@ require './lib/setupmanagers/hckstudio'
 require './lib/auxiliary/json_helper'
 require './lib/auxiliary/host_helper'
 require './lib/auxiliary/iso_helper'
+require './lib/auxiliary/resource_scope'
 require './lib/engines/hckinstall/setup_scripts_helper'
 
 # AutoHCK module
@@ -194,17 +195,17 @@ module AutoHCK
       true
     end
 
-    def run_studio(iso_list = [], keep_alive:, snapshot: true)
+    def run_studio(scope, iso_list = [], keep_alive:, snapshot: true)
       st_opts = {
         keep_alive: keep_alive,
         create_snapshot: snapshot,
         attach_iso_list: iso_list
       }
 
-      @project.setup_manager.run_hck_studio(st_opts)
+      @project.setup_manager.run_hck_studio(scope, st_opts)
     end
 
-    def run_client(name, snapshot: true)
+    def run_client(scope, studio, name, snapshot: true)
       cl_opts = {
         create_snapshot: snapshot,
         attach_iso_list: [
@@ -213,48 +214,40 @@ module AutoHCK
         ]
       }
 
-      @project.setup_manager.run_hck_client(name, cl_opts)
+      @project.setup_manager.run_hck_client(scope, studio, name, cl_opts)
     end
 
     def run_studio_installer
       @project.setup_manager.create_studio_image
 
-      st = run_studio([
-                        @setup_studio_iso,
-                        @studio_iso_info['path']
-                      ], keep_alive: false, snapshot: false)
-      begin
+      ResourceScope.open do |scope|
+        st = run_studio(scope, [
+                          @setup_studio_iso,
+                          @studio_iso_info['path']
+                        ], keep_alive: false, snapshot: false)
         Timeout.timeout(@studio_install_timeout) do
           @logger.info('Waiting for studio installation finished')
           sleep 5 while st.alive?
         end
-      ensure
-        st.clean_last_run
       end
     end
 
-    def run_client_installer(name)
+    def run_client_installer(scope, studio, name)
       @project.setup_manager.create_client_image(name)
 
-      run_client(name, snapshot: false)
+      run_client(scope, studio, name, snapshot: false)
     end
 
     def run_clients_installer
-      st = run_studio([], keep_alive: true)
-      begin
-        cl = @clients_name.map { |c| run_client_installer(c) }
-        begin
-          Timeout.timeout(@client_install_timeout) do
-            cl.each do |client|
-              @logger.info("Waiting for #{client.name} installation finished")
-              sleep 5 while client.alive?
-            end
+      ResourceScope.open do |scope|
+        st = run_studio(scope, [], keep_alive: true)
+        cl = @clients_name.map { |c| run_client_installer(scope, st, c) }
+        Timeout.timeout(@client_install_timeout) do
+          cl.each do |client|
+            @logger.info("Waiting for #{client.name} installation finished")
+            sleep 5 while client.alive?
           end
-        ensure
-          cl.each(&:clean_last_run)
         end
-      ensure
-        st.clean_last_run
       end
     end
 

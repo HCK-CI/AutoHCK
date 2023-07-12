@@ -17,23 +17,19 @@ module AutoHCK
     attr_reader :name, :kit
     attr_writer :support
 
-    def initialize(project, setup_manager, studio, name, run_opts)
-      @project = project
-      @logger = project.logger
+    def initialize(setup_manager, scope, studio, name, run_opts)
+      @project = setup_manager.project
+      @logger = @project.logger
       @studio = studio
       @name = name
       @kit = setup_manager.kit
-      @setup_manager = setup_manager
       @pool = 'Default Pool'
-      @setup_manager.run_client(@name, run_opts)
+      @runner = setup_manager.run_client(scope, @name, run_opts)
+      scope << self
     end
 
-    def alive?
-      @setup_manager.client_alive?(@name)
-    end
-
-    def clean_last_run
-      @setup_manager.clean_last_client_run(@name)
+    def keep_snapshot
+      @runner.keep_snapshot
     end
 
     def add_target_to_project
@@ -171,15 +167,11 @@ module AutoHCK
       end
     end
 
-    def synchronize(exit: false)
-      if exit
-        @cooldown_thread&.exit
-      else
-        return unless @cooldown_thread&.join(CLIENT_COOLDOWN_TIMEOUT).nil?
+    def synchronize
+      return unless @cooldown_thread&.join(CLIENT_COOLDOWN_TIMEOUT).nil?
 
-        e_message = "Timeout expired for the cooldown thread of client #{@name}"
-        raise ClientRunError, e_message
-      end
+      e_message = "Timeout expired for the cooldown thread of client #{@name}"
+      raise ClientRunError, e_message
     end
 
     def not_ready?
@@ -195,11 +187,9 @@ module AutoHCK
       set_machine_ready
     end
 
-    def abort
+    def close
       @logger.info("Aborting HLKClient #{@name}")
-
-      @setup_manager.abort_client(@name)
-      synchronize(exit: true)
+      @cooldown_thread&.exit
     end
   end
 end

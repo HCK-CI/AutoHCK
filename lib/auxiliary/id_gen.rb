@@ -7,11 +7,12 @@ require 'time'
 module AutoHCK
   # Id Generator class
   class Idgen
-    def initialize(range, timeout)
+    def initialize(scope, range, timeout)
       @db = './id_gen.db'
       @range = range
-      @conn = SQLite3::Database.new @db.to_s
       @threshold = timeout * 24 * 60 * 60
+      @conn = SQLite3::Database.new @db.to_s
+      scope << @conn
     end
 
     def load_data
@@ -55,8 +56,6 @@ module AutoHCK
       1
     rescue SQLite3::Exception
       -1
-    ensure
-      @conn&.close
     end
 
     private

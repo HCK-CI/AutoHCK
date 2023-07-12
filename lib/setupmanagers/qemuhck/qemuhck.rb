@@ -12,7 +12,7 @@ module AutoHCK
   class QemuHCK
     include Helper
 
-    attr_reader :kit
+    attr_reader :kit, :project
 
     OPT_NAMES = %w[viommu_state enlightenments_state vhost_state machine_type fw_type cpu].freeze
 
@@ -135,55 +135,20 @@ module AutoHCK
       @clients_vm[name].option_config(option)
     end
 
-    def run_studio(run_opts = nil)
-      @studio_vm.run(run_opts)
+    def run_studio(scope, run_opts = nil)
+      @studio_vm.run(scope, run_opts)
     end
 
-    def run_client(name, run_opts = nil)
-      @clients_vm[name].run(run_opts)
+    def run_client(scope, name, run_opts = nil)
+      @clients_vm[name].run(scope, run_opts)
     end
 
-    def studio_alive?
-      @studio_vm.alive?
+    def run_hck_studio(scope, run_opts)
+      HCKStudio.new(self, scope, run_opts) { @studio_vm.find_world_ip }
     end
 
-    def client_alive?(name)
-      @clients_vm[name].alive?
-    end
-
-    def clean_last_studio_run
-      @studio_vm.clean_last_run
-    end
-
-    def clean_last_client_run(name)
-      @clients_vm[name].clean_last_run
-    end
-
-    def abort_studio
-      @logger.info('Aborting studio VM')
-      @studio_vm&.close
-    end
-
-    def abort_client(name)
-      @logger.info("Aborting client #{name} VM")
-      @clients_vm[name]&.close
-    end
-
-    def close
-      @clients_vm.each { |_k, vm| vm.close }
-      if @studio.nil?
-        @studio_vm&.close
-      else
-        @studio.abort
-      end
-    end
-
-    def run_hck_studio(run_opts)
-      @studio = HCKStudio.new(@project, self, run_opts) { @studio_vm.find_world_ip }
-    end
-
-    def run_hck_client(name, run_opts)
-      HCKClient.new(@project, self, @studio, name, run_opts)
+    def run_hck_client(scope, studio, name, run_opts)
+      HCKClient.new(self, scope, studio, name, run_opts)
     end
   end
 end

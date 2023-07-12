@@ -7,9 +7,28 @@ require './lib/auxiliary/json_helper'
 module AutoHCK
   # PhysHCK
   class PhysHCK
+    # Runner is a class that represents a run.
+    class Runner
+      def initialize(logger)
+        @logger = logger
+      end
+
+      def alive?
+        @logger.info('Physical machine is always alive')
+      end
+
+      def keep_snapshot
+        @logger.info('Keeping snapshot is currently not supported for physical machines')
+      end
+
+      def close
+        @logger.info('Abort is currently not supported for physical machines')
+      end
+    end
+
     include Helper
 
-    attr_reader :kit
+    attr_reader :kit, :project
 
     PHYSHCK_CONFIG_JSON = 'lib/setupmanagers/physhck/physhck.json'
 
@@ -45,52 +64,21 @@ module AutoHCK
       @logger.info('Image creating is currently not supported for physical machines')
     end
 
-    def run_studio(*); end
-    def run_client(*); end
-
-    def studio_alive?
-      @logger.info('Physical machine is always alive')
+    def run_studio(*)
+      Runner.new(@logger)
     end
 
-    def client_alive?(_name)
-      @logger.info('Physical machine is always alive')
+    def run_client(*)
+      Runner.new(@logger)
     end
 
-    def keep_studio_alive
-      @logger.info('Physical machine is always alive')
-    end
-
-    def keep_client_alive(_name)
-      @logger.info('Physical machine is always alive')
-    end
-
-    def clean_last_studio_run
-      @logger.info('Clean last run is currently not supported for physical machines')
-    end
-
-    def clean_last_client_run(_name)
-      @logger.info('Clean last run is currently not supported for physical machines')
-    end
-
-    def run_hck_studio(run_opts)
+    def run_hck_studio(scope, run_opts)
       studio_ip = @setup['st_ip']
-      @studio = HCKStudio.new(@project, self, run_opts) { studio_ip }
+      HCKStudio.new(self, scope, run_opts) { studio_ip }
     end
 
-    def run_hck_client(name, run_opts)
-      HCKClient.new(@project, self, @studio, name, run_opts)
-    end
-
-    def abort_studio
-      @logger.info('Abort is currently not supported for physical machines')
-    end
-
-    def abort_client(_name)
-      @logger.info('Abort is currently not supported for physical machines')
-    end
-
-    def close
-      @logger.info('Closing setup manager')
+    def run_hck_client(scope, studio, name, run_opts)
+      HCKClient.new(self, scope, studio, name, run_opts)
     end
   end
 end

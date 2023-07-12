@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'exceptions'
+
 # AutoHCK module
 module AutoHCK
   # Trap class
@@ -21,7 +23,7 @@ module AutoHCK
         write_log("SIG#{signal}(*) received, ignoring...")
       end
       @project&.handle_cancel
-      exit
+      raise AutoHCKInterrupt
     end
 
     @sig_timestamps = {}

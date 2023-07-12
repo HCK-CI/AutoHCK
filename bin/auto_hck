@@ -7,6 +7,7 @@ require './lib/config/sentry'
 
 begin
   require 'filelock'
+  require './lib/auxiliary/resource_scope'
   require './lib/cli'
   require './lib/project'
   require './lib/trap'
@@ -25,8 +26,8 @@ begin
     Thread.abort_on_exception = true
     Thread.report_on_exception = false
 
-    @project = Project.new(cli)
-    begin
+    ResourceScope.open do |scope|
+      @project = Project.new(scope, cli)
       Trap.project = @project
       @project.run if @project.prepare
     rescue StandardError => e
@@ -37,9 +38,9 @@ begin
       @project.log_exception(e, 'fatal')
       @project.handle_error
       exit(1)
-    ensure
-      @project.close
     end
+  rescue AutoHCKInterrupt
+    exit false
   end
 rescue StandardError => e
   Sentry.capture_exception(e)

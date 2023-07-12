@@ -11,13 +11,13 @@ module AutoHCK
     CONNECT_RETRIES = 5
     CONNECT_RETRY_SLEEP = 10
 
-    def initialize(project, setup_manager, run_opts, &ip_getter)
-      @project = project
-      @tag = project.engine.tag
-      @setup_manager = setup_manager
+    def initialize(setup_manager, scope, run_opts, &ip_getter)
+      @project = setup_manager.project
+      @tag = @project.engine.tag
       @ip_getter = ip_getter
-      @logger = project.logger
-      @setup_manager.run_studio(run_opts)
+      @logger = @project.logger
+      @scope = scope
+      @runner = setup_manager.run_studio(scope, run_opts)
     end
 
     def up?
@@ -29,19 +29,9 @@ module AutoHCK
       @tools.create_pool(@tag)
     end
 
-    def delete_pool
-      @logger.info('Deleting pool')
-      @tools.delete_pool(@tag)
-    end
-
     def create_project
       @logger.info('Creating project')
       @tools.create_project(@tag)
-    end
-
-    def delete_project
-      @logger.info('Deleting project')
-      @tools.delete_project(@tag)
     end
 
     def list_pools
@@ -62,6 +52,7 @@ module AutoHCK
       begin
         @logger.info('Initiating connection to studio')
         @tools = Tools.new(@project, @ip_getter.call, @clients)
+        @scope << @tools
       rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH, RToolsHCKConnectionError
         raise StudioConnectError, 'Initiating connection to studio failed'
       end
@@ -80,20 +71,8 @@ module AutoHCK
       raise StudioConnectError, 'Tools did not pass the connection check'
     end
 
-    def alive?
-      @setup_manager.studio_alive?
-    end
-
-    def clean_tools
-      delete_project
-      delete_pool
-      @tools&.close
-      @tools = nil
-    end
-
-    def clean_last_run
-      clean_tools unless @tools.nil?
-      @setup_manager.clean_last_studio_run
+    def keep_snapshot
+      @runner.keep_snapshot
     end
 
     def configure(clients)
@@ -105,12 +84,6 @@ module AutoHCK
       update_filters
       create_pool
       create_project
-    end
-
-    def abort
-      @logger.info('Aborting HLK Studio')
-      @tools&.close
-      @setup_manager.abort_studio
     end
 
     def shutdown

@@ -4,6 +4,7 @@ require './lib/setupmanagers/hckstudio'
 require './lib/setupmanagers/hckclient'
 require './lib/auxiliary/diff_checker'
 require './lib/auxiliary/json_helper'
+require './lib/auxiliary/resource_scope'
 require './lib/auxiliary/zip_helper'
 
 # AutoHCK module
@@ -144,14 +145,14 @@ module AutoHCK
       Json.read_json(platform_json, @logger)
     end
 
-    def run_studio(run_opts = {})
-      @studio = @project.setup_manager.run_hck_studio(run_opts)
+    def run_studio(scope, run_opts = {})
+      @studio = @project.setup_manager.run_hck_studio(scope, run_opts)
     end
 
-    def run_clients(run_opts = {})
+    def run_clients(scope, run_opts = {})
       @clients = {}
       @platform['clients'].each do |_name, client|
-        @clients[client['name']] = @project.setup_manager.run_hck_client(client['name'], run_opts)
+        @clients[client['name']] = @project.setup_manager.run_hck_client(scope, @studio, client['name'], run_opts)
 
         break if @project.options.test.svvp
         break unless @drivers.any? { |d| d['support'] }
@@ -160,12 +161,6 @@ module AutoHCK
 
       raise InvalidConfigFile, 'Clients configuration for \
                                 this platform is incorrect'
-    end
-
-    def synchronize_clients(exit: false)
-      @clients.each_value do |client|
-        client.synchronize(exit: exit)
-      end
     end
 
     def configure_clients
@@ -179,35 +174,28 @@ module AutoHCK
     def configure_setup_and_synchronize
       @studio.configure(@platform['clients'])
       configure_clients
-      synchronize_clients
+      @clients.each_value(&:synchronize)
       @client1 = @clients.values[0]
       @client2 = @clients.values[1]
       @client1.support = @client2
+      @studio.keep_snapshot
+      @clients.each_value(&:keep_snapshot)
     end
 
-    def clean_last_run_clients
-      @clients.values.map(&:clean_last_run)
-    end
-
-    def clean_last_run_machines
-      @studio.clean_last_run
-      clean_last_run_clients
-    end
-
-    def run_and_configure_setup
+    def run_and_configure_setup(scope)
       retries ||= 0
 
-      run_studio
-      sleep 5 until @studio.up?
-      run_clients keep_alive: true
+      scope.transaction do |tmp_scope|
+        run_studio tmp_scope
+        sleep 5 until @studio.up?
+        run_clients tmp_scope, keep_alive: true
 
-      configure_setup_and_synchronize
+        configure_setup_and_synchronize
+      end
     rescue AutoHCKError => e
-      synchronize_clients(exit: true)
       @project.logger.warn("Running and configuring setup failed: (#{e.class}) #{e.message}")
       raise e unless (retries += 1) < AUTOHCK_RETRIES
 
-      clean_last_run_machines
       @project.logger.info('Trying again to run and configure setup')
       retry
     end
@@ -230,19 +218,18 @@ module AutoHCK
     end
 
     def manual_run
-      run_studio({ dump_only: true })
-      run_clients({ dump_only: true })
+      ResourceScope.open do |scope|
+        run_studio(scope, { dump_only: true })
+        run_clients(scope, { dump_only: true })
+      end
     end
 
     def auto_run
-      run_and_configure_setup
-      begin
+      ResourceScope.open do |scope|
+        run_and_configure_setup scope
         client = @client1
         client.run_tests
         client.create_package
-      ensure
-        @clients&.values&.map(&:abort)
-        @studio&.abort
       end
     end
 
