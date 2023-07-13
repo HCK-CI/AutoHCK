@@ -212,8 +212,8 @@ module AutoHCK
       @logger.info('Skipping archiving test result logs')
     end
 
-    def generate_report
-      data = {
+    def report_data
+      {
         'tag' => @tag,
         'test_stats' => tests_stats,
         'rejected_test' => @playlist.rejected_test,
@@ -224,6 +224,10 @@ module AutoHCK
         },
         'sections' => RESULTS_REPORT_SECTIONS - @project.options.test.reject_report_sections
       }
+    end
+
+    def generate_report
+      data = report_data
 
       results_file = "#{@project.workspace_path}/#{RESULTS_FILE}"
 
