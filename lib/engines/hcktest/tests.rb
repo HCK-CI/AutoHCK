@@ -22,6 +22,7 @@ module AutoHCK
     RUNNING_TEST_TIMEOUT = '00:15:00'
     SUMMARY_LOG_FILE = 'logs.txt'
     RESULTS_FILE = 'results.html'
+    RESULTS_YAML = 'results.yaml'
     RESULTS_REPORT_SECTIONS = %w[chart guest_info rejected_test url].freeze
 
     def initialize(client, support, project, target, tools)
@@ -230,10 +231,15 @@ module AutoHCK
       data = report_data
 
       results_file = "#{@project.workspace_path}/#{RESULTS_FILE}"
+      results_yaml = "#{@project.workspace_path}/#{RESULTS_YAML}"
 
       File.write(results_file, @results_template.result_with_hash(data))
       @project.result_uploader.delete_file(RESULTS_FILE)
       @project.result_uploader.upload_file(results_file, RESULTS_FILE)
+
+      File.write(results_yaml, data.to_yaml)
+      @project.result_uploader.delete_file(RESULTS_YAML)
+      @project.result_uploader.upload_file(results_yaml, RESULTS_YAML)
     end
 
     def summary_rejected_test_log
