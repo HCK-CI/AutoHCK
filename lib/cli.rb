@@ -2,6 +2,7 @@
 
 require 'optparse'
 require './lib/version'
+require './lib/exceptions'
 
 # AutoHCK module
 module AutoHCK
@@ -85,7 +86,7 @@ module AutoHCK
     class TestOptions
       attr_accessor :platform, :drivers, :driver_path, :commit, :diff_file, :svvp, :manual,
                     :gthb_context_prefix, :gthb_context_suffix, :playlist, :select_test_names,
-                    :reject_test_names, :triggers_file
+                    :reject_test_names, :triggers_file, :reject_report_sections
 
       def create_parser
         OptionParser.new do |parser|
@@ -113,6 +114,7 @@ module AutoHCK
         select_test_names_option(parser)
         reject_test_names_option(parser)
         triggers_file_option(parser)
+        reject_report_sections_option(parser)
       end
 
       def platform_option(parser)
@@ -203,6 +205,23 @@ module AutoHCK
         parser.on('--triggers <triggers_file>', String,
                   'Path to text file containing triggers') do |triggers_file|
           @triggers_file = triggers_file
+        end
+      end
+
+      def reject_report_sections_option(parser)
+        parser.on('--reject-report-sections <reject_report_sections>', Array,
+                  'List of section to reject from HTML results',
+                  '(use "--reject-report-sections=help" to list sections)') do |reject_report_sections|
+          if reject_report_sections.first == 'help'
+            puts Tests::RESULTS_REPORT_SECTIONS.join("\n")
+            exit
+          end
+
+          extra_keys = reject_report_sections - Tests::RESULTS_REPORT_SECTIONS
+
+          raise(AutoHCKError, "Unknown report sections: #{extra_keys.join(', ')}.") unless extra_keys.empty?
+
+          @reject_report_sections = reject_report_sections
         end
       end
     end

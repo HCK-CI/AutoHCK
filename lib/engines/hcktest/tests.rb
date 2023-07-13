@@ -222,7 +222,7 @@ module AutoHCK
         'system_info' => {
           'guest' => @clients_system_info
         },
-        'sections' => RESULTS_REPORT_SECTIONS
+        'sections' => RESULTS_REPORT_SECTIONS - @project.options.test.reject_report_sections
       }
 
       results_file = "#{@project.workspace_path}/#{RESULTS_FILE}"
