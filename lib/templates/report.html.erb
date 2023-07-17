@@ -47,16 +47,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <% if sections.include? 'rejected_test' %>
-                    <% rejected_test.each_with_index do |test, idx| %>
-                        <tr class="table-warning">
-                            <th scope="row"><%= idx + 1 %></th>
-                            <td><%= test['name'] %></td>
-                            <td><%= test['estimatedruntime'] %></td>
-                            <td>Skipped</td>
-                        </tr>
-                    <% end %>
-                    <% end %>
                     <% tests.each_with_index do |test, idx| %>
                         <% if test['status'] == 'Passed' %>
                         <tr class="table-success">
@@ -65,17 +55,21 @@
                         <% else %>
                         <tr class="table-secondary">
                         <% end %>
-                            <th scope="row">
-                            <% if sections.include? 'rejected_test' %>
-                            <%= test_stats['skipped'] + idx + 1 %>
-                            <% else %>
-                            <%= idx + 1 %>
-                            <% end %>
-                            </th>
+                            <th scope="row"><%= idx + 1 %></th>
                             <td><%= test['name'] %></td>
                             <td><%= test['estimatedruntime'] %></td>
                             <td><%= test['status'] %></td>
                         </tr>
+                    <% end %>
+                    <% if sections.include? 'rejected_test' %>
+                    <% rejected_test.each_with_index do |test, idx| %>
+                        <tr class="table-warning">
+                            <th scope="row"><%= tests.length + idx + 1 %></th>
+                            <td><%= test['name'] %></td>
+                            <td><%= test['estimatedruntime'] %></td>
+                            <td>Skipped</td>
+                        </tr>
+                    <% end %>
                     <% end %>
                 </tbody>
             </table>
