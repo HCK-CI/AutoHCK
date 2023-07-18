@@ -280,6 +280,14 @@ module AutoHCK
       @device_commands << dev
     end
 
+    def add_missing_default_devices(device_infos)
+      return if device_infos.any? { |d| d['type'] == 'vga' }
+
+      vga_info = read_device(@config['platforms_defaults']['vga_device'])
+      device_infos << vga_info
+      load_device_info(vga_info)
+    end
+
     def process_hck_network
       dev = @nm.control_device_command(option_config('ctrl_net_device'),
                                        full_replacement_list)
@@ -302,11 +310,7 @@ module AutoHCK
         load_device_info(device_info)
       end
 
-      unless device_infos.any? { |d| d['type'] == 'vga' }
-        vga_info = read_device(@config['platforms_defaults']['vga_device'])
-        device_infos << vga_info
-        load_device_info(vga_info)
-      end
+      add_missing_default_devices(device_infos)
 
       process_hck_network
 
