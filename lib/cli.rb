@@ -228,7 +228,7 @@ module AutoHCK
 
     # class InstallOptions
     class InstallOptions
-      attr_accessor :platform, :force, :skip_client, :drivers
+      attr_accessor :platform, :force, :skip_client, :drivers, :driver_path
 
       def create_parser
         OptionParser.new do |parser|
@@ -251,6 +251,7 @@ module AutoHCK
         force_option(parser)
         skip_client_option(parser)
         drivers_option(parser)
+        driver_path_option(parser)
       end
 
       def platform_option(parser)
@@ -278,6 +279,13 @@ module AutoHCK
         parser.on('-d', '--drivers <drivers_list>', Array,
                   'List of driver attach in install') do |drivers|
           @drivers = drivers
+        end
+      end
+
+      def driver_path_option(parser)
+        parser.on('--driver-path <driver_path>', String,
+                  'Path to the location of the driver wanted to be installed') do |driver_path|
+          @driver_path = driver_path
         end
       end
     end
