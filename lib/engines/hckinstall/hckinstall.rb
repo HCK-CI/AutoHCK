@@ -169,8 +169,14 @@ module AutoHCK
     def drivers
       drivers = find_drivers
 
+      @need_copy_drivers = false
       drivers.each do |driver|
         next if driver['install_method'] == 'no-drv'
+
+        if driver['install_method'] == 'PNP' && File.exist?("#{@project.options.install.driver_path}/#{driver['inf']}")
+          @need_copy_drivers = true
+          next
+        end
 
         msg = "Can't install #{driver['short']} driver for device #{driver['device']} in install mode"
         @project.logger.fatal(msg)
@@ -346,6 +352,14 @@ module AutoHCK
       create_iso(@setup_studio_iso, [@hck_setup_scripts_path])
     end
 
+    def copy_drivers
+      @logger.info('HCKInstall: Copy all drivers')
+      FileUtils.rm_rf("#{@hck_setup_scripts_path}/drivers")
+      FileUtils.copy_entry(@project.options.install.driver_path,
+                           "#{@hck_setup_scripts_path}/drivers",
+                           remove_destination: true)
+    end
+
     def prepare_client_installer
       product_key = @client_iso_info.dig('client', 'product_key')
 
@@ -359,6 +373,9 @@ module AutoHCK
         file_gsub(build_client_answer_file_path(file),
                   @hck_setup_scripts_path + "/#{file}", replacement_list)
       end
+
+      copy_drivers if @need_copy_drivers
+
       create_iso(@setup_client_iso, [@hck_setup_scripts_path], ['Kits'])
     end
 
