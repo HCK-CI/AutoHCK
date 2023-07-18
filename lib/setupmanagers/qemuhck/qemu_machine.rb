@@ -3,6 +3,7 @@
 require 'mono_logger'
 
 require_relative 'network_manager'
+require_relative 'storage_manager'
 require_relative 'qmp'
 require_relative 'exceptions'
 
@@ -47,9 +48,8 @@ module AutoHCK
       apply_states
       init_ports
 
-      @base_image_path = Pathname.new(@config['images_path']).join(@options['image_name'])
-
       @nm = NetworkManager.new(@id, @client_id, @machine, @logger)
+      @sm = StorageManager.new(@id, @client_id, @config, @options, @logger)
     end
 
     def define_local_variables
@@ -157,7 +157,6 @@ module AutoHCK
       @config = Json.read_json(CONFIG_JSON, @logger)
       @states_config = Json.read_json(STATES_JSON, @logger)
 
-      @devices_list << option_config('boot_device')
       @machine_name = option_config('machine_type')
       @fw_name = option_config('fw_type')
       @machine = read_machine
@@ -167,11 +166,9 @@ module AutoHCK
     def config_replacement_list
       {
         '@qemu_bin@' => @config['qemu_bin'],
-        '@qemu_img_bin@' => @config['qemu_img_bin'],
         '@ivshmem_server_bin@' => @config['ivshmem_server_bin'],
         '@fs_daemon_bin@' => @config['fs_daemon_bin'],
-        '@fs_daemon_share_path@' => @config['fs_daemon_share_path'],
-        '@fs_test_image@' => @config['fs_test_image']
+        '@fs_daemon_share_path@' => @config['fs_daemon_share_path']
       }
     end
 
@@ -208,8 +205,7 @@ module AutoHCK
         '@cpu_model@' => option_config('cpu_model'),
         '@vnc_id@' => @vnc_id,
         '@vnc_port@' => @vnc_port,
-        '@qemu_monitor_port@' => @monitor_port,
-        '@image_path@' => image_path
+        '@qemu_monitor_port@' => @monitor_port
       }.merge(config_replacement_list)
         .merge(machine_replacement_list)
         .merge(options_replacement_list)
@@ -258,6 +254,9 @@ module AutoHCK
       when 'network'
         dev = @nm.test_device_command(device_info['name'], full_replacement_list)
         @device_commands << dev
+      when 'storage'
+        dev = @sm.test_device_command(device_info['name'], full_replacement_list)
+        @device_commands << dev
       else
         cmd = device_info['command_line'].join(' ')
         @device_commands << replace_string_recursive(cmd, full_replacement_list)
@@ -300,6 +299,11 @@ module AutoHCK
       process_world_hck_network
     end
 
+    def process_storage
+      dev, @image_path = @sm.boot_device_command(option_config('boot_device'), @run_opts, full_replacement_list)
+      @device_commands << dev
+    end
+
     def process_devices
       @device_commands = []
       device_infos = []
@@ -313,6 +317,7 @@ module AutoHCK
       add_missing_default_devices(device_infos)
 
       process_hck_network
+      process_storage
 
       device_infos.each do |device_info|
         process_device(device_info)
@@ -365,7 +370,7 @@ module AutoHCK
         "   FW type .................... #{@fw_name}",
         "   Test devices ............... #{@devices_list.join(', ')}",
         '   VM ID ...................... @client_id@',
-        '   VM image ................... @image_path@',
+        "   VM image ................... #{@image_path}",
         '   VM VCPU .................... @cpu@',
         '   VM VCPUs ................... @cpu_count@',
         '   VM Memory .................. @memory@',
@@ -462,30 +467,12 @@ module AutoHCK
       end
     end
 
-    def snapshot_path
-      filename = File.basename(@base_image_path, '.*')
-      "#{@workspace_path}/#{filename}-snapshot.qcow2"
-    end
-
     def check_image_exist
-      File.exist?(@base_image_path)
+      @sm.check_image_exist
     end
 
     def create_image
-      run_cmd("#{@config['qemu_img_bin']} create -f qcow2 #{@base_image_path} 150G")
-    end
-
-    def create_snapshot
-      @logger.info("Creating #{@run_name} snapshot file")
-      run_cmd("#{@config['qemu_img_bin']} create -f qcow2 -F qcow2 -b #{@base_image_path} #{snapshot_path}")
-    end
-
-    def delete_snapshot
-      FileUtils.rm_f(snapshot_path)
-    end
-
-    def image_path
-      @run_opts[:create_snapshot] ? snapshot_path : @base_image_path
+      @sm.create_boot_image
     end
 
     def iso_cmd
@@ -543,7 +530,6 @@ module AutoHCK
     def run(run_opts = nil)
       @qmp = QMP.new(@run_name, @logger)
       @run_opts = validate_run_opts(run_opts.to_h)
-      create_snapshot if @run_opts[:create_snapshot]
 
       @devices_list.flatten!
       @devices_list.compact!
@@ -626,7 +612,7 @@ module AutoHCK
 
       @logger.info("Cleaning last #{@run_name} run")
       close
-      delete_snapshot
+      @sm.delete_boot_snapshot
     end
 
     def close
