@@ -12,7 +12,6 @@ module AutoHCK
     class NetworkManager
       include Helper
 
-      DEVICES_JSON_DIR = 'lib/setupmanagers/qemuhck/devices'
       CONFIG_JSON = 'lib/setupmanagers/qemuhck/network_manager.json'
 
       def initialize(id, client_id, machine, logger)
