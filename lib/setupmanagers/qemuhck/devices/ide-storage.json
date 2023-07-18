@@ -1,7 +1,8 @@
 {
   "name": "ide-storage",
+  "type": "storage",
   "command_line": [
     "-drive file=@image_path@,if=none,id=ide_@run_id@_@client_id@@drive_cache_options@",
-    "-device ide-hd,drive=ide_@run_id@_@client_id@,serial=@client_id@1@run_id@"
+    "-device ide-hd,drive=ide_@run_id@_@client_id@,serial=@client_id@ide@run_id@"
   ]
 }
