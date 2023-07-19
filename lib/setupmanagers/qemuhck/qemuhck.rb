@@ -81,10 +81,11 @@ module AutoHCK
         'client_world_net' => @project.options.common.client_world_net
       }
 
-      fw_type = @platform["#{@project.options.mode}_fw_type"]
+      mode = @project.options.mode
+      fw_type = @platform["#{mode}_fw_type"]
       unless fw_type.nil?
         @logger.warn(
-          "Platform has #{@project.options.mode}_fw_type = #{fw_type}, force to use it instead of #{base['fw_type']}"
+          "Platform has #{mode}_fw_type = #{fw_type}, force to use it instead of #{base['fw_type']}"
         )
         base['fw_type'] = fw_type
       end
