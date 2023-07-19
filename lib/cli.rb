@@ -86,7 +86,7 @@ module AutoHCK
     class TestOptions
       attr_accessor :platform, :drivers, :driver_path, :commit, :diff_file, :svvp, :manual,
                     :gthb_context_prefix, :gthb_context_suffix, :playlist, :select_test_names,
-                    :reject_test_names, :triggers_file, :reject_report_sections
+                    :reject_test_names, :triggers_file, :reject_report_sections, :boot_device
 
       def create_parser
         OptionParser.new do |parser|
@@ -115,6 +115,7 @@ module AutoHCK
         reject_test_names_option(parser)
         triggers_file_option(parser)
         reject_report_sections_option(parser)
+        boot_device_option(parser)
       end
 
       def platform_option(parser)
@@ -222,6 +223,13 @@ module AutoHCK
           raise(AutoHCKError, "Unknown report sections: #{extra_keys.join(', ')}.") unless extra_keys.empty?
 
           @reject_report_sections = reject_report_sections
+        end
+      end
+
+      def boot_device_option(parser)
+        parser.on('--boot-device <boot_device>', String,
+                  'VM boot device') do |boot_device|
+          @boot_device = boot_device
         end
       end
     end

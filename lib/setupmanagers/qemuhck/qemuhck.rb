@@ -70,6 +70,12 @@ module AutoHCK
       options
     end
 
+    def boot_device
+      return {} if @project.options.test.boot_device.nil?
+
+      { 'boot_device' => @project.options.test.boot_device }
+    end
+
     def client_vm_common_options
       base = {
         'id' => @id.to_i,
@@ -79,7 +85,7 @@ module AutoHCK
         'slirp' => @slirp,
         'iso_path' => @project.config['iso_path'],
         'client_world_net' => @project.options.common.client_world_net
-      }
+      }.merge(boot_device)
 
       mode = @project.options.mode
       fw_type = @platform["#{mode}_fw_type"]
