@@ -209,7 +209,6 @@ module AutoHCK
         '@vnc_id@' => @vnc_id,
         '@vnc_port@' => @vnc_port,
         '@qemu_monitor_port@' => @monitor_port,
-        '@qmp_fd@' => @qmp.socket.fileno,
         '@image_path@' => image_path
       }.merge(config_replacement_list)
         .merge(machine_replacement_list)
