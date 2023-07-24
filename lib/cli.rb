@@ -209,6 +209,8 @@ module AutoHCK
       end
 
       def reject_report_sections_option(parser)
+        @reject_report_sections = []
+
         parser.on('--reject-report-sections <reject_report_sections>', Array,
                   'List of section to reject from HTML results',
                   '(use "--reject-report-sections=help" to list sections)') do |reject_report_sections|
