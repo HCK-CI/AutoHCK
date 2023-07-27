@@ -12,7 +12,7 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (7.0.4.3)
+    activesupport (7.0.6)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (>= 1.6, < 2)
       minitest (>= 5.1)
@@ -43,7 +43,7 @@ GEM
       builder (>= 2.1.2)
       rexml (~> 3.0)
     httpclient (2.8.3)
-    i18n (1.12.0)
+    i18n (1.14.1)
       concurrent-ruby (~> 1.0)
     json (2.6.3)
     jwt (2.2.3)
@@ -53,7 +53,7 @@ GEM
       little-plugger (~> 1.1)
       multi_json (~> 1.14)
     mini_portile2 (2.8.2)
-    minitest (5.18.0)
+    minitest (5.19.0)
     mono_logger (1.1.2)
     multi_json (1.15.0)
     multi_xml (0.6.0)
