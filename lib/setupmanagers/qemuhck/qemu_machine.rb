@@ -86,12 +86,13 @@ module AutoHCK
 
       def run_vm
         @machine.dump_config
-        @machine.run_pre_start_commands
 
         @qemu_thread = Thread.new do
           loop do
             qemu = nil
             Thread.handle_interrupt(Object => :on_blocking) do
+              @machine.run_pre_start_commands
+
               qemu = run_qemu
               qemu.wait_no_fail
               qemu = nil
