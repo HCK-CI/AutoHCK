@@ -1,0 +1,34 @@
+name: RSpec
+
+on:
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  rspec:
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Update Ubuntu package repository
+      run: sudo apt-get update
+    - name: Setup sqlite-devel
+      run: sudo apt-get -y install libsqlite3-dev
+    - name: Setup libcurl-devel
+      run: sudo apt-get -y install libcurl4 libcurl3-gnutls libcurl4-openssl-dev
+
+    - name: Set up Ruby 3.1.4
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 3.1.4
+        bundler-cache: false
+
+    - name: Install dependencies
+      run: bundle install
+
+    - name: RSpec run
+      run: bundle exec rspec

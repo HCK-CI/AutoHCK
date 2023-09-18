@@ -20,6 +20,5 @@ gem 'sqlite3'
 group :test do
   gem 'code-scanning-rubocop'
   gem 'rspec'
-  gem 'rspec_junit_formatter'
   gem 'rubocop'
 end
