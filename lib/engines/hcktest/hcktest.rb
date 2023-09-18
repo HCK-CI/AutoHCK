@@ -167,7 +167,7 @@ module AutoHCK
       run_only = @project.options.test.manual && @project.options.test.driver_path.nil?
 
       @clients.each_value do |client|
-        client.configure(run_only: run_only)
+        client.configure(run_only:)
       end
     end
 

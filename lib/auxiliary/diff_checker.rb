@@ -18,7 +18,7 @@ module AutoHCK
 
     def load_drivers_triggers
       @logger&.info('Loading diff checker trigger file')
-      yaml = YAML.safe_load(File.read(@triggers))
+      yaml = YAML.safe_load_file(@triggers)
 
       @trigger_includes = []
       @trigger_excludes = []

@@ -85,8 +85,8 @@ module AutoHCK
       stream.strip.lines.map { |line| "\n   -- #{line.rstrip}" }.join
     end
 
-    def act_with_tools(&block)
-      results = @tools.synchronize(&block)
+    def act_with_tools(&)
+      results = @tools.synchronize(&)
 
       if results['result'] == 'Failure'
         if results['message']
