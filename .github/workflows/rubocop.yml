@@ -24,10 +24,10 @@ jobs:
     - name: Setup libcurl-devel
       run: sudo apt-get -y install libcurl4 libcurl3-gnutls libcurl4-openssl-dev
 
-    - name: Set up Ruby 2.7.8
+    - name: Set up Ruby 3.1.4
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.7.8
+        ruby-version: 3.1.4
         bundler-cache: false
 
     - name: Install dependencies
