@@ -197,7 +197,7 @@ module AutoHCK
 
     def run_studio(scope, iso_list = [], keep_alive:, snapshot: true)
       st_opts = {
-        keep_alive: keep_alive,
+        keep_alive:,
         create_snapshot: snapshot,
         attach_iso_list: iso_list
       }
@@ -256,7 +256,7 @@ module AutoHCK
       kit_type == 'HCK' || kit_version = kit_string[3..]
 
       config = {
-        kit_type: kit_type,
+        kit_type:,
         hlk_kit_ver: kit_version
       }
 
