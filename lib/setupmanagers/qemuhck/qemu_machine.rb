@@ -101,6 +101,7 @@ module AutoHCK
                 Process.kill 'KILL', qemu.pid
                 qemu.wait_no_fail
               end
+              @machine.run_post_stop_commands
             end
 
             break unless @keep_alive
@@ -153,7 +154,6 @@ module AutoHCK
         return if @run_opts[:dump_only]
 
         vm_abort
-        @machine.run_post_stop_commands
         @machine.delete_snapshot if @delete_snapshot
       end
     end
