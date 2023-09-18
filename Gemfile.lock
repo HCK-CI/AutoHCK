@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/HCK-CI/rtoolsHCK.git
-  revision: cbeacfc770a925a8d10c8eaeba4440950b00aa71
-  tag: v0.3.4
+  revision: c7159c573d79e0c367e256609b53ac011a70d31c
+  tag: v0.4.0
   specs:
-    rtoolsHCK (0.3.4)
+    rtoolsHCK (0.4.0)
       bundler
       rdoc
       winrm (= 2.3.4)
@@ -128,7 +128,7 @@ GEM
       faraday
     sqlite3 (1.6.4)
       mini_portile2 (~> 2.8.0)
-    stringio (3.0.6)
+    stringio (3.0.8)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.4.2)
