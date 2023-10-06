@@ -56,7 +56,11 @@
                         <tr class="table-secondary">
                         <% end %>
                             <th scope="row"><%= idx + 1 %></th>
-                            <td><%= test['name'] %></td>
+                            <td>
+                                <% unless test['url'].nil? %><a href="<%= test['url'] %>"><% end %>
+                                <%= test['name'] %>
+                                <% unless test['url'].nil? %></a><% end %>
+                            </td>
                             <td><%= test['estimatedruntime'] %></td>
                             <td><%= test['status'] %></td>
                         </tr>
@@ -65,7 +69,11 @@
                     <% rejected_test.each_with_index do |test, idx| %>
                         <tr class="table-warning">
                             <th scope="row"><%= tests.length + idx + 1 %></th>
-                            <td><%= test['name'] %></td>
+                            <td>
+                                <% unless test['url'].nil? %><a href="<%= test['url'] %>"><% end %>
+                                <%= test['name'] %>
+                                <% unless test['url'].nil? %></a><% end %>
+                            </td>
                             <td><%= test['estimatedruntime'] %></td>
                             <td>Skipped</td>
                         </tr>
