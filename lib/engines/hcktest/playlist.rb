@@ -28,10 +28,17 @@ module AutoHCK
     # A custom ListTests error exception
     class ListTestsError < AutoHCKError; end
 
+    def info_page_url(test)
+      # TODO: Add check that URL returns 200 (OK), not 404 (Not Found)
+      "https://docs.microsoft.com/en-us/windows-hardware/test/hlk/testref/#{test['id']}"
+    end
+
     def list_tests(log)
       @tests = @tools.list_tests(@target['key'], @machine, @project.engine.tag,
                                  @playlist)
       raise ListTestsError, 'Failed to list tests' unless @tests
+
+      @tests.each { |t| t['url'] = info_page_url(t) }
 
       custom_select_test_names(log)
       custom_reject_test_names(log)
