@@ -178,11 +178,6 @@ module AutoHCK
       @tests.select { |test| test_finished?(test) }
     end
 
-    def info_page_url(test)
-      # TODO: Add check that URL returns 200 (OK), not 404 (Not Found)
-      "https://docs.microsoft.com/en-us/windows-hardware/test/hlk/testref/#{test['id']}"
-    end
-
     def on_test_start(test)
       @logger.info(">>> Currently running: #{test['name']} [#{test['estimatedruntime']}]")
 
@@ -200,7 +195,7 @@ module AutoHCK
     def print_test_results(test)
       results = @tests.find { |t| t['id'] == test['id'] }
       @logger.info("#{results['status']}: #{test['name']}")
-      @logger.info("Test information page: #{info_page_url(test)}")
+      @logger.info("Test information page: #{test['url']}")
     end
 
     def archive_test_results(test)
