@@ -16,7 +16,6 @@ gem 'rtoolsHCK', git: 'https://github.com/HCK-CI/rtoolsHCK.git', tag: 'v0.4.0'
 gem 'rubyzip'
 gem 'sentry-ruby'
 gem 'sorbet-runtime'
-gem 'sqlite3'
 
 group :development, :test do
   gem 'sorbet', require: false
