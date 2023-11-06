@@ -548,16 +548,20 @@ module AutoHCK
     end
 
     def run_pre_start_commands
-      @pre_start_commands.each do |dirty_cmd|
-        cmd = replace_string_recursive(dirty_cmd, full_replacement_list)
-        run_cmd(cmd)
+      Timeout.timeout(60) do
+        @pre_start_commands.each do |dirty_cmd|
+          cmd = replace_string_recursive(dirty_cmd, full_replacement_list)
+          run_cmd(cmd)
+        end
       end
     end
 
     def run_post_stop_commands
-      @post_stop_commands.each do |dirty_cmd|
-        cmd = replace_string_recursive(dirty_cmd, full_replacement_list)
-        run_cmd_no_fail(cmd)
+      Timeout.timeout(60) do
+        @post_stop_commands.each do |dirty_cmd|
+          cmd = replace_string_recursive(dirty_cmd, full_replacement_list)
+          run_cmd_no_fail(cmd)
+        end
       end
     end
 
