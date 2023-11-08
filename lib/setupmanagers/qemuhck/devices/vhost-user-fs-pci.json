@@ -12,7 +12,7 @@
   "pre_start_commands": [
     "mkdir -p @fs_daemon_share_path@",
     "rm -f @fs_daemon_socket@",
-    "@fs_daemon_bin@ --socket-path=@fs_daemon_socket@ -o source=@fs_daemon_share_path@ -o cache=always &",
+    "@fs_daemon_bin@ --socket-path=@fs_daemon_socket@ -o source=@fs_daemon_share_path@ --cache always &",
     "until [ -S '@fs_daemon_socket@' ]; do echo 'Socket does not exist, waiting...'; sleep 1; done"
   ],
   "post_stop_commands": [
