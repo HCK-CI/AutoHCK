@@ -4,6 +4,5 @@
     "autounattend.xml",
     "unattend.xml"
   ],
-  "studio_install_timeout": 10800,
-  "client_install_timeout": 3600
+  "install_timeout": 10800
 }

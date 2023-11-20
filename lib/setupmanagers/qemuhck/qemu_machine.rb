@@ -65,7 +65,6 @@ module AutoHCK
         @run_opts = run_opts
         @keep_alive = run_opts[:keep_alive]
         @delete_snapshot = run_opts[:create_snapshot]
-        @machine.run_config_commands
         run_vm
         scope << self
       end
@@ -176,7 +175,8 @@ module AutoHCK
       first_time: false,
       create_snapshot: true,
       attach_iso_list: [],
-      dump_only: false
+      dump_only: false,
+      secure: false
     }.freeze
 
     MACHINE_JSON = 'lib/setupmanagers/qemuhck/machine.json'
@@ -210,6 +210,7 @@ module AutoHCK
       @drive_cache_options = []
       @define_variables = {}
       @run_opts = {}
+      @configured = false
     end
 
     def load_options(options)
@@ -482,7 +483,11 @@ module AutoHCK
     def fw_cmd
       cmd = []
 
-      cmd << "-drive if=pflash,format=raw,readonly=on,file=#{@fw['binary']}" if @fw['binary']
+      if @fw['binary']
+        file = @fw['binary'][@run_opts[:secure] ? 'secure' : 'insecure']
+        cmd << "-drive if=pflash,format=raw,readonly=on,file=#{file}"
+      end
+
       cmd << "-drive if=pflash,format=raw,file=#{@fw['nvram']}" if @fw['nvram']
 
       cmd
@@ -649,6 +654,11 @@ module AutoHCK
       if @run_opts[:dump_only]
         dump_commands
       else
+        unless @configured
+          run_config_commands
+          @configured = true
+        end
+
         scope.transaction do |tmp_scope|
           hostfwd = Hostfwd.new(@options['slirp'], [@monitor_port, @vnc_port])
           tmp_scope << hostfwd

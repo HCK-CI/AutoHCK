@@ -84,8 +84,7 @@ module AutoHCK
       @hck_setup_scripts_path = @config['hck_setup_scripts_path']
 
       @answer_files = @config['answer_files']
-      @studio_install_timeout = @config['studio_install_timeout']
-      @client_install_timeout = @config['client_install_timeout']
+      @install_timeout = @config['install_timeout']
     end
 
     def studio_platform(kit)
@@ -199,53 +198,72 @@ module AutoHCK
       st_opts = {
         keep_alive:,
         create_snapshot: snapshot,
-        attach_iso_list: iso_list
+        attach_iso_list: iso_list,
+        secure: true
       }
 
       @project.setup_manager.run_studio(scope, st_opts)
     end
 
-    def run_client(scope, name, snapshot: true)
+    def run_client(scope, name, snapshot: true, secure: true)
       cl_opts = {
         create_snapshot: snapshot,
         attach_iso_list: [
           @setup_client_iso,
           @client_iso_info['path']
-        ]
+        ],
+        secure:
       }
 
       @project.setup_manager.run_client(scope, name, cl_opts)
     end
 
-    def run_studio_installer
-      @project.setup_manager.create_studio_image
-
-      ResourceScope.open do |scope|
-        st = run_studio(scope, [
-                          @setup_studio_iso,
-                          @studio_iso_info['path']
-                        ], keep_alive: false, snapshot: false)
-        @logger.info('Waiting for studio installation finished')
-        raise AutoHCKError, 'studio installation timed out' if st.wait(@studio_install_timeout).nil?
+    def wait_vms(vms)
+      vms.each do |name, vm|
+        @logger.info("Waiting for #{name} to finish")
+        vm.wait
       end
     end
 
-    def run_client_installer(scope, name)
-      @project.setup_manager.create_client_image(name)
-
-      run_client(scope, name, snapshot: false)
-    end
-
-    def run_clients_installer
+    def run_first(studio:, client:)
       ResourceScope.open do |scope|
-        run_studio(scope, [], keep_alive: true)
-        cl = @clients_name.map { |c| [c, run_client_installer(scope, c)] }
-        Timeout.timeout(@client_install_timeout) do
-          cl.each do |name, client|
-            @logger.info("Waiting for #{name} installation finished")
-            client.wait
+        vms = []
+
+        if studio
+          prepare_studio_drives
+
+          vms << [
+            'studio',
+            run_studio(scope, [
+                         @setup_studio_iso,
+                         @studio_iso_info['path']
+                       ], keep_alive: false, snapshot: false)
+          ]
+        end
+
+        if client
+          prepare_client_drives
+
+          @clients_name.each do |c|
+            vms << [c, run_client(scope, c, snapshot: false)]
           end
         end
+
+        wait_vms vms
+      end
+    end
+
+    def run_second(client:)
+      return unless client
+
+      ResourceScope.open do |scope|
+        run_studio(scope, [], keep_alive: true)
+
+        cl = @clients_name.map do |c|
+          [c, run_client(scope, c, snapshot: false, secure: false)]
+        end
+
+        wait_vms cl
       end
     end
 
@@ -321,7 +339,7 @@ module AutoHCK
       build_answer_file_path(file, disk_config)
     end
 
-    def prepare_studio_installer
+    def prepare_studio_drives
       product_key = @studio_iso_info.dig('studio', 'product_key')
 
       replacement_list = {
@@ -335,6 +353,8 @@ module AutoHCK
                   @hck_setup_scripts_path + "/#{file}", replacement_list)
       end
       create_iso(@setup_studio_iso, [@hck_setup_scripts_path])
+
+      @project.setup_manager.create_studio_image
     end
 
     def copy_drivers
@@ -345,7 +365,7 @@ module AutoHCK
                            remove_destination: true)
     end
 
-    def prepare_client_installer
+    def prepare_client_drives
       product_key = @client_iso_info.dig('client', 'product_key')
 
       replacement_list = {
@@ -362,36 +382,28 @@ module AutoHCK
       copy_drivers if @need_copy_drivers
 
       create_iso(@setup_client_iso, [@hck_setup_scripts_path], ['Kits'])
+
+      @clients_name.each { @project.setup_manager.create_client_image(_1) }
     end
 
     def tag
       "install-#{@project.options.install.platform}"
     end
 
-    def install_studio
-      if @project.setup_manager.check_studio_image_exist
-        if @project.options.install.force
-          @logger.info('HCKInstall: Studio image exist, force reinstall started')
+    def plan_studio
+      return true unless @project.setup_manager.check_studio_image_exist
 
-          prepare_studio_installer
-          run_studio_installer
-        else
-          @logger.info('HCKInstall: Studio image exist, installation skipped')
-        end
-      else
-        prepare_studio_installer
-        run_studio_installer
+      if @project.options.install.force
+        @logger.info('HCKInstall: Studio image exist, force reinstall started')
+        return true
       end
+
+      @logger.info('HCKInstall: Studio image exist, installation skipped')
+      false
     end
 
-    def install_clients
-      if @project.options.install.skip_client
-        @logger.info('HCKInstall: Client image installation skipped')
-        return
-      end
-
-      prepare_client_installer
-      run_clients_installer
+    def plan_client
+      !@project.options.install.skip_client
     end
 
     def run
@@ -399,8 +411,13 @@ module AutoHCK
 
       prepare_setup_scripts_config
 
-      install_studio
-      install_clients
+      studio = plan_studio
+      client = plan_client
+
+      Timeout.timeout(@install_timeout) do
+        run_first(studio:, client:)
+        run_second(client:)
+      end
     end
   end
 end
