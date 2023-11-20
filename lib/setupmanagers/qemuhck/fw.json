@@ -4,12 +4,10 @@
   },
   "uefi": {
     "disk_config": "uefi",
-    "binary": "/usr/share/OVMF/OVMF_CODE.fd",
-    "nvram": "/usr/share/OVMF/OVMF_VARS.fd"
-  },
-  "uefi_sb": {
-    "disk_config": "uefi",
-    "binary": "/usr/share/OVMF/OVMF_CODE.secboot.fd",
+    "binary": {
+      "secure": "/usr/share/OVMF/OVMF_CODE.secboot.fd",
+      "insecure": "/usr/share/OVMF/OVMF_CODE.fd"
+    },
     "nvram": "/usr/share/OVMF/OVMF_VARS.secboot.fd"
   }
 }
