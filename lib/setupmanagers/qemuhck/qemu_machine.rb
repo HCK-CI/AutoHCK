@@ -65,7 +65,6 @@ module AutoHCK
         @run_opts = run_opts
         @keep_alive = run_opts[:keep_alive]
         @delete_snapshot = run_opts[:create_snapshot]
-        @qmp = QMP.new(scope, @run_name, @logger)
         @machine.run_config_commands
         run_vm
         scope << self
@@ -75,8 +74,15 @@ module AutoHCK
         @delete_snapshot = false
       end
 
-      def run_qemu
+      def try_with_qmp
+        yield @qmp unless @qmp.nil?
+      rescue IOError
+        # @qmp is closed.
+      end
+
+      def run_qemu(scope)
         @logger.info("Starting #{@run_name}")
+        @qmp = QMP.new(scope, @run_name, @logger)
         cmd = replace_string_recursive(@machine.dirty_command.join(' '), @machine.full_replacement_list)
         cmd += " -chardev socket,id=qmp,fd=#{@qmp.socket.fileno},server=off -mon chardev=qmp,mode=control"
         qemu = CmdRun.new(@logger, cmd, { @qmp.socket.fileno => @qmp.socket.fileno })
@@ -90,10 +96,10 @@ module AutoHCK
         @qemu_thread = Thread.new do
           loop do
             qemu = nil
-            Thread.handle_interrupt(Object => :on_blocking) do
+            ResourceScope.open do |scope|
               @machine.run_pre_start_commands
 
-              qemu = run_qemu
+              qemu = run_qemu(scope)
               qemu.wait_no_fail
               qemu = nil
             ensure
@@ -115,7 +121,7 @@ module AutoHCK
 
       def soft_abort
         SOFT_ABORT_RETRIES.times do
-          @qmp.powerdown
+          try_with_qmp(&:powerdown)
 
           return true unless @qemu_thread.join(ABORT_SLEEP).nil?
 
@@ -125,7 +131,7 @@ module AutoHCK
       end
 
       def hard_abort
-        @qmp.quit
+        try_with_qmp(&:quit)
 
         return true unless @qemu_thread.join(ABORT_SLEEP).nil?
 
