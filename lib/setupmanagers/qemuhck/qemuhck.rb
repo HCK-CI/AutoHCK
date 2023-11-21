@@ -39,16 +39,20 @@ module AutoHCK
       @kit = @platform['kit']
     end
 
+    def studio_vm_options
+      {
+        'id' => @id.to_i,
+        'client_id' => 0,
+        'workspace_path' => @workspace_path,
+        'image_name' => @platform['st_image'],
+        'logger' => @logger,
+        'slirp' => @slirp,
+        'iso_path' => @project.config['iso_path']
+      }.merge(platform_options)
+    end
+
     def initialize_studio_vm
-      @studio_vm = QemuMachine.new({
-                                     'id' => @id.to_i,
-                                     'client_id' => 0,
-                                     'workspace_path' => @workspace_path,
-                                     'image_name' => @platform['st_image'],
-                                     'logger' => @logger,
-                                     'slirp' => @slirp,
-                                     'iso_path' => @project.config['iso_path']
-                                   })
+      @studio_vm = QemuMachine.new(studio_vm_options)
     end
 
     def drivers_options

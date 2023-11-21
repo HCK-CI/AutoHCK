@@ -2,7 +2,7 @@
   "name": "Win2022x64_uefi",
   "kit": "HLK2022",
   "fw_type": "uefi",
-  "st_image": "HLK2022.qcow2",
+  "st_image": "HLK2022-uefi.qcow2",
   "clients": {
     "c1": {
       "name": "CL1",

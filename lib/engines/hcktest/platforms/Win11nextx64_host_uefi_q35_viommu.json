@@ -7,7 +7,7 @@
   "viommu_state": true,
   "enlightenments_state": true,
   "cpu": "host",
-  "st_image": "HLK11_next.qcow2",
+  "st_image": "HLK11_next-uefi.qcow2",
   "clients": {
     "c1": {
       "name": "CL1",
