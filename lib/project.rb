@@ -9,7 +9,6 @@ require './lib/resultuploaders/result_uploader'
 require './lib/auxiliary/multi_logger'
 require './lib/auxiliary/diff_checker'
 require './lib/auxiliary/json_helper'
-require './lib/auxiliary/id_gen'
 require './lib/auxiliary/extra_software/manager'
 
 # AutoHCK module
@@ -32,7 +31,7 @@ module AutoHCK
       init_multilog(options.common.debug)
       init_class_variables
       init_workspace
-      @id = assign_id
+      @id = options.common.id
       scope << self
     end
 
@@ -117,23 +116,6 @@ module AutoHCK
       @engine_type = @config["#{@options.mode}_engine"]
     end
 
-    def assign_id
-      @id_gen = Idgen.new(@scope, @config['id_range'], @config['time_out'])
-      id = @id_gen.allocate
-      while id.negative?
-        @logger.info('No available ID')
-        sleep 20
-        id = @id_gen.allocate
-      end
-      @logger.info("Assigned ID: #{id}")
-      id.to_s
-    end
-
-    def release_id
-      @logger.info("Releasing ID: #{@id}")
-      @id_gen.release(@id)
-    end
-
     def configure_result_uploader
       @logger.info('Initializing result uploaders')
       @result_uploader = ResultUploader.new(@scope, self)
@@ -188,7 +170,6 @@ module AutoHCK
     def close
       @logger.debug('Closing AutoHCK project')
       @result_uploader&.upload_file(@logfile_path, 'AutoHCK.log')
-      release_id
     end
   end
 end

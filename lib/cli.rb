@@ -25,7 +25,7 @@ module AutoHCK
 
     # class CommonOptions
     class CommonOptions
-      attr_accessor :debug, :config, :client_world_net
+      attr_accessor :debug, :config, :client_world_net, :id
 
       def create_parser(sub_parser)
         OptionParser.new do |parser|
@@ -46,9 +46,11 @@ module AutoHCK
         @debug = false
         @config = nil
         @client_world_net = false
+        @id = 2
         debug_option(parser)
         config_option(parser)
         client_world_net_option(parser)
+        id_option(parser)
         version_option(parser)
       end
 
@@ -70,6 +72,13 @@ module AutoHCK
         parser.on('--client_world_net', TrueClass,
                   'Attach world bridge to clients VM') do |client_world_net|
           @client_world_net = client_world_net
+        end
+      end
+
+      def id_option(parser)
+        parser.on('--id <id>', Integer,
+                  'Set ID for AutoHCK run') do |id|
+          @id = id
         end
       end
 

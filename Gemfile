@@ -15,7 +15,6 @@ gem 'openssl', require: false
 gem 'rtoolsHCK', git: 'https://github.com/HCK-CI/rtoolsHCK.git', tag: 'v0.4.0'
 gem 'rubyzip'
 gem 'sentry-ruby'
-gem 'sqlite3'
 
 group :test do
   gem 'code-scanning-rubocop'
