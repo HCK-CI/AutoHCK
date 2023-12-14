@@ -271,28 +271,29 @@ module AutoHCK
       @config['platforms_defaults'][option]
     end
 
-    def apply_states
-      @states_config.each do |name, state|
-        state_value = option_config(name)
-        @logger.debug("Processing state #{name}, value #{state_value}")
-        next if state[state_value.to_s].nil?
+    def apply_state(name, state)
+      state_value = option_config(name)
+      @logger.debug("Processing state #{name}, value #{state_value}")
 
-        state[state_value.to_s].each do |key, value|
-          var = :"@#{key}"
-          @logger.debug("State key variable #{var}")
+      state[state_value.to_s]&.each do |key, value|
+        var = :"@#{key}"
+        @logger.debug("State key variable #{var}")
 
-          next unless defined? var
+        next unless defined? var
 
-          case (var_value = instance_variable_get var)
-          when Hash
-            var_value.merge! value
-          when Array
-            var_value << value
-          else
-            raise(QemuHCKError, "Variable #{var} has unsupported type")
-          end
+        case (var_value = instance_variable_get var)
+        when Hash
+          var_value.merge! value
+        when Array
+          var_value << value unless var_value.include? value
+        else
+          raise(QemuHCKError, "Variable #{var} has unsupported type")
         end
       end
+    end
+
+    def apply_states
+      @states_config.each { |name, state| apply_state name, state }
     end
 
     def init_config
