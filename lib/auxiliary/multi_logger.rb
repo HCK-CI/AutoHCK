@@ -36,7 +36,7 @@ module AutoHCK
         @loggers.each { |logger| logger.send(level.downcase, *args, &block) }
       end
 
-      define_method("#{level.downcase}?".to_sym) do
+      define_method(:"#{level.downcase}?") do
         @level <= Logger::Severity.const_get(level)
       end
     end
