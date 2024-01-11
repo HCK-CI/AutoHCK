@@ -357,7 +357,9 @@ module AutoHCK
       handle_finished_tests(new_done)
     end
 
-    def handle_test_running(running = nil)
+    def handle_test_running
+      running = nil
+
       until all_tests_finished?
         reset_clients_to_ready_state
         check_new_finished_tests
