@@ -34,7 +34,7 @@ module AutoHCK
           define_options(parser)
           parser.on_tail('-h', '--help', 'Show this message') do
             puts parser
-            sub_parser&.each do |_k, v|
+            sub_parser&.each_value do |v|
               puts v
             end
             exit

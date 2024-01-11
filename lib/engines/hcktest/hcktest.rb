@@ -151,7 +151,7 @@ module AutoHCK
 
     def run_clients(scope, run_opts = {})
       @clients = {}
-      @platform['clients'].each do |_name, client|
+      @platform['clients'].each_value do |client|
         @clients[client['name']] = @project.setup_manager.run_hck_client(scope, @studio, client['name'], run_opts)
 
         break if @project.options.test.svvp
