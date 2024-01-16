@@ -20,7 +20,7 @@ module AutoHCK
 
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :id,
                 :workspace_path, :github, :result_uploader,
-                :engine_type, :options, :extra_sw_manager
+                :engine_type, :options, :extra_sw_manager, :run_terminated
 
     CONFIG_JSON = 'config.json'
 
@@ -115,6 +115,7 @@ module AutoHCK
       @config = Json.read_json(CONFIG_JSON, @logger)
       @timestamp = create_timestamp
       @engine_type = @config["#{@options.mode}_engine"]
+      @run_terminated = false
     end
 
     def assign_id
@@ -169,6 +170,21 @@ module AutoHCK
 
       @github.create_status('pending', 'Tests session initiated')
       true
+    end
+
+    def check_run_termination
+      return if @github.nil?
+
+      pr = @github.find_pr
+
+      # PR is nil when it was force-pushed
+      # PR is closed when it was closed or merged
+      @run_terminated = pr.nil? || @github.pr_closed?(pr)
+
+      return unless @run_terminated
+
+      @logger.warn('Pull request changed, terminating CI')
+      @github.handle_cancel
     end
 
     def create_timestamp
