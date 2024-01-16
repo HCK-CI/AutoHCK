@@ -360,7 +360,8 @@ module AutoHCK
     def handle_test_running
       running = nil
 
-      until all_tests_finished?
+      until all_tests_finished? || @project.run_terminated
+        @project.check_run_termination
         reset_clients_to_ready_state
         check_new_finished_tests
         check_test_queued_time
@@ -422,6 +423,8 @@ module AutoHCK
         queue_test(test, wait: true)
         list_tests
         handle_test_running
+
+        break if @project.run_terminated
       end
     end
   end
