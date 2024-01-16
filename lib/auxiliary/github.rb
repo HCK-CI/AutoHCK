@@ -8,7 +8,6 @@ module AutoHCK
   class Github
     def initialize(config, logger, url, tag, commit)
       @api_connected = false
-      @pr_closed = nil
 
       @logger = logger
       @target_url = url
@@ -29,44 +28,24 @@ module AutoHCK
       nil
     end
 
-    def connected?
-      @api_connected
+    def connected? = @api_connected
+
+    def find_pr = _find_pr || _find_pr('closed')
+
+    def pr_closed?(pr_object = find_pr)
+      pr_object.state == 'closed'
     end
 
-    def pr_closed?
-      @pr_closed
-    end
-
-    def check_closed_pr
-      pr = @github.pulls(@repo, state: 'closed').find { |x| x['head']['sha'] == @commit }
-
-      return false if pr.nil?
-
-      @pr_closed = true
-      if pr.merged_at?
-        @logger.warn("PR ##{pr['number']}: #{pr['title']} - already merged. Skipping CI.")
+    def log_pr(pr_object = find_pr)
+      if pr_object.merged_at?
+        @logger.info("PR ##{pr_object['number']}: #{pr_object['title']} - already merged")
+      elsif pr_object.state == 'closed'
+        @logger.info("PR ##{pr_object['number']}: #{pr_object['title']} - closed")
       else
-        @logger.warn("PR ##{pr['number']}: #{pr['title']} - closed. Skipping CI.")
+        @logger.info("PR ##{pr_object['number']}: #{pr_object['title']}")
       end
 
-      true
-    end
-
-    def find_pr
-      pr = @github.pulls(@repo).find { |x| x['head']['sha'] == @commit }
-      if pr.nil?
-        unless check_closed_pr
-          @logger.warn('Pull request commit hash not valid, disconnecting github.')
-          @api_connected = false
-        end
-
-        return nil
-      end
-
-      @logger.info("PR ##{pr['number']}: #{pr['title']}")
-      @logger.info(pr['html_url'])
-
-      pr
+      @logger.info(pr_object['html_url'])
     end
 
     def create_status(state, description)
@@ -125,5 +104,8 @@ module AutoHCK
       description = 'An error occurred while running HCK-CI'
       create_status(state, description)
     end
+
+    def _find_pr(state = nil) = @github.pulls(@repo, state:).find { _1['head']['sha'] == @commit }
+    private :_find_pr
   end
 end

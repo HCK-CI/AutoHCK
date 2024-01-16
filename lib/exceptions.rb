@@ -11,8 +11,8 @@ module AutoHCK
   class AutoHCKInterrupt < Exception; end
   # rubocop:enable Lint/InheritException
 
-  # A custom GithubCommitInvalid error exception
-  class GithubCommitInvalid < AutoHCKError; end
+  # A custom GithubInitializationError error exception
+  class GithubInitializationError < AutoHCKError; end
 
   # A custom Could not open json file exception
   class OpenJsonError < StandardError; end
