@@ -151,12 +151,21 @@ module AutoHCK
       url = @result_uploader.html_url || @result_uploader.url
       @github = Github.new(@config, @logger, url, github_handling_context,
                            commit)
-      raise GithubCommitInvalid unless @github.connected?
+      raise GithubInitializationError unless @github.connected?
 
-      @github.find_pr
-      return false if @github.pr_closed?
+      pr = @github.find_pr
 
-      raise GithubCommitInvalid unless @github.connected?
+      if pr.nil?
+        @logger.warn('Pull request commit hash not valid, terminating CI')
+        # Do not raise an exception. If the commit is not valid
+        # it can be because PR was force-pushed. Just exit from
+        # CI with the corresponding message.
+        return false
+      end
+
+      @github.log_pr(pr)
+
+      return false if @github.pr_closed?(pr)
 
       @github.create_status('pending', 'Tests session initiated')
       true
