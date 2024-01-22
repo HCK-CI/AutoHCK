@@ -6,6 +6,9 @@ require 'octokit'
 module AutoHCK
   # github class
   class Github
+    GITHUB_API_RETRIES = 5
+    GITHUB_API_RETRY_SLEEP = 30
+
     def initialize(config, logger, url, tag, commit)
       @api_connected = false
 
@@ -49,13 +52,22 @@ module AutoHCK
     end
 
     def create_status(state, description)
+      retries ||= 0
+
       options = { 'context' => @context,
                   'description' => description,
                   'target_url' => @target_url }
       begin
         @github.create_status(@repo, @commit, state, options)
-      rescue Faraday::ConnectionFailed, Octokit::BadGateway
-        @logger.warn('Github server connection error')
+      rescue Faraday::ConnectionFailed, Faraday::TimeoutError,
+             Octokit::BadGateway, Octokit::InternalServerError => e
+        @logger.warn("Github server connection error: #{e.message}")
+        # we can continue even if can't get update PR status
+        return unless (retries += 1) < GITHUB_API_RETRIES
+
+        sleep GITHUB_API_RETRY_SLEEP
+        @logger.info('Trying again execute github.create_status')
+        retry
       end
       @logger.info('Github status updated')
     end
@@ -105,7 +117,21 @@ module AutoHCK
       create_status(state, description)
     end
 
-    def _find_pr(state = nil) = @github.pulls(@repo, state:).find { _1['head']['sha'] == @commit }
+    def _find_pr(state = nil)
+      retries ||= 0
+
+      @github.pulls(@repo, state:).find { _1['head']['sha'] == @commit }
+    rescue Faraday::ConnectionFailed, Faraday::TimeoutError,
+           Octokit::BadGateway, Octokit::InternalServerError => e
+      @logger.warn("Github server connection error: #{e.message}")
+      # we should fail if can't get updated PR information
+      raise unless (retries += 1) < GITHUB_API_RETRIES
+
+      sleep GITHUB_API_RETRY_SLEEP
+      @logger.info('Trying again execute github.pulls')
+      retry
+    end
+
     private :_find_pr
   end
 end
