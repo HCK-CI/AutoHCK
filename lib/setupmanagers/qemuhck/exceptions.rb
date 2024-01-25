@@ -6,4 +6,6 @@ require_relative '../exceptions'
 module AutoHCK
   # A custom QemuHCKError error exception
   class QemuHCKError < SetupManagerError; end
+
+  class QemuRunError < QemuHCKError; end
 end
