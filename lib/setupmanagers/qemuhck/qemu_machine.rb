@@ -89,6 +89,18 @@ module AutoHCK
         qemu
       end
 
+      def check_fails_too_quickly(status)
+        if status&.zero?
+          @first_fail_time = nil
+          false
+        elsif @first_fail_time.nil?
+          @first_fail_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+          false
+        else
+          Process.clock_gettime(Process::CLOCK_MONOTONIC) - @first_fail_time <= 10
+        end
+      end
+
       def run_vm
         @machine.dump_config
 
@@ -99,8 +111,10 @@ module AutoHCK
               @machine.run_pre_start_commands
 
               qemu = run_qemu(scope)
-              qemu.wait_no_fail
+              fails_quickly = check_fails_too_quickly(qemu.wait_no_fail.exitstatus)
               qemu = nil
+
+              raise QemuRunError, 'QEMU fails repeated too quickly' if fails_quickly
             ensure
               unless qemu.nil?
                 Process.kill 'KILL', qemu.pid
