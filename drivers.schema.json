@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "patternProperties": {
+    ".*": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "device": {
+          "type": "string"
+        },
+        "inf": {
+          "type": "string"
+        },
+        "sys": {
+          "type": "string"
+        },
+        "install_method": {
+          "type": "string",
+          "enum": [
+            "PNP",
+            "no-drv",
+            "custom"
+          ]
+        },
+        "install_cert": {
+          "type": "boolean"
+        },
+        "install_command": {
+          "type": "string"
+        },
+        "type": {
+          "type": "integer"
+        },
+        "support": {
+          "type": "boolean"
+        },
+        "enlightenments_state": {
+          "type": "boolean"
+        },
+        "pretestcommands": {
+          "type": "array",
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "desc": {
+                  "type": "string"
+                },
+                "run": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "desc",
+                "run"
+              ]
+            }
+          ]
+        },
+        "extra_software": {
+          "type": "array",
+          "items": [
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "reject_test_names": {
+          "type": "array",
+          "items": [
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "select_test_names": {
+          "type": "array",
+          "items": [
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "if": {
+        "properties": {
+          "install_method": {
+            "const": "custom"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "install_cert",
+          "install_command"
+        ]
+      },
+      "else": {
+        "not": {
+          "required": [
+            "install_cert",
+            "install_command"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "device",
+        "install_method",
+        "type"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
