@@ -52,10 +52,15 @@ GEM
     gyoku (1.4.0)
       builder (>= 2.1.2)
       rexml (~> 3.0)
+    hana (1.3.7)
     httpclient (2.8.3)
     i18n (1.14.1)
       concurrent-ruby (~> 1.0)
     json (2.7.1)
+    json_schemer (2.1.1)
+      hana (~> 1.3)
+      regexp_parser (~> 2.0)
+      simpleidn (~> 0.2)
     jwt (2.2.3)
     language_server-protocol (3.17.0.3)
     little-plugger (1.1.4)
@@ -133,11 +138,16 @@ GEM
     sentry-ruby-core (4.7.1)
       concurrent-ruby
       faraday
+    simpleidn (0.2.1)
+      unf (~> 0.1.4)
     sqlite3 (1.6.6)
       mini_portile2 (~> 2.8.0)
     stringio (3.0.8)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
+    unf (0.1.4)
+      unf_ext
+    unf_ext (0.0.9.1)
     unicode-display_width (2.5.0)
     winrm (2.3.4)
       builder (>= 2.1.2)
@@ -164,6 +174,7 @@ DEPENDENCIES
   dotenv
   dropbox_api
   filelock
+  json_schemer
   mono_logger
   octokit
   openssl
