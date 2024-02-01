@@ -19,6 +19,7 @@ gem 'sqlite3'
 
 group :test do
   gem 'code-scanning-rubocop'
+  gem 'json_schemer'
   gem 'rspec'
   gem 'rubocop'
 end
