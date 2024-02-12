@@ -1,0 +1,18 @@
+{
+  "name": "Intel(R) 82576 Gigabit Dual Port Network Connection",
+  "device": "igb",
+  "type": 0,
+  "install_method": "no-drv",
+  "support": true,
+  "pretestcommands": [
+    {
+      "desc": "Rename igb ethernet adapter to SupportDevice0",
+      "run": "Rename-NetAdapter -Name (Get-NetAdapter -InterfaceDescription 'Intel(R) 82576 Gigabit Dual Port Network Connection').Name -NewName 'SupportDevice0'"
+    }
+  ],
+  "reject_test_names": [
+    "NDISTest 6.5 - [2 Machine] - VMQReceiveQueueStateChecking",
+    "NDISTest 6.5 - [2 Machine] - VMQPowerManagement",
+    "Hardware-enforced Stack Protection Compatibility Test"
+  ]
+}

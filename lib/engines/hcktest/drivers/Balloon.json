@@ -1,0 +1,12 @@
+{
+  "name": "VirtIO Balloon Driver",
+  "device": "virtio-balloon-pci",
+  "inf": "balloon.inf",
+  "install_method": "PNP",
+  "type": 0,
+  "support": false,
+  "reject_test_names": [
+    "DF - Embedded Signature Verification Test (Certification)",
+    "Hardware-enforced Stack Protection Compatibility Test"
+  ]
+}

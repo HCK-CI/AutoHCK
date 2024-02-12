@@ -1,0 +1,22 @@
+{
+  "name": "Red Hat VirtIO Ethernet Adapter",
+  "device": "virtio-net-pci",
+  "inf": "netkvm.inf",
+  "install_method": "PNP",
+  "type": 0,
+  "support": true,
+  "pretestcommands": [
+    {
+      "desc": "Rename NetKVM ethernet adapter to SupportDevice0",
+      "run": "Rename-NetAdapter -Name (Get-NetAdapter -InterfaceDescription 'Red Hat VirtIO Ethernet Adapter').Name -NewName 'SupportDevice0'"
+    }
+  ],
+  "reject_test_names": [
+    "NDISTest 6.5 - [2 Machine] - MPE_Ethernet.xml",
+    "NDISTest 6.0 - [1 Machine] - 1c_Mini6RSSOids",
+    "PrivateCloudSimulator - Device.Network.LAN.10GbOrGreater",
+    "Run RSC Tests",
+    "DF - Embedded Signature Verification Test (Certification)",
+    "Hardware-enforced Stack Protection Compatibility Test"
+  ]
+}

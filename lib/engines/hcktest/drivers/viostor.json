@@ -1,0 +1,27 @@
+{
+  "name": "Red Hat VirtIO SCSI Disk Device",
+  "device": "virtio-blk-pci",
+  "inf": "viostor.inf",
+  "install_method": "PNP",
+  "type": 0,
+  "support": false,
+  "pretestcommands": [
+    {
+      "desc": "Set Disk Operational Status to Online",
+      "run": "Set-Disk -Number 1 -IsOffline $False"
+    },
+    {
+      "desc": "Make Disk Writable",
+      "run": "Set-Disk -Number 1 -IsReadonly $False"
+    }
+  ],
+  "reject_test_names": [
+    "Flush Test",
+    "DF - Embedded Signature Verification Test (Certification)",
+    "Thin Provisioning SCSI Compliance Test (LOGO)",
+    "Thin Provisioning Performance Test - RAW Disk (LOGO)",
+    "Thin Provisioning Performance Test - NTFS (LOGO)",
+    "Thin Provisioning Threshold and Resource Exhaustion Test (LOGO)",
+    "Hardware-enforced Stack Protection Compatibility Test"
+  ]
+}
