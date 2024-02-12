@@ -1,6 +1,7 @@
 {
   "name": "Win11nextx64_host_uefi_q35_viommu",
   "kit": "HLK11_next",
+  "setupmanager": "qemuhck",
   "fw_type": "uefi",
   "machine_type": "q35",
   "viommu_state": true,

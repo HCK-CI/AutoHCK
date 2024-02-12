@@ -1,6 +1,7 @@
 {
   "name": "Win10_1709x64",
   "kit": "HLK1709",
+  "setupmanager": "qemuhck",
   "st_image": "HLK1709.qcow2",
   "clients": {
     "c1": {

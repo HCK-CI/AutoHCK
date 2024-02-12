@@ -1,6 +1,7 @@
 {
   "name": "Win10_1903x64_q35",
   "kit": "HLK1903",
+  "setupmanager": "qemuhck",
   "machine_type": "q35",
   "st_image": "HLK1903.qcow2",
   "clients": {

@@ -1,6 +1,7 @@
 {
   "name": "Win2022x64_host_uefi_q35_viommu",
   "kit": "HLK2022",
+  "setupmanager": "qemuhck",
   "fw_type": "uefi",
   "machine_type": "q35",
   "viommu_state": true,

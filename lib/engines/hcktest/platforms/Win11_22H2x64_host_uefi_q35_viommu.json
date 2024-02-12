@@ -1,6 +1,7 @@
 {
   "name": "Win11_22H2x64_host_uefi_q35_viommu",
   "kit": "HLK11_22H2",
+  "setupmanager": "qemuhck",
   "fw_type": "uefi",
   "machine_type": "q35",
   "viommu_state": true,
