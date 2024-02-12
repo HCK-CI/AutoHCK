@@ -1,20 +1,21 @@
 require 'json'
-require 'json_schemer'
+require 'jtd'
 
 describe 'json_validation' do
   Dir['./**/*.json'].each do |json_file|
-    next if json_file.include? 'schema.json'
+    next if json_file.include? 'jtd.json'
+
 
     name = File.basename(json_file, '.json')
     dir = File.dirname(json_file)
     it json_file.to_s do
       json_schema_candidates = [
-        "#{dir}/#{name}.schema.json",
-        "#{dir}/schema.json",
+        "#{dir}/#{name}.jtd.json",
+        "#{dir}/jtd.json",
       ]
 
       json_schemas = json_schema_candidates.filter_map do |f|
-        File.read(f)
+        JSON.load_file(f)
       rescue Errno::ENOENT
       end
 
@@ -24,9 +25,11 @@ describe 'json_validation' do
       end
 
       json_data = JSON.load_file(json_file)
+      schema = JTD::Schema.from_hash(json_schemas.first)
+      schema.verify()
 
-      result = JSONSchemer.schema(json_schemas.first).validate(json_data)
-      expect(result).to contain_exactly()
+      result = JTD::validate(schema, json_data)
+      expect(result).to eq([])
     end
   end
 end
