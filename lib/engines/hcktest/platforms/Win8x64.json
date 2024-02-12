@@ -1,6 +1,7 @@
 {
   "name": "Win8x64",
   "kit": "HCK",
+  "setupmanager": "qemuhck",
   "st_image": "HCK.qcow2",
   "clients": {
     "c1": {

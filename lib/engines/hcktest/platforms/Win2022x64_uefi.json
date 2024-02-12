@@ -1,6 +1,7 @@
 {
   "name": "Win2022x64_uefi",
   "kit": "HLK2022",
+  "setupmanager": "qemuhck",
   "fw_type": "uefi",
   "machine_type": "q35",
   "st_image": "HLK2022-uefi.qcow2",

@@ -1,6 +1,7 @@
 {
   "name": "Win10_1803x64",
   "kit": "HLK1803",
+  "setupmanager": "qemuhck",
   "st_image": "HLK1803.qcow2",
   "clients": {
     "c1": {

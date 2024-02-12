@@ -1,6 +1,7 @@
 {
   "name": "PhyWin2016",
   "kit": "HLK1607",
+  "setupmanager": "physhck",
   "clients": {
     "c1": {
       "name": "C1",
