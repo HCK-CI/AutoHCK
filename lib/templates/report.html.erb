@@ -61,7 +61,7 @@
                                 <%= test['name'] %>
                                 <% unless test['url'].nil? %></a><% end %>
                             </td>
-                            <td><%= test['estimatedruntime'] %></td>
+                            <td><%= days_to_hours(test['estimatedruntime'])%></td>
                             <td><%= test['status'] %></td>
                         </tr>
                     <% end %>
@@ -74,7 +74,7 @@
                                 <%= test['name'] %>
                                 <% unless test['url'].nil? %></a><% end %>
                             </td>
-                            <td><%= test['estimatedruntime'] %></td>
+                            <td><%= days_to_hours(test['estimatedruntime']) %></td>
                             <td>Skipped</td>
                         </tr>
                     <% end %>

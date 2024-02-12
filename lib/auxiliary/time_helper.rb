@@ -16,5 +16,12 @@ module AutoHCK
     def time_diff(start, finish)
       ((finish - start) * 24 * 60 * 60).to_i
     end
+
+    def days_to_hours(time_str)
+      days, time = time_str.split('.')
+      hours, minutes, seconds = time.split(':').map(&:to_i)
+      total_hours = days.to_i * 24 + hours
+      "#{format('%02d', total_hours)}:#{format('%02d', minutes)}:#{format('%02d', seconds)}"
+    end
   end
 end
