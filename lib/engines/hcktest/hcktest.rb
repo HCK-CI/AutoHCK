@@ -16,7 +16,7 @@ module AutoHCK
 
     PLATFORMS_JSON_DIR = 'lib/engines/hcktest/platforms'
     CONFIG_JSON = 'lib/engines/hcktest/hcktest.json'
-    DRIVERS_JSON = 'drivers.json'
+    DRIVERS_JSON_DIR = 'lib/engines/hcktest/drivers'
     SVVP_JSON = 'svvp.json'
     ENGINE_MODE = 'test'
 
@@ -96,20 +96,23 @@ module AutoHCK
       driver_names
     end
 
+    def read_driver(driver)
+      driver_json = "#{DRIVERS_JSON_DIR}/#{driver}.json"
+
+      @logger.info("Loading driver: #{driver}")
+      Json.read_json(driver_json, @logger)
+    rescue Errno::ENOENT
+      @logger.fatal("#{driver} does not exist")
+      raise(InvalidConfigFile, "#{driver} does not exist")
+    end
+
     def find_drivers
-      drivers_info = Json.read_json(DRIVERS_JSON, @project.logger)
-
       driver_names.map do |short_name|
-        @project.logger.info("Loading driver: #{short_name}")
-        driver = drivers_info[short_name]
+        driver = read_driver(short_name)
 
-        if driver
-          driver['short'] = short_name
-          driver
-        else
-          @project.logger.fatal("#{short_name} does not exist")
-          raise(InvalidConfigFile, "#{short_name} does not exist")
-        end
+        driver['short'] = short_name
+
+        driver
       end
     end
 

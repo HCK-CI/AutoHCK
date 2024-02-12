@@ -1,0 +1,14 @@
+{
+  "name": "OpenVPN Data Channel Offload",
+  "device": "e1000e",
+  "inf": "ovpn-dco.inf",
+  "install_method": "custom",
+  "install_cert": true,
+  "install_command": "@driver_dir@/devcon.exe install @inf_path@ ovpn-dco",
+  "type": 0,
+  "support": false,
+  "reject_test_names": [
+    "Static Tools Logo Test",
+    "Hardware-enforced Stack Protection Compatibility Test"
+  ]
+}

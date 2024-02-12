@@ -1,0 +1,26 @@
+{
+  "name": "TAP-Windows Adapter V9",
+  "device": "e1000e",
+  "inf": "OemVista.inf",
+  "sys": "tap0901.sys",
+  "install_cert": true,
+  "install_method": "custom",
+  "install_command": "@driver_dir@/tapinstall.exe install @inf_path@ tap0901",
+  "extra_software": [
+    "openvpn-srv"
+  ],
+  "type": 0,
+  "support": true,
+  "pretestcommands": [
+    {
+      "desc": "Rename TAP-Windows ethernet adapter to SupportDevice0",
+      "run": "Rename-NetAdapter -Name (Get-NetAdapter -InterfaceDescription 'TAP-Windows Adapter V9').Name -NewName 'SupportDevice0'"
+    }
+  ],
+  "reject_test_names": [
+    "NDISTest 6.0 - [2 Machine] - 2c_Priority",
+    "NDISTest 6.0 - [2 Machine] - 2c_Mini6Stress",
+    "Static Tools Logo Test",
+    "DF - Reinstall with IO Before and After (Reliability)"
+  ]
+}

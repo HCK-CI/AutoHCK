@@ -1,0 +1,17 @@
+{
+  "name": "Red Hat VirtIO GPU DOD controller",
+  "device": "virtio-vga",
+  "inf": "viogpudo.inf",
+  "install_method": "PNP",
+  "type": 0,
+  "support": false,
+  "enlightenments_state": true,
+  "reject_test_names": [
+    "DF - Embedded Signature Verification Test (Certification)",
+    "Test for EDID Requirements (Manual)",
+    "Multimon minimum resolution check - Multihead",
+    "WDDM HPD Notification Test (Manual)",
+    "Check Resolution for Dualview (WoW64) - multihead",
+    "Hardware-enforced Stack Protection Compatibility Test"
+  ]
+}

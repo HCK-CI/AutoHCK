@@ -1,0 +1,7 @@
+{
+  "name": "Trusted Platform Module 2.0",
+  "device": "tpm-tis",
+  "type": 0,
+  "install_method": "no-drv",
+  "support": false
+}
