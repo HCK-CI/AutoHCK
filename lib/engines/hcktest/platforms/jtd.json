@@ -1,0 +1,59 @@
+{
+  "discriminator": "setupmanager",
+  "mapping": {
+    "physhck": {
+      "properties": {
+        "name": { "type": "string" },
+        "kit": { "type": "string" },
+        "clients": {
+          "properties": {
+            "c1": { "ref": "physhck_client" }
+          },
+          "optionalProperties": {
+            "c2": { "ref": "physhck_client" }
+          }
+        }
+      }
+    },
+    "qemuhck": {
+      "properties": {
+        "name": { "type": "string" },
+        "kit": { "type": "string" },
+        "st_image": { "type": "string" },
+        "clients": {
+          "properties": {
+            "c1": { "ref": "qemuhck_client" }
+          },
+          "optionalProperties": {
+            "c2": { "ref": "qemuhck_client" }
+          }
+        }
+      },
+      "optionalProperties": {
+        "cpu": { "type": "string" },
+        "machine_type": { "enum": [ "q35", "pc" ] },
+        "fw_type": { "enum": [ "uefi", "bios" ] },
+        "viommu_state": { "type": "boolean" },
+        "enlightenments_state": { "type": "boolean" },
+        "device_extra": { "type": "string" }
+      }
+    }
+  },
+  "definitions": {
+    "physhck_client": {
+      "properties": {
+        "name": { "type": "string" },
+        "winrm_port": { "type": "string" }
+      }
+    },
+    "qemuhck_client": {
+      "properties": {
+        "name": { "type": "string" },
+        "cpus": { "type": "string" },
+        "memory": { "type": "string" },
+        "winrm_port": { "type": "string" },
+        "image": { "type": "string" }
+      }
+    }
+  }
+}
