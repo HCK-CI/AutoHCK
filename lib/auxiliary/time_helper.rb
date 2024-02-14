@@ -4,9 +4,17 @@
 module AutoHCK
   # Helper module
   module Helper
-    def time_to_seconds(time)
-      time.split(':').reverse.map.with_index { |a, i| a.to_i * (60**i) }
-          .reduce(:+)
+    def time_to_seconds(time_string)
+      match = time_string.match(/^(?:(\d+)\.)?(?:(\d+):)?(\d+)(?::(\d+(?:\.\d+)?))?$/)
+
+      return 0 unless match
+
+      days = match[1].to_i
+      hours = match[2].to_i
+      minutes = match[3].to_i
+      seconds = match[4].to_f
+
+      (((((days * 24) + hours) * 60) + minutes) * 60) + seconds
     end
 
     def seconds_to_time(sec)
