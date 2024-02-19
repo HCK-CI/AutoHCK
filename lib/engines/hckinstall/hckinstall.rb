@@ -160,7 +160,7 @@ module AutoHCK
     end
 
     def find_drivers
-      driver_names.map do |short_name|
+      @project.options.install.drivers.map do |short_name|
         driver = read_driver(short_name)
 
         driver['short'] = short_name
