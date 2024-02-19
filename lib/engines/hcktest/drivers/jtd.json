@@ -19,6 +19,8 @@
     "sys": { "type": "string" },
     "install_cert": { "type": "boolean" },
     "install_command": { "type": "string" },
+    "s3_state": { "type": "boolean" },
+    "s4_state": { "type": "boolean" },
     "enlightenments_state": { "type": "boolean" },
     "pretestcommands": { "elements": { "ref": "command_info" } },
     "extra_software": { "elements": { "type": "string" } },
