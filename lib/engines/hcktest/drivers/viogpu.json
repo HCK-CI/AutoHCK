@@ -6,6 +6,8 @@
   "type": 0,
   "support": false,
   "enlightenments_state": true,
+  "s3_state": false,
+  "s4_state": false,
   "reject_test_names": [
     "DF - Embedded Signature Verification Test (Certification)",
     "Test for EDID Requirements (Manual)",
