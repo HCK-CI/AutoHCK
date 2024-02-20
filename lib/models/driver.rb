@@ -31,6 +31,7 @@ module AutoHCK
       const :s3_state, T.nilable(T::Boolean)
       const :s4_state, T.nilable(T::Boolean)
       const :enlightenments_state, T.nilable(T::Boolean)
+      const :pluggable_memory_gb, T.nilable(Integer)
 
       const :pretestcommands, T.nilable(T::Array[CommandInfo])
       const :extra_software, T.nilable(T::Array[String])

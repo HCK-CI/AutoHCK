@@ -224,6 +224,7 @@ module AutoHCK
       @drive_cache_options = []
       @define_variables = {}
       @run_opts = {}
+      @pluggable_memory_gb = 0
       @configured = false
     end
 
@@ -341,6 +342,16 @@ module AutoHCK
       }
     end
 
+    def memory_replacement_list
+      memory_gb = option_config('memory_gb')
+
+      {
+        '@memory@' => "#{memory_gb}G",
+        '@pluggable_memory@' => "#{@pluggable_memory_gb}G",
+        '@max_memory@' => "#{memory_gb + @pluggable_memory_gb}G"
+      }
+    end
+
     def options_replacement_list
       {
         '@machine_extra_param@' => @machine_extra_param.join,
@@ -358,7 +369,6 @@ module AutoHCK
         '@run_id_second@' => @id_second,
         '@client_id@' => @client_id,
         '@workspace@' => @workspace_path,
-        '@memory@' => "#{option_config('memory_gb')}G",
         '@cpu@' => option_config('cpu'),
         '@cpu_count@' => option_config('cpu_count'),
         '@cpu_model@' => option_config('cpu_model'),
@@ -367,6 +377,7 @@ module AutoHCK
         '@qemu_monitor_port@' => @monitor_port
       }.merge(config_replacement_list)
         .merge(machine_replacement_list)
+        .merge(memory_replacement_list)
         .merge(options_replacement_list)
         .merge(@define_variables)
     end
@@ -402,6 +413,8 @@ module AutoHCK
           var_value.merge! value
         when Array
           var_value << value
+        when Integer, String
+          instance_variable_set var, value
         else
           raise(QemuHCKError, "Variable #{var} has unsupported type")
         end
@@ -486,7 +499,7 @@ module AutoHCK
     def base_cmd
       [
         '@qemu_bin@ -enable-kvm -machine @machine_name@@machine_extra_param@ ',
-        '-m @memory@ -smp @cpu_count@,cores=@cpu_count@ ',
+        '-m @memory@,maxmem=@max_memory@ -smp @cpu_count@,cores=@cpu_count@ ',
         '-cpu @cpu_options@ -boot order=cd,menu=on ',
         '-nodefaults -no-user-config -usb -device usb-tablet -vnc :@vnc_id@ ',
         '-global kvm-pit.lost_tick_policy=discard -rtc base=localtime,clock=host,driftfix=slew ',
@@ -537,6 +550,7 @@ module AutoHCK
         '   VM VCPU .................... @cpu@',
         '   VM VCPUs ................... @cpu_count@',
         '   VM Memory .................. @memory@',
+        '   VM pluggable memory ........ @pluggable_memory@',
         '   VM display port ............ Vnc @vnc_id@/@vnc_port@',
         '   VM monitor port ............ Telnet @qemu_monitor_port@'
       ]
