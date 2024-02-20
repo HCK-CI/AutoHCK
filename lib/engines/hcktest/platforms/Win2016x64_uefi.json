@@ -9,14 +9,14 @@
     "c1": {
       "name": "CL1",
       "cpus": "4",
-      "memory": "2G",
+      "memory_gb": 2,
       "winrm_port": "4002",
       "image": "HLK1607-C1-Win2016x64-uefi.qcow2"
     },
     "c2": {
       "name": "CL2",
       "cpus": "4",
-      "memory": "2G",
+      "memory_gb": 2,
       "winrm_port": "4003",
       "image": "HLK1607-C2-Win2016x64-uefi.qcow2"
     }
