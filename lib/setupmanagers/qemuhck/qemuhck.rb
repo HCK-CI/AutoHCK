@@ -98,7 +98,7 @@ module AutoHCK
           'client_id' => i + 1,
           'image_name' => v['image'],
           'cpu_count' => v['cpus'],
-          'memory' => v['memory']
+          'memory_gb' => v['memory_gb']
         }.merge(client_vm_common_options))
         @clients_vm[v['name']] = QemuMachine.new(vm_options)
       end

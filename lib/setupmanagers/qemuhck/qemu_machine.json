@@ -14,7 +14,7 @@
   "platforms_defaults": {
     "cpu": "qemu64",
     "cpu_count": 2,
-    "memory": "4G",
+    "memory_gb": 4,
     "cpu_model": 13,
     "world_net_device": "e1000e",
     "ctrl_net_device": "e1000e",

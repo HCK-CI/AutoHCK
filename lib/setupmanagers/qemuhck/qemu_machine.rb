@@ -357,7 +357,7 @@ module AutoHCK
         '@run_id_second@' => @id_second,
         '@client_id@' => @client_id,
         '@workspace@' => @workspace_path,
-        '@memory@' => option_config('memory'),
+        '@memory@' => "#{option_config('memory_gb')}G",
         '@cpu@' => option_config('cpu'),
         '@cpu_count@' => option_config('cpu_count'),
         '@cpu_model@' => option_config('cpu_model'),

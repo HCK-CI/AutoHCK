@@ -50,7 +50,7 @@
       "properties": {
         "name": { "type": "string" },
         "cpus": { "type": "string" },
-        "memory": { "type": "string" },
+        "memory_gb": { "type": "uint16" },
         "winrm_port": { "type": "string" },
         "image": { "type": "string" }
       }
