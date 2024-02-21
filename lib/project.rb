@@ -11,6 +11,7 @@ require './lib/auxiliary/diff_checker'
 require './lib/auxiliary/json_helper'
 require './lib/auxiliary/id_gen'
 require './lib/auxiliary/extra_software/manager'
+require './lib/auxiliary/time_helper'
 
 # AutoHCK module
 module AutoHCK
@@ -113,7 +114,7 @@ module AutoHCK
 
     def init_class_variables
       @config = Json.read_json(CONFIG_JSON, @logger)
-      @timestamp = create_timestamp
+      @timestamp = current_timestamp
       @engine_type = @config["#{@options.mode}_engine"]
       @run_terminated = false
     end
@@ -185,10 +186,6 @@ module AutoHCK
 
       @logger.warn('Pull request changed, terminating CI')
       @github.handle_cancel
-    end
-
-    def create_timestamp
-      Time.now.strftime('%Y_%m_%d_%H_%M_%S')
     end
 
     def init_workspace
