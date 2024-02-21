@@ -24,5 +24,9 @@ module AutoHCK
     def time_diff(start, finish)
       ((finish - start) * 24 * 60 * 60).to_i
     end
+
+    def current_timestamp
+      Time.now.strftime('%Y_%m_%d_%H_%M_%S')
+    end
   end
 end

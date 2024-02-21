@@ -289,7 +289,7 @@ module AutoHCK
       status_count('InQueue').zero? && current_test.nil?
     end
 
-    def collect_memory_dump(machine, l_tmp_path)
+    def download_memory_dump(machine, l_tmp_path)
       exist = @tools.exists_on_machine?(machine, '${env:SystemRoot}/Minidump')
       @logger.debug("Checking Minidump exist on #{machine}: #{exist}")
       return false unless exist
@@ -301,16 +301,23 @@ module AutoHCK
       true
     end
 
+    def download_memory_dumps(l_tmp_path)
+      downloaded_client = download_memory_dump(@client.name, "#{l_tmp_path}/#{@client.name}_#{current_timestamp}")
+      unless @support.nil?
+        downloaded_support = download_memory_dump(@support.name,
+                                                  "#{l_tmp_path}/#{@support.name}_#{current_timestamp}")
+      end
+
+      downloaded_client || downloaded_support
+    end
+
     def collect_memory_dumps(test)
       id = test['id']
 
       l_zip_path = "#{@project.workspace_path}/memory_dump_#{id}.zip"
       l_tmp_path = "#{@project.workspace_path}/tmp_#{id}"
 
-      collected_client = collect_memory_dump(@client.name, "#{l_tmp_path}/#{@client.name}")
-      collected_support = collect_memory_dump(@support.name, "#{l_tmp_path}/#{@support.name}") unless @support.nil?
-
-      if collected_client || collected_support
+      if download_memory_dumps(l_tmp_path)
         create_zip_from_directory(l_zip_path, l_tmp_path)
         @tests_extra[id]['dump'] = l_zip_path
       end
