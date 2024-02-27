@@ -231,7 +231,7 @@ module AutoHCK
       ResourceScope.open do |scope|
         run_and_configure_setup scope
         client = @client1
-        client.run_tests
+        client.run_tests(@config['tests_config'])
         client.create_package
       end
     end

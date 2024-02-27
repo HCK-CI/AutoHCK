@@ -14,10 +14,11 @@ module AutoHCK
     # Client cooldown sleep after thread is joined in seconds
     CLIENT_COOLDOWN_SLEEP = 60
 
-    attr_reader :name, :kit
+    attr_reader :name, :kit, :global_scope, :setup_manager, :run_opts
     attr_writer :support
 
     def initialize(setup_manager, scope, studio, name, run_opts)
+      @setup_manager = setup_manager
       @project = setup_manager.project
       @logger = @project.logger
       @studio = studio
@@ -27,6 +28,8 @@ module AutoHCK
       @logger.info("Starting client #{name}")
       @runner = setup_manager.run_client(scope, @name, run_opts)
       scope << self
+      @global_scope = scope
+      @run_opts = run_opts
     end
 
     def keep_snapshot
@@ -37,10 +40,10 @@ module AutoHCK
       @target = Targets.new(self, @project, @tools, @pool).add_target_to_project
     end
 
-    def run_tests
+    def run_tests(config)
       @tests = Tests.new(self, @support, @project, @target, @tools)
       @tests.list_tests(log: true)
-      @tests.run
+      @tests.run(config)
     end
 
     def create_package

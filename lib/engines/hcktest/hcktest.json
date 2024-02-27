@@ -1,4 +1,14 @@
 {
     "playlists_path": "./playlists",
-    "filters_path": "./filters/UpdateFilters.sql"
+    "filters_path": "./filters/UpdateFilters.sql",
+    "tests_config": [
+      {
+        "tests": [
+          "Secure Boot Test - Customized Deployment Basic Test",
+          "Secure Boot Manual Logo Test",
+          "Secure Boot Logo Test"
+        ],
+        "secure":true
+      }
+    ]
 }

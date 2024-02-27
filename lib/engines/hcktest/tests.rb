@@ -24,6 +24,9 @@ module AutoHCK
     RESULTS_FILE = 'results.html'
     RESULTS_YAML = 'results.yaml'
     RESULTS_REPORT_SECTIONS = %w[chart guest_info rejected_test url].freeze
+    CONFIG_KEY_TO_MAP = {
+      'secure' => :requires_secure_boot
+    }.freeze
 
     def initialize(client, support, project, target, tools)
       @client = client
@@ -37,6 +40,7 @@ module AutoHCK
       @tests_extra = {}
 
       @results_template = ERB.new(File.read('lib/templates/report.html.erb'))
+      @default_run_opts = client.run_opts
     end
 
     def list_tests(log: false)
@@ -416,7 +420,65 @@ module AutoHCK
       build_system_info(support_sysinfo)
     end
 
-    def run
+    def add_normal_class_tests(test_list, classified_tests)
+      test_list.each do |test|
+        classified_tests[:normal] << test unless classified_tests.values.flatten.include?(test)
+      end
+      classified_tests
+    end
+
+    def classified_tests(all_tests)
+      classified_tests = {
+        requires_secure_boot: [],
+        normal: []
+      }
+
+      @tests_config.each do |config|
+        config.each do |key, value|
+          if key == 'tests'
+            selected_tests = all_tests.select { |test| value.include?(test['name']) }
+            classified_tests[CONFIG_KEY_TO_MAP[config.keys.last]].concat(selected_tests)
+          end
+        end
+      end
+
+      add_normal_class_tests(all_tests, classified_tests)
+    end
+
+    def secure_boot_handler
+      return if @client.run_opts[:secure]
+
+      @logger.info('Test environment reboot required for secure state. Rebooting...')
+      @client.setup_manager.stop_client(@client.name)
+      new_run_opts = @client.run_opts.merge!(secure: true)
+      @client.setup_manager.run_client(@client.global_scope, @client.name, new_run_opts)
+    end
+
+    def normal_state
+      true if @client.run_opts == @default_run_opts
+      true if @client.run_opts == @default_run_opts.merge(secure: false)
+    end
+
+    def normal_state_handler
+      return if normal_state
+
+      @logger.info('Test environment reboot required for normal state. Rebooting...')
+      @client.setup_manager.stop_client(@client.name)
+      new_run_opts = @client.run_opts.merge!(secure: false)
+      @client.setup_manager.run_client(@client.global_scope, @client.name, new_run_opts)
+    end
+
+    def prepare_test_environment(type)
+      case type
+      when :requires_secure_boot
+        secure_boot_handler
+      when :normal
+        normal_state_handler
+      end
+    end
+
+    def run(config = nil)
+      @tests_config = config
       @total = @tests.count
 
       load_clients_system_info
@@ -424,14 +486,17 @@ module AutoHCK
 
       @last_done = []
 
-      tests = @tests
-      tests.each do |test|
-        @logger.info("Adding to queue: #{test['name']} (#{test['id']}) [#{test['estimatedruntime']}]")
-        queue_test(test, wait: true)
-        list_tests
-        handle_test_running
+      classified_tests(@tests).each do |type, tests|
+        prepare_test_environment type
 
-        break if @project.run_terminated
+        tests.each do |test|
+          @logger.info("Adding to queue: #{test['name']} (#{test['id']}) [#{test['estimatedruntime']}]")
+          queue_test(test, wait: true)
+          list_tests
+          handle_test_running
+
+          break if @project.run_terminated
+        end
       end
     end
   end

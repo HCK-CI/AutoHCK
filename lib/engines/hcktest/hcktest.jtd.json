@@ -1,6 +1,18 @@
 {
   "properties": {
     "playlists_path": { "type": "string" },
-    "filters_path": { "type": "string" }
+    "filters_path": { "type": "string" },
+    "tests_config": {
+      "elements": {
+        "properties": {
+          "tests": {
+            "elements": { "type": "string" }
+          }
+        },
+        "optionalProperties": {
+          "secure": { "type": "boolean" }
+        }
+      }
+    }
   }
 }

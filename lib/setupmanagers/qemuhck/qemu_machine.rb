@@ -655,6 +655,10 @@ module AutoHCK
       create_run_script(file_name, content.join)
     end
 
+    def stop
+      @runner.vm_abort
+    end
+
     def run(scope, run_opts = nil)
       @run_opts = validate_run_opts(run_opts.to_h)
       @keep_alive = run_opts[:keep_alive]
@@ -676,7 +680,7 @@ module AutoHCK
         scope.transaction do |tmp_scope|
           hostfwd = Hostfwd.new(@options['slirp'], [@monitor_port, @vnc_port])
           tmp_scope << hostfwd
-          Runner.new(tmp_scope, @logger, self, @run_name, @run_opts)
+          @runner = Runner.new(tmp_scope, @logger, self, @run_name, @run_opts)
         end
       end
     end
