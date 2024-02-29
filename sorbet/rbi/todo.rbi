@@ -11,4 +11,3 @@ module ActiveSupport::Multibyte::Chars; end
 module ActiveSupport::SafeBuffer; end
 module ActiveSupport::StringInquirer; end
 module ActiveSupport::TimeZone; end
-module AutoHCK::HCKTest::AUTOHCK_RETRIES; end
