@@ -108,7 +108,7 @@ module AutoHCK
         inf = driver['inf']
 
         @logger.info("Installing #{method} driver #{inf} in #{@name}")
-        @tools.install_machine_driver_package(@name, path, method, inf,
+        @tools.install_machine_driver_package(@name, method, path, inf,
                                               custom_cmd: driver['install_command'],
                                               sys_file: driver['sys'],
                                               force_install_cert: driver['install_cert'])
