@@ -35,7 +35,7 @@ module AutoHCK
       @drivers = project.engine.drivers
       @platform = project.engine.platform
 
-      @devices = @drivers&.map { |driver| driver['device'] }
+      @devices = @drivers&.map(&:device)
       @kit = @platform['kit']
     end
 
@@ -59,7 +59,10 @@ module AutoHCK
       options = {}
       @drivers&.each do |driver|
         OPT_NAMES.each do |name|
-          options[name] = driver[name] unless driver[name].nil?
+          # We should check that driver has the requested option.
+          # OPT_NAMES contains options from driver, platform, etc.
+          # So, it is normal that drivers do not have all the options.
+          options[name] = driver.send(name) if driver.respond_to?(name) && !driver.send(name).nil?
         end
       end
       options

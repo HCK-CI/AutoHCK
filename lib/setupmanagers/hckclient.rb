@@ -85,9 +85,9 @@ module AutoHCK
 
     def run_pre_test_commands
       @project.engine.drivers&.each do |driver|
-        driver['pretestcommands']&.each do |command|
-          desc = command['desc']
-          cmd = command['run']
+        driver.pretestcommands&.each do |command|
+          desc = command.desc
+          cmd = command.run
 
           @logger.info("Running command (#{desc}) on client #{@name}")
           @tools.run_on_machine(@name, desc, cmd)
@@ -99,19 +99,19 @@ module AutoHCK
       path = @project.options.test.driver_path
 
       @project.engine.drivers&.each do |driver|
-        method = driver['install_method']
-        if method == 'no-drv'
-          @project.logger.info("Driver installation skipped for #{driver['name']} in #{@name}")
+        method = driver.install_method
+        if method == AutoHCK::Models::DriverInstallMethods::NoDrviver
+          @project.logger.info("Driver installation skipped for #{driver.name} in #{@name}")
           next
         end
 
-        inf = driver['inf']
+        inf = driver.inf
 
         @logger.info("Installing #{method} driver #{inf} in #{@name}")
         @tools.install_machine_driver_package(@name, method, path, inf,
-                                              custom_cmd: driver['install_command'],
-                                              sys_file: driver['sys'],
-                                              force_install_cert: driver['install_cert'])
+                                              custom_cmd: driver.install_command,
+                                              sys_file: driver.sys,
+                                              force_install_cert: driver.install_cert)
       end
     end
 
