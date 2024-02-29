@@ -20,8 +20,6 @@ begin
 
     ENV.store 'LC_ALL', 'en_US.UTF-8'
 
-    AUTOHCK_RETRIES = 5
-
     Trap.init_traps(%w[TERM INT])
 
     Thread.abort_on_exception = true

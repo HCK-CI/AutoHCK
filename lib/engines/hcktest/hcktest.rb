@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 
 require './lib/setupmanagers/hckstudio'
@@ -19,6 +20,7 @@ module AutoHCK
     DRIVERS_JSON_DIR = 'lib/engines/hcktest/drivers'
     SVVP_JSON = 'svvp.json'
     ENGINE_MODE = 'test'
+    AUTOHCK_RETRIES = 5
 
     def initialize(project)
       @project = project
@@ -186,21 +188,22 @@ module AutoHCK
     end
 
     def run_and_configure_setup(scope)
-      retries ||= 0
+      retries = 0
+      begin
+        scope.transaction do |tmp_scope|
+          run_studio tmp_scope
+          sleep 5 until @studio.up?
+          run_clients tmp_scope, keep_alive: true
 
-      scope.transaction do |tmp_scope|
-        run_studio tmp_scope
-        sleep 5 until @studio.up?
-        run_clients tmp_scope, keep_alive: true
+          configure_setup_and_synchronize
+        end
+      rescue AutoHCKError => e
+        @project.logger.warn("Running and configuring setup failed: (#{e.class}) #{e.message}")
+        raise e unless (retries += 1) < AUTOHCK_RETRIES
 
-        configure_setup_and_synchronize
+        @project.logger.info('Trying again to run and configure setup')
+        retry
       end
-    rescue AutoHCKError => e
-      @project.logger.warn("Running and configuring setup failed: (#{e.class}) #{e.message}")
-      raise e unless (retries += 1) < AUTOHCK_RETRIES
-
-      @project.logger.info('Trying again to run and configure setup')
-      retry
     end
 
     def upload_driver_package
