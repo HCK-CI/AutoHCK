@@ -323,7 +323,7 @@ module AutoHCK
 
     def install_machine_driver_package(machine, method, driver_path, file, options = {})
       retries ||= 0
-      ret = act_with_tools { _1.install_machine_driver_package(machine, driver_path, method, file, options) }
+      ret = act_with_tools { _1.install_machine_driver_package(machine, method, driver_path, file, options) }
 
       return ret if ret
 
