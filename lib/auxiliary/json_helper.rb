@@ -1,10 +1,13 @@
+# typed: false
 # frozen_string_literal: true
 
 require 'active_support'
 require 'active_support/core_ext/hash/deep_merge'
 require 'json'
 require 'fileutils'
+require 'sorbet-runtime'
 require './lib/exceptions'
+require './lib/auxiliary/multi_logger'
 
 # AutoHCK module
 module AutoHCK
@@ -12,12 +15,17 @@ module AutoHCK
   module Helper
     # Json class
     class Json
+      extend T::Sig
+
       @json_override_file = 'override.json'
 
       def self.update_json_override(json_file)
         @json_override_file = json_file
       end
 
+      sig do
+        params(json_file: String, logger: T.nilable(T.any(MultiLogger, ::Logger))).returns(T::Hash[String, T.untyped])
+      end
       def self.read_json(json_file, logger = nil)
         data = JSON.parse(File.read(json_file))
 
