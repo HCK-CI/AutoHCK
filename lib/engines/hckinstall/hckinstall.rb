@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 
 require 'uri'
@@ -364,8 +365,7 @@ module AutoHCK
       @logger.info('HCKInstall: Copy all drivers')
       FileUtils.rm_rf("#{@hck_setup_scripts_path}/drivers")
       FileUtils.copy_entry(@project.options.install.driver_path,
-                           "#{@hck_setup_scripts_path}/drivers",
-                           remove_destination: true)
+                           "#{@hck_setup_scripts_path}/drivers")
     end
 
     def prepare_client_drives
