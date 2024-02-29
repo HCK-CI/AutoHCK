@@ -8,6 +8,8 @@ require './lib/auxiliary/json_helper'
 require './lib/auxiliary/resource_scope'
 require './lib/auxiliary/zip_helper'
 
+require './lib/models/driver'
+
 # AutoHCK module
 module AutoHCK
   # HCKTest class
@@ -37,10 +39,10 @@ module AutoHCK
 
     def prepare_extra_sw
       @drivers.each do |driver|
-        next if driver['extra_software'].nil?
+        next if driver.extra_software.nil?
 
         @project.extra_sw_manager.prepare_software_packages(
-          driver['extra_software'], @platform['kit'], ENGINE_MODE
+          driver.extra_software, @platform['kit'], ENGINE_MODE
         )
       end
 
@@ -65,15 +67,14 @@ module AutoHCK
     def validate_paths
       normalize_paths
       @drivers.each do |driver|
-        method = driver['install_method']
-        if method == 'no-drv'
-          @project.logger.info("Driver paths validation skipped for #{driver['name']}")
+        if driver.install_method == Models::DriverInstallMethods::NoDrviver
+          @project.logger.info("Driver paths validation skipped for #{driver.name}")
           next
         end
 
         paths = [
-          "#{@driver_path}/#{driver['inf']}",
-          "#{@driver_path}/#{driver['short']}/#{driver['inf']}"
+          "#{@driver_path}/#{driver.inf}",
+          "#{@driver_path}/#{driver.short}/#{driver.inf}"
         ]
         next if paths.any? { |p| File.exist?(p) }
 
@@ -102,7 +103,7 @@ module AutoHCK
       driver_json = "#{DRIVERS_JSON_DIR}/#{driver}.json"
 
       @logger.info("Loading driver: #{driver}")
-      Json.read_json(driver_json, @logger)
+      Models::Driver.from_json_file(driver_json, @logger)
     rescue Errno::ENOENT
       @logger.fatal("#{driver} does not exist")
       raise(InvalidConfigFile, "#{driver} does not exist")
@@ -112,7 +113,7 @@ module AutoHCK
       driver_names.map do |short_name|
         driver = read_driver(short_name)
 
-        driver['short'] = short_name
+        driver.short = short_name
 
         driver
       end
@@ -129,10 +130,10 @@ module AutoHCK
       else
         driver = drivers.first
         {
-          'name' => driver['name'],
-          'type' => driver['type'],
-          'select_test_names' => driver['select_test_names'],
-          'reject_test_names' => driver['reject_test_names']
+          'name' => driver.name,
+          'type' => driver.type,
+          'select_test_names' => driver.select_test_names,
+          'reject_test_names' => driver.reject_test_names
         }
       end
     end
@@ -160,7 +161,7 @@ module AutoHCK
         @clients[client['name']] = @project.setup_manager.run_hck_client(scope, @studio, client['name'], run_opts)
 
         break if @project.options.test.svvp
-        break unless @drivers.any? { |d| d['support'] }
+        break unless @drivers.any?(&:support)
       end
       return unless @clients.empty?
 

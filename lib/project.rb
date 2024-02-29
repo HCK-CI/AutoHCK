@@ -38,7 +38,7 @@ module AutoHCK
     end
 
     def diff_checker(drivers, diff, triggers)
-      diff_checker = DiffChecker.new(@logger, drivers.map { |d| d['short'] },
+      diff_checker = DiffChecker.new(@logger, drivers.map(&:short),
                                      @options.test.driver_path, diff, triggers)
       return true if diff_checker.trigger?
 

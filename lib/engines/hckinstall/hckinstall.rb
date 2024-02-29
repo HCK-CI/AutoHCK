@@ -11,6 +11,8 @@ require './lib/auxiliary/iso_helper'
 require './lib/auxiliary/resource_scope'
 require './lib/engines/hckinstall/setup_scripts_helper'
 
+require './lib/models/driver'
+
 # AutoHCK module
 module AutoHCK
   # HCKInstall class
@@ -154,7 +156,7 @@ module AutoHCK
       driver_json = "#{DRIVERS_JSON_DIR}/#{driver}.json"
 
       @logger.info("Loading driver: #{driver}")
-      Json.read_json(driver_json, @logger)
+      Models::Driver.from_json_file(driver_json, @logger)
     rescue Errno::ENOENT
       @logger.fatal("#{driver} does not exist")
       raise(InvalidConfigFile, "#{driver} does not exist")
@@ -164,7 +166,7 @@ module AutoHCK
       @project.options.install.drivers.map do |short_name|
         driver = read_driver(short_name)
 
-        driver['short'] = short_name
+        driver.short = short_name
 
         driver
       end
@@ -175,14 +177,15 @@ module AutoHCK
 
       @need_copy_drivers = false
       drivers.each do |driver|
-        next if driver['install_method'] == 'no-drv'
+        next if driver.install_method == Models::DriverInstallMethods::NoDrviver
 
-        if driver['install_method'] == 'PNP' && File.exist?("#{@project.options.install.driver_path}/#{driver['inf']}")
+        if driver.install_method == Models::DriverInstallMethods::PNP &&
+           File.exist?("#{@project.options.install.driver_path}/#{driver.inf}")
           @need_copy_drivers = true
           next
         end
 
-        msg = "Can't install #{driver['short']} driver for device #{driver['device']} in install mode"
+        msg = "Can't install #{driver.short} driver for device #{driver.device} in install mode"
         @project.logger.fatal(msg)
         raise(InvalidConfigFile, msg)
       end
