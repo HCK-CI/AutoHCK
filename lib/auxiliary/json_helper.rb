@@ -18,7 +18,7 @@ module AutoHCK
         @json_override_file = json_file
       end
 
-      def self.read_json(json_file, logger)
+      def self.read_json(json_file, logger = nil)
         data = JSON.parse(File.read(json_file))
 
         if File.exist?(@json_override_file)
@@ -28,7 +28,7 @@ module AutoHCK
 
         data
       rescue Errno::ENOENT, JSON::ParserError
-        logger.fatal("Could not open #{json_file} file")
+        logger&.fatal("Could not open #{json_file} file")
         raise OpenJsonError, "Could not open #{json_file} file"
       end
     end
