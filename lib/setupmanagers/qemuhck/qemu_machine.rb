@@ -220,7 +220,7 @@ module AutoHCK
       @machine_extra_param = []
       @device_extra_param = []
       @iommu_device_param = []
-      @cpu_options = []
+      @cpu_options = %w[@cpu@ +x2apic +fsgsbase model=@cpu_model@]
       @drive_cache_options = []
       @define_variables = {}
       @run_opts = {}
@@ -345,7 +345,7 @@ module AutoHCK
         '@machine_extra_param@' => @machine_extra_param.join,
         '@device_extra_param@' => @device_extra_param.join,
         '@iommu_device_param@' => @iommu_device_param.join,
-        '@cpu_options@' => @cpu_options.join,
+        '@cpu_options@' => @cpu_options.join(','),
         '@drive_cache_options@' => @drive_cache_options.join
       }
     end
@@ -486,7 +486,7 @@ module AutoHCK
       [
         '@qemu_bin@ -enable-kvm -machine @machine_name@@machine_extra_param@ ',
         '-m @memory@ -smp @cpu_count@,cores=@cpu_count@ ',
-        '-cpu @cpu@,+x2apic,+fsgsbase@cpu_options@,model=@cpu_model@ -boot order=cd,menu=on ',
+        '-cpu @cpu_options@ -boot order=cd,menu=on ',
         '-nodefaults -no-user-config -usb -device usb-tablet -vnc :@vnc_id@ ',
         '-global kvm-pit.lost_tick_policy=discard -rtc base=localtime,clock=host,driftfix=slew ',
         '-global @disable_s3_param@=@disable_s3_value@ -global @disable_s4_param@=@disable_s4_value@ ',
