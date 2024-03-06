@@ -25,7 +25,12 @@
     },
     "enlightenments_state": {
         "true": {
-            "cpu_options": ",hv_spinlocks=0x1FFF,hv_relaxed,hv_vapic,hv_time"
+            "cpu_options": [
+                "hv_spinlocks=0x1FFF",
+                "hv_relaxed",
+                "hv_vapic",
+                "hv_time"
+            ]
         }
     },
     "vhost_state": {
