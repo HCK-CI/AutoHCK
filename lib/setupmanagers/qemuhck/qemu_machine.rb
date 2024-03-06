@@ -300,7 +300,8 @@ module AutoHCK
         when Hash
           var_value.merge! value
         when Array
-          var_value << value unless var_value.include? value
+          var_value |= value
+          instance_variable_set var, var_value
         else
           raise(QemuHCKError, "Variable #{var} has unsupported type")
         end
