@@ -54,7 +54,9 @@
     },
     "drive_unsafe_cache_state": {
         "true": {
-            "drive_cache_options": ",cache=unsafe"
+            "drive_cache_options": [
+                ",cache=unsafe"
+            ]
         }
     },
     "fw_type": {
