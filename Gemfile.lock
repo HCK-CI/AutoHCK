@@ -56,7 +56,6 @@ GEM
     i18n (1.14.1)
       concurrent-ruby (~> 1.0)
     json (2.7.1)
-    jtd (0.1.6)
     jwt (2.2.3)
     language_server-protocol (3.17.0.3)
     little-plugger (1.1.4)
@@ -201,7 +200,6 @@ DEPENDENCIES
   dotenv
   dropbox_api
   filelock
-  jtd
   mono_logger
   octokit
   openssl

@@ -25,7 +25,6 @@ end
 
 group :test do
   gem 'code-scanning-rubocop'
-  gem 'jtd'
   gem 'rspec'
   gem 'rubocop'
 end

@@ -8,8 +8,6 @@ JSON_TYPES_MAP = {
 
 describe 'srb_json_load' do
   Dir['./**/*.json'].each do |json_file|
-    next if json_file.include? 'jtd.json'
-
     it json_file.to_s do
       pair = JSON_TYPES_MAP.find { File.fnmatch(_1[0], json_file) }
 
