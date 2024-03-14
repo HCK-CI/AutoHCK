@@ -1,7 +1,0 @@
-{
-  "properties": {
-    "hck_setup_scripts_path": { "type": "string" },
-    "answer_files": { "elements": { "type": "string" } },
-    "install_timeout": { "type": "uint16" }
-  }
-}

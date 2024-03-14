@@ -1,6 +1,0 @@
-{
-  "properties": {
-    "playlists_path": { "type": "string" },
-    "filters_path": { "type": "string" }
-  }
-}
