@@ -104,9 +104,6 @@ module AutoHCK
 
       @logger.info("Loading driver: #{driver}")
       Models::Driver.from_json_file(driver_json, @logger)
-    rescue Errno::ENOENT
-      @logger.fatal("#{driver} does not exist")
-      raise(InvalidConfigFile, "#{driver} does not exist")
     end
 
     def find_drivers
