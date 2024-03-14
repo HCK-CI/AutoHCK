@@ -17,6 +17,7 @@ require './lib/models/driver'
 module AutoHCK
   # HCKInstall class
   class HCKInstall
+    extend T::Sig
     include Helper
 
     attr_reader :platform
@@ -152,6 +153,7 @@ module AutoHCK
       @client_iso_info['path'].chomp!('/')
     end
 
+    sig { params(driver: String).returns(Models::Driver) }
     def read_driver(driver)
       driver_json = "#{DRIVERS_JSON_DIR}/#{driver}.json"
 
@@ -159,6 +161,7 @@ module AutoHCK
       Models::Driver.from_json_file(driver_json, @logger)
     end
 
+    sig { returns(T::Array[Models::Driver]) }
     def find_drivers
       @project.options.install.drivers.map do |short_name|
         driver = read_driver(short_name)
@@ -169,6 +172,7 @@ module AutoHCK
       end
     end
 
+    sig { returns(T::Array[Models::Driver]) }
     def drivers
       drivers = find_drivers
 
