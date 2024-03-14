@@ -186,7 +186,7 @@ GEM
       logging (>= 1.6.1, < 3.0)
       rubyzip (~> 2.0)
       winrm (~> 2.0)
-    yard (0.9.34)
+    yard (0.9.36)
     yard-sorbet (0.8.1)
       sorbet-runtime (>= 0.5)
       yard (>= 0.9)
