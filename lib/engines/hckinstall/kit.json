@@ -1,36 +1,73 @@
 {
   "HLK1607": {
     "download_url": "https://go.microsoft.com/fwlink/p/?LinkID=404112",
-    "extra_software": [ "winfsp" ]
+    "extra_software": [ "winfsp" ],
+    "studio_platform": "Win2016x64"
   },
   "HLK1809server": {
     "download_url": "https://go.microsoft.com/fwlink/?linkid=2026646",
-    "extra_software": [ "FOD_2019", "HLK_GRFX_FOD", "WDTFNetData_1809", "winfsp" ]
+    "extra_software": [ "FOD_2019", "HLK_GRFX_FOD", "WDTFNetData_1809", "winfsp" ],
+    "studio_platform": "Win2019x64"
   },
   "HLK1809": {
     "download_url": "https://go.microsoft.com/fwlink/?linkid=2026646",
-    "extra_software": [ "HLK_GRFX_FOD", "WDTFNetData_1809", "winfsp" ]
+    "extra_software": [ "HLK_GRFX_FOD", "WDTFNetData_1809", "winfsp" ],
+    "studio_platform": "Win2019x64"
   },
   "HLK2004": {
     "download_url": "https://go.microsoft.com/fwlink/?linkid=2128655",
-    "extra_software": [ "winfsp" ]
+    "extra_software": [ "winfsp" ],
+    "studio_platform": "Win2016x64"
   },
   "HLK2022": {
     "download_url": "https://go.microsoft.com/fwlink/?linkid=2164257",
-    "extra_software": [ "FOD_2022", "Test-NETHLK", "winfsp" ]
+    "extra_software": [ "FOD_2022", "Test-NETHLK", "winfsp" ],
+    "studio_platform": "Win2022x64"
   },
   "HLK11_22H2": {
-    "download_url": "https://go.microsoft.com/fwlink/?linkid=2195974",
-    "extra_software": [ "winfsp" ]
+    "download_url": "https://go.microsoft.com/fwlink/?linkid=2250318",
+    "extra_software": [ "winfsp" ],
+    "studio_platform": "Win2022x64"
   },
   "HLK11_23H2": {
-    "download_url": "https://go.microsoft.com/fwlink/?linkid=2250418",
-    "extra_software": [ "winfsp" ]
+    "download_url": "https://go.microsoft.com/fwlink/?linkid=2250318",
+    "extra_software": [ "winfsp" ],
+    "studio_platform": "Win2022x64"
   },
   "HLK2022_next": {
-    "extra_software": [ "Disable_SNV", "winfsp" ]
+    "extra_software": [ "Disable_SNV", "winfsp" ],
+    "studio_platform": "Win2022x64"
   },
   "HLK11_next": {
-    "extra_software": [ "Disable_SNV", "winfsp" ]
+    "extra_software": [ "Disable_SNV", "winfsp" ],
+    "studio_platform": "Win2022x64"
+  },
+  "HLK20H2": {
+    "studio_platform": "Win2016x64"
+  },
+  "HLK1909": {
+    "studio_platform": "Win2016x64"
+  },
+  "HLK1903": {
+    "studio_platform": "Win2016x64"
+  },
+  "HLK1803": {
+    "studio_platform": "Win2016x64"
+  },
+  "HLK1709": {
+    "studio_platform": "Win2016x64"
+  },
+  "HLK1703": {
+    "studio_platform": "Win2016x64"
+  },
+  "HLK1511": {
+    "studio_platform": "Win2016x64"
+  },
+  "HLK1507": {
+    "studio_platform": "Win2016x64"
+  },
+  "HCK": {
+    "studio_platform": "Win2012R2x64"
   }
 }
+
