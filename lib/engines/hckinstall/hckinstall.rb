@@ -91,10 +91,10 @@ module AutoHCK
     end
 
     def studio_platform(kit)
-      res = @kit_info
+      res = @kit_info['studio_platform']
       @logger.info("Loading studio platform for kit: #{kit}")
-      @logger.fatal("Kit studio platform for kit #{kit} does not exist") unless res['studio_platform']
-      res['studio_platform'] || raise(InvalidConfigFile, "Kit studio platform for kit #{kit} does not exist")
+      @logger.fatal("Kit studio platform for kit #{kit} does not exist") unless res
+      res || raise(InvalidConfigFile, "Kit studio platform for kit #{kit} does not exist")
     end
 
     def client_platform
@@ -239,12 +239,11 @@ module AutoHCK
         if studio
           prepare_studio_drives
 
+          iso_list = [@setup_studio_iso, @studio_iso_info['path']]
+          iso_list << @kit_path if @kit_is_iso
           vms << [
             'studio',
-            run_studio(scope, [
-                         @setup_studio_iso,
-                         @studio_iso_info['path']
-                       ], keep_alive: false, snapshot: false)
+            run_studio(scope, iso_list, keep_alive: false, snapshot: false)
           ]
         end
 
@@ -275,31 +274,48 @@ module AutoHCK
     end
 
     def prepare_setup_scripts_config
-      kit_string = @platform['kit']
-      kit_type = kit_string[0..2]
-      kit_version = ''
-      kit_type == 'HCK' || kit_version = kit_string[3..]
+      kit_type, kit_version = parse_kit_info
 
       config = {
         kit_type:,
         hlk_kit_ver: kit_version
       }
 
-      unless @kit_info['download_url'].nil?
-        download_kit_installer(@kit_info['download_url'],
-                               "#{kit_type}#{kit_version}", @hck_setup_scripts_path)
+      @kit_path = find_kit(kit_type, kit_version)
+
+      if @kit_path.nil?
+        if @kit_info['download_url'].nil?
+          raise(EngineError, 'HLK installer download URL is not provided and installer is not found')
+        end
+
+        @kit_path = download_kit_installer(@kit_info['download_url'],
+                                           "#{kit_type}#{kit_version}", @hck_setup_scripts_path)
+      else
+        @logger.info("HLK installer #{kit_type}#{kit_version} already exists")
       end
 
-      installers = [
-        "#{@hck_setup_scripts_path}/Kits/#{kit_type}#{kit_version}Setup.exe",
-        "#{@hck_setup_scripts_path}/Kits/#{kit_type}#{kit_version}/#{kit_type}Setup.exe"
-      ]
+      @kit_is_iso = @kit_path.end_with?('.iso')
 
-      raise unless (file = installers.find { File.exist? _1 })
-
-      @logger.info("HLK installer #{file} was found")
+      @logger.info("HLK installer #{kit_type}#{kit_version} was found at #{@kit_path}")
 
       create_setup_scripts_config(@hck_setup_scripts_path, config)
+    end
+
+    def parse_kit_info
+      kit_string = @platform['kit']
+      kit_type = kit_string[0..2]
+      kit_version = kit_type == 'HCK' ? '' : kit_string[3..]
+      [kit_type, kit_version]
+    end
+
+    def find_kit(kit_type, kit_version)
+      installers = [
+        "#{@hck_setup_scripts_path}/Kits/#{kit_type}#{kit_version}Setup.exe",
+        "#{@hck_setup_scripts_path}/Kits/#{kit_type}#{kit_version}/#{kit_type}Setup.exe",
+        "#{@hck_setup_scripts_path}/Kits/#{kit_type}#{kit_version}Setup.iso"
+      ]
+
+      installers.find { File.exist? _1 }
     end
 
     def product_key_xml(product_key)
@@ -359,7 +375,8 @@ module AutoHCK
         file_gsub(build_studio_answer_file_path(file),
                   @hck_setup_scripts_path + "/#{file}", replacement_list)
       end
-      create_iso(@setup_studio_iso, [@hck_setup_scripts_path])
+
+      create_iso(@setup_studio_iso, [@hck_setup_scripts_path], @kit_is_iso ? ['Kits'] : [])
 
       @project.setup_manager.create_studio_image
     end
