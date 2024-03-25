@@ -31,6 +31,9 @@
             </div>
             <% end %>
         </div>
+        <div class="row pb-3">
+            <p>Report generation time: <%= Time.now %></p>
+        </div>
         <% if sections.include? 'url' %>
         <div class="row pb-3">
             <p>Detailed report with all logs: <a href="<%= url %>"><%= url %></a></p>
