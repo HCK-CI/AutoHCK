@@ -25,7 +25,17 @@ module AutoHCK
 
     def download_kit_installer(url, kit, hck_setup_scripts_path)
       dw = Downloader.new(@logger)
-      dw.download(url, "#{hck_setup_scripts_path}/Kits/#{kit}Setup.exe")
+      kit_setup_path = "#{hck_setup_scripts_path}/Kits/#{kit}Setup"
+      temp_path = "#{kit_setup_path}.tmp"
+
+      dw.download(url, temp_path)
+
+      file_type = File.read(temp_path, 2) == 'MZ' ? 'exe' : 'iso'
+
+      kit_path = "#{kit_setup_path}.#{file_type}"
+      FileUtils.mv(temp_path, kit_path)
+
+      kit_path
     end
 
     def copy_extra_software(hck_setup_scripts_path, extra_software_path, sw_names)
