@@ -1,9 +1,11 @@
 require 'json'
 
 require './lib/models/driver'
+require './lib/models/hcktest_config'
 
 JSON_TYPES_MAP = {
   './lib/engines/hcktest/drivers/*.json' => AutoHCK::Models::Driver,
+  './lib/engines/hcktest/hcktest.json' => AutoHCK::Models::HCKTestConfig
 }.freeze
 
 describe 'srb_json_load' do
