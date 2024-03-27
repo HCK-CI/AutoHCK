@@ -9,6 +9,7 @@ require './lib/auxiliary/resource_scope'
 require './lib/auxiliary/zip_helper'
 
 require './lib/models/driver'
+require './lib/models/hcktest_config'
 
 # AutoHCK module
 module AutoHCK
@@ -29,7 +30,7 @@ module AutoHCK
       @project = project
       @logger = project.logger
       @project.append_multilog("#{tag}.log")
-      @config = Json.read_json(CONFIG_JSON, @logger)
+      @config = Models::HCKTestConfig.from_json_file(CONFIG_JSON, @logger)
       @platform = read_platform
       @driver_path = @project.options.test.driver_path
       @drivers = find_drivers

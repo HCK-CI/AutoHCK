@@ -40,7 +40,7 @@ module AutoHCK
     end
 
     def update_filters
-      filters_path = @project.engine.config['filters_path']
+      filters_path = @project.engine.config.filters_path
 
       return unless File.file?(filters_path)
 
