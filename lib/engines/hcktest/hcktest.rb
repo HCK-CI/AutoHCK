@@ -10,6 +10,7 @@ require './lib/auxiliary/zip_helper'
 
 require './lib/models/driver'
 require './lib/models/hcktest_config'
+require './lib/models/svvp_config'
 
 # AutoHCK module
 module AutoHCK
@@ -91,8 +92,8 @@ module AutoHCK
 
     def driver_names
       if @project.options.test.svvp
-        @svvp_info = Json.read_json(SVVP_JSON, @project.logger)
-        driver_names = @svvp_info['drivers']
+        @svvp_info = Models::SVVPConfig.from_json_file(SVVP_JSON, @project.logger)
+        driver_names = @svvp_info.drivers
       else
         driver_names = @project.options.test.drivers
         raise(AutoHCKError, 'Unsupported configuration. Drivers count is not equals 1') if driver_names.count != 1
@@ -124,9 +125,9 @@ module AutoHCK
       if @project.options.test.svvp
         {
           'name' => @clients.values[0].name,
-          'type' => @svvp_info['type'],
-          'select_test_names' => @svvp_info['select_test_names'],
-          'reject_test_names' => @svvp_info['reject_test_names']
+          'type' => @svvp_info.type,
+          'select_test_names' => @svvp_info.select_test_names,
+          'reject_test_names' => @svvp_info.reject_test_names
         }
       else
         driver = drivers.first
