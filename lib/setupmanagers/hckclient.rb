@@ -95,23 +95,26 @@ module AutoHCK
       end
     end
 
-    def install_drivers
+    def install_driver(driver)
       path = @project.options.test.driver_path
+      method = driver.install_method.to_s
+      inf = driver.inf
 
+      @logger.info("Installing #{method} driver #{inf} in #{@name}")
+      @tools.install_machine_driver_package(@name, method, path, inf,
+                                            custom_cmd: driver.install_command,
+                                            sys_file: driver.sys,
+                                            force_install_cert: driver.install_cert)
+    end
+
+    def install_drivers
       @project.engine.drivers&.each do |driver|
-        method = driver.install_method
-        if method == AutoHCK::Models::DriverInstallMethods::NoDrviver
+        if driver.install_method == AutoHCK::Models::DriverInstallMethods::NoDrviver
           @project.logger.info("Driver installation skipped for #{driver.name} in #{@name}")
           next
         end
 
-        inf = driver.inf
-
-        @logger.info("Installing #{method} driver #{inf} in #{@name}")
-        @tools.install_machine_driver_package(@name, method, path, inf,
-                                              custom_cmd: driver.install_command,
-                                              sys_file: driver.sys,
-                                              force_install_cert: driver.install_cert)
+        install_driver(driver)
       end
     end
 
