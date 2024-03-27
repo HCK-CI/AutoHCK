@@ -29,7 +29,7 @@ return if r.nil?
   # do that by ourselves because we use the bare unshare syscall.
   ['mount', '--make-rprivate', '/'],
 
-  ['mount', '--bind', File.join(__dir__, '..', 'resolv.conf'), '/etc/resolv.conf'],
+  ['mount', '--bind', File.join(__dir__, '..', 'etc', 'resolv.conf'), '/etc/resolv.conf'],
   %w[ip link set tap_host up],
   %w[ip link add br_world type bridge],
   %w[ip addr add 10.0.2.100/24 dev br_world],
