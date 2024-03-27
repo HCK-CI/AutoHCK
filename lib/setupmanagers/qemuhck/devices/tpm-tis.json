@@ -7,12 +7,13 @@
   ],
   "define_variables": {
     "@tpm_pid@": "@workspace@/swtpm_@run_id@_@client_id@.pid",
+    "@tpm_localca_dir@": "@workspace@/swtpm_localca_@run_id@_@client_id@",
     "@tpm_state_dir@": "@workspace@/swtpm_state_@run_id@_@client_id@",
     "@tpm_socket@": "/tmp/swtpm_@run_id@_@client_id@_sock"
   },
   "config_commands": [
-    "mkdir -p @tpm_state_dir@",
-    "swtpm_setup --tpm-state @tpm_state_dir@ --tpm2 --createek --create-ek-cert --create-platform-cert --lock-nvram"
+    "mkdir -p @tpm_localca_dir@ @tpm_state_dir@",
+    "AUTOHCK_STATEDIR=@tpm_localca_dir@ swtpm_setup --tpm-state @tpm_state_dir@ --tpm2 --createek --create-ek-cert --create-platform-cert --lock-nvram --config etc/swtpm_setup.conf"
   ],
   "pre_start_commands": [
     "rm -f @tpm_socket@",
