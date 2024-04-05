@@ -147,13 +147,17 @@ module AutoHCK
       "#{@options.test.gthb_context_prefix}#{@engine.tag}#{@options.test.gthb_context_suffix}"
     end
 
-    def github_handling(commit)
-      return true if commit.to_s.empty?
-
+    def initialize_github(commit)
       url = @result_uploader.html_url || @result_uploader.url
       @github = Github.new(@config, @logger, url, github_handling_context,
                            commit)
       raise GithubInitializationError unless @github.connected?
+    end
+
+    def github_handling(commit)
+      return true if commit.to_s.empty?
+
+      initialize_github(commit)
 
       pr = @github.find_pr
 
@@ -168,6 +172,8 @@ module AutoHCK
       @github.log_pr(pr)
 
       return false if @github.pr_closed?(pr)
+
+      return false unless @github.pr_check_run(pr)
 
       @github.create_status('pending', 'Tests session initiated')
       true
