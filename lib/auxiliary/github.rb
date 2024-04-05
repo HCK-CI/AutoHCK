@@ -39,6 +39,16 @@ module AutoHCK
       pr_object.state == 'closed'
     end
 
+    def pr_check_run(pr_object = find_pr)
+      unless (pr_object['title'] =~ /SKIP-HCK-CI/).nil? && (pr_object['body'] =~ /SKIP-HCK-CI/).nil?
+        @logger.info('Pull request contains SKIP-HCK-CI')
+
+        return false
+      end
+
+      true
+    end
+
     def log_pr(pr_object = find_pr)
       if pr_object.merged_at?
         @logger.info("PR ##{pr_object['number']}: #{pr_object['title']} - already merged")
