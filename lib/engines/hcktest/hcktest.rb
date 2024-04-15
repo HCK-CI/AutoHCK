@@ -35,6 +35,7 @@ module AutoHCK
       @platform = read_platform
       @driver_path = @project.options.test.driver_path
       @drivers = find_drivers
+      @manual = false
       prepare_extra_sw
       validate_paths unless @driver_path.nil?
       init_workspace
@@ -233,27 +234,38 @@ module AutoHCK
       end
     end
 
+    def handle_cancel
+      val = @manual
+      if @manual
+        @project.logger.info('we are in manual mode')
+        @manual = false
+      end
+      @logger.info("Returning: #{val}")
+      return val
+    end
+
     def auto_run
       ResourceScope.open do |scope|
         run_and_configure_setup scope
         client = @client1
         client.run_tests
         client.create_package
+        @manual = @project.options.test.manual
+        if @manual
+           @project.logger.info('AutoHCK started in manual mode')
+           @project.logger.info('Waiting for manual exit')
+           while @manual
+            sleep 3
+           end
+           client.create_package
+           @project.logger.info('Exit from manual mode')
+         end
       end
     end
 
     def run
       upload_driver_package unless @driver_path.nil?
-
-      if @project.options.test.manual
-        @project.logger.info('AutoHCK started in manual mode')
-
-        manual_run
-
-        @project.logger.info("Find all scripts in folder: #{@project.workspace_path}")
-      else
-        auto_run
-      end
+      auto_run
     end
 
     def result_uploader_needed?

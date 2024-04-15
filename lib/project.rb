@@ -188,7 +188,13 @@ module AutoHCK
     end
 
     def handle_cancel
-      @github.handle_cancel if @github&.connected?
+      @logger.info('Calling engine::handle_cancel')
+      val = @engine.handle_cancel
+      unless val
+        @logger.info('engine did not support handle_cancel')
+        @github.handle_cancel if @github&.connected?
+      end
+      return val
     end
 
     def handle_error

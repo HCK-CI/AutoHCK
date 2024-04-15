@@ -70,6 +70,10 @@ module AutoHCK
       @engine.platform
     end
 
+    def handle_cancel
+      return @engine.handle_cancel
+    end
+
     def result_uploader_needed?
       @engine.result_uploader_needed?
     end

@@ -22,8 +22,11 @@ module AutoHCK
       Signal.trap(signal) do
         write_log("SIG#{signal}(*) received, ignoring...")
       end
-      @project&.handle_cancel
-      raise AutoHCKInterrupt
+      if @project&.handle_cancel
+        write_log("trap: cancellation in progress...")
+      else
+        raise AutoHCKInterrupt
+      end
     end
 
     @sig_timestamps = {}

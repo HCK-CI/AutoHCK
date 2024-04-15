@@ -193,6 +193,10 @@ module AutoHCK
       drivers
     end
 
+    def handle_cancel
+      return false
+    end
+
     def target
       nil
     end
