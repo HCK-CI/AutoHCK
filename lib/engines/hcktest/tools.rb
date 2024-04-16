@@ -344,6 +344,12 @@ module AutoHCK
       end
     end
 
+    def list_test_results(test_id, target_key, machine, tag)
+      retry_tools_command(__method__) do
+        act_with_tools { _1.list_test_results(test_id, target_key, tag, machine, tag) }
+      end
+    end
+
     def get_test_info(id, key, machine, tag)
       retry_tools_command(__method__) do
         act_with_tools { _1.get_test_info(id, key, tag, machine, tag) }
