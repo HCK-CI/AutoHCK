@@ -285,8 +285,21 @@ module AutoHCK
       @project.result_uploader.delete_file(r_name)
     end
 
+    def last_queued_test_running?
+      results = @tools.list_test_results(@queued_test['id'], @target['key'], @client.name, @tag)
+      last_result = results.max_by { |k| k['instanceid'].to_i }
+
+      last_result['status'] == 'Running' || last_result['status'] == 'InQueue'
+    end
+
     def all_tests_finished?
-      status_count('InQueue').zero? && current_test.nil?
+      # After the first Pass, HLK always reports a Pass as
+      # a status for this test even if it was queued again.
+      # Check that the result of the last queued test is not
+      # indicated as running.
+      # current_test can have a race condition when AutoHCK
+      # requests it earlier than the HLK update test execution state.
+      status_count('InQueue').zero? && current_test.nil? && !last_queued_test_running?
     end
 
     def download_memory_dump(machine, l_tmp_path)
@@ -426,12 +439,19 @@ module AutoHCK
 
       tests = @tests
       tests.each do |test|
-        @logger.info("Adding to queue: #{test['name']} (#{test['id']}) [#{test['estimatedruntime']}]")
-        queue_test(test, wait: true)
-        list_tests
-        handle_test_running
+        run_count = test['run_count'] || 1
 
-        break if @project.run_terminated
+        @queued_test = test
+
+        (1..run_count).each do |run_number|
+          test_str = "run #{run_number}/#{run_count} #{test['name']} (#{test['id']})"
+          @logger.info("Adding to queue: #{test_str}")
+          queue_test(test, wait: true)
+          list_tests
+          handle_test_running
+
+          break if @project.run_terminated
+        end
       end
     end
   end

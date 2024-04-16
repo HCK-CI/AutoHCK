@@ -82,6 +82,17 @@ module AutoHCK
       @tests.sort_by! { |test| test['duration'] }
     end
 
+    def intersect_select_tests(select_test_names)
+      select_test_names_counted = select_test_names.tally
+
+      @tests = @tests.filter_map do |test|
+        if select_test_names_counted.key?(test['name'])
+          test['run_count'] = select_test_names_counted[test['name']] if @project.options.test.allow_test_duplication
+          test
+        end
+      end
+    end
+
     def custom_select_test_names(log)
       user_select_test_names_file = @project.options.test.select_test_names
 
@@ -93,7 +104,8 @@ module AutoHCK
 
       return unless select_test_names
 
-      @tests.select! { |test| select_test_names.include?(test['name']) }
+      intersect_select_tests(select_test_names)
+
       count = @tests.count
       @logger.info("Applying custom selected test names, #{count} tests.") if log
     end
