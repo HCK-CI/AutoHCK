@@ -28,6 +28,8 @@
       "set -e",
       "ip link set ${1} up",
       "ip link set ${1} master @bridge_name@",
+      "ip link set ${1} txqueuelen 11000",
+      "ip link set @bridge_name@ txqueuelen 11000",
       "ethtool -K ${1} tx off"
     ]
   }
