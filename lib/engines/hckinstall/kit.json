@@ -34,6 +34,10 @@
     "extra_software": [ "winfsp" ],
     "studio_platform": "Win2022x64"
   },
+  "HLK2025": {
+    "extra_software": [ "Disable_SNV" ],
+    "studio_platform": "Win2022x64"
+  },
   "HLK2022_next": {
     "extra_software": [ "Disable_SNV", "winfsp" ],
     "studio_platform": "Win2022x64"
