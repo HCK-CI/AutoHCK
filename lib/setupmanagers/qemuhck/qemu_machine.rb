@@ -217,7 +217,7 @@ module AutoHCK
       @pre_start_commands = []
       @post_stop_commands = []
       @device_commands = []
-      @machine_extra_param = []
+      @machine_options = %w[@machine_name@]
       @device_extra_param = []
       @iommu_device_param = []
       @cpu_options = %w[@cpu@ +x2apic +fsgsbase model=@cpu_model@]
@@ -354,7 +354,7 @@ module AutoHCK
 
     def options_replacement_list
       {
-        '@machine_extra_param@' => @machine_extra_param.join,
+        '@machine_options@' => @machine_options.join(','),
         '@device_extra_param@' => @device_extra_param.join,
         '@iommu_device_param@' => @iommu_device_param.join,
         '@cpu_options@' => @cpu_options.join(','),
@@ -393,7 +393,7 @@ module AutoHCK
     end
 
     def normalize_lists
-      [@device_commands, @machine_extra_param, @device_extra_param, @iommu_device_param,
+      [@device_commands, @machine_options, @device_extra_param, @iommu_device_param,
        @config_commands, @pre_start_commands, @post_stop_commands, @cpu_options,
        @drive_cache_options].each do |arr|
         arr.flatten!
@@ -498,7 +498,7 @@ module AutoHCK
 
     def base_cmd
       [
-        '@qemu_bin@ -enable-kvm -machine @machine_name@@machine_extra_param@ ',
+        '@qemu_bin@ -enable-kvm -machine @machine_options@ ',
         '-m @memory@,maxmem=@max_memory@ -smp @cpu_count@,cores=@cpu_count@ ',
         '-cpu @cpu_options@ -boot order=cd,menu=on ',
         '-nodefaults -no-user-config -usb -device usb-tablet -vnc :@vnc_id@ ',
