@@ -513,10 +513,15 @@ module AutoHCK
 
       if @fw['binary']
         file = @fw['binary'][@run_opts[:secure] ? 'secure' : 'insecure']
-        cmd << "-drive if=pflash,format=raw,readonly=on,file=#{file}"
+        cmd << "-blockdev node-name=pflash_code,driver=file,filename=#{file},read-only=on"
+        @machine_options << 'pflash0=pflash_code'
       end
 
-      cmd << "-drive if=pflash,format=raw,file=#{@fw['nvram']}" if @fw['nvram']
+      if @fw['nvram']
+        cmd << "-blockdev node-name=pflash_vars,driver=file,filename=#{@fw['nvram']}"
+        cmd << '-global driver=cfi.pflash01,property=secure,value=on'
+        @machine_options << 'pflash1=pflash_vars'
+      end
 
       cmd
     end
