@@ -95,7 +95,8 @@ module AutoHCK
     class TestOptions
       attr_accessor :platform, :drivers, :driver_path, :commit, :diff_file, :svvp, :manual,
                     :gthb_context_prefix, :gthb_context_suffix, :playlist, :select_test_names,
-                    :reject_test_names, :triggers_file, :reject_report_sections, :boot_device
+                    :reject_test_names, :triggers_file, :reject_report_sections, :boot_device,
+                    :allow_test_duplication
 
       def create_parser
         OptionParser.new do |parser|
@@ -125,6 +126,7 @@ module AutoHCK
         triggers_file_option(parser)
         reject_report_sections_option(parser)
         boot_device_option(parser)
+        allow_test_duplication_option(parser)
       end
 
       def platform_option(parser)
@@ -241,6 +243,15 @@ module AutoHCK
         parser.on('--boot-device <boot_device>', String,
                   'VM boot device') do |boot_device|
           @boot_device = boot_device
+        end
+      end
+
+      def allow_test_duplication_option(parser)
+        parser.on('--allow-test-duplication', TrueClass,
+                  'Allow run the same test several times.',
+                  'Works only with custom user text playlist.',
+                  'Test results table can be broken. (experimental)') do |allow_test_duplication|
+          @allow_test_duplication = allow_test_duplication
         end
       end
     end
