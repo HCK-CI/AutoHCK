@@ -427,10 +427,17 @@ module AutoHCK
 
       tests = @tests
       tests.each do |test|
-        @logger.info("Adding to queue: #{test['name']} (#{test['id']}) [#{test['estimatedruntime']}]")
-        queue_test(test, wait: true)
-        list_tests
-        handle_test_running
+        run_count = test['run_count']
+
+        (1..run_count).each do |run_number|
+          test_str = "run #{run_number}/#{run_count} #{test['name']} (#{test['id']})"
+          @logger.info("Adding to queue: #{test_str}")
+          queue_test(test, wait: true)
+          list_tests
+          handle_test_running
+
+          break if @project.run_terminated
+        end
 
         break if @project.run_terminated
       end
