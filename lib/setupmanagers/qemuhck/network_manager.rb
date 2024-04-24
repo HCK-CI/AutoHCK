@@ -100,7 +100,7 @@ module AutoHCK
       def control_device_command(device_name, qemu_replacement_list = {})
         type = __method__.to_s.split('_').first
 
-        netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no'
+        netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no,ifname=@net_if_name@'
         network_backend = 'tap'
 
         options = {
@@ -117,7 +117,7 @@ module AutoHCK
       def world_device_command(device_name, qemu_replacement_list = {})
         type = __method__.to_s.split('_').first
 
-        netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no'
+        netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no,ifname=@net_if_name@'
         network_backend = 'tap'
 
         options = {
@@ -134,7 +134,7 @@ module AutoHCK
       def test_device_command(device_name, qemu_replacement_list = {})
         type = __method__.to_s.split('_').first
 
-        netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no'
+        netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no,ifname=@net_if_name@'
         network_backend = 'tap'
 
         options = {
@@ -153,7 +153,10 @@ module AutoHCK
 
         path = File.absolute_path(share_path)
 
-        netdev_options = ",net=#{transfer_net}.0/24,smb=#{path},smbserver=#{transfer_net}.4,restrict=on"
+        net_base = "#{transfer_net}.0/24"
+        smb_server = "#{transfer_net}.4"
+
+        netdev_options = "net=#{net_base},smb=#{path},smbserver=#{smb_server},restrict=on,ifname=@net_if_name@"
         network_backend = 'user'
 
         options = {
