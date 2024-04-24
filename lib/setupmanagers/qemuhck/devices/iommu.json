@@ -1,6 +1,13 @@
 {
   "name": "iommu",
-  "command_line": ["-device intel-iommu,intremap=on,aw-bits=48,caching-mode=on,device-iotlb=on"],
-  "machine_extra_param": ",accel=kvm,vmport=off,smm=on,kernel-irqchip=split",
+  "command_line": [
+    "-device intel-iommu,intremap=on,aw-bits=48,caching-mode=on,device-iotlb=on"
+  ],
+  "machine_options": [
+    "accel=kvm",
+    "vmport=off",
+    "smm=on",
+    "kernel-irqchip=split"
+  ],
   "iommu_device_param": ",iommu_platform=on,ats=on"
 }
