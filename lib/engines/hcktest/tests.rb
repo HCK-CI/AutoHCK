@@ -128,13 +128,14 @@ module AutoHCK
     def wait_queued_test(id)
       loop do
         sleep 5
-        test = @tools.get_test_info(id, @target['key'], @client.name, @tag)
+        results = @tools.list_test_results(id, @target['key'], @client.name, @tag)
+        last_result = results.max_by { |k| k['instanceid'].to_i }
 
         check_test_queued_time
 
-        break if test['executionstate'] != 'NotRunning'
-        break if test['status'] == 'InQueue'
-        break if test_finished?(test)
+        break if last_result['status'] == 'InQueue'
+        break if last_result['status'] == 'Running'
+        break if test_finished?(last_result)
       end
     end
 
