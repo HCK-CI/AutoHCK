@@ -247,7 +247,7 @@ module AutoHCK
 
     # class InstallOptions
     class InstallOptions
-      attr_accessor :platform, :force, :skip_client, :drivers, :driver_path
+      attr_accessor :platform, :force, :skip_client, :drivers, :driver_path, :debug
 
       def create_parser
         OptionParser.new do |parser|
@@ -265,12 +265,20 @@ module AutoHCK
         @force = false
         @skip_client = false
         @drivers = []
+        @debug = false
 
+        debug_option(parser)
         platform_option(parser)
         force_option(parser)
         skip_client_option(parser)
         drivers_option(parser)
         driver_path_option(parser)
+      end
+
+      def debug_option(parser)
+        parser.on('--debug', TrueClass, 'Enable debug mode') do |debug|
+          @debug = debug
+        end
       end
 
       def platform_option(parser)
