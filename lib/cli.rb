@@ -25,7 +25,7 @@ module AutoHCK
 
     # class CommonOptions
     class CommonOptions
-      attr_accessor :debug, :config, :client_world_net, :id
+      attr_accessor :verbose, :config, :client_world_net, :id
 
       def create_parser(sub_parser)
         OptionParser.new do |parser|
@@ -43,21 +43,21 @@ module AutoHCK
       end
 
       def define_options(parser)
-        @debug = false
+        @verbose = false
         @config = nil
         @client_world_net = false
         @id = 2
-        debug_option(parser)
+        verbose_option(parser)
         config_option(parser)
         client_world_net_option(parser)
         id_option(parser)
         version_option(parser)
       end
 
-      def debug_option(parser)
-        parser.on('--debug', TrueClass,
-                  'Printing debug information') do |debug|
-          @debug = debug
+      def verbose_option(parser)
+        parser.on('--verbose', TrueClass,
+                  'Enable verbose logging') do |verbose|
+          @verbose = verbose
         end
       end
 

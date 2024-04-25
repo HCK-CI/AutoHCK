@@ -28,8 +28,7 @@ module AutoHCK
       @scope = scope
       @options = options
       Json.update_json_override(options.common.config) unless options.common.config.nil?
-
-      init_multilog(options.common.debug)
+      init_multilog(options.common.verbose)
       init_class_variables
       init_workspace
       @id = options.common.id
@@ -81,12 +80,12 @@ module AutoHCK
       @logger.public_send(level, "(#{eclass}) #{emessage}#{estack}")
     end
 
-    def init_multilog(debug)
+    def init_multilog(verbose)
       @temp_pre_logger = StringIO.new
       @pre_logger = MonoLogger.new(@temp_pre_logger)
       @stdout_logger = MonoLogger.new($stdout)
       @logger = MultiLogger.new(@pre_logger, @stdout_logger)
-      @logger.level = debug ? 'DEBUG' : 'INFO'
+      @logger.level = verbose ? 'DEBUG' : 'INFO'
     end
 
     def append_multilog(logfile_name)
