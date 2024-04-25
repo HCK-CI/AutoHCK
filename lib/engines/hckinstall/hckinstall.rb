@@ -278,7 +278,8 @@ module AutoHCK
 
       config = {
         kit_type:,
-        hlk_kit_ver: kit_version
+        hlk_kit_ver: kit_version,
+        debug: @project.options.install.debug
       }
 
       @kit_path = find_kit(kit_type, kit_version)
