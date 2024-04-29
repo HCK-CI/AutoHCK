@@ -93,7 +93,7 @@ module AutoHCK
 
     # class TestOptions
     class TestOptions
-      attr_accessor :platform, :drivers, :driver_path, :commit, :diff_file, :svvp, :manual,
+      attr_accessor :platform, :drivers, :driver_path, :commit, :diff_file, :svvp, :dump,
                     :gthb_context_prefix, :gthb_context_suffix, :playlist, :select_test_names,
                     :reject_test_names, :triggers_file, :reject_report_sections, :boot_device,
                     :allow_test_duplication
@@ -117,7 +117,7 @@ module AutoHCK
         commit_option(parser)
         diff_file_option(parser)
         svvp_option(parser)
-        manual_option(parser)
+        dump_option(parser)
         gthb_context_prefix_option(parser)
         gthb_context_suffix_option(parser)
         playlist_option(parser)
@@ -171,10 +171,10 @@ module AutoHCK
         end
       end
 
-      def manual_option(parser)
-        parser.on('--manual', TrueClass,
-                  'Run and prepare the machine for tests, but do not run the tests themselves') do |manual|
-          @manual = manual
+      def dump_option(parser)
+        parser.on('--dump', TrueClass,
+                  'Create machines snapshots and generate scripts for run it manualy') do |dump|
+          @dump = dump
         end
       end
 

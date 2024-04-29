@@ -172,7 +172,7 @@ module AutoHCK
     end
 
     def configure_clients
-      run_only = @project.options.test.manual && @project.options.test.driver_path.nil?
+      run_only = @project.options.test.dump && @project.options.test.driver_path.nil?
 
       @clients.each_value do |client|
         client.configure(run_only:)
@@ -226,7 +226,7 @@ module AutoHCK
       end
     end
 
-    def manual_run
+    def dump_run
       ResourceScope.open do |scope|
         run_studio(scope, { dump_only: true })
         run_clients(scope, { dump_only: true })
@@ -245,10 +245,10 @@ module AutoHCK
     def run
       upload_driver_package unless @driver_path.nil?
 
-      if @project.options.test.manual
-        @project.logger.info('AutoHCK started in manual mode')
+      if @project.options.test.dump
+        @project.logger.info('AutoHCK started in dump only mode')
 
-        manual_run
+        dump_run
 
         @project.logger.info("Find all scripts in folder: #{@project.workspace_path}")
       else
