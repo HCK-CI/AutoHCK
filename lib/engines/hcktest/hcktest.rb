@@ -233,11 +233,25 @@ module AutoHCK
       end
     end
 
+    def pause_run
+      @project.logger.info('AutoHCK switched in manual mode. Waiting for manual exit.')
+      @project.logger.info("Type 'exit' and press ENTER to exit manul mode")
+
+      # rubocop:disable Lint/Debugger
+      binding.irb
+      # rubocop:enable Lint/Debugger
+
+      @project.logger.info('Manual exit. AutoHCK will continue.')
+    end
+
     def auto_run
       ResourceScope.open do |scope|
         run_and_configure_setup scope
         client = @client1
         client.run_tests
+
+        pause_run if @project.options.test.manual
+
         client.create_package
       end
     end

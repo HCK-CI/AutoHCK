@@ -96,7 +96,7 @@ module AutoHCK
       attr_accessor :platform, :drivers, :driver_path, :commit, :diff_file, :svvp, :dump,
                     :gthb_context_prefix, :gthb_context_suffix, :playlist, :select_test_names,
                     :reject_test_names, :triggers_file, :reject_report_sections, :boot_device,
-                    :allow_test_duplication
+                    :allow_test_duplication, :manual
 
       def create_parser
         OptionParser.new do |parser|
@@ -127,6 +127,7 @@ module AutoHCK
         reject_report_sections_option(parser)
         boot_device_option(parser)
         allow_test_duplication_option(parser)
+        manual_option(parser)
       end
 
       def platform_option(parser)
@@ -252,6 +253,13 @@ module AutoHCK
                   'Works only with custom user text playlist.',
                   'Test results table can be broken. (experimental)') do |allow_test_duplication|
           @allow_test_duplication = allow_test_duplication
+        end
+      end
+
+      def manual_option(parser)
+        parser.on('--manual', TrueClass,
+                  'Run AutoHCK in manual mode') do |manual|
+          @manual = manual
         end
       end
     end
