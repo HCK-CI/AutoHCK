@@ -16,10 +16,10 @@ class Nori
   # source://nori//lib/nori.rb#16
   def initialize(options = T.unsafe(nil)); end
 
-  # source://nori//lib/nori.rb#32
+  # source://nori//lib/nori.rb#33
   def find(hash, *path); end
 
-  # source://nori//lib/nori.rb#42
+  # source://nori//lib/nori.rb#43
   def parse(xml); end
 
   private
@@ -27,16 +27,19 @@ class Nori
   # Expects a +block+ which receives a tag to convert.
   # Accepts +nil+ for a reset to the default behavior of not converting tags.
   #
-  # source://nori//lib/nori.rb#58
+  # source://nori//lib/nori.rb#59
   def convert_tags_to(reset = T.unsafe(nil), &block); end
 
-  # source://nori//lib/nori.rb#71
+  # source://nori//lib/nori.rb#72
   def find_value(hash, key); end
 
-  # source://nori//lib/nori.rb#51
+  # source://nori//lib/nori.rb#52
   def load_parser(parser); end
 
-  # source://nori//lib/nori.rb#62
+  # source://nori//lib/nori.rb#81
+  def scrub_xml(string); end
+
+  # source://nori//lib/nori.rb#63
   def validate_options!(available_options, options); end
 
   class << self
@@ -45,7 +48,7 @@ class Nori
   end
 end
 
-# source://nori//lib/nori/core_ext/object.rb#2
+# source://nori//lib/nori/core_ext/string.rb#2
 module Nori::CoreExt; end
 
 # source://nori//lib/nori/core_ext/hash.rb#5
@@ -79,14 +82,6 @@ module Nori::CoreExt::Hash
 
   # source://nori//lib/nori/core_ext/hash.rb#36
   def normalize_simple_type_params(key, value); end
-end
-
-# source://nori//lib/nori/core_ext/object.rb#3
-module Nori::CoreExt::Object
-  # @return [Boolean]
-  #
-  # source://nori//lib/nori/core_ext/object.rb#5
-  def blank?; end
 end
 
 # source://nori//lib/nori/core_ext/string.rb#3
@@ -320,12 +315,6 @@ Nori::XMLUtilityNode::XS_DATE_TIME = T.let(T.unsafe(nil), Regexp)
 #
 # source://nori//lib/nori/xml_utility_node.rb#31
 Nori::XMLUtilityNode::XS_TIME = T.let(T.unsafe(nil), Regexp)
-
-class Object < ::BasicObject
-  include ::Kernel
-  include ::PP::ObjectMixin
-  include ::Nori::CoreExt::Object
-end
 
 class String
   include ::Comparable
