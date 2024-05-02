@@ -183,9 +183,6 @@ module AutoHCK
       @studio.configure(@platform['clients'])
       configure_clients
       @clients.each_value(&:synchronize)
-      @client1 = @clients.values[0]
-      @client2 = @clients.values[1]
-      @client1.support = @client2
       @studio.keep_snapshot
       @clients.each_value(&:keep_snapshot)
     end
@@ -244,15 +241,31 @@ module AutoHCK
       @project.logger.info('Manual exit. AutoHCK will continue.')
     end
 
+    def prepare_tests
+      client, support = @clients.values
+
+      @tests = Tests.new(client, support, @project, client.target, @studio.tools)
+
+      if client.target.nil?
+        raise EngineError, 'HLK test target is not defined' unless @project.options.test.manual
+
+        @project.logger.info('HLK test target is not defined, skipping tests loading in manual mode')
+        return
+      end
+
+      @tests.list_tests(log: true)
+    end
+
     def auto_run
       ResourceScope.open do |scope|
         run_and_configure_setup scope
-        client = @client1
-        client.run_tests
+        prepare_tests
+
+        @tests.run
 
         pause_run if @project.options.test.manual
 
-        client.create_package
+        @tests.create_project_package
       end
     end
 
