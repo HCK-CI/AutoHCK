@@ -157,7 +157,11 @@ module AutoHCK
       @tools = @studio.tools
       @cooldown_thread = Thread.new do
         return_when_client_up
-        Thread.exit if run_only
+        if run_only
+          @logger.info("Preparing client skipped #{@name}...")
+
+          Thread.exit
+        end
 
         @logger.info("Preparing client #{@name}...")
         @project.extra_sw_manager.install_software_before_driver(@tools, @name)
