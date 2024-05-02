@@ -23,6 +23,8 @@ module AutoHCK
                   else
                     custom_playlist
                   end
+
+      @rejected_test = []
     end
 
     # A custom ListTests error exception
