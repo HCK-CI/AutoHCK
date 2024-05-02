@@ -34,6 +34,7 @@ module AutoHCK
       @support = support
       @logger = project.logger
       @playlist = Playlist.new(client, project, target, tools, @client.kit)
+      @tests = []
       @tests_extra = {}
 
       @results_template = ERB.new(File.read('lib/templates/report.html.erb'))
