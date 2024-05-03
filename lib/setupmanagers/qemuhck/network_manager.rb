@@ -97,6 +97,19 @@ module AutoHCK
         FileUtils.chmod(0o755, full_name)
       end
 
+      def create_net_smb(replacement_map)
+        content = replacement_map.replace(@config['smb'].join("\n"))
+        path = replacement_map.replace('@workspace@/@net_smb_private@')
+
+        begin
+          Dir.mkdir path
+        rescue Errno::EEXIST
+          # An earlier run created the directory.
+        end
+
+        File.write File.join(path, 'smb.conf'), content
+      end
+
       def control_device_command(device_name, qemu_replacement_map)
         type = __method__.to_s.split('_').first
 
@@ -156,15 +169,27 @@ module AutoHCK
         net_base = "#{transfer_net}.0/24"
         smb_server = "#{transfer_net}.4"
 
-        netdev_options = "net=#{net_base},smb=#{path},smbserver=#{smb_server},restrict=on,ifname=@net_if_name@"
+        # Mapping the current user to root will make smbd assume it can drop and
+        # re-add supplementary groups. However, re-adding supplementary groups
+        # do not work because they are typically not mapped in the current user
+        # namespace. Map the current user to nobody when running smbd so that
+        # smbd will run in the non-root mode.
+        net_smb_cmd = qemu_replacement_map.create_cmd(
+          'unshare --map-user=nobody smbd -l smb_@run_id@_@client_id@ -s smb_@run_id@_@client_id@/smb.conf'
+        )
+
+        netdev_options = ",net=#{net_base},guestfwd=:#{smb_server}:445-cmd:#{net_smb_cmd},restrict=on"
         network_backend = 'user'
 
         options = {
           '@network_backend@' => network_backend,
-          '@netdev_options@' => netdev_options
+          '@netdev_options@' => netdev_options,
+          '@net_smb_private@' => 'smb_@run_id@_@client_id@',
+          '@net_smb_share@' => path
         }
 
-        cmd, = device_command_info(type, device_name, options, qemu_replacement_map)
+        cmd, replacement_map = device_command_info(type, device_name, options, qemu_replacement_map)
+        create_net_smb replacement_map
 
         cmd
       end

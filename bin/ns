@@ -44,7 +44,8 @@ fork do
     # Call newgidmap so that virtiofsd can use setgroups() to drop subgroups.
     # unshare command in util-linux 2.38 can call newgidmap by its own, but
     # unfortunately it is not available on some supported systems.
-    system 'newgidmap', parent.to_s, subid_start, subid_start, subid_count, exception: true
+    system 'newgidmap', parent.to_s, '0', Process.gid.to_s, '1',
+           subid_start, subid_start, subid_count, exception: true
   end
 
   slirp = spawn('slirp4netns', '-r', r_write.fileno.to_s,

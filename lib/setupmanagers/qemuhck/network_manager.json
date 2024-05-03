@@ -32,5 +32,29 @@
       "ip link set @bridge_name@ txqueuelen 11000",
       "ethtool -K ${1} tx off"
     ]
-  }
+  },
+  "smb": [
+    "[global]",
+    "private dir=@net_smb_private@",
+    "interfaces=127.0.0.1",
+    "bind interfaces only=yes",
+    "pid directory=@net_smb_private@",
+    "lock directory=@net_smb_private@",
+    "state directory=@net_smb_private@",
+    "cache directory=@net_smb_private@",
+    "ncalrpc dir=@net_smb_private@/ncalrpc",
+    "log file=@net_smb_private@/log.smbd",
+    "smb passwd file=@net_smb_private@/smbpasswd",
+    "security = user",
+    "map to guest = Bad User",
+    "load printers = no",
+    "printing = bsd",
+    "disable spoolss = yes",
+    "usershare max shares = 0",
+    "[qemu]",
+    "path=@net_smb_share@",
+    "read only=no",
+    "guest ok=yes",
+    "force user=nobody"
+  ]
 }
