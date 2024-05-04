@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'shellwords'
+
 # AutoHCK module
 module AutoHCK
   class ReplacementMap
@@ -30,6 +32,14 @@ module AutoHCK
         # and variables such as $1, $2, $`, $&, and $' will be set appropriately.
         # The value returned by the block will be substituted for the match on each call.
         result = result.gsub(k) { v }
+      end
+      result
+    end
+
+    def create_cmd(str)
+      result = str.to_s
+      @hash.each do |k, v|
+        result = result.gsub(k) { v.shellescape }
       end
       result
     end

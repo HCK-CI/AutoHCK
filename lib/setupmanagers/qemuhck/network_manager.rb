@@ -80,7 +80,7 @@ module AutoHCK
 
         replacement_map = device_replacement_map(type, device, type_config, qemu_replacement_map)
         replacement_map.merge! command_options
-        device_command = replacement_map.replace(device['command_line'].join(' '))
+        device_command = replacement_map.create_cmd(device['command_line'].join(' '))
 
         @logger.debug("Device #{device_name} used as #{type} device")
         @logger.debug("Device command: #{device_command}")
@@ -92,7 +92,7 @@ module AutoHCK
         script_data = @config['scripts']['net_up'].join("\n")
 
         full_name = replacement_map.replace('@net_up_script@')
-        file_content = replacement_map.replace(script_data)
+        file_content = replacement_map.create_cmd(script_data)
         File.write(full_name, file_content)
         FileUtils.chmod(0o755, full_name)
       end
