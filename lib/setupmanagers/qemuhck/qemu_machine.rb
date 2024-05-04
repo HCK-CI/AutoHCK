@@ -374,6 +374,7 @@ module AutoHCK
         '@run_id_first@' => @id_first,
         '@run_id_second@' => @id_second,
         '@client_id@' => @client_id,
+        '@source@' => Dir.pwd,
         '@workspace@' => @workspace_path,
         '@cpu@' => option_config('cpu'),
         '@cpu_count@' => option_config('cpu_count'),
