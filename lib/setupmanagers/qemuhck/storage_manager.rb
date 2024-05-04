@@ -36,7 +36,7 @@ module AutoHCK
       def device_command_info(type, device_name, command_options, qemu_replacement_map)
         device = read_device(device_name)
         replacement_map = qemu_replacement_map.merge command_options
-        device_command = replacement_map.replace(device['command_line'].join(' '))
+        device_command = replacement_map.create_cmd(device['command_line'].join(' '))
 
         @logger.debug("Device #{device_name} used as #{type} device")
         @logger.debug("Device command: #{device_command}")

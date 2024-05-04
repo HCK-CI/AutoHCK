@@ -84,7 +84,7 @@ module AutoHCK
       def run_qemu(scope, pgroup:)
         @logger.info("Starting #{@run_name}")
         @qmp = QMP.new(scope, @run_name, @logger)
-        cmd = @machine.full_replacement_map.replace(@machine.dirty_command.join(' '))
+        cmd = @machine.qemu_cmd
         cmd += " -chardev socket,id=qmp,fd=#{@qmp.socket.fileno},server=off -mon chardev=qmp,mode=control"
         qemu = CmdRun.new(@logger, cmd, pgroup:, @qmp.socket.fileno => @qmp.socket.fileno)
         @logger.info("#{@run_name} started with PID #{qemu.pid}")
@@ -438,7 +438,7 @@ module AutoHCK
         @device_commands << dev
       else
         cmd = device_info['command_line'].join(' ')
-        @device_commands << full_replacement_map.replace(cmd)
+        @device_commands << full_replacement_map.create_cmd(cmd)
       end
     end
 
@@ -534,16 +534,18 @@ module AutoHCK
       cmd
     end
 
-    def dirty_command
+    def qemu_cmd
       [
-        *base_cmd,
-        *fw_cmd,
-        @machine['machine_uuid'],
-        @machine['pcie_root_port'],
-        *@device_commands,
-        *iso_cmd,
-        "-name #{@run_name}"
-      ].compact
+        full_replacement_map.create_cmd([
+          *base_cmd,
+          *fw_cmd,
+          @machine['machine_uuid'],
+          @machine['pcie_root_port'],
+          *iso_cmd,
+          "-name #{@run_name}"
+        ].compact.join(' ')),
+        *@device_commands
+      ].join(" \\\n")
     end
 
     def find_world_ip
@@ -596,7 +598,7 @@ module AutoHCK
 
     def run_config_commands
       @config_commands.each do |dirty_cmd|
-        cmd = full_replacement_map.replace(dirty_cmd)
+        cmd = full_replacement_map.create_cmd(dirty_cmd)
         run_cmd(cmd)
       end
     end
@@ -604,7 +606,7 @@ module AutoHCK
     def run_pre_start_commands(pgroup:)
       Timeout.timeout(60) do
         @pre_start_commands.each do |dirty_cmd|
-          cmd = full_replacement_map.replace(dirty_cmd)
+          cmd = full_replacement_map.create_cmd(dirty_cmd)
           run_cmd(cmd, pgroup:)
         end
       end
@@ -613,7 +615,7 @@ module AutoHCK
     def run_post_stop_commands(pgroup:)
       Timeout.timeout(60) do
         @post_stop_commands.each do |dirty_cmd|
-          cmd = full_replacement_map.replace(dirty_cmd)
+          cmd = full_replacement_map.create_cmd(dirty_cmd)
           run_cmd_no_fail(cmd, pgroup:)
         end
       end
@@ -647,7 +649,7 @@ module AutoHCK
 
     def merge_commands_array(arr)
       arr.reduce('') do |sum, dirty_cmd|
-        "#{sum}#{full_replacement_map.replace(dirty_cmd)}\n"
+        "#{sum}#{full_replacement_map.create_cmd(dirty_cmd)}\n"
       end
     end
 
@@ -664,7 +666,7 @@ module AutoHCK
         #{merge_commands_array(@pre_start_commands)}
 
         # QEMU command line
-        #{full_replacement_map.replace(dirty_command.join(" \\\n"))}
+        #{qemu_cmd}
 
         # QEMU post stop commands
         #{merge_commands_array(@post_stop_commands)}
