@@ -34,7 +34,7 @@ GEM
     connection_pool (2.4.1)
     curb (1.0.5)
     diff-lcs (1.5.1)
-    dotenv (3.1.0)
+    dotenv (3.1.2)
     drb (2.2.1)
     dropbox_api (0.1.21)
       faraday (< 3.0)
