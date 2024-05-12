@@ -6,16 +6,16 @@
   "clients": {
     "c1": {
       "name": "CL1",
-      "cpus": "4",
+      "cpus": 4,
       "memory_gb": 8,
-      "winrm_port": "4002",
+      "winrm_port": 4002,
       "image": "HLK1809-C1-Win10_1809x64.qcow2"
     },
     "c2": {
       "name": "CL2",
-      "cpus": "4",
+      "cpus": 4,
       "memory_gb": 8,
-      "winrm_port": "4003",
+      "winrm_port": 4003,
       "image": "HLK1809-C2-Win10_1809x64.qcow2"
     }
   }
