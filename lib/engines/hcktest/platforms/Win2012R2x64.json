@@ -6,16 +6,16 @@
   "clients": {
     "c1": {
       "name": "CL1",
-      "cpus": "4",
+      "cpus": 4,
       "memory_gb": 2,
-      "winrm_port": "4002",
+      "winrm_port": 4002,
       "image": "HCK-C1-Win2012R2x64.qcow2"
     },
     "c2": {
       "name": "CL2",
-      "cpus": "4",
+      "cpus": 4,
       "memory_gb": 2,
-      "winrm_port": "4003",
+      "winrm_port": 4003,
       "image": "HCK-C2-Win2012R2x64.qcow2"
     }
   }
