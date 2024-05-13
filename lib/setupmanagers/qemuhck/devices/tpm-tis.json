@@ -6,7 +6,6 @@
     "-device tpm-tis,tpmdev=tpm0"
   ],
   "define_variables": {
-    "@tpm_pid@": "@workspace@/swtpm_@run_id@_@client_id@.pid",
     "@tpm_localca_dir@": "@workspace@/swtpm_localca_@run_id@_@client_id@",
     "@tpm_state_dir@": "@workspace@/swtpm_state_@run_id@_@client_id@",
     "@tpm_socket@": "/tmp/swtpm_@run_id@_@client_id@_sock"
@@ -17,9 +16,6 @@
   ],
   "pre_start_commands": [
     "rm -f @tpm_socket@",
-    "swtpm socket --daemon --pid file=@tpm_pid@ --tpm2 --tpmstate dir=@tpm_state_dir@ --ctrl type=unixio,path=@tpm_socket@ --log file=@tpm_state_dir@/swtpm.log,level=20"
-  ],
-  "post_stop_commands": [
-    "kill $(cat @tpm_pid@) || true"
+    "@source@/bin/unix_spawn @tpm_socket@ swtpm socket --tpm2 --tpmstate dir=@tpm_state_dir@ --ctrl type=unixio,fd=3 --log file=@tpm_state_dir@/swtpm.log,level=20"
   ]
 }
