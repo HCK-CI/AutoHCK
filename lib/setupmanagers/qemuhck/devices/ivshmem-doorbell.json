@@ -5,15 +5,13 @@
     "-device ivshmem-doorbell@device_extra_param@,chardev=ivshmemid"
   ],
   "define_variables": {
-    "@ivshmem_socket@": "/tmp/ivshmem_socket_@run_id@_@client_id@",
-    "@ivshmem_pid@": "/var/run/ivshmem-server_@run_id@_@client_id@.pid"
+    "@ivshmem_socket@": "/tmp/ivshmem_socket_@run_id@_@client_id@"
   },
   "pre_start_commands": [
-    "rm -f @ivshmem_socket@ @ivshmem_pid@",
-    "@ivshmem_server_bin@ -p @ivshmem_pid@ -S @ivshmem_socket@"
+    "rm -f @ivshmem_socket@",
+    "@ivshmem_server_bin@ -FS @ivshmem_socket@ &"
   ],
   "post_stop_commands": [
-    "kill $(cat @ivshmem_pid@)",
-    "rm -f @ivshmem_socket@ @ivshmem_pid@"
+    "rm -f @ivshmem_socket@"
   ]
 }
