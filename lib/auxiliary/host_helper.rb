@@ -10,12 +10,12 @@ require_relative 'cmd_run'
 module AutoHCK
   # Helper module
   module Helper
-    def run_cmd(cmd)
-      CmdRun.new(@logger, cmd).wait
+    def run_cmd(...)
+      CmdRun.new(@logger, ...).wait
     end
 
-    def run_cmd_no_fail(cmd)
-      CmdRun.new(@logger, cmd).wait_no_fail
+    def run_cmd_no_fail(...)
+      CmdRun.new(@logger, ...).wait_no_fail
     end
 
     def file_gsub(src, dst, gsub_list)
