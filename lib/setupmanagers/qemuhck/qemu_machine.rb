@@ -9,6 +9,7 @@ require_relative 'exceptions'
 
 require_relative '../../auxiliary/json_helper'
 require_relative '../../auxiliary/host_helper'
+require_relative '../../auxiliary/pgroup'
 require_relative '../../auxiliary/resource_scope'
 require_relative '../../auxiliary/string_helper'
 
@@ -65,7 +66,8 @@ module AutoHCK
         @run_opts = run_opts
         @keep_alive = run_opts[:keep_alive]
         @delete_snapshot = run_opts[:create_snapshot]
-        run_vm
+        @machine.dump_config
+        @qemu_thread = Thread.new { run_vm }
         scope << self
       end
 
@@ -79,12 +81,12 @@ module AutoHCK
         # @qmp is closed.
       end
 
-      def run_qemu(scope)
+      def run_qemu(scope, pgroup:)
         @logger.info("Starting #{@run_name}")
         @qmp = QMP.new(scope, @run_name, @logger)
         cmd = replace_string_recursive(@machine.dirty_command.join(' '), @machine.full_replacement_list)
         cmd += " -chardev socket,id=qmp,fd=#{@qmp.socket.fileno},server=off -mon chardev=qmp,mode=control"
-        qemu = CmdRun.new(@logger, cmd, { @qmp.socket.fileno => @qmp.socket.fileno })
+        qemu = CmdRun.new(@logger, cmd, pgroup:, @qmp.socket.fileno => @qmp.socket.fileno)
         @logger.info("#{@run_name} started with PID #{qemu.pid}")
         qemu
       end
@@ -102,15 +104,14 @@ module AutoHCK
       end
 
       def run_vm
-        @machine.dump_config
-
-        @qemu_thread = Thread.new do
-          loop do
+        loop do
+          ResourceScope.open do |scope|
             qemu = nil
-            ResourceScope.open do |scope|
-              @machine.run_pre_start_commands
+            pgroup = Pgroup.new(scope).pid
+            begin
+              @machine.run_pre_start_commands(pgroup:)
 
-              qemu = run_qemu(scope)
+              qemu = run_qemu(scope, pgroup:)
               fails_quickly = check_fails_too_quickly(qemu.wait_no_fail.exitstatus)
               qemu = nil
 
@@ -120,11 +121,11 @@ module AutoHCK
                 Process.kill 'KILL', qemu.pid
                 qemu.wait_no_fail
               end
-              @machine.run_post_stop_commands
+              @machine.run_post_stop_commands(pgroup:)
             end
-
-            break unless @keep_alive
           end
+
+          break unless @keep_alive
         end
       end
 
@@ -599,20 +600,20 @@ module AutoHCK
       end
     end
 
-    def run_pre_start_commands
+    def run_pre_start_commands(pgroup:)
       Timeout.timeout(60) do
         @pre_start_commands.each do |dirty_cmd|
           cmd = replace_string_recursive(dirty_cmd, full_replacement_list)
-          run_cmd(cmd)
+          run_cmd(cmd, pgroup:)
         end
       end
     end
 
-    def run_post_stop_commands
+    def run_post_stop_commands(pgroup:)
       Timeout.timeout(60) do
         @post_stop_commands.each do |dirty_cmd|
           cmd = replace_string_recursive(dirty_cmd, full_replacement_list)
-          run_cmd_no_fail(cmd)
+          run_cmd_no_fail(cmd, pgroup:)
         end
       end
     end
@@ -653,20 +654,22 @@ module AutoHCK
       dump_config
 
       file_name = "#{@workspace_path}/#{@run_name}_manual.sh"
-      content = [
-        "#!/usr/bin/env bash\n",
+      content = <<~BASH
+        #!/usr/bin/env bash
 
-        "\n\n# QEMU pre start commands\n",
-        merge_commands_array(@pre_start_commands),
+        trap 'trap "" SIGTERM && kill 0' EXIT
 
-        "\n\n# QEMU command line\n",
-        replace_string_recursive(dirty_command.join(" \\\n"), full_replacement_list),
+        # QEMU pre start commands
+        #{merge_commands_array(@pre_start_commands)}
 
-        "\n\n# QEMU post stop commands\n",
-        merge_commands_array(@post_stop_commands)
-      ]
+        # QEMU command line
+        #{replace_string_recursive(dirty_command.join(" \\\n"), full_replacement_list)}
 
-      create_run_script(file_name, content.join)
+        # QEMU post stop commands
+        #{merge_commands_array(@post_stop_commands)}
+      BASH
+
+      create_run_script(file_name, content)
 
       return if @config_commands.empty?
 
