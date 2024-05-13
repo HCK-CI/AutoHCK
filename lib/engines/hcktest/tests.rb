@@ -249,8 +249,18 @@ module AutoHCK
       @tests.reduce('') do |sum, test|
         extra_info = @tests_extra.dig(test['id'], 'dump') ? '(with Minidump)' : ''
         status = @tests_extra.dig(test['id'], 'status') || test['status']
-        sum + "#{status}: #{test['name']} [#{test['estimatedruntime']}] #{extra_info}\n"
+
+        sum + "#{status}: #{test['name']} [#{test['estimatedruntime']}]#{extra_info}#{format_times(test)}\n"
       end
+    end
+
+    def format_times(test)
+      queued_at = @tests_extra.dig(test['id'], 'queued_at')
+      queued_at_str = queued_at ? " [Queued time: #{queued_at}]" : ''
+      started_at = @tests_extra.dig(test['id'], 'started_at')
+      started_at_str = started_at ? " [Started time: #{started_at}]" : ''
+
+      "#{queued_at_str}#{started_at_str}"
     end
 
     def update_summary_results_log
