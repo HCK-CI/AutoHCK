@@ -7,6 +7,9 @@ Metrics/MethodLength:
 Naming/InclusiveLanguage:
   Enabled: True
 
+Style/Documentation:
+  Enabled: False
+
 # Excluding spec files
 AllCops:
   NewCops: enable
