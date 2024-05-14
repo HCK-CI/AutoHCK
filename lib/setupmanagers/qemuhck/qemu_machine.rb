@@ -84,9 +84,7 @@ module AutoHCK
       def run_qemu(scope, pgroup:)
         @logger.info("Starting #{@run_name}")
         @qmp = QMP.new(scope, @run_name, @logger)
-        cmd = @machine.qemu_cmd
-        cmd += " -chardev socket,id=qmp,fd=#{@qmp.socket.fileno},server=off -mon chardev=qmp,mode=control"
-        qemu = CmdRun.new(@logger, cmd, pgroup:, @qmp.socket.fileno => @qmp.socket.fileno)
+        qemu = @machine.run_qemu(@qmp, pgroup:)
         @logger.info("#{@run_name} started with PID #{qemu.pid}")
         qemu
       end
@@ -607,7 +605,7 @@ module AutoHCK
       Timeout.timeout(60) do
         @pre_start_commands.each do |dirty_cmd|
           cmd = full_replacement_map.create_cmd(dirty_cmd)
-          run_cmd(cmd, pgroup:)
+          run_cmd(cmd, chdir: @workspace_path, pgroup:)
         end
       end
     end
@@ -616,9 +614,17 @@ module AutoHCK
       Timeout.timeout(60) do
         @post_stop_commands.each do |dirty_cmd|
           cmd = full_replacement_map.create_cmd(dirty_cmd)
-          run_cmd_no_fail(cmd, pgroup:)
+          run_cmd_no_fail(cmd, chdir: @workspace_path, pgroup:)
         end
       end
+    end
+
+    def run_qemu(qmp, pgroup:)
+      cmd = qemu_cmd
+      cmd += " -chardev socket,id=qmp,fd=#{qmp.socket.fileno},server=off -mon chardev=qmp,mode=control"
+      CmdRun.new(@logger, cmd,
+                 chdir: @workspace_path, pgroup:,
+                 qmp.socket.fileno => qmp.socket.fileno)
     end
 
     def check_image_exist
@@ -660,6 +666,7 @@ module AutoHCK
       content = <<~BASH
         #!/usr/bin/env bash
 
+        #{full_replacement_map.create_cmd('cd @workspace@')}
         trap 'trap "" SIGTERM && kill 0' EXIT
 
         # QEMU pre start commands

@@ -5,7 +5,7 @@
     "-device ivshmem-doorbell@device_extra_param@,chardev=ivshmemid"
   ],
   "define_variables": {
-    "@ivshmem_socket@": "/tmp/ivshmem_socket_@run_id@_@client_id@"
+    "@ivshmem_socket@": "ivshmem_socket_@run_id@_@client_id@"
   },
   "pre_start_commands": [
     "rm -f @ivshmem_socket@",
