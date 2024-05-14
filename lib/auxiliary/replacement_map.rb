@@ -2,11 +2,27 @@
 
 # AutoHCK module
 module AutoHCK
-  # Helper module
-  module Helper
-    def replace_string(str, replacement_list)
-      result = str
-      replacement_list.each do |k, v|
+  class ReplacementMap
+    def initialize(...)
+      @hash = {}
+      merge!(...)
+    end
+
+    def each(...)
+      @hash.each(...)
+    end
+
+    def merge(...)
+      self.class.new(self, ...)
+    end
+
+    def merge!(*args)
+      args.each { |arg| arg&.each { |k, v| @hash[k] = replace(v) } }
+    end
+
+    def replace(str)
+      result = str.to_s
+      @hash.each do |k, v|
         # If replacement is a String it will be substituted for the matched text.
         # It may contain back-references to the pattern's capture groups of the form \d,
         # where d is a group number, or \k<n>, where n is a group name.
@@ -16,13 +32,6 @@ module AutoHCK
         result = result.gsub(k) { v }
       end
       result
-    end
-
-    def replace_string_recursive(str, replacement_list)
-      result = replace_string(str, replacement_list)
-      return result if result == str
-
-      replace_string_recursive(result, replacement_list)
     end
   end
 end
