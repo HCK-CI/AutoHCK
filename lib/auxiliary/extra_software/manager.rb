@@ -4,7 +4,7 @@ require 'pathname'
 
 require './lib/auxiliary/downloader'
 require './lib/auxiliary/json_helper'
-require './lib/auxiliary/string_helper'
+require './lib/auxiliary/replacement_map'
 require './lib/auxiliary/extra_software/exceptions'
 require './lib/engines/hckinstall/setup_scripts_helper'
 
@@ -101,14 +101,14 @@ module AutoHCK
       path = tools.upload_to_machine(machine_name, Pathname.new(@ext_path).join(sw_name))
       path = path.tr('/', '\\')
 
-      replacement_list = {
+      replacement_map = ReplacementMap.new(
         '@sw_path@' => path,
         '@file_name@' => sw_config['file_name'],
         '@temp@' => '${env:TEMP}'
-      }
+      )
 
       cmd = "#{sw_config['install_cmd']} #{sw_config['install_args']}"
-      full_cmd = replace_string(cmd, replacement_list)
+      full_cmd = replacement_map.replace(cmd)
 
       @logger.debug("cmd #{machine_name}:\n - path = #{path}\n - cmd = #{cmd}\n - full_cmd = #{full_cmd}\n")
       tools.run_on_machine(machine_name, "Installing #{sw_name}", full_cmd)

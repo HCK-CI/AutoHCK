@@ -10,8 +10,8 @@ require_relative 'exceptions'
 require_relative '../../auxiliary/json_helper'
 require_relative '../../auxiliary/host_helper'
 require_relative '../../auxiliary/pgroup'
+require_relative '../../auxiliary/replacement_map'
 require_relative '../../auxiliary/resource_scope'
-require_relative '../../auxiliary/string_helper'
 
 # AutoHCK module
 module AutoHCK
@@ -84,7 +84,7 @@ module AutoHCK
       def run_qemu(scope, pgroup:)
         @logger.info("Starting #{@run_name}")
         @qmp = QMP.new(scope, @run_name, @logger)
-        cmd = replace_string_recursive(@machine.dirty_command.join(' '), @machine.full_replacement_list)
+        cmd = @machine.full_replacement_map.replace(@machine.dirty_command.join(' '))
         cmd += " -chardev socket,id=qmp,fd=#{@qmp.socket.fileno},server=off -mon chardev=qmp,mode=control"
         qemu = CmdRun.new(@logger, cmd, pgroup:, @qmp.socket.fileno => @qmp.socket.fileno)
         @logger.info("#{@run_name} started with PID #{qemu.pid}")
@@ -329,7 +329,7 @@ module AutoHCK
       load_fw
     end
 
-    def config_replacement_list
+    def config_replacement_map
       {
         '@qemu_bin@' => @config['qemu_bin'],
         '@ivshmem_server_bin@' => @config['ivshmem_server_bin'],
@@ -338,7 +338,7 @@ module AutoHCK
       }
     end
 
-    def machine_replacement_list
+    def machine_replacement_map
       {
         '@bus_name@' => @machine['bus_name'],
         '@ctrl_bus_name@' => @machine['ctrl_bus_name'],
@@ -348,7 +348,7 @@ module AutoHCK
       }
     end
 
-    def memory_replacement_list
+    def memory_replacement_map
       memory_gb = option_config('memory_gb')
 
       {
@@ -358,7 +358,7 @@ module AutoHCK
       }
     end
 
-    def options_replacement_list
+    def options_replacement_map
       {
         '@machine_options@' => @machine_options.join(','),
         '@device_extra_param@' => @device_extra_param.join,
@@ -368,25 +368,25 @@ module AutoHCK
       }
     end
 
-    def full_replacement_list
-      {
-        '@run_id@' => @id,
-        '@run_id_first@' => @id_first,
-        '@run_id_second@' => @id_second,
-        '@client_id@' => @client_id,
-        '@source@' => Dir.pwd,
-        '@workspace@' => @workspace_path,
-        '@cpu@' => option_config('cpu'),
-        '@cpu_count@' => option_config('cpu_count'),
-        '@cpu_model@' => option_config('cpu_model'),
-        '@vnc_id@' => @vnc_id,
-        '@vnc_port@' => @vnc_port,
-        '@qemu_monitor_port@' => @monitor_port
-      }.merge(config_replacement_list)
-        .merge(machine_replacement_list)
-        .merge(memory_replacement_list)
-        .merge(options_replacement_list)
-        .merge(@define_variables)
+    def full_replacement_map
+      ReplacementMap.new({
+                           '@run_id@' => @id,
+                           '@run_id_first@' => @id_first,
+                           '@run_id_second@' => @id_second,
+                           '@client_id@' => @client_id,
+                           '@source@' => Dir.pwd,
+                           '@workspace@' => @workspace_path,
+                           '@cpu@' => option_config('cpu'),
+                           '@cpu_count@' => option_config('cpu_count'),
+                           '@cpu_model@' => option_config('cpu_model'),
+                           '@vnc_id@' => @vnc_id,
+                           '@vnc_port@' => @vnc_port,
+                           '@qemu_monitor_port@' => @monitor_port
+                         }, config_replacement_map,
+                         machine_replacement_map,
+                         memory_replacement_map,
+                         options_replacement_map,
+                         @define_variables)
     end
 
     def read_device(device)
@@ -431,14 +431,14 @@ module AutoHCK
     def process_device_command(device_info)
       case device_info['type']
       when 'network'
-        dev = @nm.test_device_command(device_info['name'], full_replacement_list)
+        dev = @nm.test_device_command(device_info['name'], full_replacement_map)
         @device_commands << dev
       when 'storage'
-        dev = @sm.test_device_command(device_info['name'], full_replacement_list)
+        dev = @sm.test_device_command(device_info['name'], full_replacement_map)
         @device_commands << dev
       else
         cmd = device_info['command_line'].join(' ')
-        @device_commands << replace_string_recursive(cmd, full_replacement_list)
+        @device_commands << full_replacement_map.replace(cmd)
       end
     end
 
@@ -448,13 +448,13 @@ module AutoHCK
       dev = @nm.transfer_device_command(@config['transfer_net_device'],
                                         @config['share_on_host_net'],
                                         @config['share_on_host_path'],
-                                        full_replacement_list)
+                                        full_replacement_map)
       @device_commands << dev
     end
 
     def process_world_hck_network
       dev = @nm.world_device_command(option_config('world_net_device'),
-                                     full_replacement_list)
+                                     full_replacement_map)
       @device_commands << dev
     end
 
@@ -468,7 +468,7 @@ module AutoHCK
 
     def process_hck_network_command
       dev = @nm.control_device_command(option_config('ctrl_net_device'),
-                                       full_replacement_list)
+                                       full_replacement_map)
       @device_commands << dev
 
       process_optional_hck_network
@@ -479,7 +479,7 @@ module AutoHCK
     end
 
     def process_storage_command
-      dev, @image_path = @sm.boot_device_command(option_config('boot_device'), @run_opts, full_replacement_list)
+      dev, @image_path = @sm.boot_device_command(option_config('boot_device'), @run_opts, full_replacement_map)
       @device_commands << dev
     end
 
@@ -547,7 +547,7 @@ module AutoHCK
     end
 
     def find_world_ip
-      @nm.find_world_ip option_config('world_net_device'), full_replacement_list
+      @nm.find_world_ip option_config('world_net_device'), full_replacement_map
     end
 
     def dump_config
@@ -581,7 +581,7 @@ module AutoHCK
       #  S3 enabled..................${ENABLE_S3}
       #  S4 enabled..................${ENABLE_S4}
       #  Snapshot mode.............. ${SNAPSHOT}
-      @logger.info(replace_string_recursive(config.join("\n"), full_replacement_list))
+      @logger.info(full_replacement_map.replace(config.join("\n")))
     end
 
     def create_run_script(file_name, file_content)
@@ -596,7 +596,7 @@ module AutoHCK
 
     def run_config_commands
       @config_commands.each do |dirty_cmd|
-        cmd = replace_string_recursive(dirty_cmd, full_replacement_list)
+        cmd = full_replacement_map.replace(dirty_cmd)
         run_cmd(cmd)
       end
     end
@@ -604,7 +604,7 @@ module AutoHCK
     def run_pre_start_commands(pgroup:)
       Timeout.timeout(60) do
         @pre_start_commands.each do |dirty_cmd|
-          cmd = replace_string_recursive(dirty_cmd, full_replacement_list)
+          cmd = full_replacement_map.replace(dirty_cmd)
           run_cmd(cmd, pgroup:)
         end
       end
@@ -613,7 +613,7 @@ module AutoHCK
     def run_post_stop_commands(pgroup:)
       Timeout.timeout(60) do
         @post_stop_commands.each do |dirty_cmd|
-          cmd = replace_string_recursive(dirty_cmd, full_replacement_list)
+          cmd = full_replacement_map.replace(dirty_cmd)
           run_cmd_no_fail(cmd, pgroup:)
         end
       end
@@ -647,7 +647,7 @@ module AutoHCK
 
     def merge_commands_array(arr)
       arr.reduce('') do |sum, dirty_cmd|
-        "#{sum}#{replace_string_recursive(dirty_cmd, full_replacement_list)}\n"
+        "#{sum}#{full_replacement_map.replace(dirty_cmd)}\n"
       end
     end
 
@@ -664,7 +664,7 @@ module AutoHCK
         #{merge_commands_array(@pre_start_commands)}
 
         # QEMU command line
-        #{replace_string_recursive(dirty_command.join(" \\\n"), full_replacement_list)}
+        #{full_replacement_map.replace(dirty_command.join(" \\\n"))}
 
         # QEMU post stop commands
         #{merge_commands_array(@post_stop_commands)}
