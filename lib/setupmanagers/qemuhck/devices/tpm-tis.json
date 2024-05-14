@@ -8,7 +8,7 @@
   "define_variables": {
     "@tpm_localca_dir@": "@workspace@/swtpm_localca_@run_id@_@client_id@",
     "@tpm_state_dir@": "@workspace@/swtpm_state_@run_id@_@client_id@",
-    "@tpm_socket@": "/tmp/swtpm_@run_id@_@client_id@_sock"
+    "@tpm_socket@": "swtpm_@run_id@_@client_id@_sock"
   },
   "config_commands": [
     "mkdir -p @tpm_localca_dir@ @tpm_state_dir@",
