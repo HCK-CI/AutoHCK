@@ -97,44 +97,44 @@ class RuboCop::CLI
 
   private
 
-  # source://rubocop//lib/rubocop/cli.rb#152
+  # source://rubocop//lib/rubocop/cli.rb#156
   def act_on_options; end
 
-  # source://rubocop//lib/rubocop/cli.rb#194
+  # source://rubocop//lib/rubocop/cli.rb#198
   def apply_default_formatter; end
 
-  # source://rubocop//lib/rubocop/cli.rb#121
+  # source://rubocop//lib/rubocop/cli.rb#125
   def execute_runners; end
 
-  # source://rubocop//lib/rubocop/cli.rb#178
+  # source://rubocop//lib/rubocop/cli.rb#182
   def handle_editor_mode; end
 
   # @raise [Finished]
   #
-  # source://rubocop//lib/rubocop/cli.rb#183
+  # source://rubocop//lib/rubocop/cli.rb#187
   def handle_exiting_options; end
 
-  # source://rubocop//lib/rubocop/cli.rb#140
+  # source://rubocop//lib/rubocop/cli.rb#144
   def parallel_by_default!; end
 
-  # source://rubocop//lib/rubocop/cli.rb#76
+  # source://rubocop//lib/rubocop/cli.rb#80
   def profile_if_needed; end
 
-  # source://rubocop//lib/rubocop/cli.rb#109
+  # source://rubocop//lib/rubocop/cli.rb#113
   def require_gem(name); end
 
-  # source://rubocop//lib/rubocop/cli.rb#117
+  # source://rubocop//lib/rubocop/cli.rb#121
   def run_command(name); end
 
-  # source://rubocop//lib/rubocop/cli.rb#170
+  # source://rubocop//lib/rubocop/cli.rb#174
   def set_options_to_config_loader; end
 
-  # source://rubocop//lib/rubocop/cli.rb#129
+  # source://rubocop//lib/rubocop/cli.rb#133
   def suggest_extensions; end
 
   # @raise [OptionArgumentError]
   #
-  # source://rubocop//lib/rubocop/cli.rb#133
+  # source://rubocop//lib/rubocop/cli.rb#137
   def validate_options_vs_config; end
 end
 
@@ -541,7 +541,7 @@ end
 #
 # @api private
 #
-# source://rubocop//lib/rubocop/cli/command/suggest_extensions.rb#11
+# source://rubocop//lib/rubocop/cli/command/suggest_extensions.rb#12
 class RuboCop::CLI::Command::SuggestExtensions < ::RuboCop::CLI::Command::Base
   # @api private
   #
@@ -776,7 +776,7 @@ class RuboCop::CommentConfig
   # source://rubocop//lib/rubocop/comment_config.rb#63
   def comment_only_line?(line_number); end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def config(*args, **_arg1, &block); end
 
   # source://rubocop//lib/rubocop/comment_config.rb#51
@@ -800,7 +800,7 @@ class RuboCop::CommentConfig
   # source://rubocop//lib/rubocop/comment_config.rb#30
   def processed_source; end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def registry(*args, **_arg1, &block); end
 
   private
@@ -976,10 +976,10 @@ class RuboCop::Config
   # source://rubocop//lib/rubocop/config.rb#30
   def initialize(hash = T.unsafe(nil), loaded_path = T.unsafe(nil)); end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def [](*args, **_arg1, &block); end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def []=(*args, **_arg1, &block); end
 
   # @return [Boolean]
@@ -1018,13 +1018,13 @@ class RuboCop::Config
   # source://rubocop//lib/rubocop/config.rb#142
   def clusivity_config_for_badge?(badge); end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def delete(*args, **_arg1, &block); end
 
   # source://rubocop//lib/rubocop/config.rb#108
   def deprecation_check; end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def dig(*args, **_arg1, &block); end
 
   # @return [Boolean]
@@ -1032,10 +1032,10 @@ class RuboCop::Config
   # source://rubocop//lib/rubocop/config.rb#162
   def disabled_new_cops?; end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def each(*args, **_arg1, &block); end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def each_key(*args, **_arg1, &block); end
 
   # @return [Boolean]
@@ -1043,7 +1043,7 @@ class RuboCop::Config
   # source://rubocop//lib/rubocop/config.rb#166
   def enabled_new_cops?; end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def fetch(*args, **_arg1, &block); end
 
   # @return [Boolean]
@@ -1097,10 +1097,10 @@ class RuboCop::Config
   # source://rubocop//lib/rubocop/config.rb#76
   def internal?; end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def key?(*args, **_arg1, &block); end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def keys(*args, **_arg1, &block); end
 
   # source://rubocop//lib/rubocop/config.rb#47
@@ -1114,10 +1114,10 @@ class RuboCop::Config
   # source://rubocop//lib/rubocop/config.rb#81
   def make_excludes_absolute; end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def map(*args, **_arg1, &block); end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def merge(*args, **_arg1, &block); end
 
   # source://rubocop//lib/rubocop/config.rb#247
@@ -1143,7 +1143,7 @@ class RuboCop::Config
   # source://rubocop//lib/rubocop/config.rb#207
   def possibly_include_hidden?; end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def replace(*args, **_arg1, &block); end
 
   # source://rubocop//lib/rubocop/config.rb#71
@@ -1155,22 +1155,22 @@ class RuboCop::Config
   # source://rubocop//lib/rubocop/config.rb#251
   def target_rails_version; end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def target_ruby_version(*args, **_arg1, &block); end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def to_h(*args, **_arg1, &block); end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def to_hash(*args, **_arg1, &block); end
 
   # source://rubocop//lib/rubocop/config.rb#67
   def to_s; end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def transform_values(*args, **_arg1, &block); end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def validate(*args, **_arg1, &block); end
 
   # source://rubocop//lib/rubocop/config.rb#58
@@ -2263,10 +2263,10 @@ class RuboCop::ConfigValidator
   # source://rubocop//lib/rubocop/config_validator.rb#26
   def initialize(config); end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def for_all_cops(*args, **_arg1, &block); end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def smart_loaded_path(*args, **_arg1, &block); end
 
   # source://rubocop//lib/rubocop/config_validator.rb#62
@@ -10711,43 +10711,43 @@ class RuboCop::Cop::Layout::FirstArrayElementIndentation < ::RuboCop::Cop::Base
   # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#94
   def on_array(node); end
 
-  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#98
+  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#100
   def on_csend(node); end
 
-  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#98
+  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#100
   def on_send(node); end
 
   private
 
-  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#189
+  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#191
   def array_alignment_config; end
 
-  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#109
+  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#111
   def autocorrect(corrector, node); end
 
   # Returns the description of what the correct indentation is based on.
   #
-  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#147
+  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#149
   def base_description(indent_base_type); end
 
-  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#113
+  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#115
   def brace_alignment_style; end
 
-  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#117
+  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#119
   def check(array_node, left_parenthesis); end
 
-  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#131
+  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#133
   def check_right_bracket(right_bracket, first_elem, left_bracket, left_parenthesis); end
 
   # @return [Boolean]
   #
-  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#183
+  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#185
   def enforce_first_argument_with_fixed_indentation?; end
 
-  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#160
+  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#162
   def message(base_description); end
 
-  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#168
+  # source://rubocop//lib/rubocop/cop/layout/first_array_element_indentation.rb#170
   def message_for_right_bracket(indent_base_type); end
 end
 
@@ -19324,7 +19324,7 @@ RuboCop::Cop::Lint::FloatOutOfRange::MSG = T.let(T.unsafe(nil), String)
 #
 #   format('Numbered format: %1$s and numbered %2$s', a_value, another)
 #
-# source://rubocop//lib/rubocop/cop/lint/format_parameter_mismatch.rb#37
+# source://rubocop//lib/rubocop/cop/lint/format_parameter_mismatch.rb#38
 class RuboCop::Cop::Lint::FormatParameterMismatch < ::RuboCop::Cop::Base
   # source://rubocop//lib/rubocop/cop/lint/format_parameter_mismatch.rb#100
   def called_on_string?(param0 = T.unsafe(nil)); end
@@ -39674,10 +39674,10 @@ class RuboCop::Cop::Style::MagicCommentFormat::CommentRange
   # source://rubocop//lib/rubocop/cop/style/magic_comment_format.rb#125
   def directives; end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def loc(*args, **_arg1, &block); end
 
-  # source://forwardable/1.3.3/forwardable.rb#231
+  # source://forwardable/1.3.2/forwardable.rb#229
   def text(*args, **_arg1, &block); end
 
   # A magic comment can contain one value (normal style) or
@@ -41807,7 +41807,7 @@ RuboCop::Cop::Style::MultipleComparison::MSG = T.let(T.unsafe(nil), String)
 #   # shareable_constant_value: literal
 #   CONST = [1, 2, 3]
 #
-# source://rubocop//lib/rubocop/cop/style/mutable_constant.rb#83
+# source://rubocop//lib/rubocop/cop/style/mutable_constant.rb#87
 class RuboCop::Cop::Style::MutableConstant < ::RuboCop::Cop::Base
   include ::RuboCop::Cop::Style::MutableConstant::ShareableConstantValue
   include ::RuboCop::Cop::FrozenStringLiteral
@@ -43137,16 +43137,16 @@ class RuboCop::Cop::Style::NumericPredicate < ::RuboCop::Cop::Base
   include ::RuboCop::Cop::AllowedPattern
   extend ::RuboCop::Cop::AutoCorrector
 
-  # source://rubocop//lib/rubocop/cop/style/numeric_predicate.rb#166
+  # source://rubocop//lib/rubocop/cop/style/numeric_predicate.rb#174
   def comparison(param0 = T.unsafe(nil)); end
 
-  # source://rubocop//lib/rubocop/cop/style/numeric_predicate.rb#171
+  # source://rubocop//lib/rubocop/cop/style/numeric_predicate.rb#179
   def inverted_comparison(param0 = T.unsafe(nil)); end
 
   # source://rubocop//lib/rubocop/cop/style/numeric_predicate.rb#90
   def on_send(node); end
 
-  # source://rubocop//lib/rubocop/cop/style/numeric_predicate.rb#161
+  # source://rubocop//lib/rubocop/cop/style/numeric_predicate.rb#169
   def predicate(param0 = T.unsafe(nil)); end
 
   private
@@ -43159,23 +43159,28 @@ class RuboCop::Cop::Style::NumericPredicate < ::RuboCop::Cop::Base
   # source://rubocop//lib/rubocop/cop/style/numeric_predicate.rb#111
   def check(node); end
 
-  # source://rubocop//lib/rubocop/cop/style/numeric_predicate.rb#152
+  # source://rubocop//lib/rubocop/cop/style/numeric_predicate.rb#154
   def invert; end
-
-  # source://rubocop//lib/rubocop/cop/style/numeric_predicate.rb#132
-  def parenthesized_source(node); end
-
-  # source://rubocop//lib/rubocop/cop/style/numeric_predicate.rb#124
-  def replacement(numeric, operation); end
 
   # @return [Boolean]
   #
-  # source://rubocop//lib/rubocop/cop/style/numeric_predicate.rb#144
+  # source://rubocop//lib/rubocop/cop/style/numeric_predicate.rb#162
+  def negated?(node); end
+
+  # source://rubocop//lib/rubocop/cop/style/numeric_predicate.rb#134
+  def parenthesized_source(node); end
+
+  # source://rubocop//lib/rubocop/cop/style/numeric_predicate.rb#124
+  def replacement(node, numeric, operation); end
+
+  # @return [Boolean]
+  #
+  # source://rubocop//lib/rubocop/cop/style/numeric_predicate.rb#146
   def replacement_supported?(operator); end
 
   # @return [Boolean]
   #
-  # source://rubocop//lib/rubocop/cop/style/numeric_predicate.rb#140
+  # source://rubocop//lib/rubocop/cop/style/numeric_predicate.rb#142
   def require_parentheses?(node); end
 end
 
@@ -48916,32 +48921,6 @@ RuboCop::Cop::Style::SoleNestedConditional::MSG = T.let(T.unsafe(nil), String)
 # will add a require statement to the top of the file if
 # enabled by RequireEnglish config.
 #
-# Like `use_perl_names` but allows builtin global vars.
-#
-#   # good
-#   puts $LOAD_PATH
-#   puts $LOADED_FEATURES
-#   puts $PROGRAM_NAME
-#   puts ARGV
-#   puts $:
-#   puts $"
-#   puts $0
-#   puts $!
-#   puts $@
-#   puts $;
-#   puts $,
-#   puts $/
-#   puts $\
-#   puts $.
-#   puts $_
-#   puts $>
-#   puts $<
-#   puts $$
-#   puts $?
-#   puts $~
-#   puts $=
-#   puts $*
-#
 # @example EnforcedStyle: use_english_names (default)
 #   # good
 #   require 'English' # or this could be in another file.
@@ -48986,88 +48965,113 @@ RuboCop::Cop::Style::SoleNestedConditional::MSG = T.let(T.unsafe(nil), String)
 #   puts $*
 # @example EnforcedStyle: use_builtin_english_names
 #
-# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#87
+#   # good
+#   # Like `use_perl_names` but allows builtin global vars.
+#   puts $LOAD_PATH
+#   puts $LOADED_FEATURES
+#   puts $PROGRAM_NAME
+#   puts ARGV
+#   puts $:
+#   puts $"
+#   puts $0
+#   puts $!
+#   puts $@
+#   puts $;
+#   puts $,
+#   puts $/
+#   puts $\
+#   puts $.
+#   puts $_
+#   puts $>
+#   puts $<
+#   puts $$
+#   puts $?
+#   puts $~
+#   puts $=
+#   puts $*
+#
+# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#86
 class RuboCop::Cop::Style::SpecialGlobalVars < ::RuboCop::Cop::Base
   include ::RuboCop::Cop::ConfigurableEnforcedStyle
   include ::RuboCop::Cop::RangeHelp
   include ::RuboCop::Cop::RequireLibrary
   extend ::RuboCop::Cop::AutoCorrector
 
-  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#176
+  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#175
   def autocorrect(corrector, node, global_var); end
 
-  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#168
+  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#167
   def message(global_var); end
 
-  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#152
+  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#151
   def on_gvar(node); end
 
-  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#147
+  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#146
   def on_new_investigation; end
 
   private
 
   # @return [Boolean]
   #
-  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#247
+  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#246
   def add_require_english?; end
 
-  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#241
+  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#240
   def english_name_replacement(preferred_name, node); end
 
-  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#190
+  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#189
   def format_english_message(global_var); end
 
   # For now, we assume that lists are 2 items or less. Easy grammar!
   #
-  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#212
+  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#211
   def format_list(items); end
 
-  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#198
+  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#197
   def format_message(english, regular, global); end
 
-  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#235
+  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#234
   def matching_styles(global); end
 
-  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#227
+  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#226
   def preferred_names(global); end
 
-  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#216
+  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#215
   def replacement(node, global_var); end
 
   # @return [Boolean]
   #
-  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#251
+  # source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#250
   def should_require_english?(global_var); end
 end
 
-# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#128
+# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#127
 RuboCop::Cop::Style::SpecialGlobalVars::BUILTIN_VARS = T.let(T.unsafe(nil), Hash)
 
-# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#100
+# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#99
 RuboCop::Cop::Style::SpecialGlobalVars::ENGLISH_VARS = T.let(T.unsafe(nil), Hash)
 
-# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#145
+# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#144
 RuboCop::Cop::Style::SpecialGlobalVars::LIBRARY_NAME = T.let(T.unsafe(nil), String)
 
-# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#93
+# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#92
 RuboCop::Cop::Style::SpecialGlobalVars::MSG_BOTH = T.let(T.unsafe(nil), String)
 
-# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#96
+# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#95
 RuboCop::Cop::Style::SpecialGlobalVars::MSG_ENGLISH = T.let(T.unsafe(nil), String)
 
-# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#98
+# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#97
 RuboCop::Cop::Style::SpecialGlobalVars::MSG_REGULAR = T.let(T.unsafe(nil), String)
 
 # Anything *not* in this set is provided by the English library.
 #
-# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#122
+# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#121
 RuboCop::Cop::Style::SpecialGlobalVars::NON_ENGLISH_VARS = T.let(T.unsafe(nil), Set)
 
-# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#124
+# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#123
 RuboCop::Cop::Style::SpecialGlobalVars::PERL_VARS = T.let(T.unsafe(nil), Hash)
 
-# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#139
+# source://rubocop//lib/rubocop/cop/style/special_global_vars.rb#138
 RuboCop::Cop::Style::SpecialGlobalVars::STYLE_VARS_MAP = T.let(T.unsafe(nil), Hash)
 
 # Check for parentheses around stabby lambda arguments.
@@ -55389,10 +55393,10 @@ RuboCop::Formatter::PacmanFormatter::FALLBACK_TERMINAL_WIDTH = T.let(T.unsafe(ni
 RuboCop::Formatter::PacmanFormatter::GHOST = T.let(T.unsafe(nil), String)
 
 # source://rubocop//lib/rubocop/formatter/pacman_formatter.rb#17
-RuboCop::Formatter::PacmanFormatter::PACDOT = T.let(T.unsafe(nil), Rainbow::Presenter)
+RuboCop::Formatter::PacmanFormatter::PACDOT = T.let(T.unsafe(nil), Rainbow::NullPresenter)
 
 # source://rubocop//lib/rubocop/formatter/pacman_formatter.rb#16
-RuboCop::Formatter::PacmanFormatter::PACMAN = T.let(T.unsafe(nil), Rainbow::Presenter)
+RuboCop::Formatter::PacmanFormatter::PACMAN = T.let(T.unsafe(nil), Rainbow::NullPresenter)
 
 # This formatter display dots for files with no offenses and
 # letters for files with problems in the them. In the end it
@@ -55682,47 +55686,47 @@ class RuboCop::LSP::Routes
 
   # @api private
   #
-  # source://rubocop//lib/rubocop/lsp/routes.rb#168
+  # source://rubocop//lib/rubocop/lsp/routes.rb#169
   def handle_method_missing(request); end
 
-  # source://rubocop//lib/rubocop/lsp/routes.rb#67
+  # source://rubocop//lib/rubocop/lsp/routes.rb#68
   def handle_shutdown(request); end
 
   # @api private
   #
-  # source://rubocop//lib/rubocop/lsp/routes.rb#157
+  # source://rubocop//lib/rubocop/lsp/routes.rb#158
   def handle_unsupported_method(request, method = T.unsafe(nil)); end
 
   private
 
   # @api private
   #
-  # source://rubocop//lib/rubocop/lsp/routes.rb#206
+  # source://rubocop//lib/rubocop/lsp/routes.rb#207
   def diagnostic(file_uri, text); end
 
   # @api private
   #
-  # source://rubocop//lib/rubocop/lsp/routes.rb#176
+  # source://rubocop//lib/rubocop/lsp/routes.rb#177
   def extract_initialization_options_from(request); end
 
   # @api private
   #
-  # source://rubocop//lib/rubocop/lsp/routes.rb#186
+  # source://rubocop//lib/rubocop/lsp/routes.rb#187
   def format_file(file_uri, command: T.unsafe(nil)); end
 
   # @api private
   #
-  # source://rubocop//lib/rubocop/lsp/routes.rb#220
+  # source://rubocop//lib/rubocop/lsp/routes.rb#221
   def remove_file_protocol_from(uri); end
 
   # @api private
   #
-  # source://rubocop//lib/rubocop/lsp/routes.rb#224
+  # source://rubocop//lib/rubocop/lsp/routes.rb#225
   def to_diagnostic(offense); end
 
   # @api private
   #
-  # source://rubocop//lib/rubocop/lsp/routes.rb#236
+  # source://rubocop//lib/rubocop/lsp/routes.rb#237
   def to_range(location); end
 
   class << self
