@@ -441,11 +441,12 @@ module AutoHCK
     end
 
     def process_optional_hck_network
-      return unless @config['transfer_net_enabled']
+      path = @options['share_on_host_path'] || @config['share_on_host_path']
+      return unless path
 
       dev = @nm.transfer_device_command(@config['transfer_net_device'],
                                         @config['share_on_host_net'],
-                                        @config['share_on_host_path'],
+                                        path,
                                         full_replacement_map)
       @device_commands << dev
     end

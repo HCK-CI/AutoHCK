@@ -48,7 +48,8 @@ module AutoHCK
         'image_name' => @platform['st_image'],
         'logger' => @logger,
         'slirp' => @slirp,
-        'iso_path' => @project.config['iso_path']
+        'iso_path' => @project.config['iso_path'],
+        'share_on_host_path' => @project.options.common.share_on_host_path
       }.merge(platform_options)
     end
 
@@ -91,7 +92,8 @@ module AutoHCK
         'logger' => @logger,
         'slirp' => @slirp,
         'iso_path' => @project.config['iso_path'],
-        'client_world_net' => @project.options.common.client_world_net
+        'client_world_net' => @project.options.common.client_world_net,
+        'share_on_host_path' => @project.options.common.share_on_host_path
       }.merge(boot_device)
     end
 
