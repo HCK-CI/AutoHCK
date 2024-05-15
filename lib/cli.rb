@@ -25,7 +25,7 @@ module AutoHCK
 
     # class CommonOptions
     class CommonOptions
-      attr_accessor :verbose, :config, :client_world_net, :id
+      attr_accessor :verbose, :config, :client_world_net, :id, :share_on_host_path
 
       def create_parser(sub_parser)
         OptionParser.new do |parser|
@@ -47,11 +47,20 @@ module AutoHCK
         @config = nil
         @client_world_net = false
         @id = 2
+        @share_on_host_path = nil
         verbose_option(parser)
         config_option(parser)
         client_world_net_option(parser)
         id_option(parser)
         version_option(parser)
+        share_on_host_path_option(parser)
+      end
+
+      def share_on_host_path_option(parser)
+        parser.on('--share-on-host-path <path>', String,
+                  'For using Transfer Network specify the directory to share on host machine') do |share_on_host_path|
+          @share_on_host_path = share_on_host_path
+        end
       end
 
       def verbose_option(parser)
