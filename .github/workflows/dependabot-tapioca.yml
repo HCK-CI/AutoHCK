@@ -1,0 +1,48 @@
+name: Dependabot Tapioca updates
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: read
+jobs:
+  build:
+    if: ${{ github.actor == 'dependabot[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Dependabot metadata
+        id: dependabot-metadata
+        uses: dependabot/fetch-metadata@v1
+      - uses: actions/checkout@v4
+        if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'bundler' }}
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Update Ubuntu package repository
+        if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'bundler' }}
+        run: sudo apt-get update
+      - name: Setup sqlite-devel
+        if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'bundler' }}
+        run: sudo apt-get -y install libsqlite3-dev
+      - name: Setup libcurl-devel
+        if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'bundler' }}
+        run: sudo apt-get -y install libcurl4 libcurl3-gnutls libcurl4-openssl-dev
+
+      - uses: ruby/setup-ruby@v1
+        if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'bundler' }}
+        with:
+          ruby-version: '3.1.2'
+          bundler-cache: true
+      - name: Tapioca update
+        if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'bundler' }}
+        run: bundle exec tapioca gem
+      - name: git update
+        if: ${{ steps.dependabot-metadata.outputs.package-ecosystem == 'bundler' }}
+        run: |
+          git config --global user.name 'some user'
+          git config --global user.email 'some-user@example.com'
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
+          git add sorbet/rbi/gems
+          git commit -m "updated tapioca definitions" sorbet/rbi/gems
+          git push -u origin HEAD:${{ github.event.pull_request.head.ref }}
