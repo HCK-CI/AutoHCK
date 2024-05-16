@@ -1,0 +1,22 @@
+name: Set up AutoHCK environment
+description: Set up AutoHCK environment for the repository
+
+runs:
+  using: composite
+  steps:
+  - name: Update Ubuntu package repository
+    shell: bash
+    run: sudo apt-get update
+  - name: Setup libcurl-devel
+    shell: bash
+    run: sudo apt-get -y install libcurl4 libcurl3-gnutls libcurl4-openssl-dev
+
+  - name: Set up Ruby 3.1.4
+    uses: ruby/setup-ruby@v1
+    with:
+      ruby-version: 3.1.4
+      bundler-cache: false
+
+  - name: Install dependencies
+    shell: bash
+    run: bundle install
