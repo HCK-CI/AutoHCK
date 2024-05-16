@@ -42,23 +42,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-
-    - name: Update Ubuntu package repository
-      run: sudo apt-get update
-    - name: Setup sqlite-devel
-      run: sudo apt-get -y install libsqlite3-dev
-    - name: Setup libcurl-devel
-      run: sudo apt-get -y install libcurl4 libcurl3-gnutls libcurl4-openssl-dev
-
-    - name: Set up Ruby 3.1.4
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: 3.1.4
-        bundler-cache: false
-
-    - name: Install dependencies
-      run: bundle install
-
+    - name: Setup AutoHCK
+      uses: ./.github/actions/setup-autohck
     - name: RSpec run
       run: bundle exec rspec
 
@@ -70,26 +55,11 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-
-    - name: Update Ubuntu package repository
-      run: sudo apt-get update
-    - name: Setup sqlite-devel
-      run: sudo apt-get -y install libsqlite3-dev
-    - name: Setup libcurl-devel
-      run: sudo apt-get -y install libcurl4 libcurl3-gnutls libcurl4-openssl-dev
-
-    - name: Set up Ruby 3.1.4
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: 3.1.4
-        bundler-cache: false
-
-    - name: Install dependencies
-      run: bundle install
+    - name: Setup AutoHCK
+      uses: ./.github/actions/setup-autohck
 
     - name: Check for out-of-date RBIs
       run: bundle exec tapioca gems --verify
-
     - name: Run sorbet type check
       run: bundle exec srb typecheck
 
@@ -101,22 +71,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-
-    - name: Update Ubuntu package repository
-      run: sudo apt-get update
-    - name: Setup sqlite-devel
-      run: sudo apt-get -y install libsqlite3-dev
-    - name: Setup libcurl-devel
-      run: sudo apt-get -y install libcurl4 libcurl3-gnutls libcurl4-openssl-dev
-
-    - name: Set up Ruby 3.1.4
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: 3.1.4
-        bundler-cache: false
-
-    - name: Install dependencies
-      run: bundle install
+    - name: Setup AutoHCK
+      uses: ./.github/actions/setup-autohck
 
     - name: RuboCop run
       run: |
