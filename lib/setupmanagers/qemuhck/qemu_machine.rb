@@ -209,6 +209,10 @@ module AutoHCK
 
       @nm = NetworkManager.new(@id, @client_id, @machine, @logger)
       @sm = StorageManager.new(@id, @client_id, @config, @options, @logger)
+
+      @devices_list.flatten!
+      @devices_list.compact!
+      load_devices
     end
 
     def define_local_variables
@@ -264,21 +268,22 @@ module AutoHCK
     def load_fw
       fws = Json.read_json(FW_JSON, @logger)
       @logger.info("Loading FW: #{@fw_name}")
-      res = fws[@fw_name]
+      @fw = fws[@fw_name]
 
-      unless res
+      unless @fw
         @logger.fatal("#{@fw_name} does not exist")
         raise(InvalidConfigFile, "#{@fw_name} does not exist")
       end
 
-      return res unless res['nvram']
+      @machine_options << 'pflash0=pflash_code' if @fw['binary']
+
+      return unless @fw['nvram']
 
       @logger.info("FW #{@fw_name} has NVRAM. Creating local copy")
       nvram = "#{@workspace_path}/#{@fw_name}_#{@id}_cl#{@client_id}.nvram"
-      FileUtils.cp(res['nvram'], nvram)
-      res['nvram'] = nvram
-
-      res
+      FileUtils.cp(@fw['nvram'], nvram)
+      @fw['nvram'] = nvram
+      @machine_options << 'pflash1=pflash_vars'
     end
 
     def option_config(option)
@@ -320,7 +325,7 @@ module AutoHCK
       @machine_name = option_config('machine_type')
       @fw_name = option_config('fw_type')
       @machine = read_machine
-      @fw = load_fw
+      load_fw
     end
 
     def config_replacement_list
@@ -421,7 +426,7 @@ module AutoHCK
       end
     end
 
-    def process_device(device_info)
+    def process_device_command(device_info)
       case device_info['type']
       when 'network'
         dev = @nm.test_device_command(device_info['name'], full_replacement_list)
@@ -459,7 +464,7 @@ module AutoHCK
       load_device_info(vga_info)
     end
 
-    def process_hck_network
+    def process_hck_network_command
       dev = @nm.control_device_command(option_config('ctrl_net_device'),
                                        full_replacement_list)
       @device_commands << dev
@@ -471,28 +476,31 @@ module AutoHCK
       process_world_hck_network
     end
 
-    def process_storage
+    def process_storage_command
       dev, @image_path = @sm.boot_device_command(option_config('boot_device'), @run_opts, full_replacement_list)
       @device_commands << dev
     end
 
-    def process_devices
-      @device_commands = []
-      device_infos = []
+    def load_devices
+      @device_infos = []
 
       @devices_list.each do |device|
         device_info = read_device(device)
-        device_infos << device_info
+        @device_infos << device_info
         load_device_info(device_info)
       end
 
-      add_missing_default_devices(device_infos)
+      add_missing_default_devices(@device_infos)
+    end
 
-      process_hck_network
-      process_storage
+    def process_device_commands
+      @device_commands = []
 
-      device_infos.each do |device_info|
-        process_device(device_info)
+      process_hck_network_command
+      process_storage_command
+
+      @device_infos.each do |device_info|
+        process_device_command(device_info)
       end
     end
 
@@ -514,13 +522,11 @@ module AutoHCK
       if @fw['binary']
         file = @fw['binary'][@run_opts[:secure] ? 'secure' : 'insecure']
         cmd << "-blockdev node-name=pflash_code,driver=file,filename=#{file},read-only=on"
-        @machine_options << 'pflash0=pflash_code'
       end
 
       if @fw['nvram']
         cmd << "-blockdev node-name=pflash_vars,driver=file,filename=#{@fw['nvram']}"
         cmd << '-global driver=cfi.pflash01,property=secure,value=on'
-        @machine_options << 'pflash1=pflash_vars'
       end
 
       cmd
@@ -679,10 +685,7 @@ module AutoHCK
       @run_opts = validate_run_opts(run_opts.to_h)
       @keep_alive = run_opts[:keep_alive]
 
-      @devices_list.flatten!
-      @devices_list.compact!
-
-      process_devices
+      process_device_commands
       normalize_lists
 
       if @run_opts[:dump_only]
