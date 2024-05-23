@@ -66,7 +66,7 @@ module AutoHCK
         @run_opts = run_opts
         @keep_alive = run_opts[:keep_alive]
         @delete_snapshot = run_opts[:create_snapshot]
-        @machine.dump_config
+        @logger.info(@machine.dump_config)
         @qemu_thread = Thread.new { run_vm }
         scope << self
       end
@@ -581,7 +581,7 @@ module AutoHCK
       #  S3 enabled..................${ENABLE_S3}
       #  S4 enabled..................${ENABLE_S4}
       #  Snapshot mode.............. ${SNAPSHOT}
-      @logger.info(full_replacement_map.replace(config.join("\n")))
+      full_replacement_map.replace(config.join("\n"))
     end
 
     def create_run_script(file_name, file_content)
@@ -660,7 +660,7 @@ module AutoHCK
     end
 
     def dump_commands
-      dump_config
+      @logger.info(dump_config)
 
       file_name = "#{@workspace_path}/#{@run_name}_manual.sh"
       content = <<~BASH

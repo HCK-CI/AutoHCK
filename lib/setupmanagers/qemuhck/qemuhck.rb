@@ -14,6 +14,7 @@ module AutoHCK
 
     attr_reader :kit, :project
 
+    QEMUHCK_INFO_LOG_FILE = 'qemuhck.txt'
     OPT_NAMES = %w[viommu_state s3_state s4_state enlightenments_state vhost_state machine_type fw_type cpu
                    pluggable_memory_gb].freeze
 
@@ -24,6 +25,7 @@ module AutoHCK
       @clients_vm = {}
       initialize_studio_vm
       initialize_clients_vm
+      create_qemuhck_log_file
     end
 
     def initialize_project(project)
@@ -105,6 +107,40 @@ module AutoHCK
           'memory_gb' => v['memory_gb']
         }.merge(client_vm_common_options))
         @clients_vm[v['name']] = QemuMachine.new(vm_options)
+      end
+    end
+
+    def create_qemuhck_log_file
+      qemuhck_log = "#{@workspace_path}/#{QEMUHCK_INFO_LOG_FILE}"
+      File.write(qemuhck_log, collect_environment_info)
+      @project.result_uploader.upload_file(qemuhck_log, QEMUHCK_INFO_LOG_FILE)
+    end
+
+    def collect_environment_info
+      logs = String.new
+      append_host_info(logs)
+      append_vms_info(logs)
+      logs.freeze
+    end
+
+    def append_host_info(logs)
+      logs << <<~HOST_INFO
+        QEMU version: #{`qemu-system-x86_64 --version`.lines.first.strip}
+        System information: #{`uname -a`.strip}
+
+      HOST_INFO
+    end
+
+    def append_vms_info(logs)
+      logs << <<~STUDIO_INFO
+        Studio Properties:
+          #{@studio_vm.dump_config}
+      STUDIO_INFO
+      @platform['clients'].each_with_index do |(_k, v), i|
+        logs << <<~CLIENT_INFO
+          Client #{i + 1} Properties:
+            #{@clients_vm[v['name']].dump_config}
+        CLIENT_INFO
       end
     end
 
