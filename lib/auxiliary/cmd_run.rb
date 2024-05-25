@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'shellwords'
 require 'tempfile'
 require_relative 'resource_scope'
 
@@ -9,15 +10,15 @@ module AutoHCK
   class CmdRun
     attr_reader :pid
 
-    def initialize(logger, cmd, options = {})
-      @cmd = cmd
+    def initialize(logger, *args, **kwargs)
+      @cmd = args.size == 1 ? args : args.shelljoin
       @logger = logger
       @stdout = Tempfile.new
       @stdout.unlink
       @stderr = Tempfile.new
       @stderr.unlink
-      @pid = spawn(@cmd, out: @stdout, err: @stderr, pgroup: 0, **options)
-      logger.info("Run command (PID #{@pid}): #{cmd}")
+      @pid = spawn(*args, out: @stdout, err: @stderr, pgroup: 0, **kwargs)
+      logger.info("Run command (PID #{@pid}): #{@cmd}")
     end
 
     def wait(flags = 0)
