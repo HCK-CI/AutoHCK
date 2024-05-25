@@ -54,7 +54,7 @@ module AutoHCK
       end
 
       def create_image(path, size_gb)
-        run_cmd("#{@qemu_img_bin} create -f #{IMAGE_FORMAT} #{path} #{size_gb}G")
+        run_cmd(@qemu_img_bin, 'create', '-f', IMAGE_FORMAT, path, "#{size_gb}G")
       end
 
       def create_boot_image
@@ -73,8 +73,8 @@ module AutoHCK
 
       def create_boot_snapshot
         @logger.info("Creating CL#{@client_id} snapshot file")
-        run_cmd("#{@qemu_img_bin} create -f #{IMAGE_FORMAT} -F #{IMAGE_FORMAT} " \
-                "-b #{@boot_image_path} #{boot_snapshot_path}")
+        run_cmd(@qemu_img_bin, 'create', '-f', IMAGE_FORMAT, '-F', IMAGE_FORMAT,
+                '-b', @boot_image_path, boot_snapshot_path)
       end
 
       def delete_boot_snapshot
