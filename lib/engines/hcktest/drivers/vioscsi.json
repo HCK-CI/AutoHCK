@@ -13,6 +13,22 @@
     {
       "desc": "Make Disk Writable",
       "run": "Set-Disk -Number 1 -IsReadonly $False"
+    },
+    {
+      "desc": "Initialize Disk",
+      "run": "Initialize-Disk -Number 1 -PartitionStyle GPT"
+    },
+    {
+      "desc": "Remove Existing Partitions",
+      "run": "Remove-Partition -DiskNumber 1 -PartitionNumber 1 -Confirm:$false"
+    },
+    {
+      "desc": "Create Partition",
+      "run": "New-Partition -DiskNumber 1 -UseMaximumSize -AssignDriveLetter"
+    },
+    {
+      "desc": "Format Partition",
+      "run": "Format-Volume -DriveLetter (Get-Partition -DiskNumber 1).DriveLetter -FileSystem NTFS -Confirm:$false"
     }
   ],
   "reject_test_names": [
