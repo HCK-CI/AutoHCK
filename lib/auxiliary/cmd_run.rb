@@ -8,58 +8,54 @@ require_relative 'resource_scope'
 module AutoHCK
   # CmdRun class
   class CmdRun
-    attr_reader :pid
+    attr_reader :pid, :status
 
-    def initialize(logger, *args, **kwargs)
-      @cmd = args.size == 1 ? args : args.shelljoin
+    def initialize(scope, logger, *args, exception: true, **kwargs)
+      @cmd = args.size == 1 ? args[0] : args.shelljoin
+      @exception = exception
       @logger = logger
-      @stdout = Tempfile.new
-      @stdout.unlink
-      @stderr = Tempfile.new
-      @stderr.unlink
-      @pid = spawn(*args, out: @stdout, err: @stderr, pgroup: 0, **kwargs)
-      logger.info("Run command (PID #{@pid}): #{@cmd}")
+
+      scope.transaction do |transaction|
+        ResourceScope.open do |tmp|
+          out = pipe(tmp, 'stdout')
+          err = pipe(tmp, 'stderr')
+          @pid = spawn(*args, out:, err:, pgroup: 0, **kwargs)
+          transaction << self
+        end
+
+        log "Run command: #{@cmd}"
+      end
     end
 
-    def wait(flags = 0)
-      wait_for_status(flags) do |status|
+    def close
+      if @status.nil?
+        @status = Process.wait2(@pid)[1]
         e_message = "Failed to run (PID #{@pid}): #{@cmd}"
-        raise CmdRunError, e_message unless status.exitstatus.zero?
-      end
-    end
+        raise CmdRunError, e_message if @exception && !@status.exitstatus.zero?
 
-    def wait_no_fail(flags = 0)
-      wait_for_status(flags) do |status|
-        @logger.info("Command finished with code (PID #{@pid}): #{status.exitstatus}")
+        log "Command finished with code #{@status.exitstatus}"
       end
+
+      @status
     end
 
     private
 
-    def prep_log_stream(stream)
-      stream.strip.lines.map { |line| "\n   -- #{line.rstrip}" }.join
+    def log(message)
+      @logger.info("CmdRun PID:#{@pid}") { message }
     end
 
-    def wait_for_status(flags)
-      _, status = Process.wait2(@pid, flags)
-      return if status.nil?
+    def pipe(scope, name)
+      read, write = IO.pipe
+      scope << write
 
-      ResourceScope.open do |scope|
-        scope << @stdout
-        scope << @stderr
-
-        @stdout.rewind
-        stdout = @stdout.read
-        @stderr.rewind
-        stderr = @stderr.read
-
-        @logger.info("Info dump (PID #{@pid}):#{prep_log_stream(stdout)}") unless stdout.empty?
-        @logger.warn("Error dump (PID #{@pid}):#{prep_log_stream(stderr)}") unless stderr.empty?
+      Thread.new do
+        read.each(chomp: true) { log "#{name}: #{_1}" }
+      ensure
+        read.close
       end
 
-      yield status
-
-      status
+      write
     end
   end
 end

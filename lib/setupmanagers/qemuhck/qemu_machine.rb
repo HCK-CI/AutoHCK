@@ -67,7 +67,12 @@ module AutoHCK
         @keep_alive = run_opts[:keep_alive]
         @delete_snapshot = run_opts[:create_snapshot]
         @logger.info(@machine.dump_config)
-        @qemu_thread = Thread.new { run_vm }
+        @qemu_thread = Thread.new do
+          loop do
+            run_vm
+            break unless @keep_alive
+          end
+        end
         scope << self
       end
 
@@ -84,7 +89,7 @@ module AutoHCK
       def run_qemu(scope, pgroup:)
         @logger.info("Starting #{@run_name}")
         @qmp = QMP.new(scope, @run_name, @logger)
-        qemu = @machine.run_qemu(@qmp, pgroup:)
+        qemu = @machine.run_qemu(scope, @qmp, pgroup:)
         @logger.info("#{@run_name} started with PID #{qemu.pid}")
         qemu
       end
@@ -102,28 +107,24 @@ module AutoHCK
       end
 
       def run_vm
-        loop do
-          ResourceScope.open do |scope|
-            qemu = nil
-            pgroup = Pgroup.new(scope).pid
+        ResourceScope.open do |scope|
+          pgroup = Pgroup.new(scope).pid
+          begin
+            @machine.run_pre_start_commands(pgroup:)
+
+            qemu = run_qemu(scope, pgroup:)
             begin
-              @machine.run_pre_start_commands(pgroup:)
-
-              qemu = run_qemu(scope, pgroup:)
-              fails_quickly = check_fails_too_quickly(qemu.wait_no_fail.exitstatus)
-              qemu = nil
-
+              fails_quickly = check_fails_too_quickly(qemu.close.exitstatus)
               raise QemuRunError, 'QEMU fails repeated too quickly' if fails_quickly
             ensure
-              unless qemu.nil?
+              if qemu.status.nil?
                 Process.kill 'KILL', qemu.pid
-                qemu.wait_no_fail
+                qemu.close
               end
-              @machine.run_post_stop_commands(pgroup:)
             end
+          ensure
+            @machine.run_post_stop_commands(pgroup:)
           end
-
-          break unless @keep_alive
         end
       end
 
@@ -617,16 +618,16 @@ module AutoHCK
       Timeout.timeout(60) do
         @post_stop_commands.each do |dirty_cmd|
           cmd = full_replacement_map.create_cmd(dirty_cmd)
-          run_cmd_no_fail(cmd, chdir: @workspace_path, pgroup:)
+          run_cmd(cmd, chdir: @workspace_path, exception: false, pgroup:)
         end
       end
     end
 
-    def run_qemu(qmp, pgroup:)
+    def run_qemu(scope, qmp, pgroup:)
       cmd = qemu_cmd
       cmd += " -chardev socket,id=qmp,fd=#{qmp.socket.fileno},server=off -mon chardev=qmp,mode=control"
-      CmdRun.new(@logger, cmd,
-                 chdir: @workspace_path, pgroup:,
+      CmdRun.new(scope, @logger, cmd,
+                 chdir: @workspace_path, exception: false, pgroup:,
                  qmp.socket.fileno => qmp.socket.fileno)
     end
 
