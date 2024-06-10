@@ -30,7 +30,7 @@ module AutoHCK
       @logger = project.logger
 
       @drivers = project.engine.drivers
-      @platform = project.engine.platform
+      @platform = project.engine_platform
 
       @devices = @drivers&.map(&:device)
       @kit = @platform['kit']
@@ -180,6 +180,10 @@ module AutoHCK
 
     def run_hck_client(scope, studio, name, run_opts)
       HCKClient.new(self, scope, studio, name, run_opts)
+    end
+
+    def self.enter(workspace_path)
+      exec('bin/ns', $PROGRAM_NAME, '-w', workspace_path, *ARGV)
     end
   end
 end

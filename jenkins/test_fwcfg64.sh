@@ -6,7 +6,7 @@ test_name="$(basename "${0}" '.sh')"
 
 cd "${WORKSPACE}"
 
-./bin/ns ./bin/auto_hck --verbose test \
+bin/auto_hck --verbose test \
     --platform Win2022x64_uefi \
     --drivers fwcfg64 \
     --driver-path "${VIRTIO_WIN_PATH}/amd64/2k22/" \

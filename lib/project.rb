@@ -8,7 +8,8 @@ module AutoHCK
 
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :id,
                 :workspace_path, :github, :result_uploader, :engine_tag,
-                :engine_type, :options, :extra_sw_manager, :run_terminated
+                :engine_platform, :engine_type, :options, :extra_sw_manager,
+                :run_terminated
 
     CONFIG_JSON = 'config.json'
 
@@ -49,14 +50,9 @@ module AutoHCK
       configure_result_uploader if @engine.result_uploader_needed?
       return false unless github_handling(@options.test.commit)
 
-      prepare_setupmanager @engine.platform unless @engine.platform.nil?
+      @setup_manager = @setup_manager_type&.new(self)
 
       true
-    end
-
-    def prepare_setupmanager(platform)
-      type = SetupManager.select(platform['setupmanager'])
-      @setup_manager = type.new(self)
     end
 
     def run
@@ -98,6 +94,8 @@ module AutoHCK
       @engine_name = @config["#{@options.mode}_engine"]
       @engine_type = Engine.select(@engine_name)
       @engine_tag = @engine_type.tag(@options)
+      @engine_platform = @engine_type.platform(@logger, @options)
+      @setup_manager_type = @engine_platform.nil? ? nil : SetupManager.select(@engine_platform['setupmanager'])
       @run_terminated = false
     end
 
@@ -162,6 +160,11 @@ module AutoHCK
     end
 
     def init_workspace
+      unless @options.common.workspace_path.nil?
+        @workspace_path = @options.common.workspace_path
+        return
+      end
+
       @workspace_path = File.join(@config['workspace_path'],
                                   @engine_name,
                                   @engine_tag,
@@ -180,6 +183,7 @@ module AutoHCK
       end
 
       File.symlink(@workspace_path, "#{@config['workspace_path']}/latest")
+      @setup_manager_type&.enter @workspace_path
     end
 
     def handle_cancel

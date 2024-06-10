@@ -21,7 +21,7 @@ module AutoHCK
 
     # class CommonOptions
     class CommonOptions
-      attr_accessor :verbose, :config, :client_world_net, :id, :share_on_host_path
+      attr_accessor :verbose, :config, :client_world_net, :id, :share_on_host_path, :workspace_path
 
       def create_parser(sub_parser)
         OptionParser.new do |parser|
@@ -72,6 +72,10 @@ module AutoHCK
           puts "AutoHCK Version: #{AutoHCK::VERSION}"
           exit
         end
+
+        parser.on('-w <path>', String,
+                  'Internal use only',
+                  &method(:workspace_path=))
       end
       # rubocop:enable Metrics/MethodLength
     end
@@ -237,9 +241,9 @@ module AutoHCK
     end
 
     def parse(args)
-      @parser.order!(args)
-      @mode = args.shift
-      @sub_parser[@mode]&.order!(args) unless @mode.nil?
+      left = @parser.order(args)
+      @mode = left.shift
+      @sub_parser[@mode]&.order!(left) unless @mode.nil?
     end
   end
 end
