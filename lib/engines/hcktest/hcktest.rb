@@ -133,11 +133,6 @@ module AutoHCK
       platform_json = "#{PLATFORMS_JSON_DIR}/#{platform_name}.json"
 
       @logger.info("Loading platform: #{platform_name}")
-      unless File.exist?(platform_json)
-        @logger.fatal("#{platform_name} does not exist")
-        raise(InvalidConfigFile, "#{platform_name} does not exist")
-      end
-
       Json.read_json(platform_json, @logger)
     end
 

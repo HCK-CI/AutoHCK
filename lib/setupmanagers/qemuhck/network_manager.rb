@@ -26,12 +26,7 @@ module AutoHCK
 
       def read_device(device)
         @logger.info("Loading device: #{device}")
-        device_json = "#{DEVICES_JSON_DIR}/#{device}.json"
-        unless File.exist?(device_json)
-          @logger.fatal("#{device} does not exist")
-          raise(InvalidConfigFile, "#{device} does not exist")
-        end
-        Json.read_json(device_json, @logger)
+        Json.read_json("#{DEVICES_JSON_DIR}/#{device}.json", @logger)
       end
 
       def find_world_ip(*args)
