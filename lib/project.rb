@@ -176,8 +176,7 @@ module AutoHCK
     end
 
     def init_workspace
-      @workspace_path = [@config['workspace_path'], @engine_type,
-                         @config['setupmanager']].join('/')
+      @workspace_path = [@config['workspace_path'], @engine_type].join('/')
       begin
         FileUtils.mkdir_p(@workspace_path)
       rescue Errno::EEXIST
