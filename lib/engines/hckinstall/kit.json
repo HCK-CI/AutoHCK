@@ -35,7 +35,8 @@
     "studio_platform": "Win2022x64"
   },
   "HLK2025": {
-    "extra_software": [ "Disable_SNV", "Test-NETHLK" ],
+    "download_url": "https://go.microsoft.com/fwlink/?linkid=2271857",
+    "extra_software": [ "Test-NETHLK", "winfsp" ],
     "studio_platform": "Win2022x64"
   },
   "HLK2022_next": {
