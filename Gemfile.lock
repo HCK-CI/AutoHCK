@@ -40,7 +40,7 @@ GEM
       faraday (< 3.0)
       oauth2 (~> 1.1)
     erubi (1.12.0)
-    faraday (2.9.0)
+    faraday (2.9.1)
       faraday-net_http (>= 2.0, < 3.2)
     faraday-net_http (3.1.0)
       net-http
@@ -78,8 +78,7 @@ GEM
       multi_json (~> 1.3)
       multi_xml (~> 0.5)
       rack (>= 1.2, < 4)
-    octokit (8.1.0)
-      base64
+    octokit (9.0.0)
       faraday (>= 1, < 3)
       sawyer (~> 0.9)
     openssl (3.2.0)
