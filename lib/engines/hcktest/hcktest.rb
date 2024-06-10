@@ -21,7 +21,6 @@ module AutoHCK
       @logger = project.logger
       @project.append_multilog("#{project.engine_tag}.log")
       @config = Models::HCKTestConfig.from_json_file(CONFIG_JSON, @logger)
-      @platform = read_platform
       @driver_path = @project.options.test.driver_path
       @drivers = find_drivers
       prepare_extra_sw
@@ -33,11 +32,11 @@ module AutoHCK
         next if driver.extra_software.nil?
 
         @project.extra_sw_manager.prepare_software_packages(
-          driver.extra_software, @platform['kit'], ENGINE_MODE
+          driver.extra_software, @project.engine_platform['kit'], ENGINE_MODE
         )
       end
 
-      return if @platform['extra_software'].nil?
+      return if @project.engine_platform['extra_software'].nil?
 
       @project.extra_sw_manager.prepare_software_packages(
         @platform['extra_software'], @platform['kit'], ENGINE_MODE
@@ -117,12 +116,9 @@ module AutoHCK
       end
     end
 
-    def read_platform
-      platform_name = @project.options.test.platform
-      platform_json = "#{PLATFORMS_JSON_DIR}/#{platform_name}.json"
-
-      @logger.info("Loading platform: #{platform_name}")
-      Json.read_json(platform_json, @logger)
+    def self.platform(logger, options)
+      platform_name = options.test.platform
+      Json.read_json("#{PLATFORMS_JSON_DIR}/#{platform_name}.json", logger)
     end
 
     def run_studio(scope, run_opts = {})
@@ -131,7 +127,7 @@ module AutoHCK
 
     def run_clients(scope, run_opts = {})
       @clients = {}
-      @platform['clients'].each_value do |client|
+      @project.engine_platform['clients'].each_value do |client|
         @clients[client['name']] = @project.setup_manager.run_hck_client(scope, @studio, client['name'], run_opts)
 
         break if @project.options.test.svvp
@@ -152,7 +148,7 @@ module AutoHCK
     end
 
     def configure_setup_and_synchronize
-      @studio.configure(@platform['clients'])
+      @studio.configure(@project.engine_platform['clients'])
       configure_clients
       @clients.each_value(&:synchronize)
       @studio.keep_snapshot

@@ -32,17 +32,12 @@ module AutoHCK
       options.install.platform
     end
 
-    def read_platform
-      platform_name = @project.options.install.platform
+    def self.platform(logger, options)
+      platform_name = options.install.platform
       platform_json = "#{PLATFORMS_JSON_DIR}/#{platform_name}.json"
 
       @logger.info("Loading platform: #{platform_name}")
-      unless File.exist?(platform_json)
-        @logger.fatal("#{platform_name} does not exist")
-        raise(InvalidConfigFile, "#{platform_name} does not exist")
-      end
-
-      Json.read_json(platform_json, @logger)
+      Json.read_json(platform_json, logger)
     end
 
     def read_iso(platform_name)
@@ -78,18 +73,17 @@ module AutoHCK
     end
 
     def client_platform
-      @platform['clients'].values.first['image'][/Win\w+x(86|64)/]
+      @project.engine_platform['clients'].values.first['image'][/Win\w+x(86|64)/]
     end
 
     def init_class_variables
       @iso_path = @project.config['iso_path']
+      platform = @project.engine_platform
+      @kit_info = read_kit(platform['kit'])
 
-      @platform = read_platform
-      @kit_info = read_kit(@platform['kit'])
+      @clients_name = platform['clients'].map { |_k, v| v['name'] }
 
-      @clients_name = @platform['clients'].map { |_k, v| v['name'] }
-
-      @studio_iso_info = read_iso(studio_platform(@platform['kit']))
+      @studio_iso_info = read_iso(studio_platform(platform['kit']))
       @client_iso_info = read_iso(client_platform)
 
       validate_paths
@@ -99,15 +93,11 @@ module AutoHCK
     end
 
     def prepare_extra_sw
-      unless @kit_info['extra_software'].nil?
-        @project.extra_sw_manager.prepare_software_packages(
-          @kit_info['extra_software'], @platform['kit'], ENGINE_MODE
-        )
-      end
+      [@kit_info, @project.engine_platform].each do |source|
+        next if source['extra_software'].nil?
 
-      unless @platform['extra_software'].nil?
         @project.extra_sw_manager.prepare_software_packages(
-          @platform['extra_software'], @platform['kit'], ENGINE_MODE
+          source['extra_software'], @project.engine_platform['kit'], ENGINE_MODE
         )
       end
 
@@ -283,7 +273,7 @@ module AutoHCK
     end
 
     def parse_kit_info
-      kit_string = @platform['kit']
+      kit_string = @project.engine_platform['kit']
       kit_type = kit_string[0..2]
       kit_version = kit_type == 'HCK' ? '' : kit_string[3..]
       [kit_type, kit_version]
