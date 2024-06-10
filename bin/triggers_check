@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+Dir.chdir(File.dirname(__dir__))
+
 require_relative '../lib/auto_hck'
 
 module AutoHCK
