@@ -42,7 +42,10 @@ module AutoHCK
                                  @playlist)
       raise ListTestsError, 'Failed to list tests' unless @tests
 
-      @tests.each { |t| t['url'] = info_page_url(t) }
+      @tests.each do |t|
+        t['url'] = info_page_url(t)
+        t['run_count'] = 1
+      end
 
       custom_select_test_names(log)
       custom_reject_test_names(log)
@@ -87,16 +90,14 @@ module AutoHCK
     end
 
     def intersect_select_tests(select_test_names)
+      return unless @project.options.test.allow_test_duplication
+
       select_test_names_counted = select_test_names.tally
 
       @tests.select! do |test|
         next unless select_test_names_counted.key?(test['name'])
 
-        test['run_count'] = if @project.options.test.allow_test_duplication
-                              select_test_names_counted[test['name']]
-                            else
-                              1
-                            end
+        test['run_count'] = select_test_names_counted[test['name']]
       end
     end
 
