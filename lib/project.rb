@@ -19,7 +19,7 @@ module AutoHCK
     include Helper
 
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :id,
-                :workspace_path, :github, :result_uploader,
+                :workspace_path, :github, :result_uploader, :engine_tag,
                 :engine_type, :options, :extra_sw_manager, :run_terminated
 
     CONFIG_JSON = 'config.json'
@@ -53,8 +53,8 @@ module AutoHCK
     def prepare
       @extra_sw_manager = ExtraSoftwareManager.new(self)
 
-      @engine = Engine.select(@engine_type).new(self)
-      Sentry.set_tags('autohck.tag': @engine.tag)
+      @engine = @engine_type.new(self)
+      Sentry.set_tags('autohck.tag': @engine_tag)
 
       return false unless check_run?
 
@@ -104,22 +104,12 @@ module AutoHCK
       @logger.add_logger(@pre_logger)
     end
 
-    def move_workspace_to(path)
-      FileUtils.cp(@logfile_path, "#{path}/#{@logfile_name}")
-      @pre_logger.close
-      @logger.remove_logger(@pre_logger)
-      FileUtils.rm_f(@logfile_path)
-      @logfile_path = "#{path}/#{@logfile_name}"
-      @pre_logger = MonoLogger.new(@logfile_path)
-      @logger.add_logger(@pre_logger)
-      @workspace_path = path
-      @logger.info("Workspace moved to: #{@workspace_path}")
-    end
-
     def init_class_variables
       @config = Json.read_json(CONFIG_JSON, @logger)
       @timestamp = current_timestamp
-      @engine_type = @config["#{@options.mode}_engine"]
+      @engine_name = @config["#{@options.mode}_engine"]
+      @engine_type = Engine.select(@engine_name)
+      @engine_tag = @engine_type.tag(@options)
       @run_terminated = false
     end
 
@@ -131,7 +121,7 @@ module AutoHCK
     end
 
     def github_handling_context
-      "#{@options.test.gthb_context_prefix}#{@engine.tag}#{@options.test.gthb_context_suffix}"
+      "#{@options.test.gthb_context_prefix}#{@engine_tag}#{@options.test.gthb_context_suffix}"
     end
 
     def initialize_github(commit)
@@ -182,13 +172,16 @@ module AutoHCK
     end
 
     def init_workspace
-      @workspace_path = [@config['workspace_path'], @engine_type].join('/')
+      @workspace_path = File.join(@config['workspace_path'],
+                                  @engine_name,
+                                  @engine_tag,
+                                  @timestamp)
       begin
         FileUtils.mkdir_p(@workspace_path)
       rescue Errno::EEXIST
         @logger.warn('Workspace path already exists')
       end
-      @logger.info("Workspace init path: #{@workspace_path}")
+      @logger.info("Workspace path: #{@workspace_path}")
     end
 
     def handle_cancel

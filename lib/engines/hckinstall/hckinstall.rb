@@ -34,22 +34,14 @@ module AutoHCK
       @project = project
       @logger = project.logger
       @project.append_multilog("#{project.options.install.platform}.log")
-      init_workspace
       init_config
       init_class_variables
       prepare_extra_sw
       @logger.debug('HCKInstall: initialized')
     end
 
-    def init_workspace
-      @workspace_path = [@project.workspace_path, @project.options.install.platform,
-                         @project.timestamp].join('/')
-      begin
-        FileUtils.mkdir_p(@workspace_path)
-      rescue Errno::EEXIST
-        @project.logger.warn('Workspace path already exists')
-      end
-      @project.move_workspace_to(@workspace_path.to_s)
+    def self.tag(options)
+      options.install.platform
     end
 
     def read_platform

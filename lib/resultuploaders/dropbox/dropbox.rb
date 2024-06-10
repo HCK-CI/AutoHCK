@@ -15,7 +15,7 @@ module AutoHCK
     attr_reader :url
 
     def initialize(project)
-      @tag = project.engine.tag
+      @tag = project.engine_tag
       @timestamp = project.timestamp
       @logger = project.logger
       @repo = project.config['repository']

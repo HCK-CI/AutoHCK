@@ -29,7 +29,7 @@ module AutoHCK
 
     def add_target_to_project
       retries ||= 0
-      tag = @project.engine.tag
+      tag = @project.engine_tag
       target = search_target
       @logger.info("Adding target #{@name} on #{@machine} to project #{tag}")
       return target if @tools.create_project_target(target['key'], tag, @machine)
