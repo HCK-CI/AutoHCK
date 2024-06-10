@@ -53,7 +53,7 @@ module AutoHCK
     def prepare
       @extra_sw_manager = ExtraSoftwareManager.new(self)
 
-      @engine = Engine.new(self)
+      @engine = Engine.select(@engine_type).new(self)
       Sentry.set_tags('autohck.tag': @engine.tag)
 
       return false unless check_run?
@@ -61,8 +61,14 @@ module AutoHCK
       configure_result_uploader if @engine.result_uploader_needed?
       return false unless github_handling(@options.test.commit)
 
-      @setup_manager = SetupManager.new(self) unless @engine.platform.nil?
+      prepare_setupmanager @engine.platform unless @engine.platform.nil?
+
       true
+    end
+
+    def prepare_setupmanager(platform)
+      type = SetupManager.select(platform['setupmanager'])
+      @setup_manager = type.new(self)
     end
 
     def run
