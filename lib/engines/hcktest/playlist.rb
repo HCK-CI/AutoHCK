@@ -38,7 +38,7 @@ module AutoHCK
     def list_tests(log)
       return @tests = [] if @target.nil?
 
-      @tests = @tools.list_tests(@target['key'], @machine, @project.engine.tag,
+      @tests = @tools.list_tests(@target['key'], @machine, @project.engine_tag,
                                  @playlist)
       raise ListTestsError, 'Failed to list tests' unless @tests
 

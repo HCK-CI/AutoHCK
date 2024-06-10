@@ -30,14 +30,13 @@ module AutoHCK
     def initialize(project)
       @project = project
       @logger = project.logger
-      @project.append_multilog("#{tag}.log")
+      @project.append_multilog("#{project.engine_tag}.log")
       @config = Models::HCKTestConfig.from_json_file(CONFIG_JSON, @logger)
       @platform = read_platform
       @driver_path = @project.options.test.driver_path
       @drivers = find_drivers
       prepare_extra_sw
       validate_paths unless @driver_path.nil?
-      init_workspace
     end
 
     def prepare_extra_sw
@@ -54,17 +53,6 @@ module AutoHCK
       @project.extra_sw_manager.prepare_software_packages(
         @platform['extra_software'], @platform['kit'], ENGINE_MODE
       )
-    end
-
-    def init_workspace
-      @workspace_path = [@project.workspace_path,
-                         tag, @project.timestamp].join('/')
-      begin
-        FileUtils.mkdir_p(@workspace_path)
-      rescue Errno::EEXIST
-        @project.logger.warn('Workspace path already exists')
-      end
-      @project.move_workspace_to(@workspace_path.to_s)
     end
 
     def validate_paths
@@ -209,17 +197,17 @@ module AutoHCK
     def upload_driver_package
       @project.logger.info('Uploading driver package')
 
-      r_name = "#{tag}.zip"
-      zip_path = "#{@workspace_path}/#{r_name}"
+      r_name = "#{@project.engine_tag}.zip"
+      zip_path = "#{@project.workspace_path}/#{r_name}"
       create_zip_from_directory(zip_path, @driver_path)
       @project.result_uploader.upload_file(zip_path, r_name)
     end
 
-    def tag
-      if @project.options.test.svvp
-        "svvp-#{@project.options.test.platform}"
+    def self.tag(options)
+      if options.test.svvp
+        "svvp-#{options.test.platform}"
       else
-        "#{@project.options.test.drivers.sort.join('-')}-#{@project.options.test.platform}"
+        "#{options.test.drivers.sort.join('-')}-#{options.test.platform}"
       end
     end
 

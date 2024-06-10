@@ -13,7 +13,7 @@ module AutoHCK
 
     def initialize(setup_manager, scope, run_opts, &ip_getter)
       @project = setup_manager.project
-      @tag = @project.engine.tag
+      @tag = @project.engine_tag
       @ip_getter = ip_getter
       @logger = @project.logger
       @scope = scope
