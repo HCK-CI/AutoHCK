@@ -30,7 +30,7 @@ module AutoHCK
       nil
     end
 
-    def platform
+    def self.platform(*)
       nil
     end
 
