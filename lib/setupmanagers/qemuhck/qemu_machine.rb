@@ -11,34 +11,30 @@ module AutoHCK
 
     # Hostfwd is a class that holds ports forwarded for a run.
     class Hostfwd
-      def initialize(slirp, ports)
-        @slirp = slirp
+      include Helper
+
+      def initialize(workspace_path, ports)
+        @workspace_path = workspace_path
         @ids = []
         begin
-          ports.each do |port|
-            @ids << slirp.run({
-                                'execute' => 'add_hostfwd',
-                                'arguments' => {
-                                  'proto' => 'tcp',
-                                  'host_port' => port,
-                                  'guest_port' => port
-                                }
-                              })
-          end
+          ports.each { @ids << slirp('add_hostfwd', _1) }
         rescue StandardError
           close
         end
       end
 
       def close
-        @ids.each do |id|
-          @slirp.run({
-                       'execute' => 'remove_hostfwd',
-                       'arguments' => id
-                     })
-        end
+        slirp 'remove_hostfwd', @ids.pop until @ids.empty?
+      end
 
-        @ids.clear
+      private
+
+      def slirp(...)
+        File.open('/tmp', File::RDWR | File::TMPFILE) do |out|
+          run_cmd('bin/slirp', '-w', @workspace_path, *args, out:)
+          out.rewind
+          JSON.parse(out.read)['return']
+        end
       end
     end
 
@@ -704,7 +700,7 @@ module AutoHCK
         end
 
         scope.transaction do |tmp_scope|
-          hostfwd = Hostfwd.new(@options['slirp'], [@monitor_port, @vnc_port])
+          hostfwd = Hostfwd.new(@workspace_path, [@monitor_port, @vnc_port])
           tmp_scope << hostfwd
           Runner.new(tmp_scope, @logger, self, @run_name, @run_opts)
         end

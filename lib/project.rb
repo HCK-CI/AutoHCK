@@ -11,8 +11,6 @@ module AutoHCK
                 :engine_platform, :engine_type, :options, :extra_sw_manager,
                 :run_terminated
 
-    CONFIG_JSON = 'config.json'
-
     def initialize(scope, options)
       @scope = scope
       @options = options
@@ -89,7 +87,7 @@ module AutoHCK
     end
 
     def init_class_variables
-      @config = Json.read_json(CONFIG_JSON, @logger)
+      @config = Config.read
       @timestamp = current_timestamp
       @engine_name = @config["#{@options.mode}_engine"]
       @engine_type = Engine.select(@engine_name)
