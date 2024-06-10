@@ -15,7 +15,6 @@ module AutoHCK
     def initialize(project)
       initialize_project project
 
-      @slirp = Slirp.new(ENV.fetch('AUTOHCK_SLIRP'))
       @clients_vm = {}
       initialize_studio_vm
       initialize_clients_vm
@@ -43,7 +42,6 @@ module AutoHCK
         'workspace_path' => @workspace_path,
         'image_name' => @platform['st_image'],
         'logger' => @logger,
-        'slirp' => @slirp,
         'iso_path' => @project.config['iso_path'],
         'share_on_host_path' => @project.options.common.share_on_host_path
       }.merge(platform_options)
@@ -86,7 +84,6 @@ module AutoHCK
         'workspace_path' => @workspace_path,
         'devices_list' => @devices,
         'logger' => @logger,
-        'slirp' => @slirp,
         'iso_path' => @project.config['iso_path'],
         'client_world_net' => @project.options.common.client_world_net,
         'share_on_host_path' => @project.options.common.share_on_host_path
@@ -183,7 +180,8 @@ module AutoHCK
     end
 
     def self.enter(workspace_path)
-      exec('bin/ns', $PROGRAM_NAME, '-w', workspace_path, *ARGV)
+      exec File.absolute_path('bin/ns'), File.absolute_path('bin/auto_hck'),
+           '-w', workspace_path, *ARGV, chdir: workspace_path
     end
   end
 end
