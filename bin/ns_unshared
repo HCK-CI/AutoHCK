@@ -21,15 +21,14 @@ module AutoHCK
       # br_netfilter is not loaded
     end
 
-    e_write = IO.new(ARGV[0].to_i)
+    e_write = IO.new(3)
     e_write.write '1'
     e_write.flush
+    e_write.close_on_exec = true
 
-    r_read = IO.new(ARGV[1].to_i)
-    r = r_read.read(1)
+    r_read = IO.new(4)
+    r_read.read 1
     r_read.close
-
-    return if r.nil?
 
     [
       # unshare command recursively converts / to private by default, but we need to
@@ -55,6 +54,8 @@ module AutoHCK
       raise "#{cmd}: command failed"
     end
 
-    exec(*ARGV[2..])
+    $stdout.write '1'
+    $stdout.close
+    sleep
   end
 end

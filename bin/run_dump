@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative '../lib/auto_hck'
+
+module AutoHCK
+  run do
+    path = File.dirname(ARGV[0])
+    QemuHCK::Ns.enter path, path, 'bash', *ARGV
+  end
+end
