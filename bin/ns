@@ -4,91 +4,29 @@
 require_relative '../lib/auto_hck'
 
 module AutoHCK
-  # rubocop:disable Metrics/BlockLength
   run do
-    # rubocop:enable Metrics/BlockLength
+    require 'optparse'
 
-    require 'English'
-    require 'etc'
-    require 'fileutils'
-    require 'tmpdir'
+    chdir = Dir.pwd
+    Dir.chdir(File.dirname(__dir__))
 
-    euid = Process.euid
-    if euid != 0
-      pwname = Etc.getpwuid(Process.uid).name
+    workspace_path = nil
+    parser = OptionParser.new
+    parser.banner += ' [command]'
+    parser.version = VERSION
+    parser.on('-w <path>', '--workspace <path>', String, 'Workspace path') { workspace_path = _1 }
+    argv = parser.order(ARGV)
 
-      # getsubids is not available on some supported systems.
-      subid_start, subid_count = File.open('/etc/subgid') do |file|
-        begin
-          file.readline while file.readline(':', chomp: true) != pwname
-        rescue EOFError
-          abort <<~MESSAGE
-            subgid delegation is not set up for the current user.
-            See newgidmap(1) for details.
-          MESSAGE
-        end
+    if workspace_path.nil?
+      Dir.chdir Config.read['workspace_path']
+      dirs = Dir['*/*/*/']
+      abort 'no workspace found' if dirs.empty?
 
-        [file.readline(':', chomp: true), file.readline(chomp: true)]
-      end
+      workspace_path = dirs.max_by { File.mtime(_1) }
+    else
+      workspace_path = File.absolute_path(workspace_path, w)
     end
 
-    e_read, e_write = IO.pipe
-    r_read, r_write = IO.pipe
-    e_read.close_on_exec = false
-    r_write.close_on_exec = false
-    parent = Process.pid
-
-    fork do
-      e_write.close
-      r_read.close
-      Process.setpgid 0, 0
-      e_read.read 1
-
-      if euid != 0
-        # Call newgidmap so that virtiofsd can use setgroups() to drop subgroups.
-        # unshare command in util-linux 2.38 can call newgidmap by its own, but
-        # unfortunately it is not available on some supported systems.
-        system 'newgidmap', parent.to_s, '0', Process.gid.to_s, '1',
-               subid_start, subid_start, subid_count, exception: true
-      end
-
-      slirp = spawn('slirp4netns', '-r', r_write.fileno.to_s,
-                    '-a', 'slirp.sock', parent.to_s, 'tap_host')
-      begin
-        r_write.close
-        e_read.read 1
-      ensure
-        Process.kill 9, slirp
-        File.unlink 'slirp.sock'
-        Process.wait
-
-        warn "slirp4nents: unexpected exit status #{$CHILD_STATUS.exitstatus}" if $CHILD_STATUS.termsig != 9
-      end
-    ensure
-      e_read.close
-    end
-
-    e_read.close
-    r_write.close
-    e_write.close_on_exec = false
-    r_read.close_on_exec = false
-
-    argv = [
-      File.join(__dir__, 'ns_unshared'), e_write.fileno.to_s, r_read.fileno.to_s,
-      *(ARGV.empty? ? ['sh'] : ARGV)
-    ]
-
-    # Create namespaces of the following types:
-    # - Network
-    #   AutoHCK requires several bridges and an isolated network namespace allows to
-    #   set up them reliably without requiring privileges and polluting the root
-    #   namespace.
-    # - Mount
-    #   This allows mounting /etc/resolv.conf so that it points to slirp4netns.
-    exec('unshare', '-m', '-n', *argv) if euid.zero?
-
-    # If the current user is not root, create a user namespace as well and map the
-    # current user to root. Group mapping is delegated to newgidmap.
-    exec('unshare', '-m', '-n', '--map-user=0', *argv)
+    QemuHCK::Ns.enter workspace_path, chdir, *argv
   end
 end

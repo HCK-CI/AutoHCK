@@ -4,6 +4,9 @@
 module AutoHCK
   # QemuHCK class
   class QemuHCK
+    extend AutoloadExtension
+    autoload_relative :Ns, 'ns'
+
     include Helper
 
     attr_reader :kit, :project
@@ -180,8 +183,8 @@ module AutoHCK
     end
 
     def self.enter(workspace_path)
-      exec File.absolute_path('bin/ns'), File.absolute_path('bin/auto_hck'),
-           '-w', workspace_path, *ARGV, chdir: workspace_path
+      Ns.enter workspace_path, Dir.pwd, 'bin/auto_hck', '-w',
+               workspace_path, *ARGV
     end
   end
 end

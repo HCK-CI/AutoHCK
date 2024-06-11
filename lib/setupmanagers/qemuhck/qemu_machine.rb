@@ -656,9 +656,8 @@ module AutoHCK
 
       file_name = "#{@workspace_path}/#{@run_name}_manual.sh"
       content = <<~BASH
-        #!/usr/bin/env bash
+        #!#{File.absolute_path('bin/run_dump')}
 
-        #{full_replacement_map.create_cmd('cd @workspace@')}
         trap 'trap "" SIGTERM && kill 0' EXIT
 
         # QEMU pre start commands
