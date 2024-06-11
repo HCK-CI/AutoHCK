@@ -1,0 +1,79 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative '../lib/auto_hck'
+
+module AutoHCK
+  # rubocop:disable Metrics/BlockLength
+  run do
+    # rubocop:enable Metrics/BlockLength
+
+    require 'English'
+    require 'etc'
+
+    euid = Process.euid
+
+    argv = if euid.zero?
+             # Create namespaces of the following types:
+             # - Network
+             #   AutoHCK requires several bridges and an isolated network namespace
+             #   allows setting up them reliably without requiring privileges and
+             #   polluting the root namespace.
+             # - Mount
+             #   This allows mounting /etc/resolv.conf so that it points to
+             #   slirp4netns.
+             %w[unshare -m -n]
+           else
+             # If the current user is not root, create a user namespace as well and
+             # map the current user to root. Group mapping is delegated to
+             # newgidmap.
+             %w[unshare -m -n --map-user=0]
+           end
+
+    argv << File.join(__dir__, 'ns_unshared')
+
+    e_read, e_write = IO.pipe
+    r_read, r_write = IO.pipe
+    parent = Process.pid.to_s
+
+    fork do
+      $stdout = $stderr
+      e_write.close
+      exit false if e_read.read(1).nil?
+
+      if euid != 0
+        pwname = Etc.getpwuid(Process.uid).name
+
+        # getsubids is not available on some supported systems.
+        subid_start, subid_count = File.open('/etc/subgid') do |file|
+          begin
+            file.readline while file.readline(':', chomp: true) != pwname
+          rescue EOFError
+            abort <<~MESSAGE
+              subgid delegation is not set up for the current user.
+              See newgidmap(1) for details.
+            MESSAGE
+          end
+
+          [file.readline(':', chomp: true), file.readline(chomp: true)]
+        end
+
+        # Call newgidmap so that virtiofsd can use setgroups() to drop subgroups.
+        # unshare command in util-linux 2.38 can call newgidmap by its own, but
+        # unfortunately it is not available on some supported systems.
+        system 'newgidmap', parent, '0', Process.gid.to_s, '1',
+               subid_start, subid_start, subid_count, exception: true
+      end
+
+      e_read.close_on_exec = false
+      r_write.close_on_exec = false
+      exec 'slirp4netns', '-e', e_read.fileno.to_s,
+           '-r', r_write.fileno.to_s, '-a', 'slirp.sock', parent, 'tap_host'
+    end
+
+    e_read.close
+    r_write.close
+
+    exec(*argv, 3 => e_write, 4 => r_read)
+  end
+end
