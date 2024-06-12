@@ -4,7 +4,7 @@
 require 'bundler/setup'
 require 'dotenv/load'
 require 'optparse'
-require 'mono_logger'
+Bundler.require
 require './lib/auxiliary/diff_checker'
 
 # command line parser class
