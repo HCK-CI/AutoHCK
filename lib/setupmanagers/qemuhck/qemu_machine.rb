@@ -4,9 +4,10 @@
 module AutoHCK
   # QemuMachine class
   class QemuMachine
-    autoload :NetworkManager, './lib/setupmanagers/qemuhck/network_manager'
-    autoload :QMP, './lib/setupmanagers/qemuhck/qmp'
-    autoload :StorageManager, './lib/setupmanagers/qemuhck/storage_manager'
+    extend AutoHCK::AutoloadExtension
+    autoload_relative :NetworkManager, 'network_manager'
+    autoload_relative :QMP, 'qmp'
+    autoload_relative :StorageManager, 'storage_manager'
 
     # Hostfwd is a class that holds ports forwarded for a run.
     class Hostfwd
