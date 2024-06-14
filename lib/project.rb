@@ -1,17 +1,5 @@
 # frozen_string_literal: true
 
-require 'fileutils'
-require 'mono_logger'
-require './lib/engines/engine'
-require './lib/setupmanagers/setupmanager'
-require './lib/auxiliary/github'
-require './lib/resultuploaders/result_uploader'
-require './lib/auxiliary/multi_logger'
-require './lib/auxiliary/diff_checker'
-require './lib/auxiliary/json_helper'
-require './lib/auxiliary/extra_software/manager'
-require './lib/auxiliary/time_helper'
-
 # AutoHCK module
 module AutoHCK
   # project class

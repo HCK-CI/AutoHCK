@@ -1,8 +1,4 @@
-require 'json'
-
-require './lib/models/driver'
-require './lib/models/hcktest_config'
-require './lib/models/svvp_config'
+require_relative '../lib/all'
 
 JSON_TYPES_MAP = {
   './lib/engines/hcktest/drivers/*.json' => AutoHCK::Models::Driver,

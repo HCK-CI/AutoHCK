@@ -5,7 +5,7 @@ require 'bundler/setup'
 require 'dotenv/load'
 require 'optparse'
 Bundler.require
-require './lib/auxiliary/diff_checker'
+require './lib/all'
 
 # command line parser class
 class CLI

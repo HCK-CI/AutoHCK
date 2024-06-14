@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative '../../../lib/auxiliary/time_helper'
+require_relative '../../../lib/all'
 
 describe AutoHCK::Helper do
   include AutoHCK::Helper

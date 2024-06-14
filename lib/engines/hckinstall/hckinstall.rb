@@ -1,18 +1,6 @@
 # typed: true
 # frozen_string_literal: true
 
-require 'uri'
-
-require './lib/setupmanagers/hckclient'
-require './lib/setupmanagers/hckstudio'
-require './lib/auxiliary/json_helper'
-require './lib/auxiliary/host_helper'
-require './lib/auxiliary/iso_helper'
-require './lib/auxiliary/resource_scope'
-require './lib/engines/hckinstall/setup_scripts_helper'
-
-require './lib/models/driver'
-
 # AutoHCK module
 module AutoHCK
   # HCKInstall class

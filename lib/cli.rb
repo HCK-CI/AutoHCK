@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require 'optparse'
-require './lib/version'
-require './lib/exceptions'
-
 # AutoHCK module
 module AutoHCK
   # class CLI

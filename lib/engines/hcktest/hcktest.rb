@@ -1,17 +1,6 @@
 # typed: true
 # frozen_string_literal: true
 
-require './lib/setupmanagers/hckstudio'
-require './lib/setupmanagers/hckclient'
-require './lib/auxiliary/diff_checker'
-require './lib/auxiliary/json_helper'
-require './lib/auxiliary/resource_scope'
-require './lib/auxiliary/zip_helper'
-
-require './lib/models/driver'
-require './lib/models/hcktest_config'
-require './lib/models/svvp_config'
-
 # AutoHCK module
 module AutoHCK
   # HCKTest class

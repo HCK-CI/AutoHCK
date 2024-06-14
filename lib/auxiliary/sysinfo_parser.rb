@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'csv'
-
 # AutoHCK module
 module AutoHCK
   # SysInfoParser class

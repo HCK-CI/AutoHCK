@@ -1,13 +1,5 @@
 # frozen_string_literal: true
 
-require 'pathname'
-
-require './lib/auxiliary/downloader'
-require './lib/auxiliary/json_helper'
-require './lib/auxiliary/replacement_map'
-require './lib/auxiliary/extra_software/exceptions'
-require './lib/engines/hckinstall/setup_scripts_helper'
-
 # AutoHCK module
 module AutoHCK
   # ExtraSoftwareManager class

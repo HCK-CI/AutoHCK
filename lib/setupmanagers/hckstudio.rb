@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require './lib/engines/hcktest/tools'
-
 # AutoHCK module
 module AutoHCK
   # HCKStudio class

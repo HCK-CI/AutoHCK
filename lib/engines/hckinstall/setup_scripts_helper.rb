@@ -1,10 +1,5 @@
 # frozen_string_literal: true
 
-require 'fileutils'
-
-require './lib/exceptions'
-require './lib/auxiliary/downloader'
-
 # AutoHCK module
 module AutoHCK
   # Helper module

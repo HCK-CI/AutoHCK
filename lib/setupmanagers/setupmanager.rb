@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require './lib/exceptions'
-require './lib/setupmanagers/physhck/physhck'
-require './lib/setupmanagers/qemuhck/qemuhck'
-
 # AutoHCK module
 module AutoHCK
   module SetupManager

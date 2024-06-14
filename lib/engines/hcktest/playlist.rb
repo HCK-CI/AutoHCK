@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require './lib/auxiliary/time_helper'
-
 # AutoHCK module
 module AutoHCK
   # Playlist class

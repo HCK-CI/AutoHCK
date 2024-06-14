@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require './lib/exceptions'
-require './lib/auxiliary/json_helper'
-
 # AutoHCK module
 module AutoHCK
   # PhysHCK

@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'curb'
-require './lib/exceptions'
-
 # AutoHCK module
 module AutoHCK
   # Downloader class
