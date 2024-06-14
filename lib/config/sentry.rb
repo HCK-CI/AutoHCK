@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require './lib/version'
+require_relative '../version'
 
 # AutoHCK module
 module AutoHCK
