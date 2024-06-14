@@ -2,11 +2,13 @@
 
 module AutoHCK
   module Models
-    autoload :CommandInfo, './lib/models/command_info'
-    autoload :DriverInstallMethods, './lib/models/driver_install_methods'
-    autoload :Driver, './lib/models/driver'
-    autoload :HCKTestConfig, './lib/models/hcktest_config'
-    autoload :JsonHelper, './lib/models/json_helper'
-    autoload :SVVPConfig, './lib/models/svvp_config'
+    extend AutoloadExtension
+
+    autoload_relative :CommandInfo, 'models/command_info'
+    autoload_relative :DriverInstallMethods, 'models/driver_install_methods'
+    autoload_relative :Driver, 'models/driver'
+    autoload_relative :HCKTestConfig, 'models/hcktest_config'
+    autoload_relative :JsonHelper, 'models/json_helper'
+    autoload_relative :SVVPConfig, 'models/svvp_config'
   end
 end
