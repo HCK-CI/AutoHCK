@@ -1,12 +1,6 @@
 # typed: strict
 # frozen_string_literal: true
 
-require 'sorbet-runtime'
-
-require_relative 'json_helper'
-require_relative 'command_info'
-require_relative 'driver_install_methods'
-
 # AutoHCK module
 module AutoHCK
   # Models module

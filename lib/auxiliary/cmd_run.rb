@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require 'shellwords'
-require 'tempfile'
-require_relative 'resource_scope'
-
 # AutoHCK module
 module AutoHCK
   # CmdRun class

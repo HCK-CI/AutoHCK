@@ -1,11 +1,5 @@
 # frozen_string_literal: true
 
-require 'English'
-require 'tempfile'
-
-require_relative '../exceptions'
-require_relative 'cmd_run'
-
 # AutoHCK module
 module AutoHCK
   # Helper module

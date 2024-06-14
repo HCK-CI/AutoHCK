@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'shellwords'
-
 # AutoHCK module
 module AutoHCK
   class ReplacementMap

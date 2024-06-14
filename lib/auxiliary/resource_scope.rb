@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require './lib/exceptions'
-
 module AutoHCK
   # ResourceScope is a class that manages objects with close methods.
   class ResourceScope

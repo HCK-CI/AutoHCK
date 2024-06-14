@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
-require 'sentry-ruby'
 require './lib/version'
-require 'mono_logger'
 
 # AutoHCK module
 module AutoHCK

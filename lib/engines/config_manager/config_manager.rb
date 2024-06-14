@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require 'fileutils'
-require './lib/auxiliary/resource_scope'
-require './lib/resultuploaders/result_uploader'
-
 # AutoHCK module
 module AutoHCK
   # ConfigManager class

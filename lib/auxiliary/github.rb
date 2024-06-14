@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'octokit'
-
 # AutoHCK module
 module AutoHCK
   # github class

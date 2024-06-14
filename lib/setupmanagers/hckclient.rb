@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require './lib/setupmanagers/exceptions'
-require './lib/engines/hcktest/tests'
-require './lib/engines/hcktest/targets'
-
 # AutoHCK module
 module AutoHCK
   # HCKClient class
