@@ -126,8 +126,10 @@ module AutoHCK
     end
 
     def append_host_info(logs)
+      qemu_version = `#{@studio_vm.config['qemu_bin']} --version`.lines.first.strip
+
       logs << <<~HOST_INFO
-        QEMU version: #{`qemu-system-x86_64 --version`.lines.first.strip}
+        QEMU version: #{qemu_version}
         System information: #{`uname -a`.strip}
 
       HOST_INFO

@@ -178,6 +178,8 @@ module AutoHCK
 
     include Helper
 
+    attr_reader :config
+
     MONITOR_BASE_PORT = 10_000
     VNC_BASE_PORT = 5900
     MAX_RUN_ID = 999
