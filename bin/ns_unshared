@@ -1,51 +1,60 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require 'English'
-require 'fileutils'
+require_relative '../lib/auto_hck'
 
-[
-  '/proc/sys/net/bridge/bridge-nf-call-arptables',
-  '/proc/sys/net/bridge/bridge-nf-call-ip6tables',
-  '/proc/sys/net/bridge/bridge-nf-call-iptables'
-].each do |file|
-  File.write file, '0'
-rescue Errno::ENOENT
-  # br_netfilter is not loaded
+module AutoHCK
+  # rubocop:disable Metrics/BlockLength
+  run do
+    # rubocop:enable Metrics/BlockLength
+
+    require 'English'
+    require 'fileutils'
+
+    [
+      '/proc/sys/net/bridge/bridge-nf-call-arptables',
+      '/proc/sys/net/bridge/bridge-nf-call-ip6tables',
+      '/proc/sys/net/bridge/bridge-nf-call-iptables'
+    ].each do |file|
+      File.write file, '0'
+    rescue Errno::ENOENT
+      # br_netfilter is not loaded
+    end
+
+    e_write = IO.new(ARGV[0].to_i)
+    e_write.write '1'
+    e_write.flush
+
+    r_read = IO.new(ARGV[1].to_i)
+    r = r_read.read(1)
+    r_read.close
+
+    return if r.nil?
+
+    [
+      # unshare command recursively converts / to private by default, but we need to
+      # do that by ourselves because we use the bare unshare syscall.
+      ['mount', '--make-rprivate', '/'],
+
+      ['mount', '--bind', File.join(__dir__, '..', 'etc', 'resolv.conf'), '/etc/resolv.conf'],
+      %w[ip link set lo up],
+      %w[ip link set tap_host up],
+      %w[ip link add br_world type bridge],
+      %w[ip addr add 10.0.2.100/24 dev br_world],
+      %w[ip link set tap_host master br_world],
+      %w[ip link set br_world up],
+      %w[ip route add default via 10.0.2.2],
+      %w[ip link add br_ctrl type bridge],
+      %w[ip link set br_ctrl up],
+      %w[ip link add br_test type bridge],
+      %w[ip link set br_test up]
+    ].each do |cmd|
+      Process.wait spawn(*cmd)
+      raise $CHILD_STATUS.to_s unless $CHILD_STATUS.success?
+    rescue StandardError
+      raise "#{cmd}: command failed"
+    end
+
+    exec(*ARGV[2..])
+  end
 end
-
-e_write = IO.new(ARGV[0].to_i)
-e_write.write '1'
-e_write.flush
-
-r_read = IO.new(ARGV[1].to_i)
-r = r_read.read(1)
-r_read.close
-
-return if r.nil?
-
-[
-  # unshare command recursively converts / to private by default, but we need to
-  # do that by ourselves because we use the bare unshare syscall.
-  ['mount', '--make-rprivate', '/'],
-
-  ['mount', '--bind', File.join(__dir__, '..', 'etc', 'resolv.conf'), '/etc/resolv.conf'],
-  %w[ip link set lo up],
-  %w[ip link set tap_host up],
-  %w[ip link add br_world type bridge],
-  %w[ip addr add 10.0.2.100/24 dev br_world],
-  %w[ip link set tap_host master br_world],
-  %w[ip link set br_world up],
-  %w[ip route add default via 10.0.2.2],
-  %w[ip link add br_ctrl type bridge],
-  %w[ip link set br_ctrl up],
-  %w[ip link add br_test type bridge],
-  %w[ip link set br_test up]
-].each do |cmd|
-  Process.wait spawn(*cmd)
-  raise $CHILD_STATUS.to_s unless $CHILD_STATUS.success?
-rescue StandardError
-  raise "#{cmd}: command failed"
-end
-
-exec(*ARGV[2..])

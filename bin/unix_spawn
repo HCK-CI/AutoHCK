@@ -1,5 +1,11 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require 'socket'
-UNIXServer.open(ARGV[0]) { spawn(*ARGV[1..], 3 => _1) }
+require_relative '../lib/auto_hck'
+
+module AutoHCK
+  run do
+    require 'socket'
+    UNIXServer.open(ARGV[0]) { spawn(*ARGV[1..], 3 => _1) }
+  end
+end

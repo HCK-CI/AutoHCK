@@ -1,90 +1,98 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require 'bundler/setup'
-require 'dotenv/load'
-require 'optparse'
-Bundler.require
-require './lib/all'
+require_relative '../lib/auto_hck'
 
-# command line parser class
-class CLI
-  attr_accessor :debug, :drivers, :driver_path, :diff_file, :trigger_file
+module AutoHCK
+  # rubocop:disable Metrics/BlockLength
+  run do
+    # rubocop:enable Metrics/BlockLength
 
-  def initialize
-    @parser = create_parser
-  end
+    require 'optparse'
 
-  def parse(args)
-    @parser.order!(args)
-  end
+    # command line parser class
+    # rubocop:disable Lint/ConstantDefinitionInBlock
+    class CLI
+      # rubocop:enable Lint/ConstantDefinitionInBlock
 
-  def create_parser
-    OptionParser.new do |parser|
-      parser.banner = 'Usage: triggers_check [--help] <options>'
-      parser.separator ''
-      define_options(parser)
-      parser.on_tail('-h', '--help', 'Show this message') do
-        puts parser
-        exit
+      attr_accessor :debug, :drivers, :driver_path, :diff_file, :trigger_file
+
+      def initialize
+        @parser = create_parser
+      end
+
+      def parse(args)
+        @parser.order!(args)
+      end
+
+      def create_parser
+        OptionParser.new do |parser|
+          parser.banner = 'Usage: triggers_check [--help] <options>'
+          parser.separator ''
+          define_options(parser)
+          parser.on_tail('-h', '--help', 'Show this message') do
+            puts parser
+            exit
+          end
+        end
+      end
+
+      def define_options(parser)
+        debug_option(parser)
+        drivers_option(parser)
+        driver_path_option(parser)
+        diff_option(parser)
+        triggers_option(parser)
+      end
+
+      def debug_option(parser)
+        parser.on('--debug', TrueClass,
+                  'Printing debug information (optional)') do |debug|
+          @debug = debug
+        end
+      end
+
+      def drivers_option(parser)
+        parser.on('--drivers <drivers_list>', Array, 'List of driver for run test') do |drivers|
+          @drivers = drivers
+        end
+      end
+
+      def driver_path_option(parser)
+        parser.on('--driver-path <driver_path>', String,
+                  'Path to the location of the driver wanted to be tested') do |driver_path|
+          @driver_path = driver_path
+        end
+      end
+
+      def diff_option(parser)
+        parser.on('--diff <diff_file>', String,
+                  'Path to text file containing a list of changed source files') do |diff_file|
+          @diff_file = diff_file
+        end
+      end
+
+      def triggers_option(parser)
+        parser.on('--triggers <trigger_file>', String,
+                  'Path to text file containing a list of triggers') do |trigger_file|
+          @trigger_file = trigger_file
+        end
       end
     end
-  end
 
-  def define_options(parser)
-    debug_option(parser)
-    drivers_option(parser)
-    driver_path_option(parser)
-    diff_option(parser)
-    triggers_option(parser)
-  end
+    cli = CLI.new
+    cli.parse(ARGV)
 
-  def debug_option(parser)
-    parser.on('--debug', TrueClass,
-              'Printing debug information (optional)') do |debug|
-      @debug = debug
+    @logger = MonoLogger.new($stdout)
+    @logger.level = cli.debug ? 'DEBUG' : 'INFO'
+
+    diff_checker = AutoHCK::DiffChecker.new(@logger, cli.drivers, cli.driver_path, cli.diff_file, cli.trigger_file)
+    if diff_checker.trigger?
+      @logger.info('Some drivers are changed, running tests')
+      exit 0
+    else
+      @logger.info("Any drivers aren't changed, not running tests")
+      exit 1
     end
   end
-
-  def drivers_option(parser)
-    parser.on('--drivers <drivers_list>', Array, 'List of driver for run test') do |drivers|
-      @drivers = drivers
-    end
-  end
-
-  def driver_path_option(parser)
-    parser.on('--driver-path <driver_path>', String,
-              'Path to the location of the driver wanted to be tested') do |driver_path|
-      @driver_path = driver_path
-    end
-  end
-
-  def diff_option(parser)
-    parser.on('--diff <diff_file>', String,
-              'Path to text file containing a list of changed source files') do |diff_file|
-      @diff_file = diff_file
-    end
-  end
-
-  def triggers_option(parser)
-    parser.on('--triggers <trigger_file>', String,
-              'Path to text file containing a list of triggers') do |trigger_file|
-      @trigger_file = trigger_file
-    end
-  end
-end
-
-cli = CLI.new
-cli.parse(ARGV)
-
-@logger = MonoLogger.new($stdout)
-@logger.level = cli.debug ? 'DEBUG' : 'INFO'
-
-diff_checker = AutoHCK::DiffChecker.new(@logger, cli.drivers, cli.driver_path, cli.diff_file, cli.trigger_file)
-if diff_checker.trigger?
-  @logger.info('Some drivers are changed, running tests')
-  exit 0
-else
-  @logger.info("Any drivers aren't changed, not running tests")
-  exit 1
 end

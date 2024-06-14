@@ -1,16 +1,12 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require 'bundler/setup'
-require 'dotenv/load'
-Bundler.require
-require './lib/config/sentry'
+Dir.chdir(File.dirname(__dir__))
 
-begin
-  require './lib/all'
+require_relative '../lib/auto_hck'
 
-  # AutoHCK module
-  module AutoHCK
+module AutoHCK
+  run do
     cli = CLI.new
     cli.parse(ARGV)
 
@@ -34,10 +30,5 @@ begin
       @project.handle_error
       exit(1)
     end
-  rescue AutoHCKInterrupt
-    exit false
   end
-rescue StandardError => e
-  Sentry.capture_exception(e)
-  raise
 end
