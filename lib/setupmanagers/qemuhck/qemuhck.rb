@@ -1,11 +1,5 @@
 # frozen_string_literal: true
 
-require './lib/exceptions'
-require './lib/auxiliary/json_helper'
-require './lib/auxiliary/host_helper'
-require './lib/setupmanagers/qemuhck/slirp'
-require './lib/setupmanagers/qemuhck/qemu_machine'
-
 # AutoHCK module
 module AutoHCK
   # QemuHCK class

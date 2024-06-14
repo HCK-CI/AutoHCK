@@ -1,10 +1,6 @@
 # typed: strict
 # frozen_string_literal: true
 
-require 'sorbet-runtime'
-
-require './lib/auxiliary/json_helper'
-
 module AutoHCK
   # Models module
   module Models

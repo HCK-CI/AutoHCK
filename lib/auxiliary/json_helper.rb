@@ -1,14 +1,6 @@
 # typed: false
 # frozen_string_literal: true
 
-require 'active_support'
-require 'active_support/core_ext/hash/deep_merge'
-require 'json'
-require 'fileutils'
-require 'sorbet-runtime'
-require './lib/exceptions'
-require './lib/auxiliary/multi_logger'
-
 # AutoHCK module
 module AutoHCK
   # Helper module

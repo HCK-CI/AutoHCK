@@ -1,22 +1,13 @@
 # frozen_string_literal: true
 
-require 'mono_logger'
-
-require_relative 'network_manager'
-require_relative 'storage_manager'
-require_relative 'qmp'
-require_relative 'exceptions'
-
-require_relative '../../auxiliary/json_helper'
-require_relative '../../auxiliary/host_helper'
-require_relative '../../auxiliary/pgroup'
-require_relative '../../auxiliary/replacement_map'
-require_relative '../../auxiliary/resource_scope'
-
 # AutoHCK module
 module AutoHCK
   # QemuMachine class
   class QemuMachine
+    autoload :NetworkManager, './lib/setupmanagers/qemuhck/network_manager'
+    autoload :QMP, './lib/setupmanagers/qemuhck/qmp'
+    autoload :StorageManager, './lib/setupmanagers/qemuhck/storage_manager'
+
     # Hostfwd is a class that holds ports forwarded for a run.
     class Hostfwd
       def initialize(slirp, ports)

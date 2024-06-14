@@ -1,13 +1,5 @@
 # frozen_string_literal: true
 
-require 'erb'
-require 'date'
-require 'fileutils'
-require './lib/engines/hcktest/playlist'
-require './lib/auxiliary/sysinfo_parser'
-require './lib/auxiliary/time_helper'
-require './lib/auxiliary/zip_helper'
-
 # AutoHCK module
 module AutoHCK
   # Tests class

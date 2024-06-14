@@ -7,10 +7,7 @@ Bundler.require
 require './lib/config/sentry'
 
 begin
-  require './lib/auxiliary/resource_scope'
-  require './lib/cli'
-  require './lib/project'
-  require './lib/trap'
+  require './lib/all'
 
   # AutoHCK module
   module AutoHCK

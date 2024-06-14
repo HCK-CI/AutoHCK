@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require_relative '../../auxiliary/json_helper'
-require_relative '../../auxiliary/host_helper'
-require_relative '../../auxiliary/replacement_map'
-
 # AutoHCK module
 module AutoHCK
   # QemuMachine class
