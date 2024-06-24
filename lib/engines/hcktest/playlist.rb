@@ -90,14 +90,14 @@ module AutoHCK
     end
 
     def intersect_select_tests(select_test_names)
-      return unless @project.options.test.allow_test_duplication
-
       select_test_names_counted = select_test_names.tally
 
       @tests.select! do |test|
         next unless select_test_names_counted.key?(test['name'])
 
-        test['run_count'] = select_test_names_counted[test['name']]
+        test['run_count'] = select_test_names_counted[test['name']] if @project.options.test.allow_test_duplication
+
+        true
       end
     end
 
