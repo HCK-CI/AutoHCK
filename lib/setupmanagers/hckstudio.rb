@@ -16,9 +16,9 @@ module AutoHCK
       @tag = @project.engine.tag
       @ip_getter = ip_getter
       @logger = @project.logger
-      @scope = scope
       @logger.info('Starting studio')
       @runner = setup_manager.run_studio(scope, run_opts)
+      scope << self
     end
 
     def up?
@@ -53,7 +53,6 @@ module AutoHCK
       begin
         @logger.info('Initiating connection to studio')
         @tools = Tools.new(@project, @ip_getter.call, @clients)
-        @scope << @tools
       rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH, RToolsHCKConnectionError
         raise StudioConnectError, 'Initiating connection to studio failed'
       end
@@ -90,6 +89,10 @@ module AutoHCK
     def shutdown
       @logger.info('Shutting down studio')
       @tools.shutdown
+    end
+
+    def close
+      @tools&.close
     end
   end
 end
