@@ -8,7 +8,7 @@ module AutoHCK
   class Playlist
     include Helper
 
-    attr_reader :rejected_test
+    attr_reader :rejected_test, :playlist
 
     def initialize(client, project, target, tools, kit)
       @machine = client.name

@@ -105,7 +105,7 @@ module AutoHCK
       attr_accessor :platform, :drivers, :driver_path, :commit, :diff_file, :svvp, :dump,
                     :gthb_context_prefix, :gthb_context_suffix, :playlist, :select_test_names,
                     :reject_test_names, :triggers_file, :reject_report_sections, :boot_device,
-                    :allow_test_duplication, :manual
+                    :allow_test_duplication, :manual, :package_with_playlist
 
       def create_parser
         OptionParser.new do |parser|
@@ -119,6 +119,7 @@ module AutoHCK
         end
       end
 
+      # rubocop:disable Metrics/AbcSize
       def define_options(parser)
         platform_option(parser)
         drivers_option(parser)
@@ -137,7 +138,9 @@ module AutoHCK
         boot_device_option(parser)
         allow_test_duplication_option(parser)
         manual_option(parser)
+        package_with_playlist_option(parser)
       end
+      # rubocop:enable Metrics/AbcSize
 
       def platform_option(parser)
         parser.on('-p', '--platform <platform_name>', String,
@@ -269,6 +272,13 @@ module AutoHCK
         parser.on('--manual', TrueClass,
                   'Run AutoHCK in manual mode') do |manual|
           @manual = manual
+        end
+      end
+
+      def package_with_playlist_option(parser)
+        parser.on('--package-with-playlist', TrueClass,
+                  'Load playlist into HLKX project package') do |package_with_playlist|
+          @package_with_playlist = package_with_playlist
         end
       end
     end
