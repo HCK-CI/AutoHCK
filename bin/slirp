@@ -1,0 +1,73 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+Dir.chdir(File.dirname(__dir__))
+
+require_relative '../lib/auto_hck'
+
+module AutoHCK
+  # rubocop:disable Metrics/BlockLength
+  run do
+    # rubocop:enable Metrics/BlockLength
+
+    require 'optparse'
+    require 'socket'
+
+    workspace_path = nil
+    parser = OptionParser.new
+    parser.banner += ' add_hostfwd|remove_hostfwd|list_hostfwd'
+    parser.version = VERSION
+    parser.on('-w <path>', '--workspace <path>', String, 'Workspace path') { workspace_path = _1 }
+    argv = parser.order(ARGV)
+    request = case argv.shift
+              when 'add_hostfwd'
+                parser = OptionParser.new
+                parser.banner += ' add_hostfwd <port>'
+                parser.order! argv
+                port = argv.shift.to_i
+                {
+                  'execute' => 'add_hostfwd',
+                  'arguments' => {
+                    'proto' => 'tcp',
+                    'host_port' => port,
+                    'guest_port' => port
+                  }
+                }
+              when 'remove_hostfwd'
+                parser = OptionParser.new
+                parser.banner += ' remove_hostfwd <id>'
+                parser.order! argv
+                {
+                  'execute' => 'remove_hostfwd',
+                  'arguments' => { 'id' => argv.shift.to_i }
+                }
+              when 'list_hostfwd'
+                parser = OptionParser.new
+                parser.banner += ' list_hostfwd'
+                parser.order! argv
+                { 'execute' => 'list_hostfwd' }
+              else
+                abort parser.to_s
+              end
+
+    abort "unknown argument: #{argv[0]}" unless argv.empty?
+
+    if workspace_path.nil?
+      Dir.chdir Config.read['workspace_path']
+      socks = Dir['*/*/*/slirp.sock']
+      abort 'no running slirp found' if socks.empty?
+
+      workspace_path = File.dirname(socks.max_by { File.mtime(_1) })
+    end
+
+    Dir.chdir workspace_path
+
+    UNIXSocket.open 'slirp.sock' do |socket|
+      socket.write JSON.dump(request)
+      socket.flush
+      response = socket.read
+      puts response
+      exit !JSON.parse(response).key?('error')
+    end
+  end
+end

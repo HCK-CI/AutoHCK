@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'rtoolsHCK'
-require 'nori/parser/rexml'
-
 # AutoHCK module
 module AutoHCK
   # Tools class

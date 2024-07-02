@@ -1,17 +1,6 @@
 # typed: true
 # frozen_string_literal: true
 
-require './lib/setupmanagers/hckstudio'
-require './lib/setupmanagers/hckclient'
-require './lib/auxiliary/diff_checker'
-require './lib/auxiliary/json_helper'
-require './lib/auxiliary/resource_scope'
-require './lib/auxiliary/zip_helper'
-
-require './lib/models/driver'
-require './lib/models/hcktest_config'
-require './lib/models/svvp_config'
-
 # AutoHCK module
 module AutoHCK
   # HCKTest class
@@ -30,14 +19,12 @@ module AutoHCK
     def initialize(project)
       @project = project
       @logger = project.logger
-      @project.append_multilog("#{tag}.log")
+      @project.append_multilog("#{project.engine_tag}.log")
       @config = Models::HCKTestConfig.from_json_file(CONFIG_JSON, @logger)
-      @platform = read_platform
       @driver_path = @project.options.test.driver_path
       @drivers = find_drivers
       prepare_extra_sw
       validate_paths unless @driver_path.nil?
-      init_workspace
     end
 
     def prepare_extra_sw
@@ -45,26 +32,15 @@ module AutoHCK
         next if driver.extra_software.nil?
 
         @project.extra_sw_manager.prepare_software_packages(
-          driver.extra_software, @platform['kit'], ENGINE_MODE
+          driver.extra_software, @project.engine_platform['kit'], ENGINE_MODE
         )
       end
 
-      return if @platform['extra_software'].nil?
+      return if @project.engine_platform['extra_software'].nil?
 
       @project.extra_sw_manager.prepare_software_packages(
         @platform['extra_software'], @platform['kit'], ENGINE_MODE
       )
-    end
-
-    def init_workspace
-      @workspace_path = [@project.workspace_path,
-                         tag, @project.timestamp].join('/')
-      begin
-        FileUtils.mkdir_p(@workspace_path)
-      rescue Errno::EEXIST
-        @project.logger.warn('Workspace path already exists')
-      end
-      @project.move_workspace_to(@workspace_path.to_s)
     end
 
     def validate_paths
@@ -140,17 +116,9 @@ module AutoHCK
       end
     end
 
-    def read_platform
-      platform_name = @project.options.test.platform
-      platform_json = "#{PLATFORMS_JSON_DIR}/#{platform_name}.json"
-
-      @logger.info("Loading platform: #{platform_name}")
-      unless File.exist?(platform_json)
-        @logger.fatal("#{platform_name} does not exist")
-        raise(InvalidConfigFile, "#{platform_name} does not exist")
-      end
-
-      Json.read_json(platform_json, @logger)
+    def self.platform(logger, options)
+      platform_name = options.test.platform
+      Json.read_json("#{PLATFORMS_JSON_DIR}/#{platform_name}.json", logger)
     end
 
     def run_studio(scope, run_opts = {})
@@ -159,7 +127,7 @@ module AutoHCK
 
     def run_clients(scope, run_opts = {})
       @clients = {}
-      @platform['clients'].each_value do |client|
+      @project.engine_platform['clients'].each_value do |client|
         @clients[client['name']] = @project.setup_manager.run_hck_client(scope, @studio, client['name'], run_opts)
 
         break if @project.options.test.svvp
@@ -180,7 +148,7 @@ module AutoHCK
     end
 
     def configure_setup_and_synchronize
-      @studio.configure(@platform['clients'])
+      @studio.configure(@project.engine_platform['clients'])
       configure_clients
       @clients.each_value(&:synchronize)
       @studio.keep_snapshot
@@ -209,17 +177,17 @@ module AutoHCK
     def upload_driver_package
       @project.logger.info('Uploading driver package')
 
-      r_name = "#{tag}.zip"
-      zip_path = "#{@workspace_path}/#{r_name}"
+      r_name = "#{@project.engine_tag}.zip"
+      zip_path = "#{@project.workspace_path}/#{r_name}"
       create_zip_from_directory(zip_path, @driver_path)
       @project.result_uploader.upload_file(zip_path, r_name)
     end
 
-    def tag
-      if @project.options.test.svvp
-        "svvp-#{@project.options.test.platform}"
+    def self.tag(options)
+      if options.test.svvp
+        "svvp-#{options.test.platform}"
       else
-        "#{@project.options.test.drivers.sort.join('-')}-#{@project.options.test.platform}"
+        "#{options.test.drivers.sort.join('-')}-#{options.test.platform}"
       end
     end
 

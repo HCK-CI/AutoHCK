@@ -1,52 +1,40 @@
 # frozen_string_literal: true
 
-require 'mono_logger'
-
-require_relative 'network_manager'
-require_relative 'storage_manager'
-require_relative 'qmp'
-require_relative 'exceptions'
-
-require_relative '../../auxiliary/json_helper'
-require_relative '../../auxiliary/host_helper'
-require_relative '../../auxiliary/pgroup'
-require_relative '../../auxiliary/replacement_map'
-require_relative '../../auxiliary/resource_scope'
-
 # AutoHCK module
 module AutoHCK
   # QemuMachine class
   class QemuMachine
+    extend AutoHCK::AutoloadExtension
+    autoload_relative :NetworkManager, 'network_manager'
+    autoload_relative :QMP, 'qmp'
+    autoload_relative :StorageManager, 'storage_manager'
+
     # Hostfwd is a class that holds ports forwarded for a run.
     class Hostfwd
-      def initialize(slirp, ports)
-        @slirp = slirp
+      include Helper
+
+      def initialize(workspace_path, ports)
+        @workspace_path = workspace_path
         @ids = []
         begin
-          ports.each do |port|
-            @ids << slirp.run({
-                                'execute' => 'add_hostfwd',
-                                'arguments' => {
-                                  'proto' => 'tcp',
-                                  'host_port' => port,
-                                  'guest_port' => port
-                                }
-                              })
-          end
+          ports.each { @ids << slirp('add_hostfwd', _1) }
         rescue StandardError
           close
         end
       end
 
       def close
-        @ids.each do |id|
-          @slirp.run({
-                       'execute' => 'remove_hostfwd',
-                       'arguments' => id
-                     })
-        end
+        slirp 'remove_hostfwd', @ids.pop until @ids.empty?
+      end
 
-        @ids.clear
+      private
+
+      def slirp(...)
+        File.open('/tmp', File::RDWR | File::TMPFILE) do |out|
+          run_cmd('bin/slirp', '-w', @workspace_path, *args, out:)
+          out.rewind
+          JSON.parse(out.read)['return']
+        end
       end
     end
 
@@ -67,7 +55,12 @@ module AutoHCK
         @keep_alive = run_opts[:keep_alive]
         @delete_snapshot = run_opts[:create_snapshot]
         @logger.info(@machine.dump_config)
-        @qemu_thread = Thread.new { run_vm }
+        @qemu_thread = Thread.new do
+          loop do
+            run_vm
+            break unless @keep_alive
+          end
+        end
         scope << self
       end
 
@@ -84,7 +77,7 @@ module AutoHCK
       def run_qemu(scope, pgroup:)
         @logger.info("Starting #{@run_name}")
         @qmp = QMP.new(scope, @run_name, @logger)
-        qemu = @machine.run_qemu(@qmp, pgroup:)
+        qemu = @machine.run_qemu(scope, @qmp, pgroup:)
         @logger.info("#{@run_name} started with PID #{qemu.pid}")
         qemu
       end
@@ -102,28 +95,24 @@ module AutoHCK
       end
 
       def run_vm
-        loop do
-          ResourceScope.open do |scope|
-            qemu = nil
-            pgroup = Pgroup.new(scope).pid
+        ResourceScope.open do |scope|
+          pgroup = Pgroup.new(scope).pid
+          begin
+            @machine.run_pre_start_commands(pgroup:)
+
+            qemu = run_qemu(scope, pgroup:)
             begin
-              @machine.run_pre_start_commands(pgroup:)
-
-              qemu = run_qemu(scope, pgroup:)
-              fails_quickly = check_fails_too_quickly(qemu.wait_no_fail.exitstatus)
-              qemu = nil
-
+              fails_quickly = check_fails_too_quickly(qemu.close.exitstatus)
               raise QemuRunError, 'QEMU fails repeated too quickly' if fails_quickly
             ensure
-              unless qemu.nil?
+              if qemu.status.nil?
                 Process.kill 'KILL', qemu.pid
-                qemu.wait_no_fail
+                qemu.close
               end
-              @machine.run_post_stop_commands(pgroup:)
             end
+          ensure
+            @machine.run_post_stop_commands(pgroup:)
           end
-
-          break unless @keep_alive
         end
       end
 
@@ -617,16 +606,16 @@ module AutoHCK
       Timeout.timeout(60) do
         @post_stop_commands.each do |dirty_cmd|
           cmd = full_replacement_map.create_cmd(dirty_cmd)
-          run_cmd_no_fail(cmd, chdir: @workspace_path, pgroup:)
+          run_cmd(cmd, chdir: @workspace_path, exception: false, pgroup:)
         end
       end
     end
 
-    def run_qemu(qmp, pgroup:)
+    def run_qemu(scope, qmp, pgroup:)
       cmd = qemu_cmd
       cmd += " -chardev socket,id=qmp,fd=#{qmp.socket.fileno},server=off -mon chardev=qmp,mode=control"
-      CmdRun.new(@logger, cmd,
-                 chdir: @workspace_path, pgroup:,
+      CmdRun.new(scope, @logger, cmd,
+                 chdir: @workspace_path, exception: false, pgroup:,
                  qmp.socket.fileno => qmp.socket.fileno)
     end
 
@@ -667,9 +656,8 @@ module AutoHCK
 
       file_name = "#{@workspace_path}/#{@run_name}_manual.sh"
       content = <<~BASH
-        #!/usr/bin/env bash
+        #!#{File.absolute_path('bin/run_dump')}
 
-        #{full_replacement_map.create_cmd('cd @workspace@')}
         trap 'trap "" SIGTERM && kill 0' EXIT
 
         # QEMU pre start commands
@@ -713,7 +701,7 @@ module AutoHCK
         end
 
         scope.transaction do |tmp_scope|
-          hostfwd = Hostfwd.new(@options['slirp'], [@monitor_port, @vnc_port])
+          hostfwd = Hostfwd.new(@workspace_path, [@monitor_port, @vnc_port])
           tmp_scope << hostfwd
           Runner.new(tmp_scope, @logger, self, @run_name, @run_opts)
         end

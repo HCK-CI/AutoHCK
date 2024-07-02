@@ -1,4 +1,4 @@
-require_relative '../lib/auxiliary/diff_checker'
+require_relative '../lib/all'
 
 describe 'diff_checker' do
   triggers = 'spec/diff_checker_spec/triggers.yml'

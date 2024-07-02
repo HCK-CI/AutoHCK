@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require 'fileutils'
-require './lib/auxiliary/resource_scope'
-require './lib/resultuploaders/result_uploader'
-
 # AutoHCK module
 module AutoHCK
   # ConfigManager class
@@ -15,22 +11,10 @@ module AutoHCK
     def initialize(project)
       @project = project
       @logger = project.logger
-      @project.append_multilog("#{tag}.log")
-      init_workspace
+      @project.append_multilog("#{self.class.tag}.log")
     end
 
-    def init_workspace
-      @workspace_path = [@project.workspace_path,
-                         tag, @project.timestamp].join('/')
-      begin
-        FileUtils.mkdir_p(@workspace_path)
-      rescue Errno::EEXIST
-        @project.logger.warn('Workspace path already exists')
-      end
-      @project.move_workspace_to(@workspace_path.to_s)
-    end
-
-    def tag
+    def self.tag(*)
       'helper-config-manager'
     end
 
@@ -46,7 +30,7 @@ module AutoHCK
       nil
     end
 
-    def platform
+    def self.platform(*)
       nil
     end
 

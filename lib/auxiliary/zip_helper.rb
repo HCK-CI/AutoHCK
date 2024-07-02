@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'fileutils'
-require 'zip'
-
 # AutoHCK module
 module AutoHCK
   # Helper module

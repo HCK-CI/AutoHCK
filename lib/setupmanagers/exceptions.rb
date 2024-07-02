@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require './lib/exceptions'
-
 # AutoHCK module
 module AutoHCK
   # A custom SetupManager error exception

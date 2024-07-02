@@ -1,5 +1,5 @@
 require 'json'
-require_relative '../lib/auxiliary/sysinfo_parser'
+require_relative '../lib/all'
 
 describe 'sysinfo_parser' do
   spec_path = 'spec/sysinfo_parser_spec'

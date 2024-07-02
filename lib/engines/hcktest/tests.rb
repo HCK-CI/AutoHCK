@@ -1,13 +1,5 @@
 # frozen_string_literal: true
 
-require 'erb'
-require 'date'
-require 'fileutils'
-require './lib/engines/hcktest/playlist'
-require './lib/auxiliary/sysinfo_parser'
-require './lib/auxiliary/time_helper'
-require './lib/auxiliary/zip_helper'
-
 # AutoHCK module
 module AutoHCK
   # Tests class
@@ -28,7 +20,7 @@ module AutoHCK
     def initialize(client, support, project, target, tools)
       @client = client
       @project = project
-      @tag = project.engine.tag
+      @tag = project.engine_tag
       @target = target
       @tools = tools
       @support = support

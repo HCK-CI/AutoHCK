@@ -1,15 +1,12 @@
 # frozen_string_literal: true
 
-require './lib/exceptions'
-require './lib/auxiliary/json_helper'
-require './lib/auxiliary/host_helper'
-require './lib/setupmanagers/qemuhck/slirp'
-require './lib/setupmanagers/qemuhck/qemu_machine'
-
 # AutoHCK module
 module AutoHCK
   # QemuHCK class
   class QemuHCK
+    extend AutoloadExtension
+    autoload_relative :Ns, 'ns'
+
     include Helper
 
     attr_reader :kit, :project
@@ -21,7 +18,6 @@ module AutoHCK
     def initialize(project)
       initialize_project project
 
-      @slirp = Slirp.new(ENV.fetch('AUTOHCK_SLIRP'))
       @clients_vm = {}
       initialize_studio_vm
       initialize_clients_vm
@@ -36,7 +32,7 @@ module AutoHCK
       @logger = project.logger
 
       @drivers = project.engine.drivers
-      @platform = project.engine.platform
+      @platform = project.engine_platform
 
       @devices = @drivers&.map(&:device)
       @kit = @platform['kit']
@@ -49,7 +45,6 @@ module AutoHCK
         'workspace_path' => @workspace_path,
         'image_name' => @platform['st_image'],
         'logger' => @logger,
-        'slirp' => @slirp,
         'iso_path' => @project.config['iso_path'],
         'share_on_host_path' => @project.options.common.share_on_host_path
       }.merge(platform_options)
@@ -92,7 +87,6 @@ module AutoHCK
         'workspace_path' => @workspace_path,
         'devices_list' => @devices,
         'logger' => @logger,
-        'slirp' => @slirp,
         'iso_path' => @project.config['iso_path'],
         'client_world_net' => @project.options.common.client_world_net,
         'share_on_host_path' => @project.options.common.share_on_host_path
@@ -186,6 +180,11 @@ module AutoHCK
 
     def run_hck_client(scope, studio, name, run_opts)
       HCKClient.new(self, scope, studio, name, run_opts)
+    end
+
+    def self.enter(workspace_path)
+      Ns.enter workspace_path, Dir.pwd, 'bin/auto_hck', '-w',
+               workspace_path, *ARGV
     end
   end
 end

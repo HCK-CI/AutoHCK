@@ -1,21 +1,11 @@
 # frozen_string_literal: true
 
-require 'English'
-require 'tempfile'
-
-require_relative '../exceptions'
-require_relative 'cmd_run'
-
 # AutoHCK module
 module AutoHCK
   # Helper module
   module Helper
     def run_cmd(...)
-      CmdRun.new(@logger, ...).wait
-    end
-
-    def run_cmd_no_fail(...)
-      CmdRun.new(@logger, ...).wait_no_fail
+      ResourceScope.open { CmdRun.new(_1, @logger, ...) }
     end
 
     def file_gsub(src, dst, gsub_list)

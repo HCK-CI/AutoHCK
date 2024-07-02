@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require './lib/setupmanagers/exceptions'
-require './lib/engines/hcktest/tests'
-require './lib/engines/hcktest/targets'
-
 # AutoHCK module
 module AutoHCK
   # HCKClient class
@@ -61,8 +57,8 @@ module AutoHCK
 
     def move_machine_to_pool
       @logger.info("Moving #{@name} to pool")
-      @tools.move_machine(@name, @pool, @project.engine.tag)
-      @pool = @project.engine.tag
+      @tools.move_machine(@name, @pool, @project.engine_tag)
+      @pool = @project.engine_tag
     end
 
     def set_machine_ready

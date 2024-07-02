@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'dropbox_api'
-require './lib/auxiliary/json_helper'
-
 # AutoHCK module
 module AutoHCK
   # dropbox class
@@ -15,7 +12,7 @@ module AutoHCK
     attr_reader :url
 
     def initialize(project)
-      @tag = project.engine.tag
+      @tag = project.engine_tag
       @timestamp = project.timestamp
       @logger = project.logger
       @repo = project.config['repository']

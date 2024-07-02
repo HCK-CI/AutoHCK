@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require './lib/exceptions'
-require './lib/auxiliary/json_helper'
-
 # AutoHCK module
 module AutoHCK
   # PhysHCK
@@ -35,7 +32,7 @@ module AutoHCK
     def initialize(project)
       @project = project
       @logger = project.logger
-      @platform = project.engine.platform
+      @platform = project.engine_platform
       @setup = find_setup
       @id = project.id
       @kit = @setup['kit']
@@ -80,5 +77,7 @@ module AutoHCK
     def run_hck_client(scope, studio, name, run_opts)
       HCKClient.new(self, scope, studio, name, run_opts)
     end
+
+    def self.enter(*); end
   end
 end

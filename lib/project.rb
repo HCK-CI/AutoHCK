@@ -1,17 +1,5 @@
 # frozen_string_literal: true
 
-require 'fileutils'
-require 'mono_logger'
-require './lib/engines/engine'
-require './lib/setupmanagers/setupmanager'
-require './lib/auxiliary/github'
-require './lib/resultuploaders/result_uploader'
-require './lib/auxiliary/multi_logger'
-require './lib/auxiliary/diff_checker'
-require './lib/auxiliary/json_helper'
-require './lib/auxiliary/extra_software/manager'
-require './lib/auxiliary/time_helper'
-
 # AutoHCK module
 module AutoHCK
   # project class
@@ -19,10 +7,9 @@ module AutoHCK
     include Helper
 
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :id,
-                :workspace_path, :github, :result_uploader,
-                :engine_type, :options, :extra_sw_manager, :run_terminated
-
-    CONFIG_JSON = 'config.json'
+                :workspace_path, :github, :result_uploader, :engine_tag,
+                :engine_platform, :engine_type, :options, :extra_sw_manager,
+                :run_terminated
 
     def initialize(scope, options)
       @scope = scope
@@ -53,15 +40,16 @@ module AutoHCK
     def prepare
       @extra_sw_manager = ExtraSoftwareManager.new(self)
 
-      @engine = Engine.new(self)
-      Sentry.set_tags('autohck.tag': @engine.tag)
+      @engine = @engine_type.new(self)
+      Sentry.set_tags('autohck.tag': @engine_tag)
 
       return false unless check_run?
 
       configure_result_uploader if @engine.result_uploader_needed?
       return false unless github_handling(@options.test.commit)
 
-      @setup_manager = SetupManager.new(self) unless @engine.platform.nil?
+      @setup_manager = @setup_manager_type&.new(self)
+
       true
     end
 
@@ -98,22 +86,14 @@ module AutoHCK
       @logger.add_logger(@pre_logger)
     end
 
-    def move_workspace_to(path)
-      FileUtils.cp(@logfile_path, "#{path}/#{@logfile_name}")
-      @pre_logger.close
-      @logger.remove_logger(@pre_logger)
-      FileUtils.rm_f(@logfile_path)
-      @logfile_path = "#{path}/#{@logfile_name}"
-      @pre_logger = MonoLogger.new(@logfile_path)
-      @logger.add_logger(@pre_logger)
-      @workspace_path = path
-      @logger.info("Workspace moved to: #{@workspace_path}")
-    end
-
     def init_class_variables
-      @config = Json.read_json(CONFIG_JSON, @logger)
+      @config = Config.read
       @timestamp = current_timestamp
-      @engine_type = @config["#{@options.mode}_engine"]
+      @engine_name = @config["#{@options.mode}_engine"]
+      @engine_type = Engine.select(@engine_name)
+      @engine_tag = @engine_type.tag(@options)
+      @engine_platform = @engine_type.platform(@logger, @options)
+      @setup_manager_type = @engine_platform.nil? ? nil : SetupManager.select(@engine_platform['setupmanager'])
       @run_terminated = false
     end
 
@@ -125,7 +105,7 @@ module AutoHCK
     end
 
     def github_handling_context
-      "#{@options.test.gthb_context_prefix}#{@engine.tag}#{@options.test.gthb_context_suffix}"
+      "#{@options.test.gthb_context_prefix}#{@engine_tag}#{@options.test.gthb_context_suffix}"
     end
 
     def initialize_github(commit)
@@ -176,14 +156,22 @@ module AutoHCK
     end
 
     def init_workspace
-      @workspace_path = [@config['workspace_path'], @engine_type,
-                         @config['setupmanager']].join('/')
+      unless @options.common.workspace_path.nil?
+        @workspace_path = @options.common.workspace_path
+        return
+      end
+
+      @workspace_path = File.join(@config['workspace_path'],
+                                  @engine_name,
+                                  @engine_tag,
+                                  @timestamp)
       begin
         FileUtils.mkdir_p(@workspace_path)
       rescue Errno::EEXIST
         @logger.warn('Workspace path already exists')
       end
-      @logger.info("Workspace init path: #{@workspace_path}")
+      @logger.info("Workspace path: #{@workspace_path}")
+      @setup_manager_type&.enter @workspace_path
     end
 
     def handle_cancel

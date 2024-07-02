@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'json'
-require 'socket'
-
 # AutoHCK module
 module AutoHCK
   # QemuMachine class
