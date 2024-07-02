@@ -392,9 +392,9 @@ module AutoHCK
       retry
     end
 
-    def create_project_package(project, handler = nil)
+    def create_project_package(project, playlist = nil, handler = nil)
       retry_tools_command(__method__) do
-        act_with_tools { _1.create_project_package(project, handler) }
+        act_with_tools { _1.create_project_package(project, playlist, handler) }
       end
     end
 

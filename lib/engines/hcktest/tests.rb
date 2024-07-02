@@ -395,7 +395,13 @@ module AutoHCK
     end
 
     def create_project_package
-      res = @tools.create_project_package(@tag)
+      package_playlist = if @project.options.test.package_with_playlist
+                           @playlist.playlist
+                         else
+                           nil
+                         end
+
+      res = @tools.create_project_package(@tag, package_playlist)
       @logger.info('Results package successfully created')
       r_name = @tag + File.extname(res['hostprojectpackagepath'])
       @project.result_uploader.upload_file(res['hostprojectpackagepath'], r_name)
