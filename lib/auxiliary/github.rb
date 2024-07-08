@@ -7,20 +7,19 @@ module AutoHCK
     GITHUB_API_RETRIES = 5
     GITHUB_API_RETRY_SLEEP = 30
 
-    def initialize(config, logger, url, tag, commit)
+    def initialize(repository, logger, url, context, commit)
       @api_connected = false
 
       @logger = logger
       @target_url = url
-      @repo = config['repository']
-      @commit = commit.to_s
-      @context = "HCK-CI/#{tag}"
-      connect unless @commit.empty?
+      @repo = repository
+      @commit = commit
+      @context = context
     end
 
-    def connect
-      login = ENV.fetch('AUTOHCK_GITHUB_LOGIN')
-      password = ENV.fetch('AUTOHCK_GITHUB_TOKEN')
+    def connect(login = nil, password = nil)
+      login ||= ENV.fetch('AUTOHCK_GITHUB_LOGIN')
+      password ||= ENV.fetch('AUTOHCK_GITHUB_TOKEN')
       @github = Octokit::Client.new(login:, password:)
       @logger.info("Connected to github with: #{@github.user.login}")
       @api_connected = true

@@ -109,13 +109,15 @@ module AutoHCK
     end
 
     def github_handling_context
-      "#{@options.test.gthb_context_prefix}#{@engine_tag}#{@options.test.gthb_context_suffix}"
+      "HCK-CI/#{@options.test.gthb_context_prefix}#{@engine_tag}#{@options.test.gthb_context_suffix}"
     end
 
     def initialize_github(commit)
       url = @result_uploader.html_url || @result_uploader.url
-      @github = Github.new(@config, @logger, url, github_handling_context,
-                           commit)
+
+      @github = Github.new(@config['repository'], @logger, url,
+                           github_handling_context, commit)
+      @github.connect
       raise GithubInitializationError unless @github.connected?
     end
 
