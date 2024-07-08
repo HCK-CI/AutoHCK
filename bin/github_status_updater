@@ -1,0 +1,110 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'bundler/setup'
+require 'dotenv/load'
+require 'optparse'
+Bundler.require
+require './lib/all'
+
+class CLI
+  attr_accessor :debug, :github_login, :github_password, :github_repository, :github_commit,
+                :github_status, :status_context, :status_description, :status_url
+
+  def initialize
+    @parser = create_parser
+  end
+
+  def parse(args)
+    @parser.order!(args)
+  end
+
+  def create_parser
+    set_default
+
+    OptionParser.new do |parser|
+      parser.banner = 'Usage: github_status_updater [--help] <options>'
+      parser.separator ''
+      define_options(parser)
+      parser.on_tail('-h', '--help', 'Show this message') do
+        puts parser
+        exit
+      end
+    end
+  end
+
+  def set_default
+    @github_status = 'pending'
+    @status_context = 'default'
+  end
+
+  # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+  def define_options(parser)
+    parser.on('--debug', TrueClass,
+              'Printing debug information (optional)',
+              &method(:debug=))
+
+    parser.on('--github_login <github_login>', String,
+              'Or use env AUTOHCK_GITHUB_LOGIN',
+              &method(:github_login=))
+
+    parser.on('--github_password <github_password>', String,
+              'Or use env AUTOHCK_GITHUB_TOKEN',
+              &method(:github_password=))
+
+    parser.on('--github_repository <github_repository>', String,
+              'Format <owner>/<repo>',
+              &method(:github_repository=))
+
+    parser.on('--github_commit <github_commit>', String,
+              &method(:github_commit=))
+
+    parser.on('--github_status <github_status>', String,
+              'Allowed values: pending, success, error, failure',
+              &method(:github_status=))
+
+    parser.on('--status_context <status_context>', String,
+              &method(:status_context=))
+
+    parser.on('--status_description <status_description>', String,
+              &method(:status_description=))
+
+    parser.on('--status_url <status_url>', String,
+              &method(:status_url=))
+  end
+  # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
+end
+
+cli = CLI.new
+cli.parse(ARGV)
+
+logger = MonoLogger.new($stdout)
+logger.level = cli.debug ? 'DEBUG' : 'INFO'
+
+if cli.github_login.nil? && ENV['AUTOHCK_GITHUB_LOGIN'].nil?
+  logger.error('Missing required options: github_login or env AUTOHCK_GITHUB_LOGIN')
+  exit 1
+end
+
+if cli.github_password.nil? && ENV['AUTOHCK_GITHUB_TOKEN'].nil?
+  logger.error('Missing required options: github_password or env AUTOHCK_GITHUB_TOKEN')
+  exit 1
+end
+
+if cli.github_repository.nil?
+  logger.error('Missing required options: github_repository')
+  exit 1
+end
+
+if cli.github_commit.nil?
+  logger.error('Missing required options: github_commit')
+  exit 1
+end
+
+github = AutoHCK::Github.new(cli.github_repository, logger, cli.status_url,
+                             cli.status_context, cli.github_commit)
+
+github.connect(cli.github_login, cli.github_password)
+raise AutoHCK::GithubInitializationError unless github.connected?
+
+github.create_status(cli.github_status, cli.status_description)
