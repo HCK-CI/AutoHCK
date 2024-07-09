@@ -170,6 +170,14 @@ module AutoHCK
         @logger.warn('Workspace path already exists')
       end
       @logger.info("Workspace path: #{@workspace_path}")
+
+      begin
+        File.delete("#{@config['workspace_path']}/latest")
+      rescue Errno::ENOENT
+        # firts run, no symlink to delete
+      end
+
+      File.symlink(@workspace_path, "#{@config['workspace_path']}/latest")
     end
 
     def handle_cancel
