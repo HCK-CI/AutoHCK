@@ -7,7 +7,7 @@
     "toolshck_path": "./toolsHCK.ps1",
     "studio_username": "Administrator",
     "studio_password": "Qum5net.",
-    "result_uploaders": [ "dropbox" ],
+    "result_uploaders": [ ],
     "test_engine": "hcktest",
     "install_engine": "hckinstall",
     "config_engine": "config_manager",
