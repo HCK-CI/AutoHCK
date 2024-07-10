@@ -475,6 +475,9 @@ module AutoHCK
     def process_storage_command
       dev, @image_path = @sm.boot_device_command(option_config('boot_device'), @run_opts, full_replacement_map)
       @device_commands << dev
+
+      devs = @sm.iso_commands(@run_opts, full_replacement_map)
+      @device_commands << devs
     end
 
     def load_devices
@@ -508,7 +511,7 @@ module AutoHCK
       [
         '@qemu_bin@ -enable-kvm -machine @machine_options@ ',
         '-m @memory@,maxmem=@max_memory@ -smp @cpu_count@,cores=@cpu_count@ ',
-        '-cpu @cpu_options@ -boot order=cd,menu=on,splash-time=10000 ',
+        '-cpu @cpu_options@ -boot menu=on,splash-time=10000 ',
         '-nodefaults -no-user-config -usb -device usb-tablet -vnc :@vnc_id@ ',
         '-global kvm-pit.lost_tick_policy=discard -rtc base=localtime,clock=host,driftfix=slew ',
         '-global @disable_s3_param@=@disable_s3_value@ -global @disable_s4_param@=@disable_s4_value@ ',
@@ -539,7 +542,6 @@ module AutoHCK
           *fw_cmd,
           @machine['machine_uuid'],
           @machine['pcie_root_port'],
-          *iso_cmd,
           "-name #{@run_name}"
         ].compact.join(' ')),
         *@device_commands
@@ -637,13 +639,6 @@ module AutoHCK
 
     def delete_snapshot
       @sm.delete_boot_snapshot
-    end
-
-    def iso_cmd
-      @run_opts[:attach_iso_list]&.map do |iso|
-        iso_path = Pathname.new(@options['iso_path']).join(iso)
-        "-drive file=#{iso_path},media=cdrom,readonly=on"
-      end
     end
 
     def validate_run_opts(run_opts)
