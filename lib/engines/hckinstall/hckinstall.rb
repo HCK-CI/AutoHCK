@@ -24,6 +24,8 @@ module AutoHCK
       @project.append_multilog("#{project.options.install.platform}.log")
       init_config
       init_class_variables
+      init_iso_info
+      validate_paths
       prepare_extra_sw
       @logger.debug('HCKInstall: initialized')
     end
@@ -81,6 +83,14 @@ module AutoHCK
       @platform['clients'].values.first['image'][/Win\w+x(86|64)/]
     end
 
+    def init_iso_info
+      @studio_iso_info = read_iso(studio_platform(@platform['kit']))
+      @client_iso_info = read_iso(client_platform)
+
+      @setup_studio_iso = "#{@project.workspace_path}/setup-studio.iso"
+      @setup_client_iso = "#{@project.workspace_path}/setup-client.iso"
+    end
+
     def init_class_variables
       @iso_path = @project.config['iso_path']
 
@@ -88,14 +98,6 @@ module AutoHCK
       @kit_info = read_kit(@platform['kit'])
 
       @clients_name = @platform['clients'].map { |_k, v| v['name'] }
-
-      @studio_iso_info = read_iso(studio_platform(@platform['kit']))
-      @client_iso_info = read_iso(client_platform)
-
-      validate_paths
-
-      @setup_studio_iso = "#{@workspace_path}/setup-studio.iso"
-      @setup_client_iso = "#{@workspace_path}/setup-client.iso"
     end
 
     def prepare_extra_sw
