@@ -500,11 +500,15 @@ module AutoHCK
       end
     end
 
+    # With some Windows versions, we have a problem with the boot order.
+    # Add boot menu timeout (splash-time) to allow us to manually workaround
+    # this behavior.
+    # Known affected versions: Win2022 (on PC) and Win11_24H2 (on Q35)
     def base_cmd
       [
         '@qemu_bin@ -enable-kvm -machine @machine_options@ ',
         '-m @memory@,maxmem=@max_memory@ -smp @cpu_count@,cores=@cpu_count@ ',
-        '-cpu @cpu_options@ -boot order=cd,menu=on ',
+        '-cpu @cpu_options@ -boot order=cd,menu=on,splash-time=10000 ',
         '-nodefaults -no-user-config -usb -device usb-tablet -vnc :@vnc_id@ ',
         '-global kvm-pit.lost_tick_policy=discard -rtc base=localtime,clock=host,driftfix=slew ',
         '-global @disable_s3_param@=@disable_s3_value@ -global @disable_s4_param@=@disable_s4_value@ ',
