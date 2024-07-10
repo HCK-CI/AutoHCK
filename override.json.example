@@ -17,8 +17,19 @@
         "fs_daemon_share_path": "/data/user/auto_hck/fs_share",
         "images_path": "/data/user/auto_hck/images/",
         "fs_test_image": "/data/user/auto_hck/images/filesystem_tests_image.qcow2",
-        "world_net_bridge": "br1hck",
         "share_on_host_path": "/data/user/auto_hck/fs_share"
     },
-    "lib/engines/hckinstall/iso.json": {}
+    "lib/engines/hckinstall/iso.json": {
+        "Win2019x64": {
+            "path": "en_windows_server_2019_updated_oct_2020_x64_dvd_7484fc77.iso",
+            "studio": {
+                "windows_image_names": "Windows Server 2019 SERVERSTANDARD",
+                "product_key": "AAAAA-AAAAA-AAAAA-AAAAA-AAAAA"
+            },
+            "client": {
+                "windows_image_names": "Windows Server 2019 SERVERSTANDARDCORE",
+                "product_key": "AAAAA-AAAAA-AAAAA-AAAAA-AAAAA"
+            }
+        }
+    }
 }
