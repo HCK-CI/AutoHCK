@@ -3,6 +3,6 @@
   "type": "storage",
   "command_line": [
     "-drive file=@image_path@,if=none,format=@image_format@,id=virtio_blk_@run_id@_@client_id@@drive_cache_options@",
-    "-device virtio-blk-pci@device_extra_param@@iommu_device_param@,bus=@bus_name@.0,drive=virtio_blk_@run_id@_@client_id@,serial=@client_id@blk@run_id@"
+    "-device virtio-blk-pci@device_extra_param@@iommu_device_param@,bus=@bus_name@.0,drive=virtio_blk_@run_id@_@client_id@,serial=@client_id@blk@run_id@@bootindex@"
   ]
 }

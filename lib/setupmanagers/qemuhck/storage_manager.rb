@@ -18,6 +18,7 @@ module AutoHCK
         @workspace_path = qemu_options['workspace_path']
         @qemu_img_bin = qemu_config['qemu_img_bin']
         @fs_test_image = qemu_config['fs_test_image']
+        @iso_path = qemu_options['iso_path']
 
         @boot_image_path = Pathname.new(qemu_config['images_path']).join(qemu_options['image_name'])
         @test_image_path = Pathname.new(@workspace_path).join("client#{@client_id}_test_image.#{IMAGE_FORMAT}")
@@ -83,10 +84,23 @@ module AutoHCK
 
         options = {
           '@image_format@' => IMAGE_FORMAT,
-          '@image_path@' => image_path
+          '@image_path@' => image_path,
+          '@bootindex@' => ',bootindex=1'
         }
 
         [device_command_info('boot', device_name, options, qemu_replacement_map), image_path]
+      end
+
+      def iso_commands(run_opts, _qemu_replacement_map)
+        boot_index = 1
+
+        run_opts[:attach_iso_list]&.map do |iso|
+          iso_path = Pathname.new(@iso_path).join(iso)
+          boot_index += 1
+
+          "-device ide-cd,drive=iso_drive_#{boot_index},bus=ide.#{boot_index},bootindex=#{boot_index} " \
+            "-drive file=#{iso_path},if=none,media=cdrom,readonly=on,id=iso_drive_#{boot_index}"
+        end
       end
 
       def test_device_command(device_name, qemu_replacement_map)
@@ -94,7 +108,8 @@ module AutoHCK
 
         options = {
           '@image_format@' => IMAGE_FORMAT,
-          '@image_path@' => @test_image_path
+          '@image_path@' => @test_image_path,
+          '@bootindex@' => ''
         }
 
         device_command_info('test', device_name, options, qemu_replacement_map)
