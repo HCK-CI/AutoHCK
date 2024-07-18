@@ -225,19 +225,60 @@ module AutoHCK
         return
       end
 
-      @tests.list_tests(log: true)
+      @test_list = @tests.list_tests(log: true)
     end
 
     def auto_run
       ResourceScope.open do |scope|
         run_and_configure_setup scope
         prepare_tests
-
-        @tests.run
+        run_tests
 
         pause_run if @project.options.test.manual
 
         @tests.create_project_package
+      end
+    end
+
+    def run_tests
+      group_tests.each do |group, group_tests|
+        group_tests.each do |tests|
+          prepare_environment(group)
+          @tests.run(tests)
+          break if @project.run_terminated
+        end
+      end
+    end
+
+    def group_tests
+      grouped_tests = { normal: [], secure: [] }
+
+      @config.tests_config.each do |test_group|
+        selected_tests = @test_list.select { |test| test_group.tests.include?(test['name']) }
+        grouped_tests[:secure] << selected_tests if test_group.secure
+      end
+
+      grouped_tests[:normal] << (@test_list - grouped_tests.values.flatten)
+      grouped_tests
+    end
+
+    def prepare_environment(group_name)
+      case group_name
+      when :secure
+        prepare_secure_environment
+      else
+        @logger.info("Environment prepared, running #{group_name} tests")
+      end
+    end
+
+    def prepare_secure_environment
+      @clients.each_value do |client|
+        next if client.run_opts[:secure]
+
+        @logger.info('Test environment reboot required for secure state. Rebooting...')
+        client.setup_manager.stop_client(client.name)
+        new_run_opts = client.run_opts.merge!(secure: true)
+        client.setup_manager.run_client(client.global_scope, client.name, new_run_opts)
       end
     end
 

@@ -174,6 +174,10 @@ module AutoHCK
       @clients_vm[name].run(scope, run_opts)
     end
 
+    def stop_client(name)
+      @clients_vm[name].stop
+    end
+
     def run_hck_studio(scope, run_opts)
       HCKStudio.new(self, scope, run_opts) { @studio_vm.find_world_ip }
     end

@@ -6,7 +6,7 @@ module AutoHCK
   class Tests
     include Helper
 
-    HANDLE_TESTS_POLLING_INTERVAL = 10
+    HANDLE_TESTS_POLLING_INTERVAL = 30
     APPLYING_FILTERS_INTERVAL = 50
     VERIFY_TARGET_RETRIES = 5
     VERIFY_TARGET_SLEEP = 5
@@ -422,15 +422,11 @@ module AutoHCK
       build_system_info(support_sysinfo)
     end
 
-    def run
+    def run(tests)
       @total = @tests.count
-
       load_clients_system_info
       update_summary_results_log
-
-      @last_done = []
-
-      tests = @tests
+      @last_done = [] if @last_done.nil?
       tests.each do |test|
         run_count = test['run_count']
 
