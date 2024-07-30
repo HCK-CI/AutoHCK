@@ -324,7 +324,9 @@ module AutoHCK
         '@qemu_bin@' => @config['qemu_bin'],
         '@ivshmem_server_bin@' => @config['ivshmem_server_bin'],
         '@fs_daemon_bin@' => @config['fs_daemon_bin'],
-        '@fs_daemon_share_path@' => @config['fs_daemon_share_path']
+        '@fs_daemon_share_path@' => @config['fs_daemon_share_path'],
+        '@swtpm_setup_bin@' => @config['swtpm_setup_bin'],
+        '@swtpm_bin@' => @config['swtpm_bin']
       }
     end
 

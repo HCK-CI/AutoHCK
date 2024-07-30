@@ -12,10 +12,10 @@
   },
   "config_commands": [
     "mkdir -p @tpm_localca_dir@ @tpm_state_dir@",
-    "AUTOHCK_STATEDIR=@tpm_localca_dir@ swtpm_setup --tpm-state @tpm_state_dir@ --tpm2 --createek --create-ek-cert --create-platform-cert --lock-nvram --config etc/swtpm_setup.conf"
+    "AUTOHCK_STATEDIR=@tpm_localca_dir@ @swtpm_setup_bin@ --tpm-state @tpm_state_dir@ --tpm2 --createek --create-ek-cert --create-platform-cert --lock-nvram --config etc/swtpm_setup.conf"
   ],
   "pre_start_commands": [
     "rm -f @tpm_socket@",
-    "@source@/bin/unix_spawn @tpm_socket@ swtpm socket --tpm2 --tpmstate dir=@tpm_state_dir@ --ctrl type=unixio,fd=3 --log file=@tpm_state_dir@/swtpm.log,level=20"
+    "@source@/bin/unix_spawn @tpm_socket@ @swtpm_bin@ socket --tpm2 --tpmstate dir=@tpm_state_dir@ --ctrl type=unixio,fd=3 --log file=@tpm_state_dir@/swtpm.log,level=20"
   ]
 }

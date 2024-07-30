@@ -4,6 +4,8 @@
   "ivshmem_server_bin": "/root/Prometheus/qemu/build/contrib/ivshmem-server/ivshmem-server",
   "fs_daemon_bin" : "/root/Prometheus/qemu/build/tools/virtiofsd/virtiofsd",
   "fs_daemon_share_path" : "/root/Prometheus/fs_share",
+  "swtpm_setup_bin" : "swtpm_setup",
+  "swtpm_bin" : "swtpm",
   "images_path": "/root/Prometheus/images",
   "fs_test_image": "/root/Prometheus/images/filesystem_tests_image.qcow2",
   "transfer_net_device": "e1000e",
