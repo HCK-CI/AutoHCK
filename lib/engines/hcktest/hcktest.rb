@@ -147,29 +147,30 @@ module AutoHCK
                                 this platform is incorrect'
     end
 
-    def configure_clients
+    def configure_and_synchronize_clients
       run_only = @project.options.test.manual && @project.options.test.driver_path.nil?
 
       @clients.each_value do |client|
         client.configure(run_only:)
       end
+
+      @clients.each_value(&:synchronize)
     end
 
     def configure_setup_and_synchronize
+      return configure_and_synchronize_clients unless @studio.tools.nil?
+
       @studio.configure(@project.engine_platform['clients'])
-      configure_clients
-      @clients.each_value(&:synchronize)
+      configure_and_synchronize_clients
       @studio.keep_snapshot
       @clients.each_value(&:keep_snapshot)
     end
 
-    def run_and_configure_setup(scope)
+    def run_clients_and_configure_setup(scope, **opts)
       retries = 0
       begin
         scope.transaction do |tmp_scope|
-          run_studio tmp_scope
-          sleep 5 until @studio.up?
-          run_clients tmp_scope, keep_alive: true
+          run_clients tmp_scope, keep_alive: true, **opts
 
           configure_setup_and_synchronize
         end
@@ -229,20 +230,57 @@ module AutoHCK
         return
       end
 
-      @tests.list_tests(log: true)
+      @test_list = @tests.list_tests(log: true)
     end
 
     def auto_run
       ResourceScope.open do |scope|
-        run_and_configure_setup scope
-        prepare_tests
+        run_studio scope
+        sleep 5 until @studio.up?
 
-        @tests.run
-
-        pause_run if @project.options.test.manual
+        run_tests_without_config
+        run_tests_with_config
 
         @tests.create_project_package
       end
+    end
+
+    def run_tests_without_config
+      ResourceScope.open do |scope|
+        run_clients_and_configure_setup scope
+        prepare_tests
+
+        @logger.info('Client ready, running basic tests')
+        @tests.run(@test_list - group_tests_by_config.values.flatten)
+
+        pause_run if @project.options.test.manual
+      end
+    end
+
+    def run_tests_with_config
+      group_tests_by_config.each do |group, tests|
+        next if tests.empty?
+
+        ResourceScope.open do |scope|
+          run_clients_and_configure_setup(scope, group => true, create_snapshot: false, boot_from_snapshot: true)
+
+          @logger.info("Clients ready, running #{group} tests")
+          @tests.run(tests)
+
+          pause_run if @project.options.test.manual
+        end
+      end
+    end
+
+    def group_tests_by_config
+      grouped_tests = { secure: [] }
+
+      @config.tests_config.each do |test_group|
+        selected_tests = @test_list.select { |test| test_group.tests.include?(test['name']) }
+        grouped_tests[:secure] += selected_tests if test_group.secure
+      end
+
+      grouped_tests
     end
 
     def run
@@ -254,6 +292,8 @@ module AutoHCK
         dump_run
 
         @project.logger.info("Find all scripts in folder: #{@project.workspace_path}")
+        @project.logger.warn('Dump mode is only for basic tests.')
+        @project.logger.warn('For specific configurations (e.g., Secure Boot tests), update scripts manually.')
       else
         auto_run
       end

@@ -18,10 +18,15 @@ module AutoHCK
       @studio = studio
       @name = name
       @kit = setup_manager.kit
-      @pool = 'Default Pool'
       @logger.info("Starting client #{name}")
       @runner = setup_manager.run_client(scope, @name, run_opts)
       scope << self
+    end
+
+    def pool
+      @studio.list_pools.each do |pool|
+        return pool['name'] if pool['machines'].any? { |machine| machine['name'].eql?(@name) }
+      end
     end
 
     def keep_snapshot
@@ -29,12 +34,12 @@ module AutoHCK
     end
 
     def add_target_to_project
-      @target = Targets.new(self, @project, @tools, @pool).add_target_to_project
+      @target = Targets.new(self, @project, @tools, pool).add_target_to_project
     end
 
     def configure_machine
-      move_machine_to_pool
-      set_machine_ready
+      @logger.info("Configuring client #{@name}...")
+      reset_to_ready_state
       sleep CLIENT_COOLDOWN_SLEEP
     end
 
@@ -42,12 +47,12 @@ module AutoHCK
       delete_machine
       restart_machine
       return_when_client_up
+      move_machine_to_pool
       configure_machine
     end
 
     def delete_machine
-      @tools.delete_machine(@name, @pool)
-      @pool = 'Default Pool'
+      @tools.delete_machine(@name, pool)
     end
 
     def restart_machine
@@ -57,13 +62,12 @@ module AutoHCK
 
     def move_machine_to_pool
       @logger.info("Moving #{@name} to pool")
-      @tools.move_machine(@name, @pool, @project.engine_tag)
-      @pool = @project.engine_tag
+      @tools.move_machine(@name, pool, @project.engine_tag)
     end
 
     def set_machine_ready
       @logger.info("Setting #{@name} state to Ready")
-      return if @tools.set_machine_ready(@name, @pool)
+      return if @tools.set_machine_ready(@name, pool)
 
       raise ClientRunError, "Couldn't set #{@name} state to Ready"
     end
@@ -114,23 +118,20 @@ module AutoHCK
       end
     end
 
-    def machine_in_default_pool
-      default_pool = @studio.list_pools
-                            .detect { |pool| pool['name'].eql?('Default Pool') }
-
-      @logger.debug("Default Pool machines: #{default_pool['machines']}")
-      default_pool['machines'].detect { |machine| machine['name'].eql?(@name) }
+    def machine_info
+      @studio.list_pools.flat_map { |pool| pool['machines'] }
+             .detect { |machine| machine['name'].eql?(@name) }
     end
 
     def recognize_client_wait
       @logger.info("Waiting for client #{@name} to be recognized in Default Pool")
-      sleep 5 until machine_in_default_pool
+      sleep 5 until pool == 'Default Pool'
       @logger.info("Client #{@name} recognized")
     end
 
     def initialize_client_wait
       @logger.info("Waiting for client #{@name} initialization")
-      sleep 5 while machine_in_default_pool['state'].eql?('Initializing')
+      sleep 5 while machine_info['state'].eql?('Initializing')
       @logger.info("Client #{@name} initialized")
     end
 
@@ -139,22 +140,28 @@ module AutoHCK
       initialize_client_wait
     end
 
+    def prepare_machine
+      @logger.info("Preparing client #{@name}...")
+      @project.extra_sw_manager.install_software_before_driver(@tools, @name)
+      install_drivers
+      copy_dvl
+      @project.extra_sw_manager.install_software_after_driver(@tools, @name)
+    end
+
     def configure(run_only: false)
       @tools = @studio.tools
       @cooldown_thread = Thread.new do
-        return_when_client_up
-        if run_only
-          @logger.info("Preparing client skipped #{@name}...")
+        unless pool == @project.engine_tag
+          return_when_client_up
+          if run_only
+            @logger.info("Preparing client skipped #{@name}...")
 
-          Thread.exit
+            Thread.exit
+          end
+          prepare_machine
+          move_machine_to_pool
         end
 
-        @logger.info("Preparing client #{@name}...")
-        @project.extra_sw_manager.install_software_before_driver(@tools, @name)
-        install_drivers
-        copy_dvl
-        @project.extra_sw_manager.install_software_after_driver(@tools, @name)
-        @logger.info("Configuring client #{@name}...")
         configure_machine
         run_pre_test_commands
         add_target_to_project
@@ -169,9 +176,7 @@ module AutoHCK
     end
 
     def not_ready?
-      @studio.list_pools.detect { |pool| pool['name'].eql?(@pool) }['machines']
-             .detect { |machine| machine['name'].eql?(@name) }['state']
-             .eql?('NotReady')
+      machine_info['state'].eql?('NotReady')
     end
 
     def reset_to_ready_state

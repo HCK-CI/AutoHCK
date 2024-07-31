@@ -80,7 +80,7 @@ module AutoHCK
 
       def boot_device_command(device_name, run_opts, qemu_replacement_map)
         create_boot_snapshot if run_opts[:create_snapshot]
-        image_path = run_opts[:create_snapshot] ? boot_snapshot_path : @boot_image_path
+        image_path = boot_device_image_path(run_opts)
 
         options = {
           '@image_format@' => IMAGE_FORMAT,
@@ -89,6 +89,12 @@ module AutoHCK
         }
 
         [device_command_info('boot', device_name, options, qemu_replacement_map), image_path]
+      end
+
+      def boot_device_image_path(run_opts)
+        return boot_snapshot_path if run_opts[:create_snapshot] || run_opts[:boot_from_snapshot]
+
+        @boot_image_path
       end
 
       def iso_commands(run_opts, _qemu_replacement_map)
