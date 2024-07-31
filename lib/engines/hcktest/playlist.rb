@@ -136,7 +136,7 @@ module AutoHCK
           false
         end
       end
-      @logger.info('Applying custom rejected test names') if log
+      @logger.info("Applying custom rejected test names, selected #{@tests.count} tests") if log
     end
   end
 end
