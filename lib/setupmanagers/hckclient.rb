@@ -118,6 +118,7 @@ module AutoHCK
       default_pool = @studio.list_pools
                             .detect { |pool| pool['name'].eql?('Default Pool') }
 
+      @logger.debug("Default Pool machines: #{default_pool['machines']}")
       default_pool['machines'].detect { |machine| machine['name'].eql?(@name) }
     end
 
