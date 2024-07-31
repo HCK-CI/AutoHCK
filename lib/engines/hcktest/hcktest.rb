@@ -152,6 +152,7 @@ module AutoHCK
     end
 
     def configure_setup_and_synchronize
+      binding.irb
       @studio.configure(@platform['clients'])
       configure_clients
       @clients.each_value(&:synchronize)
@@ -163,9 +164,9 @@ module AutoHCK
       retries = 0
       begin
         scope.transaction do |tmp_scope|
-          run_studio tmp_scope
-          sleep 5 until @studio.up?
-          run_clients tmp_scope, keep_alive: true
+          run_opts = { keep_alive: true }
+          run_opts.merge!(@client_run_opts) if @client_run_opts
+          run_clients tmp_scope, run_opts
 
           configure_setup_and_synchronize
         end
@@ -230,8 +231,13 @@ module AutoHCK
 
     def auto_run
       ResourceScope.open do |scope|
-        run_and_configure_setup scope
-        prepare_tests
+        run_studio scope
+        sleep 5 until @studio.up?
+        ResourceScope.open do |tmp_scope|
+          run_and_configure_setup tmp_scope
+          prepare_tests
+        end
+
         run_tests
 
         pause_run if @project.options.test.manual
@@ -244,8 +250,13 @@ module AutoHCK
       group_tests.each do |group, group_tests|
         group_tests.each do |tests|
           prepare_environment(group)
-          @tests.run(tests)
-          break if @project.run_terminated
+          ResourceScope.open do |scope|
+            run_and_configure_setup scope
+            prepare_tests
+
+            @tests.run(tests)
+            break if @project.run_terminated
+          end
         end
       end
     end
@@ -265,7 +276,7 @@ module AutoHCK
     def prepare_environment(group_name)
       case group_name
       when :secure
-        prepare_secure_environment
+        @client_run_opts = { secure: true }
       else
         @logger.info("Environment prepared, running #{group_name} tests")
       end

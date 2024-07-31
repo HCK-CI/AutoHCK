@@ -6,6 +6,8 @@ module AutoHCK
   class Tests
     include Helper
 
+    attr_accessor :client
+
     HANDLE_TESTS_POLLING_INTERVAL = 30
     APPLYING_FILTERS_INTERVAL = 50
     VERIFY_TARGET_RETRIES = 5
