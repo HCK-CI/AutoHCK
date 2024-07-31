@@ -122,7 +122,7 @@ module AutoHCK
     end
 
     def recognize_client_wait
-      @logger.info("Waiting for client #{@name} to be recognized")
+      @logger.info("Waiting for client #{@name} to be recognized in Default Pool")
       sleep 5 until machine_in_default_pool
       @logger.info("Client #{@name} recognized")
     end
