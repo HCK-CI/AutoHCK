@@ -20,7 +20,6 @@
     "USB Type-C ACPI Validation",
     "TPM 2.0 UEFI Preboot Interface Test",
     "TPM 2.0 EK Certificate Tests",
-    "Secure Boot Logo Test",
     "TPM 2.0 Platform Crypto Provider Key Storage Provider Test",
     "ACPI Logo Test",
     "Profile Interrupt Test",

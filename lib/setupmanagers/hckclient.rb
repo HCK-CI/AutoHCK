@@ -55,6 +55,12 @@ module AutoHCK
       @tools.restart_machine(@name)
     end
 
+    def move_machine_to_default_pool
+      @logger.info("Moving #{@name} to default pool")
+      @tools.move_machine(@name, @project.engine_tag, 'Default Pool')
+      @pool = 'Default Pool'
+    end
+
     def move_machine_to_pool
       @logger.info("Moving #{@name} to pool")
       @tools.move_machine(@name, @pool, @project.engine_tag)
@@ -114,6 +120,15 @@ module AutoHCK
       end
     end
 
+    def machine_in_working_pool?
+      return false if @studio.tools.nil?
+
+      working_pool = @studio.list_pools
+                            .detect { |pool| pool['name'].eql?(@project.engine_tag) }
+
+      working_pool['machines'].detect { |machine| machine['name'].eql?(@name) }
+    end
+
     def machine_in_default_pool
       default_pool = @studio.list_pools
                             .detect { |pool| pool['name'].eql?('Default Pool') }
@@ -134,6 +149,8 @@ module AutoHCK
     end
 
     def return_when_client_up
+      move_machine_to_default_pool if machine_in_working_pool?
+
       recognize_client_wait
       initialize_client_wait
     end
