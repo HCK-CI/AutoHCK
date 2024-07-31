@@ -5,6 +5,13 @@
 module AutoHCK
   # Models module
   module Models
+    class TestConfig < T::Struct
+      extend T::Sig
+
+      const :tests, T::Array[String]
+      const :secure, T.nilable(T::Boolean)
+    end
+
     # HCKTestConfig class
     class HCKTestConfig < T::Struct
       extend T::Sig
@@ -12,6 +19,7 @@ module AutoHCK
 
       const :playlists_path, String
       const :filters_path, String
+      const :tests_config, T.nilable(T::Array[TestConfig])
     end
   end
 end

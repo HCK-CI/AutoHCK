@@ -151,6 +151,7 @@ module AutoHCK
       keep_alive: false,
       first_time: false,
       create_snapshot: true,
+      boot_from_snapshot: false,
       attach_iso_list: [],
       dump_only: false,
       secure: false
