@@ -38,7 +38,7 @@ module AutoHCK
       platform_name = options.install.platform
       platform_json = "#{PLATFORMS_JSON_DIR}/#{platform_name}.json"
 
-      @logger.info("Loading platform: #{platform_name}")
+      logger.info("Loading platform: #{platform_name}")
       Json.read_json(platform_json, logger)
     end
 
