@@ -102,7 +102,7 @@ GEM
     rdoc (6.7.0)
       psych (>= 4.0.0)
     regexp_parser (2.9.2)
-    rexml (3.3.2)
+    rexml (3.3.3)
       strscan
     rspec (3.13.0)
       rspec-core (~> 3.13.0)
