@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative '../lib/auto_hck'
+
+module AutoHCK
+  run do
+    chdir = File.dirname(ARGV[0])
+    hash = YAML.load_file(ARGV[0])
+    Trap.init_traps(%w[TERM INT])
+
+    ResourceScope.open do |scope|
+      logger = MonoLogger.new($stderr)
+      scope << QemuHCK::Ns::Hostfwd.new(logger, chdir, hash['ports'])
+      run = CmdRun.new(scope, logger, hash['cmd'], chdir:, exception: false)
+      begin
+        exit run.close.exitstatus
+      ensure
+        Process.kill 'TERM', -run.pid if run.status.nil?
+      end
+    end
+  end
+end

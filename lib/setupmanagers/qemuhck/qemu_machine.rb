@@ -9,36 +9,6 @@ module AutoHCK
     autoload_relative :QMP, 'qmp'
     autoload_relative :StorageManager, 'storage_manager'
 
-    # Hostfwd is a class that holds ports forwarded for a run.
-    class Hostfwd
-      include Helper
-
-      def initialize(logger, workspace_path, ports)
-        @logger = logger
-        @workspace_path = workspace_path
-        @ids = []
-        begin
-          ports.each { @ids << slirp('add_hostfwd', _1.to_s)['id'] }
-        rescue StandardError
-          close
-        end
-      end
-
-      def close
-        slirp 'remove_hostfwd', @ids.pop.to_s until @ids.empty?
-      end
-
-      private
-
-      def slirp(*args)
-        File.open('/tmp', File::RDWR | File::TMPFILE) do |out|
-          run_cmd('bin/slirp', '-w', @workspace_path, *args, out:)
-          out.rewind
-          JSON.parse(out.read)['return']
-        end
-      end
-    end
-
     # Runner is a class that represents a run.
     class Runner
       include Helper
@@ -656,23 +626,25 @@ module AutoHCK
     def dump_commands
       @logger.info(dump_config)
 
-      file_name = "#{@workspace_path}/#{@run_name}_manual.sh"
-      content = <<~BASH
+      file_name = "#{@workspace_path}/#{@run_name}_manual.yaml"
+      content = YAML.dump(
+        'cmd' => <<~BASH,
+          # QEMU pre start commands
+          #{merge_commands_array(@pre_start_commands)}
+
+          # QEMU command line
+          #{qemu_cmd}
+
+          # QEMU post stop commands
+          #{merge_commands_array(@post_stop_commands)}
+        BASH
+        'ports' => [@monitor_port, @vnc_port]
+      )
+
+      create_run_script file_name, <<~YAML
         #!#{File.absolute_path('bin/run_dump')}
-
-        trap 'trap "" SIGTERM && kill 0' EXIT
-
-        # QEMU pre start commands
-        #{merge_commands_array(@pre_start_commands)}
-
-        # QEMU command line
-        #{qemu_cmd}
-
-        # QEMU post stop commands
-        #{merge_commands_array(@post_stop_commands)}
-      BASH
-
-      create_run_script(file_name, content)
+        #{content}
+      YAML
 
       return if @config_commands.empty?
 
@@ -703,7 +675,7 @@ module AutoHCK
         end
 
         scope.transaction do |tmp_scope|
-          hostfwd = Hostfwd.new(@logger, @workspace_path, [@monitor_port, @vnc_port])
+          hostfwd = QemuHCK::Ns::Hostfwd.new(@logger, @workspace_path, [@monitor_port, @vnc_port])
           tmp_scope << hostfwd
           Runner.new(tmp_scope, @logger, self, @run_name, @run_opts)
         end
