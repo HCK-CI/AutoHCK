@@ -4,6 +4,7 @@ module AutoHCK
   class QemuHCK
     module Ns
       extend AutoloadExtension
+      autoload_relative :Hostfwd, 'ns/hostfwd'
       autoload_relative :Nsd, 'ns/nsd'
       autoload_relative :PidFile, 'ns/pid_file'
 
