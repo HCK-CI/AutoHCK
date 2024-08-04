@@ -37,7 +37,6 @@ module AutoHCK
     parent = Process.pid.to_s
 
     fork do
-      $stdout = $stderr
       e_write.close
       exit false if e_read.read(1).nil?
 
@@ -62,13 +61,13 @@ module AutoHCK
         # unshare command in util-linux 2.38 can call newgidmap by its own, but
         # unfortunately it is not available on some supported systems.
         system 'newgidmap', parent, '0', Process.gid.to_s, '1',
-               subid_start, subid_start, subid_count, exception: true
+               subid_start, subid_start, subid_count, exception: true, out: :err
       end
 
       e_read.close_on_exec = false
       r_write.close_on_exec = false
-      exec 'slirp4netns', '-e', e_read.fileno.to_s,
-           '-r', r_write.fileno.to_s, '-a', 'slirp.sock', parent, 'tap_host'
+      exec 'slirp4netns', '-e', e_read.fileno.to_s, '-r', r_write.fileno.to_s,
+           '-a', 'slirp.sock', parent, 'tap_host', out: :err
     end
 
     e_read.close
