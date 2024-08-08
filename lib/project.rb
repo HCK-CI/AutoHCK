@@ -71,8 +71,8 @@ module AutoHCK
     def init_multilog(verbose)
       @temp_pre_logger = StringIO.new
       @pre_logger = MonoLogger.new(@temp_pre_logger)
-      @stdout_logger = MonoLogger.new($stdout)
-      @logger = MultiLogger.new(@pre_logger, @stdout_logger)
+      @stderr_logger = MonoLogger.new($stderr)
+      @logger = MultiLogger.new(@pre_logger, @stderr_logger)
       @logger.level = verbose ? 'DEBUG' : 'INFO'
     end
 
