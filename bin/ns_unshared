@@ -44,7 +44,7 @@ module AutoHCK
       %w[ip link add br_test type bridge],
       %w[ip link set br_test up]
     ].each do |cmd|
-      Process.wait spawn(*cmd)
+      Process.wait spawn(*cmd, out: :err)
       raise $CHILD_STATUS.to_s unless $CHILD_STATUS.success?
     rescue StandardError
       raise "#{cmd}: command failed"
