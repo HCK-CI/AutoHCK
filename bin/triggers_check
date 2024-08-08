@@ -85,7 +85,7 @@ module AutoHCK
     cli = CLI.new
     cli.parse(ARGV)
 
-    @logger = MonoLogger.new($stdout)
+    @logger = MonoLogger.new($stderr)
     @logger.level = cli.debug ? 'DEBUG' : 'INFO'
 
     diff_checker = AutoHCK::DiffChecker.new(@logger, cli.drivers, cli.driver_path, cli.diff_file, cli.trigger_file)

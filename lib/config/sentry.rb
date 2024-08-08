@@ -34,7 +34,7 @@ module AutoHCK
       if File.exist?(ssl_ca)
         config.transport.ssl_ca_file = ssl_ca
       else
-        MonoLogger.new($stdout).warn('SENTRY_TRANSPORT_SSL_CA environment specified, but file does not exist')
+        MonoLogger.new($stderr).warn('SENTRY_TRANSPORT_SSL_CA environment specified, but file does not exist')
       end
     end
   end

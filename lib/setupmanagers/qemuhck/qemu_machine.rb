@@ -196,7 +196,7 @@ module AutoHCK
     def load_options(options)
       @options = options
 
-      @logger = @options['logger'] || MonoLogger.new($stdout)
+      @logger = @options['logger'] || MonoLogger.new($stderr)
 
       @id = format('%04d', @options['id'])
       @id_first = @id[0..1]
