@@ -1,9 +1,11 @@
+# typed: true
 # frozen_string_literal: true
 
 # AutoHCK module
 module AutoHCK
   # QemuMachine class
   class QemuMachine
+    extend T::Sig
     extend AutoHCK::AutoloadExtension
     autoload_relative :NetworkManager, 'network_manager'
     autoload_relative :QMP, 'qmp'
@@ -161,33 +163,30 @@ module AutoHCK
     STATES_JSON = 'lib/setupmanagers/qemuhck/states.json'
 
     def initialize(options)
+      # Sorbet requires to define all instance variables types in the constructor
+      @device_infos = T.let([], T::Array[Models::QemuHCKDevice])
+      @config_commands = T.let([], T::Array[String])
+      @pre_start_commands = T.let([], T::Array[String])
+      @post_stop_commands = T.let([], T::Array[String])
+      @define_variables = T.let({}, T::Hash[String, String])
       define_local_variables
 
       load_options(options)
       init_config
       apply_states
-      init_ports
 
-      @nm = NetworkManager.new(@id, @client_id, @machine, @logger)
-      @sm = StorageManager.new(@id, @client_id, @config, @options, @logger)
-
-      @devices_list.flatten!
-      @devices_list.compact!
+      init_managers
       load_devices
     end
 
     def define_local_variables
       @devices_list = []
-      @config_commands = []
-      @pre_start_commands = []
-      @post_stop_commands = []
       @device_commands = []
       @machine_options = %w[@machine_name@]
       @device_extra_param = []
       @iommu_device_param = []
       @cpu_options = %w[@cpu@ +x2apic +fsgsbase model=@cpu_model@]
       @drive_cache_options = []
-      @define_variables = {}
       @run_opts = {}
       @pluggable_memory_gb = 0
       @configured = false
@@ -209,6 +208,8 @@ module AutoHCK
 
       @devices_list.flatten!
       @devices_list.compact!
+
+      init_ports
     end
 
     def init_ports
@@ -216,6 +217,11 @@ module AutoHCK
       @monitor_port = MONITOR_BASE_PORT + port_offset
       @vnc_id = 1 + port_offset
       @vnc_port = VNC_BASE_PORT + @vnc_id
+    end
+
+    def init_managers
+      @nm = NetworkManager.new(@id, @client_id, @machine, @logger)
+      @sm = StorageManager.new(@id, @client_id, @config, @options, @logger)
     end
 
     def read_machine
@@ -351,14 +357,10 @@ module AutoHCK
                          @define_variables)
     end
 
+    sig { params(device: String).returns(Models::QemuHCKDevice) }
     def read_device(device)
       @logger.info("Loading device: #{device}")
-      device_json = "#{DEVICES_JSON_DIR}/#{device}.json"
-      unless File.exist?(device_json)
-        @logger.fatal("#{device} does not exist")
-        raise(InvalidConfigFile, "#{device} does not exist")
-      end
-      Json.read_json(device_json, @logger)
+      Models::QemuHCKDevice.from_json_file("#{DEVICES_JSON_DIR}/#{device}.json", @logger)
     end
 
     def normalize_lists
@@ -370,36 +372,43 @@ module AutoHCK
       end
     end
 
+    sig { params(device_info: Models::QemuHCKDevice).void }
     def load_device_info(device_info)
-      device_info.each do |key, value|
-        next if %w[command_line name type].include? key
+      @define_variables.merge!(device_info.define_variables || {})
 
-        var = :"@#{key}"
-        raise(QemuHCKError, "Variable #{var} is not defined") unless defined? var
+      # This code doesn’t typecheck:
+      # ```
+      # x = !maybe_int.nil? && (2 * maybe_int)
+      # ```
+      # This problem is subtle because maybe_int looks like a variable
+      # when it’s actually a method! Sorbet can’t know that two calls
+      # to maybe_int return identical things because, in general,
+      # methods are not pure.
+      #
+      # See details:
+      # https://srb.help/7002
+      # https://sorbet.org/docs/flow-sensitive#limitations-of-flow-sensitivity
+      config_commands = device_info.config_commands
+      @config_commands.concat(config_commands) unless config_commands.nil?
 
-        case (var_value = instance_variable_get var)
-        when Hash
-          var_value.merge! value
-        when Array
-          var_value << value
-        when Integer, String
-          instance_variable_set var, value
-        else
-          raise(QemuHCKError, "Variable #{var} has unsupported type")
-        end
-      end
+      pre_start_commands = device_info.pre_start_commands
+      @pre_start_commands.concat(pre_start_commands) unless pre_start_commands.nil?
+
+      post_stop_commands = device_info.post_stop_commands
+      @post_stop_commands.concat(post_stop_commands) unless post_stop_commands.nil?
     end
 
+    sig { params(device_info: Models::QemuHCKDevice).void }
     def process_device_command(device_info)
-      case device_info['type']
+      case device_info.type
       when 'network'
-        dev = @nm.test_device_command(device_info['name'], full_replacement_map)
+        dev = @nm.test_device_command(device_info.name, full_replacement_map)
         @device_commands << dev
       when 'storage'
-        dev = @sm.test_device_command(device_info['name'], full_replacement_map)
+        dev = @sm.test_device_command(device_info.name, full_replacement_map)
         @device_commands << dev
       else
-        cmd = device_info['command_line'].join(' ')
+        cmd = device_info.command_line.join(' ')
         @device_commands << full_replacement_map.create_cmd(cmd)
       end
     end
@@ -421,8 +430,9 @@ module AutoHCK
       @device_commands << dev
     end
 
+    sig { params(device_infos: T::Array[Models::QemuHCKDevice]).void }
     def add_missing_default_devices(device_infos)
-      return if device_infos.any? { |d| d['type'] == 'vga' }
+      return if device_infos.any? { |d| d.type == 'vga' }
 
       vga_info = read_device(@config['platforms_defaults']['vga_device'])
       device_infos << vga_info
@@ -450,7 +460,8 @@ module AutoHCK
     end
 
     def load_devices
-      @device_infos = []
+      @devices_list.flatten!
+      @devices_list.compact!
 
       @devices_list.each do |device|
         device_info = read_device(device)

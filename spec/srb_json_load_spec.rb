@@ -3,7 +3,8 @@ require_relative '../lib/all'
 JSON_TYPES_MAP = {
   './lib/engines/hcktest/drivers/*.json' => AutoHCK::Models::Driver,
   './lib/engines/hcktest/hcktest.json' => AutoHCK::Models::HCKTestConfig,
-  './svvp.json' => AutoHCK::Models::SVVPConfig
+  './svvp.json' => AutoHCK::Models::SVVPConfig,
+  './lib/setupmanagers/qemuhck/devices/*.json' => AutoHCK::Models::QemuHCKDevice
 }.freeze
 
 describe 'srb_json_load' do
