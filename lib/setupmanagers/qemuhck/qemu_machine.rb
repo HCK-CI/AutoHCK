@@ -165,7 +165,6 @@ module AutoHCK
 
       load_options(options)
       init_config
-      apply_states
       init_ports
 
       @nm = NetworkManager.new(@id, @client_id, @machine, @logger)
@@ -275,18 +274,16 @@ module AutoHCK
       end
     end
 
-    def apply_states
-      @states_config.each { |name, state| apply_state name, state }
-    end
-
     def init_config
       @config = Json.read_json(CONFIG_JSON, @logger)
-      @states_config = Json.read_json(STATES_JSON, @logger)
 
       @machine_name = option_config('machine_type')
       @fw_name = option_config('fw_type')
       @machine = read_machine
       load_fw
+
+      states_config = Json.read_json(STATES_JSON, @logger)
+      states_config.each { |name, state| apply_state name, state }
     end
 
     def config_replacement_map
