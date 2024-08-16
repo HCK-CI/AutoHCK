@@ -172,7 +172,7 @@ module AutoHCK
 
       @devices_list.flatten!
       @devices_list.compact!
-      load_devices
+      @device_infos = load_devices
     end
 
     def define_local_variables
@@ -447,15 +447,11 @@ module AutoHCK
     end
 
     def load_devices
-      @device_infos = []
+      device_infos = @devices_list.map { |device| read_device(device) }
 
-      @devices_list.each do |device|
-        device_info = read_device(device)
-        @device_infos << device_info
-        load_device_info(device_info)
-      end
+      add_missing_default_devices(device_infos)
 
-      add_missing_default_devices(@device_infos)
+      device_infos
     end
 
     def process_device_commands
