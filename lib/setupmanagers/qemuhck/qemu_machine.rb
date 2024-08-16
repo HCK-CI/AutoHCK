@@ -177,9 +177,6 @@ module AutoHCK
 
     def define_local_variables
       @devices_list = []
-      @config_commands = []
-      @pre_start_commands = []
-      @post_stop_commands = []
       @device_commands = []
       @machine_options = %w[@machine_name@]
       @device_extra_param = []
@@ -327,6 +324,22 @@ module AutoHCK
       }
     end
 
+    def device_config_commands
+      @device_infos.map(&:config_commands).flatten.compact
+    end
+
+    def device_pre_start_commands
+      @device_infos.map(&:pre_start_commands).flatten.compact
+    end
+
+    def device_post_stop_commands
+      @device_infos.map(&:post_stop_commands).flatten.compact
+    end
+
+    def device_define_variables
+      @device_infos.map(&:define_variables).reduce({}, :merge)
+    end
+
     def full_replacement_map
       ReplacementMap.new({
                            '@run_id@' => @id,
@@ -345,6 +358,7 @@ module AutoHCK
                          machine_replacement_map,
                          memory_replacement_map,
                          options_replacement_map,
+                         device_define_variables,
                          @define_variables)
     end
 
@@ -360,30 +374,9 @@ module AutoHCK
 
     def normalize_lists
       [@device_commands, @machine_options, @device_extra_param, @iommu_device_param,
-       @config_commands, @pre_start_commands, @post_stop_commands, @cpu_options,
-       @drive_cache_options].each do |arr|
+       @cpu_options, @drive_cache_options].each do |arr|
         arr.flatten!
         arr.compact!
-      end
-    end
-
-    def load_device_info(device_info)
-      device_info.each do |key, value|
-        next if %w[command_line name type].include? key
-
-        var = :"@#{key}"
-        raise(QemuHCKError, "Variable #{var} is not defined") unless defined? var
-
-        case (var_value = instance_variable_get var)
-        when Hash
-          var_value.merge! value
-        when Array
-          var_value << value
-        when Integer, String
-          instance_variable_set var, value
-        else
-          raise(QemuHCKError, "Variable #{var} has unsupported type")
-        end
       end
     end
 
@@ -423,7 +416,6 @@ module AutoHCK
 
       vga_info = read_device(@config['platforms_defaults']['vga_device'])
       device_infos << vga_info
-      load_device_info(vga_info)
     end
 
     def process_hck_network_command
@@ -559,7 +551,7 @@ module AutoHCK
     end
 
     def run_config_commands
-      @config_commands.each do |dirty_cmd|
+      device_config_commands.each do |dirty_cmd|
         cmd = full_replacement_map.create_cmd(dirty_cmd)
         run_cmd(cmd)
       end
@@ -567,7 +559,7 @@ module AutoHCK
 
     def run_pre_start_commands(pgroup:)
       Timeout.timeout(60) do
-        @pre_start_commands.each do |dirty_cmd|
+        device_pre_start_commands.each do |dirty_cmd|
           cmd = full_replacement_map.create_cmd(dirty_cmd)
           run_cmd(cmd, chdir: @workspace_path, pgroup:)
         end
@@ -576,7 +568,7 @@ module AutoHCK
 
     def run_post_stop_commands(pgroup:)
       Timeout.timeout(60) do
-        @post_stop_commands.each do |dirty_cmd|
+        device_post_stop_commands.each do |dirty_cmd|
           cmd = full_replacement_map.create_cmd(dirty_cmd)
           run_cmd(cmd, chdir: @workspace_path, exception: false, pgroup:)
         end
@@ -623,13 +615,13 @@ module AutoHCK
       content = YAML.dump(
         'cmd' => <<~BASH,
           # QEMU pre start commands
-          #{merge_commands_array(@pre_start_commands)}
+          #{merge_commands_array(device_pre_start_commands)}
 
           # QEMU command line
           #{qemu_cmd}
 
           # QEMU post stop commands
-          #{merge_commands_array(@post_stop_commands)}
+          #{merge_commands_array(device_post_stop_commands)}
         BASH
         'ports' => [@monitor_port, @vnc_port]
       )
@@ -639,14 +631,14 @@ module AutoHCK
         #{content}
       YAML
 
-      return if @config_commands.empty?
+      return if device_config_commands.empty?
 
       file_name = "#{@workspace_path}/#{@run_name}_config.sh"
       content = [
         "#!/usr/bin/env bash\n",
 
         "\n\n# QEMU config commands\n",
-        merge_commands_array(@config_commands)
+        merge_commands_array(device_config_commands)
       ]
 
       create_run_script(file_name, content.join)
