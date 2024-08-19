@@ -1,13 +1,13 @@
 GIT
   remote: https://github.com/HCK-CI/rtoolsHCK.git
-  revision: 8adc26d4a5929714df603bc65f754371e7d70d19
-  tag: v0.4.2
+  revision: ed5c35e9765e737908a90d3cefcd68d54f1080a3
+  tag: v0.4.3
   specs:
-    rtoolsHCK (0.4.2)
+    rtoolsHCK (0.4.3)
       bundler
       rdoc
-      winrm (= 2.3.4)
-      winrm-fs (= 1.3.4)
+      winrm (= 2.3.9)
+      winrm-fs (= 1.3.5)
 
 GEM
   remote: https://rubygems.org/
@@ -73,7 +73,7 @@ GEM
     net-http (0.4.1)
       uri
     netrc (0.11.0)
-    nori (2.7.0)
+    nori (2.7.1)
       bigdecimal
     oauth2 (1.4.11)
       faraday (>= 0.17.3, < 3.0)
@@ -168,16 +168,17 @@ GEM
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.5.0)
     uri (0.13.0)
-    winrm (2.3.4)
+    winrm (2.3.9)
       builder (>= 2.1.2)
       erubi (~> 1.8)
       gssapi (~> 1.2)
       gyoku (~> 1.0)
       httpclient (~> 2.2, >= 2.2.0.2)
       logging (>= 1.6.1, < 3.0)
-      nori (~> 2.0)
-      rubyntlm (~> 0.6.0, >= 0.6.1)
-    winrm-fs (1.3.4)
+      nori (~> 2.0, >= 2.7.1)
+      rexml (~> 3.0)
+      rubyntlm (~> 0.6.0, >= 0.6.3)
+    winrm-fs (1.3.5)
       erubi (~> 1.8)
       logging (>= 1.6.1, < 3.0)
       rubyzip (~> 2.0)
