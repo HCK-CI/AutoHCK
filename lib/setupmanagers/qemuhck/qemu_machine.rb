@@ -1,9 +1,11 @@
+# typed: true
 # frozen_string_literal: true
 
 # AutoHCK module
 module AutoHCK
   # QemuMachine class
   class QemuMachine
+    extend T::Sig
     extend AutoHCK::AutoloadExtension
     autoload_relative :NetworkManager, 'network_manager'
     autoload_relative :QMP, 'qmp'
@@ -324,18 +326,22 @@ module AutoHCK
       }
     end
 
+    sig { returns(T::Array[String]) }
     def device_config_commands
       @device_infos.map(&:config_commands).flatten.compact
     end
 
+    sig { returns(T::Array[String]) }
     def device_pre_start_commands
       @device_infos.map(&:pre_start_commands).flatten.compact
     end
 
+    sig { returns(T::Array[String]) }
     def device_post_stop_commands
       @device_infos.map(&:post_stop_commands).flatten.compact
     end
 
+    sig { returns(T::Hash[String, String]) }
     def device_define_variables
       @device_infos.map(&:define_variables).reduce({}, :merge)
     end
@@ -362,14 +368,10 @@ module AutoHCK
                          @define_variables)
     end
 
+    sig { params(device: String).returns(Models::QemuHCKDevice) }
     def read_device(device)
       @logger.info("Loading device: #{device}")
-      device_json = "#{DEVICES_JSON_DIR}/#{device}.json"
-      unless File.exist?(device_json)
-        @logger.fatal("#{device} does not exist")
-        raise(InvalidConfigFile, "#{device} does not exist")
-      end
-      Json.read_json(device_json, @logger)
+      Models::QemuHCKDevice.from_json_file("#{DEVICES_JSON_DIR}/#{device}.json", @logger)
     end
 
     def normalize_lists
@@ -380,16 +382,17 @@ module AutoHCK
       end
     end
 
+    sig { params(device_info: Models::QemuHCKDevice).void }
     def process_device_command(device_info)
-      case device_info['type']
+      case device_info.type
       when 'network'
-        dev = @nm.test_device_command(device_info['name'], full_replacement_map)
+        dev = @nm.test_device_command(device_info.name, full_replacement_map)
         @device_commands << dev
       when 'storage'
-        dev = @sm.test_device_command(device_info['name'], full_replacement_map)
+        dev = @sm.test_device_command(device_info.name, full_replacement_map)
         @device_commands << dev
       else
-        cmd = device_info['command_line'].join(' ')
+        cmd = device_info.command_line.join(' ')
         @device_commands << full_replacement_map.create_cmd(cmd)
       end
     end
@@ -411,8 +414,9 @@ module AutoHCK
       @device_commands << dev
     end
 
+    sig { params(device_infos: T::Array[Models::QemuHCKDevice]).void }
     def add_missing_default_devices(device_infos)
-      return if device_infos.any? { |d| d['type'] == 'vga' }
+      return if device_infos.any? { |d| d.type == 'vga' }
 
       vga_info = read_device(@config['platforms_defaults']['vga_device'])
       device_infos << vga_info
@@ -438,6 +442,7 @@ module AutoHCK
       @device_commands << devs
     end
 
+    sig { returns(T::Array[Models::QemuHCKDevice]) }
     def load_devices
       device_infos = @devices_list.map { |device| read_device(device) }
 
