@@ -318,7 +318,7 @@ module AutoHCK
 
     def options_replacement_map
       {
-        '@machine_options@' => @machine_options.join(','),
+        '@machine_options@' => (@machine_options + device_machine_options).join(','),
         '@device_extra_param@' => @device_extra_param.join,
         '@iommu_device_param@' => @iommu_device_param.join,
         '@cpu_options@' => @cpu_options.join(','),
@@ -344,6 +344,11 @@ module AutoHCK
     sig { returns(T::Hash[String, String]) }
     def device_define_variables
       @device_infos.map(&:define_variables).reduce({}, :merge)
+    end
+
+    sig { returns(T::Array[String]) }
+    def device_machine_options
+      @device_infos.map(&:machine_options).flatten.compact
     end
 
     def full_replacement_map

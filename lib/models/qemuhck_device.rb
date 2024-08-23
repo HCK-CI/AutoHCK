@@ -14,6 +14,7 @@ module AutoHCK
       const :config_commands, T::Array[String], default: []
       const :pre_start_commands, T::Array[String], default: []
       const :post_stop_commands, T::Array[String], default: []
+      const :machine_options, T::Array[String], default: []
     end
   end
 end
