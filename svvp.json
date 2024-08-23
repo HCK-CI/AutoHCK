@@ -6,6 +6,7 @@
     "fwcfg64",
     "tpm"
   ],
+  "viommu_state": true,
   "reject_test_names": [
     "__Windows_11_22H2_reject_test_names",
     "Secure Boot Manual Logo Test",
@@ -26,7 +27,6 @@
     "Profile Interrupt Test",
     "__Windows_Server_2022_reject_test_names",
     "UEFI GOP mode test",
-    "Verify IOMMU presence and configuration",
     "USB Generic HID Test",
     "USB Type-C ACPI Validation",
     "Boot from USB (ServerOperating System)",
