@@ -1,7 +1,7 @@
 {
   "name": "iommu",
   "command_line": [
-    "-device intel-iommu,intremap=on,aw-bits=48,caching-mode=on,device-iotlb=on"
+    "-device intel-iommu,intremap=on,aw-bits=48,caching-mode=off,device-iotlb=on,eim=on"
   ],
   "machine_options": [
     "accel=kvm",
