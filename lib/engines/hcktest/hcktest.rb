@@ -118,7 +118,15 @@ module AutoHCK
 
     def self.platform(logger, options)
       platform_name = options.test.platform
-      Json.read_json("#{PLATFORMS_JSON_DIR}/#{platform_name}.json", logger)
+      platform = Json.read_json("#{PLATFORMS_JSON_DIR}/#{platform_name}.json", logger)
+
+      if options.test.svvp
+        svvp_info = Models::SVVPConfig.from_json_file(SVVP_JSON, logger)
+
+        platform['viommu_state'] ||= svvp_info.viommu_state
+      end
+
+      platform
     end
 
     def run_studio(scope, run_opts = {})
