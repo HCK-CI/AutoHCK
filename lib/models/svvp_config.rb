@@ -12,6 +12,7 @@ module AutoHCK
 
       const :type, Integer
       const :drivers, T::Array[String]
+      const :viommu_state, T::Boolean, default: false
 
       const :select_test_names, T.nilable(T::Array[String])
       const :reject_test_names, T.nilable(T::Array[String])
