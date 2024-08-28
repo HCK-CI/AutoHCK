@@ -373,9 +373,32 @@ module AutoHCK
                          @define_variables)
     end
 
+    def read_dynamic_device(device)
+      file_full_path = File.realpath("#{DEVICES_JSON_DIR}/#{device}.rb")
+
+      require file_full_path
+      # Convert 'result_uploader' (file name) -> 'ResultUploader' (class name)
+      class_name = "#{device}_device".camelize
+      # Convert 'ResultUploader' (class name) -> ResultUploader (declared constant)
+      # or
+      # Convert 'ResultUploader' (class name) -> AutoHCK::ResultUploader (declared constant)
+      device_type = AutoHCK.const_get(class_name)
+
+      raise(InvalidConfigFile, "#{device} does not exist") unless device_type
+
+      device_obj = device_type.new(@logger)
+
+      raise(InvalidConfigFile, "#{device} does not exist") unless device_obj
+
+      device_obj.qemu_hck_device
+    end
+
     sig { params(device: String).returns(Models::QemuHCKDevice) }
     def read_device(device)
       @logger.info("Loading device: #{device}")
+
+      return read_dynamic_device(device) if File.exist?("#{DEVICES_JSON_DIR}/#{device}.rb")
+
       Models::QemuHCKDevice.from_json_file("#{DEVICES_JSON_DIR}/#{device}.json", @logger)
     end
 

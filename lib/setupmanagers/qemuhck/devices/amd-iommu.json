@@ -1,0 +1,13 @@
+{
+  "name": "iommu",
+  "command_line": [
+    "-device amd-iommu,intremap=on,device-iotlb=on,xtsup=on"
+  ],
+  "machine_options": [
+    "accel=kvm",
+    "vmport=off",
+    "smm=on",
+    "kernel-irqchip=split"
+  ],
+  "iommu_device_param": ",iommu_platform=on,ats=on"
+}
