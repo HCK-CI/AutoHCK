@@ -10,19 +10,14 @@ module AutoHCK
       @logger = project.logger
       @config = project.config
       @clients = clients
-      validate_paths
       connect(addr: ip_addr,
               user: @config['studio_username'],
               pass: @config['studio_password'],
               winrm_ports: config_winrm_ports,
               timeout: 120,
               logger: @logger,
-              outp_dir: project.workspace_path,
-              l_script_file: @config['toolshck_path'])
+              outp_dir: project.workspace_path)
     end
-
-    # A custom InvalidToolsPath error exception
-    class InvalidToolsPathError < AutoHCKError; end
 
     # A custom ZipTestResultLogs error exception
     class ZipTestResultLogsError < AutoHCKError; end
@@ -410,13 +405,6 @@ module AutoHCK
     def close
       @tools&.synchronize(&:close)
       @tools = nil
-    end
-
-    def validate_paths
-      return if File.exist?(@config['toolshck_path'])
-
-      @logger.fatal('toolsHCK script path is not valid')
-      raise InvalidToolsPathError, 'toolsHCK script path is not valid'
     end
   end
 end

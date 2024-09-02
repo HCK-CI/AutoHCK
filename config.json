@@ -4,7 +4,6 @@
     "workspace_path": "/home/hck-ci/HCK-CI/workspace",
     "winrm_port": 5985,
     "repository": "virtio-win/kvm-guest-drivers-windows",
-    "toolshck_path": "./toolsHCK.ps1",
     "studio_username": "Administrator",
     "studio_password": "Qum5net.",
     "result_uploaders": [ ],

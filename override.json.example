@@ -3,7 +3,6 @@
         "iso_path": "/data/user/auto_hck/iso",
         "extra_software": "/home/user/repos/extra-software",
         "workspace_path": "/data/user/auto_hck/workspace",
-        "toolshck_path": "/home/user/repos/toolsHCK/toolsHCK.ps1",
         "result_uploaders": []
     },
     "lib/engines/hckinstall/hckinstall.json": {
