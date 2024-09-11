@@ -34,6 +34,7 @@
   "reject_test_names": [
     "Flush Test",
     "DF - Embedded Signature Verification Test (Certification)",
+    "DF - Embedded Signature Verification Test (Tuning and Validation)",
     "Storage HBA Firmware Update",
     "DF - Reboot Restart with IO During (Reliability)",
     "Disk Stress (LOGO)",
