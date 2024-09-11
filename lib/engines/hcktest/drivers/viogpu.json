@@ -10,6 +10,7 @@
   "s4_state": false,
   "reject_test_names": [
     "DF - Embedded Signature Verification Test (Certification)",
+    "DF - Embedded Signature Verification Test (Tuning and Validation)",
     "Test for EDID Requirements (Manual)",
     "Multimon minimum resolution check - Multihead",
     "WDDM HPD Notification Test (Manual)",

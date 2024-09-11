@@ -34,6 +34,7 @@
   "reject_test_names": [
     "Flush Test",
     "DF - Embedded Signature Verification Test (Certification)",
+    "DF - Embedded Signature Verification Test (Tuning and Validation)",
     "Thin Provisioning SCSI Compliance Test (LOGO)",
     "Thin Provisioning Performance Test - RAW Disk (LOGO)",
     "Thin Provisioning Performance Test - NTFS (LOGO)",
