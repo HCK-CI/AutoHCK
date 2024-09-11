@@ -17,8 +17,9 @@ module AutoHCK
             pid = pid_file.acquire
             begin
               Thread.handle_interrupt Object => :immediate do
-                system 'nsenter', '-m', '-n', '-U', '--preserve-credentials',
-                       '-t', pid, "-w#{chdir}", '--', *argv
+                nsenter_argv = %W[nsenter -m -n --preserve-credentials -t #{pid} -w#{chdir}]
+                nsenter_argv << '-U' unless Process.euid.zero?
+                system(*nsenter_argv, '--', *argv)
                 exit $CHILD_STATUS.exitstatus
               end
             ensure
