@@ -132,9 +132,20 @@ module AutoHCK
       end
     end
 
+    def test_parameters(test_name)
+      @project.engine.config.tests_config
+              .select { _1.tests.include?(test_name) }
+              .flat_map(&:parameters)
+              .to_h { |parameter| [parameter.name, parameter.value] }
+    end
+
     def queue_test(test, wait: false)
-      @tools.queue_test(test['id'], @target['key'], @client.name, @tag,
-                        test_support(test))
+      @tools.queue_test(test_id: test['id'],
+                        target_key: @target['key'],
+                        machine: @client.name,
+                        tag: @tag,
+                        support: test_support(test),
+                        parameters: test_parameters(test['name']))
 
       @tests_extra[test['id']] ||= {}
       @tests_extra[test['id']]['queued_at'] = DateTime.now
