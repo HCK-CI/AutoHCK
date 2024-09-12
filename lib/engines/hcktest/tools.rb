@@ -348,9 +348,9 @@ module AutoHCK
       end
     end
 
-    def queue_test(test_id, target_key, machine, tag, support)
+    def queue_test(test_id:, target_key:, tag:, machine:, support:, parameters:) # rubocop:disable Metrics/ParameterLists
       retry_tools_command(__method__) do
-        act_with_tools { _1.queue_test(test_id, target_key, tag, machine, tag, support) }
+        act_with_tools { _1.queue_test(test_id, target_key, tag, machine, tag, support, parameters) }
       end
     end
 
