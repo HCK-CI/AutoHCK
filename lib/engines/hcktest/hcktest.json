@@ -9,6 +9,17 @@
           "Secure Boot Logo Test"
         ],
         "secure":true
+      },
+      {
+        "tests": [
+          "USB Type-C ACPI Validation"
+        ],
+        "parameters": [
+          {
+            "name": "NumberOfUsbTypeCPorts",
+            "value": 0
+          }
+        ]
       }
     ]
 }
