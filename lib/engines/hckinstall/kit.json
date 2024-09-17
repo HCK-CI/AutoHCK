@@ -34,6 +34,11 @@
     "extra_software": [ "winfsp" ],
     "studio_platform": "Win2022x64"
   },
+  "HLK11_24H2": {
+    "download_url": "https://go.microsoft.com/fwlink/?linkid=2271857",
+    "extra_software": [ "Test-NETHLK", "winfsp" ],
+    "studio_platform": "Win2022x64"
+  },
   "HLK2025": {
     "download_url": "https://go.microsoft.com/fwlink/?linkid=2271857",
     "extra_software": [ "Test-NETHLK", "winfsp" ],
