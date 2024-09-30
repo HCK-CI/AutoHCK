@@ -239,8 +239,8 @@ module AutoHCK
 
       return unless @fw['nvram']
 
-      @logger.info("FW #{@fw_name} has NVRAM. Creating local copy")
       nvram = "#{@workspace_path}/#{@fw_name}_#{@id}_cl#{@client_id}.nvram"
+      @logger.info("FW #{@fw_name} has NVRAM. Creating local copy #{@fw['nvram']} -> #{nvram}")
       FileUtils.cp(@fw['nvram'], nvram)
       @fw['nvram'] = nvram
       @machine_options << 'pflash1=pflash_vars'
