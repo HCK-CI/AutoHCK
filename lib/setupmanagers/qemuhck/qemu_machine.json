@@ -18,7 +18,7 @@
     "cpu_model": 13,
     "world_net_device": "e1000e",
     "ctrl_net_device": "e1000e",
-    "machine_type": "pc",
+    "machine_type": "q35",
     "fw_type": "bios",
     "boot_device": "ide-storage",
     "vga_device": "vga-std",
