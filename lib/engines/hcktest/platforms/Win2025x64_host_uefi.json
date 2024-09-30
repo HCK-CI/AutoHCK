@@ -1,27 +1,25 @@
 {
-  "name": "Win11_23H2x64_host_uefi_q35_viommu",
-  "kit": "HLK11_23H2",
+  "name": "Win2025x64_host_uefi",
+  "kit": "HLK2025",
   "setupmanager": "qemuhck",
   "fw_type": "uefi",
-  "machine_type": "q35",
-  "viommu_state": true,
   "enlightenments_state": true,
   "cpu": "host",
-  "st_image": "HLK11_23H2-uefi.qcow2",
+  "st_image": "HLK2025-uefi.qcow2",
   "clients": {
     "c1": {
       "name": "CL1",
       "cpus": 4,
       "memory_gb": 8,
       "winrm_port": 4002,
-      "image": "HLK11_23H2-C1-Win11_23H2x64-uefi-q35-viommu.qcow2"
+      "image": "HLK2025-C1-Win2025x64-uefi.qcow2"
     },
     "c2": {
       "name": "CL2",
       "cpus": 4,
       "memory_gb": 8,
       "winrm_port": 4003,
-      "image": "HLK11_23H2-C2-Win11_23H2x64-uefi-q35-viommu.qcow2"
+      "image": "HLK2025-C2-Win2025x64-uefi.qcow2"
     }
   }
 }

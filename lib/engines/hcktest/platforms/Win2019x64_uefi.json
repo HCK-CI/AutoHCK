@@ -3,7 +3,6 @@
   "kit": "HLK1809server",
   "setupmanager": "qemuhck",
   "fw_type": "uefi",
-  "machine_type": "q35",
   "st_image": "HLK1809-uefi.qcow2",
   "clients": {
     "c1": {

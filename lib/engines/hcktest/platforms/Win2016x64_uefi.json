@@ -3,7 +3,6 @@
   "kit": "HLK1607",
   "setupmanager": "qemuhck",
   "fw_type": "uefi",
-  "machine_type": "q35",
   "st_image": "HLK1607-uefi.qcow2",
   "clients": {
     "c1": {
