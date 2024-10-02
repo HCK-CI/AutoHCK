@@ -18,10 +18,11 @@ module AutoHCK
     argv = parser.order(ARGV)
 
     if workspace_path.nil?
-      Dir.chdir Config.read['workspace_path']
-      dirs = Dir['*/*/*/']
+      base = Config.read['workspace_path']
+      dirs = Dir['*/*/*/', base:]
       abort 'no workspace found' if dirs.empty?
 
+      dirs.map! { File.absolute_path(base, workspace_path) }
       workspace_path = dirs.max_by { File.mtime(_1) }
     else
       workspace_path = File.absolute_path(workspace_path, chdir)
