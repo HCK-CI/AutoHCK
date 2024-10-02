@@ -24,7 +24,7 @@ module AutoHCK
 
       workspace_path = dirs.max_by { File.mtime(_1) }
     else
-      workspace_path = File.absolute_path(workspace_path, w)
+      workspace_path = File.absolute_path(workspace_path, chdir)
     end
 
     QemuHCK::Ns.enter workspace_path, chdir, *argv
