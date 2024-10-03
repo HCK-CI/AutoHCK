@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Intended to be usable as a standalone script
+# it is not a part of the AutoHCK module
+
+require 'json'
+require 'logger'
+require 'socket'
+
+@logger = Logger.new('fake-snmp-reset.txt')
+
+qmp_socket_file = ARGV[0]
+
+def send_cmd(qmp_socket, cmd)
+  @logger.info "Sending #{cmd} via QMP"
+  qmp_socket.write JSON.dump({ 'execute' => cmd })
+  qmp_socket.flush
+
+  loop do
+    response = JSON.parse(qmp_socket.readline)
+    break response['return'] if response.key?('return')
+
+    @logger.error(response['error'].to_s) if response.key?('error')
+  end
+end
+
+count = 0
+
+@logger.info 'Initializing UDP socket'
+UDPSocket.open do |socket|
+  socket.bind('0.0.0.0', 'snmp')
+  @logger.info "Listening on #{socket.local_address.inspect_sockaddr}"
+
+  loop do
+    _, addr = socket.recvfrom(0)
+    @logger.info "Received data from #{addr[3]}:#{addr[1]}"
+
+    # Emulate that we do not get the UDP packet immediately
+    sleep 2
+
+    @logger.info "Initializing QMP session for #{qmp_socket_file}"
+    UNIXSocket.open(qmp_socket_file) do |qmp_socket|
+      send_cmd(qmp_socket, 'qmp_capabilities')
+      send_cmd(qmp_socket, 'system_reset')
+      count += 1
+      @logger.info "Rebooting... #{count}"
+    end
+  end
+end
