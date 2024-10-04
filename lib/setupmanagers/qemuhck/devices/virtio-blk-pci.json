@@ -1,8 +1,17 @@
 {
   "name": "virtio-blk-pci",
   "type": "storage",
+  "define_variables": {
+    "@blk_qmp_socket@": "blk_qmp_@run_id@_@client_id@_sock"
+  },
+  "pre_start_commands": [
+    "rm -vf @blk_qmp_socket@",
+    "@source@/bin/fake-snmp-reset @blk_qmp_socket@ &"
+  ],
   "command_line": [
     "-drive file=@image_path@,if=none,format=@image_format@,id=virtio_blk_@run_id@_@client_id@@drive_cache_options@",
-    "-device virtio-blk-pci@device_extra_param@@iommu_device_param@,bus=@bus_name@.0,drive=virtio_blk_@run_id@_@client_id@,serial=@client_id@blk@run_id@@bootindex@"
+    "-device virtio-blk-pci@device_extra_param@@iommu_device_param@,bus=@bus_name@.0,drive=virtio_blk_@run_id@_@client_id@,serial=@client_id@blk@run_id@@bootindex@",
+    "-chardev socket,id=blk_qmp,path=@blk_qmp_socket@,server=on,wait=off",
+    "-mon chardev=blk_qmp,mode=control"
   ]
 }
