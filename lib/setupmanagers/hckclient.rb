@@ -72,9 +72,9 @@ module AutoHCK
       raise ClientRunError, "Couldn't set #{@name} state to Ready"
     end
 
-    def run_pre_test_commands
+    def run_post_start_commands
       @project.engine.drivers&.each do |driver|
-        driver.pretestcommands&.each do |command|
+        driver.post_start_commands&.each do |command|
           desc = command.desc
           cmd = command.run
 
@@ -163,7 +163,7 @@ module AutoHCK
         end
 
         configure_machine
-        run_pre_test_commands
+        run_post_start_commands
         add_target_to_project
       end
     end
