@@ -11,7 +11,7 @@
   ],
   "type": 0,
   "support": true,
-  "pretestcommands": [
+  "post_start_commands": [
     {
       "desc": "Rename TAP-Windows ethernet adapter to SupportDevice0",
       "run": "Rename-NetAdapter -Name (Get-NetAdapter -InterfaceDescription 'TAP-Windows Adapter V9').Name -NewName 'SupportDevice0'"

@@ -4,7 +4,7 @@
   "type": 0,
   "install_method": "no-drv",
   "support": true,
-  "pretestcommands": [
+  "post_start_commands": [
     {
       "desc": "Rename igb ethernet adapter to SupportDevice0",
       "run": "Rename-NetAdapter -Name (Get-NetAdapter -InterfaceDescription 'Intel(R) 82576 Gigabit Dual Port Network Connection').Name -NewName 'SupportDevice0'"
