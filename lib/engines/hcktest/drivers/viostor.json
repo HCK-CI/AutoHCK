@@ -5,7 +5,7 @@
   "install_method": "PNP",
   "type": 0,
   "support": false,
-  "pretestcommands": [
+  "post_start_commands": [
     {
       "desc": "Set Disk Operational Status to Online",
       "run": "Set-Disk -Number 1 -IsOffline $False"

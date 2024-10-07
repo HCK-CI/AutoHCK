@@ -27,7 +27,7 @@ module AutoHCK
       const :enlightenments_state, T.nilable(T::Boolean)
       const :pluggable_memory_gb, T.nilable(Integer)
 
-      const :pretestcommands, T.nilable(T::Array[CommandInfo])
+      const :post_start_commands, T.nilable(T::Array[CommandInfo])
       const :extra_software, T.nilable(T::Array[String])
       const :reject_test_names, T.nilable(T::Array[String])
       const :select_test_names, T.nilable(T::Array[String])
