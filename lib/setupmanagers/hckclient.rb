@@ -75,11 +75,10 @@ module AutoHCK
     def run_post_start_commands
       @project.engine.drivers&.each do |driver|
         driver.post_start_commands&.each do |command|
-          desc = command.desc
-          cmd = command.run
+          return unless command.guest_run
 
-          @logger.info("Running command (#{desc}) on client #{@name}")
-          @tools.run_on_machine(@name, desc, cmd)
+          @logger.info("Running command (#{command.desc}) on client #{@name}")
+          @tools.run_on_machine(@name, command.desc, command.guest_run)
         end
       end
     end

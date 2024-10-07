@@ -11,7 +11,8 @@ module AutoHCK
       extend JsonHelper
 
       const :desc, String
-      const :run, String
+      const :host_run, T.nilable(String)
+      const :guest_run, T.nilable(String)
     end
   end
 end
