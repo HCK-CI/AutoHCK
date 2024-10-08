@@ -1,0 +1,5 @@
+{
+    "bucket_name": "auto-hck-result",
+    "region":  "us-east-1",
+    "endpoint": "s3.amazonaws.com"
+}
