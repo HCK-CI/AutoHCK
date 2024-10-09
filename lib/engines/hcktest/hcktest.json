@@ -20,6 +20,18 @@
             "value": 0
           }
         ]
+      },
+      {
+        "tests": [
+          "[NdisStudio] NdisPoll keyword validation",
+          "[NdisStudio] OidRequestTest - OID_GEN_VENDOR_DRIVER_VERSION Verification"
+        ],
+        "pre_test_commands": [
+          {
+            "desc": "Set Date for NdisStudio tests",
+            "guest_run": "Set-Date '1/1/2024 12:00:00 PM'"
+          }
+        ]
       }
     ]
 }
