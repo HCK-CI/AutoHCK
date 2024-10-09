@@ -176,6 +176,13 @@ module AutoHCK
       @devices_list.flatten!
       @devices_list.compact!
       @device_infos = load_devices
+      process_device_options
+    end
+
+    def process_device_options
+      @device_infos.each do |device_info|
+        @pluggable_memory_gb += device_info.pluggable_memory_gb
+      end
     end
 
     def define_local_variables
