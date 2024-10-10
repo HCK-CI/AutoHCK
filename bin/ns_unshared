@@ -40,6 +40,10 @@ module AutoHCK
       %w[ip link set br_world up],
       %w[ip route add default via 10.0.2.2],
       %w[ip link add br_ctrl type bridge],
+      # See HLK-Setup-Scripts IP configuration
+      # https://github.com/HCK-CI/HLK-Setup-Scripts/blob/master/client.ps1
+      # needed for access to host without full Internet access
+      %w[ip addr add 192.168.100.100/24 dev br_ctrl],
       %w[ip link set br_ctrl up],
       %w[ip link add br_test type bridge],
       %w[ip link set br_test up]

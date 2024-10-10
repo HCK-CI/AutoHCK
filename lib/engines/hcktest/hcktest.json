@@ -20,6 +20,21 @@
             "value": 0
           }
         ]
+      },
+      {
+        "tests": [
+          "Flush Test"
+        ],
+        "parameters": [
+          {
+            "name": "IP",
+            "value": "192.168.100.100"
+          },
+          {
+            "name": "Outlet",
+            "value": "161"
+          }
+        ]
       }
     ]
 }

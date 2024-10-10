@@ -1,9 +1,18 @@
 {
   "name": "virtio-scsi-pci",
   "type": "storage",
+  "define_variables": {
+    "@scsi_qmp_socket@": "scsi_qmp_@run_id@_@client_id@_sock"
+  },
+  "pre_start_commands": [
+    "rm -vf @scsi_qmp_socket@",
+    "@source@/bin/fake-snmp-reset @scsi_qmp_socket@ &"
+  ],
   "command_line": [
     "-drive file=@image_path@,if=none,format=@image_format@,id=virtio_scsi_@run_id@_@client_id@@drive_cache_options@",
     "-device virtio-scsi-pci@device_extra_param@@iommu_device_param@,id=scsi,bus=@bus_name@.0",
-    "-device scsi-hd,drive=virtio_scsi_@run_id@_@client_id@,serial=@client_id@scsi@run_id@@bootindex@"
+    "-device scsi-hd,drive=virtio_scsi_@run_id@_@client_id@,serial=@client_id@scsi@run_id@@bootindex@",
+    "-chardev socket,id=scsi_qmp,path=@scsi_qmp_socket@,server=on,wait=off",
+    "-mon chardev=scsi_qmp,mode=control"
   ]
 }
