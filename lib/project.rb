@@ -23,7 +23,10 @@ module AutoHCK
     end
 
     def diff_checker(drivers, diff, triggers)
-      diff_checker = DiffChecker.new(@logger, drivers.map(&:short),
+      triggers_keys = drivers.map(&:short)
+      triggers_keys << '*' if @options.test.allow_trigger_all
+
+      diff_checker = DiffChecker.new(@logger, triggers_keys,
                                      @options.test.driver_path, diff, triggers)
       return true if diff_checker.trigger?
 

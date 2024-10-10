@@ -17,7 +17,7 @@ module AutoHCK
     class CLI
       # rubocop:enable Lint/ConstantDefinitionInBlock
 
-      attr_accessor :debug, :drivers, :driver_path, :diff_file, :trigger_file
+      attr_accessor :debug, :drivers, :driver_path, :diff_file, :trigger_file, :allow_trigger_all
 
       def initialize
         @parser = create_parser
@@ -45,6 +45,7 @@ module AutoHCK
         driver_path_option(parser)
         diff_option(parser)
         triggers_option(parser)
+        allow_trigger_all_option(parser)
       end
 
       def debug_option(parser)
@@ -80,6 +81,12 @@ module AutoHCK
           @trigger_file = trigger_file
         end
       end
+
+      def allow_trigger_all_option(parser)
+        parser.on('--allow-trigger-all', TrueClass,
+                  'Allow to check "*" trigger',
+                  &method(:allow_trigger_all=))
+      end
     end
 
     cli = CLI.new
@@ -88,7 +95,10 @@ module AutoHCK
     @logger = MonoLogger.new($stderr)
     @logger.level = cli.debug ? 'DEBUG' : 'INFO'
 
-    diff_checker = AutoHCK::DiffChecker.new(@logger, cli.drivers, cli.driver_path, cli.diff_file, cli.trigger_file)
+    triggers_keys = cli.drivers
+    triggers_keys << '*' if cli.allow_trigger_all
+
+    diff_checker = AutoHCK::DiffChecker.new(@logger, triggers_keys, cli.driver_path, cli.diff_file, cli.trigger_file)
     if diff_checker.trigger?
       @logger.info('Some drivers are changed, running tests')
       exit 0
