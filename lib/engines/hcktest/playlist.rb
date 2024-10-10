@@ -99,13 +99,21 @@ module AutoHCK
       end
     end
 
+    def custom_select_test_names_file(file)
+      test_names_file_path = "#{@project.workspace_path}/select_test_names.txt"
+      return File.readlines(test_names_file_path, chomp: true) if File.exist?(test_names_file_path)
+
+      @logger.info('Copying custom select test names file to workspace')
+      FileUtils.cp(file, test_names_file_path)
+    end
+
     def custom_select_test_names(log)
       user_select_test_names_file = @project.options.test.select_test_names
 
       select_test_names = if user_select_test_names_file.nil?
                             @project.engine.target['select_test_names']
                           else
-                            File.readlines(user_select_test_names_file, chomp: true)
+                            custom_select_test_names_file(user_select_test_names_file)
                           end
 
       return unless select_test_names
