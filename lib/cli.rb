@@ -85,7 +85,7 @@ module AutoHCK
       attr_accessor :platform, :drivers, :driver_path, :commit, :diff_file, :svvp, :dump,
                     :gthb_context_prefix, :gthb_context_suffix, :playlist, :select_test_names,
                     :reject_test_names, :triggers_file, :reject_report_sections, :boot_device,
-                    :allow_test_duplication, :manual, :package_with_playlist
+                    :allow_test_duplication, :manual, :package_with_playlist, :allow_trigger_all
 
       def create_parser
         OptionParser.new do |parser|
@@ -154,6 +154,10 @@ module AutoHCK
         parser.on('--triggers <triggers_file>', String,
                   'Path to text file containing triggers',
                   &method(:triggers_file=))
+
+        parser.on('--allow-trigger-all', TrueClass,
+                  'Allow to check "*" trigger',
+                  &method(:allow_trigger_all=))
 
         parser.on('--reject-report-sections <reject_report_sections>', Array,
                   'List of section to reject from HTML results',
