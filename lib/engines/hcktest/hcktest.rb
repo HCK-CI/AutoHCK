@@ -147,6 +147,17 @@ module AutoHCK
                                 this platform is incorrect'
     end
 
+    def run_clients_post_start_host_commands
+      @project.engine.drivers&.each do |driver|
+        driver.post_start_commands&.each do |command|
+          return unless command.host_run
+
+          @logger.info("Running command (#{command.desc}) on host")
+          run_cmd(command.host_run)
+        end
+      end
+    end
+
     def configure_and_synchronize_clients
       run_only = @project.options.test.manual && @project.options.test.driver_path.nil?
 
@@ -154,6 +165,7 @@ module AutoHCK
         client.configure(run_only:)
       end
 
+      run_clients_post_start_host_commands
       @clients.each_value(&:synchronize)
     end
 
