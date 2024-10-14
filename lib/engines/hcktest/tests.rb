@@ -28,7 +28,7 @@ module AutoHCK
       @playlist = Playlist.new(client, project, target, tools, @client.kit)
       @tests = []
       @tests_extra = {}
-
+      @last_done = []
       @results_template = ERB.new(File.read('lib/templates/report.html.erb'))
     end
 
@@ -132,11 +132,36 @@ module AutoHCK
       end
     end
 
-    def test_parameters(test_name)
+    def select_test_config(test_name, config)
       @project.engine.config.tests_config
               .select { _1.tests.include?(test_name) }
-              .flat_map(&:parameters)
-              .to_h { |parameter| [parameter.name, parameter.value] }
+              .flat_map(&config)
+    end
+
+    def test_parameters(test_name)
+      select_test_config(test_name, :parameters)
+        .to_h { |parameter| [parameter.name, parameter.value] }
+    end
+
+    def run_command_on_client(client, command, desc)
+      @logger.info("Running command (#{desc}) on client #{client.name}")
+      @tools.run_on_machine(client.name, desc, command)
+    end
+
+    def run_test_commands(test, type)
+      select_test_config(test['name'], type).each do |command|
+        guest_cmd = command.guest_run
+        desc = command.desc
+        if guest_cmd
+          run_command_on_client(@client, guest_cmd, desc)
+          run_command_on_client(@support, guest_cmd, desc) unless @support.nil?
+        end
+
+        next unless command.host_run
+
+        @logger.info("Running command (#{desc}) on host")
+        run_cmd(command.host_run)
+      end
     end
 
     def queue_test(test, wait: false)
@@ -168,11 +193,12 @@ module AutoHCK
     def tests_stats
       cnt_passed = status_count('Passed')
       cnt_failed = status_count('Failed')
+      total = @tests.count
 
       { 'current' => current_test, 'passed' => cnt_passed,
-        'failed' => cnt_failed, 'inqueue' => @total - cnt_passed - cnt_failed,
+        'failed' => cnt_failed, 'inqueue' => total - cnt_passed - cnt_failed,
         'skipped' => @playlist.rejected_test.count,
-        'currentcount' => done_tests.count + 1, 'total' => @total }
+        'currentcount' => done_tests.count + 1, 'total' => total }
     end
 
     def test_finished?(test)
@@ -434,11 +460,10 @@ module AutoHCK
     end
 
     def run(tests)
-      @total = @tests.count
       load_clients_system_info
       update_summary_results_log
-      @last_done = [] if @last_done.nil?
       tests.each do |test|
+        run_test_commands(test, :pre_test_commands)
         run_count = test['run_count']
 
         (1..run_count).each do |run_number|
@@ -450,6 +475,8 @@ module AutoHCK
 
           break if @project.run_terminated
         end
+
+        run_test_commands(test, :post_test_commands)
 
         break if @project.run_terminated
       end
