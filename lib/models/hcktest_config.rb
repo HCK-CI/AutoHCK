@@ -18,6 +18,8 @@ module AutoHCK
       const :tests, T::Array[String]
       const :secure, T.nilable(T::Boolean)
       const :parameters, T::Array[Parameter], default: []
+      const :pre_test_commands, T::Array[CommandInfo], default: []
+      const :post_test_commands, T::Array[CommandInfo], default: []
     end
 
     # HCKTestConfig class
