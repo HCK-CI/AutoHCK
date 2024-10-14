@@ -154,7 +154,8 @@ module AutoHCK
       boot_from_snapshot: false,
       attach_iso_list: [],
       dump_only: false,
-      secure: false
+      secure: false,
+      reuse_tpm: false
     }.freeze
 
     MACHINE_JSON = 'lib/setupmanagers/qemuhck/machine.json'
@@ -581,6 +582,8 @@ module AutoHCK
 
     def run_config_commands
       device_config_commands.each do |dirty_cmd|
+        next if dirty_cmd.include?('@swtpm_setup_bin@') && @run_opts[:reuse_tpm]
+
         cmd = full_replacement_map.create_cmd(dirty_cmd)
         run_cmd(cmd)
       end

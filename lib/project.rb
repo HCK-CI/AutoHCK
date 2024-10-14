@@ -9,7 +9,7 @@ module AutoHCK
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :id,
                 :workspace_path, :github, :result_uploader, :engine_tag,
                 :engine_platform, :engine_type, :options, :extra_sw_manager,
-                :run_terminated
+                :run_terminated, :restored
 
     def initialize(scope, options)
       @scope = scope
@@ -17,7 +17,7 @@ module AutoHCK
       Json.update_json_override(options.common.config) unless options.common.config.nil?
       init_multilog(options.common.verbose)
       init_class_variables
-      init_workspace
+      init_session
       @id = options.common.id
       scope << self
     end
@@ -157,22 +157,38 @@ module AutoHCK
       @github.handle_cancel
     end
 
-    def init_workspace
-      unless @options.common.workspace_path.nil?
-        @workspace_path = @options.common.workspace_path
-        return
-      end
+    def load_session
+      @workspace_path = @options.test.load_session
 
+      raise AutoHCKError, 'Workspace path does not exist could not load session' unless File.directory?(@workspace_path)
+
+      @logger.info("Loading session from #{@workspace_path}")
+    end
+
+    def create_session
       @workspace_path = File.join(@config['workspace_path'],
                                   @engine_name,
                                   @engine_tag,
                                   @timestamp)
+
       begin
         FileUtils.mkdir_p(@workspace_path)
       rescue Errno::EEXIST
         @logger.warn('Workspace path already exists')
       end
       @logger.info("Workspace path: #{@workspace_path}")
+
+      Session.save(@workspace_path, @options)
+    end
+
+    def init_session
+      unless @options.common.workspace_path.nil?
+        @workspace_path = @options.common.workspace_path
+        @restored = @options.test.load_session
+        return
+      end
+
+      @options.test.load_session ? load_session : create_session
 
       begin
         File.delete("#{@config['workspace_path']}/latest")
