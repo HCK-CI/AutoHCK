@@ -8,11 +8,13 @@ describe 'diff_checker' do
     name = File.basename(diff)
     name_parts = name.split('_')
 
-    expect_res = name_parts[3].split('.')[0] == 'pass'
+    expect_res = name_parts[4].split('.')[0] == 'pass'
     drivers_name = [name_parts[2]]
+    # trigger_all
+    drivers_name << '*' if name_parts[3] == 'all'
 
     it name.to_s do
-      dc = AutoHCK::DiffChecker.new(nil, drivers_name, '.', diff, triggers)
+      dc = AutoHCK::DiffChecker.new(nil, drivers_name, diff, triggers)
       expect(dc.trigger?).to eq(expect_res)
     end
   end
