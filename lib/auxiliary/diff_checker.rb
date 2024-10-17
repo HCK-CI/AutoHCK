@@ -7,10 +7,10 @@ module AutoHCK
     DIFF_FILENAME = 'diff.txt'
     TRIGGER_YAML = 'triggers.yml'
 
-    def initialize(logger, drivers_name, driver_path, diff = nil, triggers = nil)
+    def initialize(logger, triggers_keys, diff = nil, triggers = nil)
       @logger = logger
-      @drivers_name = drivers_name
-      @diff = diff || "#{driver_path}/#{DIFF_FILENAME}"
+      @triggers_keys = triggers_keys
+      @diff = diff || DIFF_FILENAME
       @triggers = triggers || TRIGGER_YAML
     end
 
@@ -22,7 +22,7 @@ module AutoHCK
       @trigger_excludes = []
 
       yaml.each do |key, value|
-        if [*@drivers_name, '*'].include?(key)
+        if @triggers_keys.include?(key)
           @trigger_includes << value['include']
           @trigger_excludes << value['exclude']
         end
