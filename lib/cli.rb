@@ -82,9 +82,9 @@ module AutoHCK
 
     # class TestOptions
     class TestOptions
-      attr_accessor :platform, :drivers, :driver_path, :commit, :diff_file, :svvp, :dump,
+      attr_accessor :platform, :drivers, :driver_path, :commit, :svvp, :dump,
                     :gthb_context_prefix, :gthb_context_suffix, :playlist, :select_test_names,
-                    :reject_test_names, :triggers_file, :reject_report_sections, :boot_device,
+                    :reject_test_names, :reject_report_sections, :boot_device,
                     :allow_test_duplication, :manual, :package_with_playlist
 
       def create_parser
@@ -119,10 +119,6 @@ module AutoHCK
                   'Commit hash for CI status update',
                   &method(:commit=))
 
-        parser.on('--diff <diff_file>', String,
-                  'Path to text file containing a list of changed source files',
-                  &method(:diff_file=))
-
         parser.on('--svvp', TrueClass,
                   'Run SVVP tests for specified platform instead of driver tests',
                   &method(:svvp=))
@@ -150,10 +146,6 @@ module AutoHCK
         parser.on('--reject-test-names <reject_test_names>', String,
                   'Use custom CI text ignore list',
                   &method(:reject_test_names=))
-
-        parser.on('--triggers <triggers_file>', String,
-                  'Path to text file containing triggers',
-                  &method(:triggers_file=))
 
         parser.on('--reject-report-sections <reject_report_sections>', Array,
                   'List of section to reject from HTML results',

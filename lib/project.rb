@@ -22,28 +22,11 @@ module AutoHCK
       scope << self
     end
 
-    def diff_checker(drivers, diff, triggers)
-      diff_checker = DiffChecker.new(@logger, drivers.map(&:short),
-                                     @options.test.driver_path, diff, triggers)
-      return true if diff_checker.trigger?
-
-      @logger.info("Any drivers aren't changed, not running tests")
-      false
-    end
-
-    def check_run?
-      return true if @engine.drivers.nil?
-
-      diff_checker(@engine.drivers, @options.test.diff_file, @options.test.triggers_file)
-    end
-
     def prepare
       @extra_sw_manager = ExtraSoftwareManager.new(self)
 
       @engine = @engine_type.new(self)
       Sentry.set_tags('autohck.tag': @engine_tag)
-
-      return false unless check_run?
 
       configure_result_uploader if @engine.result_uploader_needed?
       return false unless github_handling(@options.test.commit)
