@@ -188,7 +188,6 @@ module AutoHCK
       @drive_cache_options = []
       @define_variables = {}
       @run_opts = {}
-      @pluggable_memory_gb = 0
       @configured = false
     end
 
@@ -310,10 +309,12 @@ module AutoHCK
     def memory_replacement_map
       memory_gb = option_config('memory_gb')
 
+      pluggable_memory_gb = @device_infos.sum(&:pluggable_memory_gb)
+
       {
         '@memory@' => "#{memory_gb}G",
-        '@pluggable_memory@' => "#{@pluggable_memory_gb}G",
-        '@max_memory@' => "#{memory_gb + @pluggable_memory_gb}G"
+        '@pluggable_memory@' => "#{pluggable_memory_gb}G",
+        '@max_memory@' => "#{memory_gb + pluggable_memory_gb}G"
       }
     end
 
