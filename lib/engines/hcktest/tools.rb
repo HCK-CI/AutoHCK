@@ -135,6 +135,12 @@ module AutoHCK
       end
     end
 
+    def load_project(tag)
+      retry_tools_command(__method__) do
+        act_with_tools { _1.load_project(tag) }
+      end
+    end
+
     def list_pools
       retry_tools_command(__method__) do
         act_with_tools(&:list_pools)
