@@ -170,7 +170,10 @@ module AutoHCK
       retries = 0
       begin
         scope.transaction do |tmp_scope|
-          run_clients tmp_scope, keep_alive: true, **opts
+          run_clients tmp_scope, keep_alive: true,
+                                 boot_from_snapshot: @project.restored,
+                                 reuse_tpm: @project.restored,
+                                 **opts
 
           configure_setup_and_synchronize
         end
@@ -188,7 +191,7 @@ module AutoHCK
 
       r_name = "#{@project.engine_tag}.zip"
       zip_path = "#{@project.workspace_path}/#{r_name}"
-      create_zip_from_directory(zip_path, @driver_path)
+      create_zip_from_directory(zip_path, @driver_path) unless File.exist?(zip_path)
       @project.result_uploader.upload_file(zip_path, r_name)
     end
 
@@ -235,7 +238,8 @@ module AutoHCK
 
     def auto_run
       ResourceScope.open do |scope|
-        run_studio scope
+        run_studio(scope, boot_from_snapshot: @project.restored, reuse_tpm: @project.restored,
+                          create_snapshot: !@project.restored)
         sleep 5 until @studio.up?
 
         run_tests_without_config
@@ -262,7 +266,8 @@ module AutoHCK
         next if tests.empty?
 
         ResourceScope.open do |scope|
-          run_clients_and_configure_setup(scope, group => true, create_snapshot: false, boot_from_snapshot: true)
+          run_clients_and_configure_setup(scope, group => true, create_snapshot: !@project.restored,
+                                                 boot_from_snapshot: @project.restored)
 
           @logger.info("Clients ready, running #{group} tests")
           @tests.run(tests)
