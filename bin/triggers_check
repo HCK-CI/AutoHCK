@@ -17,7 +17,7 @@ module AutoHCK
     class CLI
       # rubocop:enable Lint/ConstantDefinitionInBlock
 
-      attr_accessor :debug, :drivers, :driver_path, :diff_file, :trigger_file
+      attr_accessor :debug, :diff_file, :trigger_file, :trigger_keys
 
       def initialize
         @parser = create_parser
@@ -41,29 +41,15 @@ module AutoHCK
 
       def define_options(parser)
         debug_option(parser)
-        drivers_option(parser)
-        driver_path_option(parser)
         diff_option(parser)
         triggers_option(parser)
+        trigger_keys_option(parser)
       end
 
       def debug_option(parser)
         parser.on('--debug', TrueClass,
                   'Printing debug information (optional)') do |debug|
           @debug = debug
-        end
-      end
-
-      def drivers_option(parser)
-        parser.on('--drivers <drivers_list>', Array, 'List of driver for run test') do |drivers|
-          @drivers = drivers
-        end
-      end
-
-      def driver_path_option(parser)
-        parser.on('--driver-path <driver_path>', String,
-                  'Path to the location of the driver wanted to be tested') do |driver_path|
-          @driver_path = driver_path
         end
       end
 
@@ -80,6 +66,12 @@ module AutoHCK
           @trigger_file = trigger_file
         end
       end
+
+      def trigger_keys_option(parser)
+        parser.on('--trigger_keys <trigger_keys>', Array,
+                  'List of trigger keys',
+                  &method(:trigger_keys=))
+      end
     end
 
     cli = CLI.new
@@ -88,7 +80,7 @@ module AutoHCK
     @logger = MonoLogger.new($stderr)
     @logger.level = cli.debug ? 'DEBUG' : 'INFO'
 
-    diff_checker = AutoHCK::DiffChecker.new(@logger, cli.drivers, cli.driver_path, cli.diff_file, cli.trigger_file)
+    diff_checker = AutoHCK::DiffChecker.new(@logger, cli.trigger_keys, cli.diff_file, cli.trigger_file)
     if diff_checker.trigger?
       @logger.info('Some drivers are changed, running tests')
       exit 0
