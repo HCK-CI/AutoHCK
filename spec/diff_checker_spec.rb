@@ -17,5 +17,11 @@ describe 'diff_checker' do
       dc = AutoHCK::DiffChecker.new(nil, drivers_name, diff, triggers)
       expect(dc.trigger?).to eq(expect_res)
     end
+
+    it "#{name}_exec" do
+      pid = spawn("ruby bin/triggers_check --diff #{diff} --triggers #{triggers} --trigger_keys #{drivers_name.join(',')}")
+      status = Process.wait2(pid)[1]
+      expect(status.exitstatus).to eq(expect_res ? 0 : 1)
+    end
   end
 end
