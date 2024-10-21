@@ -5,6 +5,7 @@ source 'https://rubygems.org'
 ruby '>= 3.1.0'
 
 gem 'activesupport'
+gem 'aws-sdk-s3'
 gem 'csv'
 gem 'curb'
 gem 'dotenv'
