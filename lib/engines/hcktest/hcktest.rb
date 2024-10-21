@@ -239,7 +239,6 @@ module AutoHCK
         raise EngineError, 'HLK test target is not defined' unless @project.options.test.manual
 
         @project.logger.info('HLK test target is not defined, skipping tests loading in manual mode')
-        return
       end
 
       @test_list = @tests.list_tests(log: true)
