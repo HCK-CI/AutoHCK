@@ -1,5 +1,5 @@
 {
-  "name": "Red Hat VirtIO SCSI Disk Device",
+  "name": "Red Hat VirtIO SCSI controller",
   "device": "virtio-blk-pci",
   "inf": "viostor.inf",
   "install_method": "PNP",
