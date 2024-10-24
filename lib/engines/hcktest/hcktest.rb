@@ -88,8 +88,9 @@ module AutoHCK
 
     sig { returns(T::Array[Models::Driver]) }
     def find_drivers
-      driver_names.map do |short_name|
+      driver_names.filter_map do |short_name|
         driver = read_driver(short_name)
+        next if driver.device == @project.options.test.boot_device
 
         driver.short = short_name
 
