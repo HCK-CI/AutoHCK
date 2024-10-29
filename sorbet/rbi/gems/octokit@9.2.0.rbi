@@ -5956,14 +5956,15 @@ module Octokit::Client::PullRequests
   # @param body [String] Comment content
   # @param commit_id [String] Sha of the commit to comment on.
   # @param path [String] Relative path of the file to comment on.
-  # @param line [Integer] Line index in the diff to comment on.
+  # @param line [Integer] Optional line index in the diff to comment on.
   #   For a multi-line comment, the last line of the range
   #   and specify 'start_line' in the 'options'.
+  #   If not specified, the comment will be on the whole file.
   # @return [Sawyer::Resource] Hash representing the new comment
   # @see https://developer.github.com/v3/pulls/comments/#create-a-comment
   #
-  # source://octokit//lib/octokit/client/pull_requests.rb#209
-  def create_pull_comment(repo, pull_id, body, commit_id, path, line, options = T.unsafe(nil)); end
+  # source://octokit//lib/octokit/client/pull_requests.rb#210
+  def create_pull_comment(repo, pull_id, body, commit_id, path, line = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Create reply to a pull request comment
   #
@@ -5976,7 +5977,7 @@ module Octokit::Client::PullRequests
   # @return [Sawyer::Resource] Hash representing new comment
   # @see https://developer.github.com/v3/pulls/comments/#create-a-comment
   #
-  # source://octokit//lib/octokit/client/pull_requests.rb#231
+  # source://octokit//lib/octokit/client/pull_requests.rb#239
   def create_pull_reply(repo, pull_id, body, comment_id, options = T.unsafe(nil)); end
 
   # Create a pull request
@@ -6009,14 +6010,15 @@ module Octokit::Client::PullRequests
   # @param body [String] Comment content
   # @param commit_id [String] Sha of the commit to comment on.
   # @param path [String] Relative path of the file to comment on.
-  # @param line [Integer] Line index in the diff to comment on.
+  # @param line [Integer] Optional line index in the diff to comment on.
   #   For a multi-line comment, the last line of the range
   #   and specify 'start_line' in the 'options'.
+  #   If not specified, the comment will be on the whole file.
   # @return [Sawyer::Resource] Hash representing the new comment
   # @see https://developer.github.com/v3/pulls/comments/#create-a-comment
   #
-  # source://octokit//lib/octokit/client/pull_requests.rb#209
-  def create_pull_request_comment(repo, pull_id, body, commit_id, path, line, options = T.unsafe(nil)); end
+  # source://octokit//lib/octokit/client/pull_requests.rb#210
+  def create_pull_request_comment(repo, pull_id, body, commit_id, path, line = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Create reply to a pull request comment
   #
@@ -6029,7 +6031,7 @@ module Octokit::Client::PullRequests
   # @return [Sawyer::Resource] Hash representing new comment
   # @see https://developer.github.com/v3/pulls/comments/#create-a-comment
   #
-  # source://octokit//lib/octokit/client/pull_requests.rb#231
+  # source://octokit//lib/octokit/client/pull_requests.rb#239
   def create_pull_request_comment_reply(repo, pull_id, body, comment_id, options = T.unsafe(nil)); end
 
   # Create a pull request from existing issue
@@ -6058,7 +6060,7 @@ module Octokit::Client::PullRequests
   # @return [Sawyer::Resource] Hash representing new comment
   # @see https://developer.github.com/v3/pulls/comments/#create-a-comment
   #
-  # source://octokit//lib/octokit/client/pull_requests.rb#231
+  # source://octokit//lib/octokit/client/pull_requests.rb#239
   def create_review_reply(repo, pull_id, body, comment_id, options = T.unsafe(nil)); end
 
   # Create a pull request comment
@@ -6072,14 +6074,15 @@ module Octokit::Client::PullRequests
   # @param body [String] Comment content
   # @param commit_id [String] Sha of the commit to comment on.
   # @param path [String] Relative path of the file to comment on.
-  # @param line [Integer] Line index in the diff to comment on.
+  # @param line [Integer] Optional line index in the diff to comment on.
   #   For a multi-line comment, the last line of the range
   #   and specify 'start_line' in the 'options'.
+  #   If not specified, the comment will be on the whole file.
   # @return [Sawyer::Resource] Hash representing the new comment
   # @see https://developer.github.com/v3/pulls/comments/#create-a-comment
   #
-  # source://octokit//lib/octokit/client/pull_requests.rb#209
-  def create_view_comment(repo, pull_id, body, commit_id, path, line, options = T.unsafe(nil)); end
+  # source://octokit//lib/octokit/client/pull_requests.rb#210
+  def create_view_comment(repo, pull_id, body, commit_id, path, line = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Delete pull request comment
   #
@@ -6090,7 +6093,7 @@ module Octokit::Client::PullRequests
   # @return [Boolean] True if deleted, false otherwise
   # @see https://developer.github.com/v3/pulls/comments/#delete-a-comment
   #
-  # source://octokit//lib/octokit/client/pull_requests.rb#265
+  # source://octokit//lib/octokit/client/pull_requests.rb#273
   def delete_pull_comment(repo, comment_id, options = T.unsafe(nil)); end
 
   # Delete pull request comment
@@ -6102,7 +6105,7 @@ module Octokit::Client::PullRequests
   # @return [Boolean] True if deleted, false otherwise
   # @see https://developer.github.com/v3/pulls/comments/#delete-a-comment
   #
-  # source://octokit//lib/octokit/client/pull_requests.rb#265
+  # source://octokit//lib/octokit/client/pull_requests.rb#273
   def delete_pull_request_comment(repo, comment_id, options = T.unsafe(nil)); end
 
   # Delete pull request comment
@@ -6114,7 +6117,7 @@ module Octokit::Client::PullRequests
   # @return [Boolean] True if deleted, false otherwise
   # @see https://developer.github.com/v3/pulls/comments/#delete-a-comment
   #
-  # source://octokit//lib/octokit/client/pull_requests.rb#265
+  # source://octokit//lib/octokit/client/pull_requests.rb#273
   def delete_review_comment(repo, comment_id, options = T.unsafe(nil)); end
 
   # Merge a pull request
@@ -6125,7 +6128,7 @@ module Octokit::Client::PullRequests
   # @return [Array<Sawyer::Resource>] Merge commit info if successful
   # @see https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button
   #
-  # source://octokit//lib/octokit/client/pull_requests.rb#300
+  # source://octokit//lib/octokit/client/pull_requests.rb#308
   def merge_pull_request(repo, number, commit_message = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Get a pull request
@@ -6179,7 +6182,7 @@ module Octokit::Client::PullRequests
   # @return [Array<Sawyer::Resource>] List of files
   # @see https://developer.github.com/v3/pulls/#list-pull-requests-files
   #
-  # source://octokit//lib/octokit/client/pull_requests.rb#277
+  # source://octokit//lib/octokit/client/pull_requests.rb#285
   def pull_files(repo, number, options = T.unsafe(nil)); end
 
   # Check pull request merge status
@@ -6189,7 +6192,7 @@ module Octokit::Client::PullRequests
   # @return [Boolean] True if the pull request has been merged
   # @see https://developer.github.com/v3/pulls/#get-if-a-pull-request-has-been-merged
   #
-  # source://octokit//lib/octokit/client/pull_requests.rb#310
+  # source://octokit//lib/octokit/client/pull_requests.rb#318
   def pull_merged?(repo, number, options = T.unsafe(nil)); end
 
   # Get a pull request
@@ -6243,7 +6246,7 @@ module Octokit::Client::PullRequests
   # @return [Array<Sawyer::Resource>] List of files
   # @see https://developer.github.com/v3/pulls/#list-pull-requests-files
   #
-  # source://octokit//lib/octokit/client/pull_requests.rb#277
+  # source://octokit//lib/octokit/client/pull_requests.rb#285
   def pull_request_files(repo, number, options = T.unsafe(nil)); end
 
   # Check pull request merge status
@@ -6253,7 +6256,7 @@ module Octokit::Client::PullRequests
   # @return [Boolean] True if the pull request has been merged
   # @see https://developer.github.com/v3/pulls/#get-if-a-pull-request-has-been-merged
   #
-  # source://octokit//lib/octokit/client/pull_requests.rb#310
+  # source://octokit//lib/octokit/client/pull_requests.rb#318
   def pull_request_merged?(repo, number, options = T.unsafe(nil)); end
 
   # List pull requests for a repository
@@ -6379,7 +6382,7 @@ module Octokit::Client::PullRequests
   # @return [Sawyer::Resource] Hash representing the updated comment
   # @see https://developer.github.com/v3/pulls/comments/#edit-a-comment
   #
-  # source://octokit//lib/octokit/client/pull_requests.rb#250
+  # source://octokit//lib/octokit/client/pull_requests.rb#258
   def update_pull_comment(repo, comment_id, body, options = T.unsafe(nil)); end
 
   # Update a pull request
@@ -6406,7 +6409,7 @@ module Octokit::Client::PullRequests
   # @return [Boolean] True if the pull request branch has been updated
   # @see https://developer.github.com/v3/pulls/#update-a-pull-request-branch
   #
-  # source://octokit//lib/octokit/client/pull_requests.rb#289
+  # source://octokit//lib/octokit/client/pull_requests.rb#297
   def update_pull_request_branch(repo, number, options = T.unsafe(nil)); end
 
   # Update pull request comment
@@ -6419,7 +6422,7 @@ module Octokit::Client::PullRequests
   # @return [Sawyer::Resource] Hash representing the updated comment
   # @see https://developer.github.com/v3/pulls/comments/#edit-a-comment
   #
-  # source://octokit//lib/octokit/client/pull_requests.rb#250
+  # source://octokit//lib/octokit/client/pull_requests.rb#258
   def update_pull_request_comment(repo, comment_id, body, options = T.unsafe(nil)); end
 
   # Update pull request comment
@@ -6432,7 +6435,7 @@ module Octokit::Client::PullRequests
   # @return [Sawyer::Resource] Hash representing the updated comment
   # @see https://developer.github.com/v3/pulls/comments/#edit-a-comment
   #
-  # source://octokit//lib/octokit/client/pull_requests.rb#250
+  # source://octokit//lib/octokit/client/pull_requests.rb#258
   def update_review_comment(repo, comment_id, body, options = T.unsafe(nil)); end
 end
 
@@ -7126,6 +7129,19 @@ module Octokit::Client::Repositories
   # source://octokit//lib/octokit/client/repositories.rb#87
   def all_repositories(options = T.unsafe(nil)); end
 
+  # Check to see if automated security fixes are enabled for a repository
+  #
+  # The authenticated user must have admin access to the repository.
+  #
+  # @example
+  #   @client.automated_security_fixes_enabled?("octokit/octokit.rb")
+  # @param repo [Integer, String, Hash, Repository] A GitHub repository.
+  # @return [Boolean] True if automated security fixes are enabled, false otherwise.
+  # @see https://docs.github.com/en/rest/reference/repos#check-if-automated-security-fixes-are-enabled-for-a-repository
+  #
+  # source://octokit//lib/octokit/client/repositories.rb#788
+  def automated_security_fixes_enabled?(repo, options = T.unsafe(nil)); end
+
   # Get a single branch from a repository
   #
   # @example Get branch 'master` from octokit/octokit.rb
@@ -7417,6 +7433,18 @@ module Octokit::Client::Repositories
   # source://octokit//lib/octokit/client/repositories.rb#238
   def deploy_keys(repo, options = T.unsafe(nil)); end
 
+  # Disable automated security fixes for a repository
+  #
+  # @example Disable automated security fixes for a repository
+  #   @client.disable_automated_security_fixes("octokit/octokit.rb")
+  # @param repo [Integer, String, Hash, Repository] A GitHub repository.
+  # @param options [Hash]
+  # @return [Boolean] True if vulnerability alerts disabled, false otherwise.
+  # @see https://docs.github.com/en/rest/reference/repos#automated-security-fixes
+  #
+  # source://octokit//lib/octokit/client/repositories.rb#817
+  def disable_automated_security_fixes(repo, options = T.unsafe(nil)); end
+
   # Disable vulnerability alerts for a repository
   #
   # @example Disable vulnerability alerts for a repository
@@ -7499,6 +7527,18 @@ module Octokit::Client::Repositories
   #
   # source://octokit//lib/octokit/client/repositories.rb#46
   def edit_repository(repo, options = T.unsafe(nil)); end
+
+  # Enable automated security fixes for a repository
+  #
+  # @example Enable automated security fixes for a repository
+  #   @client.enable_automated_security_fixes("octokit/octokit.rb")
+  # @param repo [Integer, String, Hash, Repository] A GitHub repository.
+  # @param options [Hash]
+  # @return [Boolean] True if vulnerability alerts enabled, false otherwise.
+  # @see https://docs.github.com/en/rest/reference/repos#automated-security-fixes
+  #
+  # source://octokit//lib/octokit/client/repositories.rb#804
+  def enable_automated_security_fixes(repo, options = T.unsafe(nil)); end
 
   # Enable vulnerability alerts for a repository
   #
@@ -9829,7 +9869,7 @@ module Octokit::Connection
   #
   # @return [Sawyer::Response]
   #
-  # source://octokit//lib/octokit/connection.rb#131
+  # source://octokit//lib/octokit/connection.rb#133
   def last_response; end
 
   # Make one or more HTTP GET requests, optionally fetching
@@ -9878,12 +9918,12 @@ module Octokit::Connection
   #
   # @return [Sawyer::Resource]
   #
-  # source://octokit//lib/octokit/connection.rb#124
+  # source://octokit//lib/octokit/connection.rb#126
   def root; end
 
   protected
 
-  # source://octokit//lib/octokit/connection.rb#137
+  # source://octokit//lib/octokit/connection.rb#139
   def endpoint; end
 
   private
@@ -9892,22 +9932,22 @@ module Octokit::Connection
   #
   # @return [Boolean] True on success, false otherwise
   #
-  # source://octokit//lib/octokit/connection.rb#166
+  # source://octokit//lib/octokit/connection.rb#168
   def boolean_from_response(method, path, options = T.unsafe(nil)); end
 
-  # source://octokit//lib/octokit/connection.rb#194
+  # source://octokit//lib/octokit/connection.rb#196
   def parse_query_and_convenience_headers(options); end
 
-  # source://octokit//lib/octokit/connection.rb#147
+  # source://octokit//lib/octokit/connection.rb#149
   def request(method, path, data, options = T.unsafe(nil)); end
 
-  # source://octokit//lib/octokit/connection.rb#143
+  # source://octokit//lib/octokit/connection.rb#145
   def reset_agent; end
 
-  # source://octokit//lib/octokit/connection.rb#210
+  # source://octokit//lib/octokit/connection.rb#212
   def response_data_correctly_encoded(response); end
 
-  # source://octokit//lib/octokit/connection.rb#173
+  # source://octokit//lib/octokit/connection.rb#175
   def sawyer_options; end
 end
 
@@ -9918,105 +9958,105 @@ Octokit::Connection::CONVENIENCE_HEADERS = T.let(T.unsafe(nil), Set)
 
 # Default configuration options for {Client}
 #
-# source://octokit//lib/octokit/default.rb#24
+# source://octokit//lib/octokit/default.rb#19
 module Octokit::Default
   class << self
     # Default access token from ENV
     #
     # @return [String]
     #
-    # source://octokit//lib/octokit/default.rb#64
+    # source://octokit//lib/octokit/default.rb#59
     def access_token; end
 
     # Default API endpoint from ENV or {API_ENDPOINT}
     #
     # @return [String]
     #
-    # source://octokit//lib/octokit/default.rb#70
+    # source://octokit//lib/octokit/default.rb#65
     def api_endpoint; end
 
     # Default pagination preference from ENV
     #
     # @return [String]
     #
-    # source://octokit//lib/octokit/default.rb#76
+    # source://octokit//lib/octokit/default.rb#71
     def auto_paginate; end
 
     # Default bearer token from ENV
     #
     # @return [String]
     #
-    # source://octokit//lib/octokit/default.rb#82
+    # source://octokit//lib/octokit/default.rb#77
     def bearer_token; end
 
     # Default OAuth app key from ENV
     #
     # @return [String]
     #
-    # source://octokit//lib/octokit/default.rb#88
+    # source://octokit//lib/octokit/default.rb#83
     def client_id; end
 
     # Default OAuth app secret from ENV
     #
     # @return [String]
     #
-    # source://octokit//lib/octokit/default.rb#94
+    # source://octokit//lib/octokit/default.rb#89
     def client_secret; end
 
     # Default options for Faraday::Connection
     #
     # @return [Hash]
     #
-    # source://octokit//lib/octokit/default.rb#130
+    # source://octokit//lib/octokit/default.rb#125
     def connection_options; end
 
     # Default media type from ENV or {MEDIA_TYPE}
     #
     # @return [String]
     #
-    # source://octokit//lib/octokit/default.rb#141
+    # source://octokit//lib/octokit/default.rb#136
     def default_media_type; end
 
     # Default GitHub username for Basic Auth from ENV
     #
     # @return [String]
     #
-    # source://octokit//lib/octokit/default.rb#147
+    # source://octokit//lib/octokit/default.rb#142
     def login; end
 
     # Default GHES Manage API endpoint from ENV
     #
     # @return [String]
     #
-    # source://octokit//lib/octokit/default.rb#112
+    # source://octokit//lib/octokit/default.rb#107
     def manage_ghes_endpoint; end
 
     # Default GHES Manage API password from ENV
     #
     # @return [String]
     #
-    # source://octokit//lib/octokit/default.rb#124
+    # source://octokit//lib/octokit/default.rb#119
     def manage_ghes_password; end
 
     # Default GHES Manage API username from ENV
     #
     # @return [String]
     #
-    # source://octokit//lib/octokit/default.rb#118
+    # source://octokit//lib/octokit/default.rb#113
     def manage_ghes_username; end
 
     # Default management console endpoint from ENV
     #
     # @return [String]
     #
-    # source://octokit//lib/octokit/default.rb#106
+    # source://octokit//lib/octokit/default.rb#101
     def management_console_endpoint; end
 
     # Default management console password from ENV
     #
     # @return [String]
     #
-    # source://octokit//lib/octokit/default.rb#100
+    # source://octokit//lib/octokit/default.rb#95
     def management_console_password; end
 
     # Default middleware stack for Faraday::Connection
@@ -10024,97 +10064,97 @@ module Octokit::Default
     #
     # @return [Faraday::RackBuilder or Faraday::Builder]
     #
-    # source://octokit//lib/octokit/default.rb#154
+    # source://octokit//lib/octokit/default.rb#149
     def middleware; end
 
     # Default behavior for reading .netrc file
     #
     # @return [Boolean]
     #
-    # source://octokit//lib/octokit/default.rb#201
+    # source://octokit//lib/octokit/default.rb#196
     def netrc; end
 
     # Default path for .netrc file
     #
     # @return [String]
     #
-    # source://octokit//lib/octokit/default.rb#207
+    # source://octokit//lib/octokit/default.rb#202
     def netrc_file; end
 
     # Configuration options
     #
     # @return [Hash]
     #
-    # source://octokit//lib/octokit/default.rb#58
+    # source://octokit//lib/octokit/default.rb#53
     def options; end
 
     # Default GitHub password for Basic Auth from ENV
     #
     # @return [String]
     #
-    # source://octokit//lib/octokit/default.rb#160
+    # source://octokit//lib/octokit/default.rb#155
     def password; end
 
     # Default pagination page size from ENV
     #
     # @return [Integer] Page size
     #
-    # source://octokit//lib/octokit/default.rb#166
+    # source://octokit//lib/octokit/default.rb#161
     def per_page; end
 
     # Default proxy server URI for Faraday connection from ENV
     #
     # @return [String]
     #
-    # source://octokit//lib/octokit/default.rb#174
+    # source://octokit//lib/octokit/default.rb#169
     def proxy; end
 
     # Default SSL verify mode from ENV
     #
     # @return [Integer]
     #
-    # source://octokit//lib/octokit/default.rb#180
+    # source://octokit//lib/octokit/default.rb#175
     def ssl_verify_mode; end
 
     # Default User-Agent header string from ENV or {USER_AGENT}
     #
     # @return [String]
     #
-    # source://octokit//lib/octokit/default.rb#189
+    # source://octokit//lib/octokit/default.rb#184
     def user_agent; end
 
     # Default web endpoint from ENV or {WEB_ENDPOINT}
     #
     # @return [String]
     #
-    # source://octokit//lib/octokit/default.rb#195
+    # source://octokit//lib/octokit/default.rb#190
     def web_endpoint; end
   end
 end
 
 # Default API endpoint
 #
-# source://octokit//lib/octokit/default.rb#26
+# source://octokit//lib/octokit/default.rb#21
 Octokit::Default::API_ENDPOINT = T.let(T.unsafe(nil), String)
 
 # Default media type
 #
-# source://octokit//lib/octokit/default.rb#32
+# source://octokit//lib/octokit/default.rb#27
 Octokit::Default::MEDIA_TYPE = T.let(T.unsafe(nil), String)
 
 # Default Faraday middleware stack
 #
-# source://octokit//lib/octokit/default.rb#38
+# source://octokit//lib/octokit/default.rb#33
 Octokit::Default::MIDDLEWARE = T.let(T.unsafe(nil), Faraday::RackBuilder)
 
 # Default User Agent header string
 #
-# source://octokit//lib/octokit/default.rb#29
+# source://octokit//lib/octokit/default.rb#24
 Octokit::Default::USER_AGENT = T.let(T.unsafe(nil), String)
 
 # Default WEB endpoint
 #
-# source://octokit//lib/octokit/default.rb#35
+# source://octokit//lib/octokit/default.rb#30
 Octokit::Default::WEB_ENDPOINT = T.let(T.unsafe(nil), String)
 
 # Raised when GHES Manage return a 410 HTTP status code
@@ -10915,24 +10955,24 @@ class Octokit::ManageGHESClient
   # @param key Either the file path to a key, a File handler to the key, or the contents of the key itself
   # @return [nil]
   #
-  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#92
+  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#99
   def add_authorized_key(key); end
 
-  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#82
+  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#89
   def authorized_keys; end
 
   # Get information about the Enterprise installation
   #
   # @return [nil]
   #
-  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#57
+  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#64
   def config_check; end
 
   # Get information about the Enterprise installation
   #
   # @return [nil]
   #
-  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#57
+  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#64
   def config_status; end
 
   # Removes an authorized SSH keys from the Enterprise install
@@ -10940,7 +10980,7 @@ class Octokit::ManageGHESClient
   # @param key Either the file path to a key, a File handler to the key, or the contents of the key itself
   # @return [nil]
   #
-  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#117
+  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#124
   def delete_authorized_key(key); end
 
   # Modify the Enterprise settings
@@ -10948,17 +10988,17 @@ class Octokit::ManageGHESClient
   # @param settings [Hash] A hash configuration of the new settings
   # @return [nil]
   #
-  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#77
+  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#84
   def edit_settings(settings); end
 
-  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#82
+  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#89
   def get_authorized_keys; end
 
   # Get information about the Enterprise installation
   #
   # @return [nil]
   #
-  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#66
+  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#73
   def get_settings; end
 
   # Removes an authorized SSH keys from the Enterprise install
@@ -10966,21 +11006,21 @@ class Octokit::ManageGHESClient
   # @param key Either the file path to a key, a File handler to the key, or the contents of the key itself
   # @return [nil]
   #
-  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#117
+  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#124
   def remove_authorized_key(key); end
 
   # Get information about the Enterprise installation
   #
   # @return [nil]
   #
-  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#66
+  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#73
   def settings; end
 
   # Start a configuration process.
   #
   # @return [nil]
   #
-  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#49
+  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#56
   def start_configuration; end
 
   # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#37
@@ -11014,19 +11054,19 @@ class Octokit::ManageGHESClient
 
   private
 
-  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#150
+  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#157
   def authenticated_client; end
 
   # @return [Boolean]
   #
-  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#141
+  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#148
   def basic_authenticated?; end
 
   # If no username is provided, we assume root site admin should be used
   #
   # @return [Boolean]
   #
-  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#146
+  # source://octokit//lib/octokit/manage_ghes_client/manage_ghes.rb#153
   def root_site_admin_assumed?; end
 end
 
@@ -11387,10 +11427,10 @@ class Octokit::Repository
 
   # @raise [Octokit::InvalidRepository]
   #
-  # source://octokit//lib/octokit/repository.rb#90
+  # source://octokit//lib/octokit/repository.rb#96
   def raise_invalid_repository!(repo); end
 
-  # source://octokit//lib/octokit/repository.rb#84
+  # source://octokit//lib/octokit/repository.rb#90
   def validate_owner_and_name!(repo); end
 
   class << self
@@ -11410,6 +11450,11 @@ class Octokit::Repository
     def path(repo); end
   end
 end
+
+# Ruby 3.4+
+#
+# source://octokit//lib/octokit/repository.rb#84
+Octokit::Repository::ABS_URI_REGEXP = T.let(T.unsafe(nil), Regexp)
 
 # source://octokit//lib/octokit/repository.rb#9
 Octokit::Repository::NAME_WITH_OWNER_PATTERN = T.let(T.unsafe(nil), Regexp)
