@@ -16,6 +16,7 @@ module AutoHCK
       const :post_stop_commands, T::Array[String], default: []
       const :machine_options, T::Array[String], default: []
       const :pluggable_memory_gb, Integer, default: 0
+      const :iommu_device_param, T.nilable(String)
     end
   end
 end
