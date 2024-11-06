@@ -183,7 +183,6 @@ module AutoHCK
       @device_commands = []
       @machine_options = %w[@machine_name@]
       @device_extra_param = []
-      @iommu_device_param = []
       @cpu_options = %w[@cpu@ +x2apic +fsgsbase model=@cpu_model@]
       @drive_cache_options = []
       @define_variables = {}
@@ -322,7 +321,7 @@ module AutoHCK
       {
         '@machine_options@' => (@machine_options + device_machine_options).join(','),
         '@device_extra_param@' => @device_extra_param.join,
-        '@iommu_device_param@' => @iommu_device_param.join,
+        '@iommu_device_param@' => device_iommu_device_param.join,
         '@cpu_options@' => @cpu_options.join(','),
         '@drive_cache_options@' => @drive_cache_options.join
       }
@@ -351,6 +350,11 @@ module AutoHCK
     sig { returns(T::Array[String]) }
     def device_machine_options
       @device_infos.map(&:machine_options).flatten.compact
+    end
+
+    sig { returns(T::Array[String]) }
+    def device_iommu_device_param
+      @device_infos.filter_map(&:iommu_device_param)
     end
 
     def full_replacement_map
@@ -400,7 +404,7 @@ module AutoHCK
     end
 
     def normalize_lists
-      [@device_commands, @machine_options, @device_extra_param, @iommu_device_param,
+      [@device_commands, @machine_options, @device_extra_param,
        @cpu_options, @drive_cache_options].each do |arr|
         arr.flatten!
         arr.compact!
