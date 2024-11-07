@@ -1,0 +1,10 @@
+{
+  "download_url": "https://go.microsoft.com/fwlink/?linkid=2026646",
+  "extra_software": [
+    "HLK_GRFX_FOD",
+    "WDTFNetData_1809",
+    "winfsp"
+  ],
+  "studio_platform": "Win2019x64",
+  "name": "HLK1809"
+}

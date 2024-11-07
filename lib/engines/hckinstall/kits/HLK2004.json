@@ -1,0 +1,8 @@
+{
+  "download_url": "https://go.microsoft.com/fwlink/?linkid=2128655",
+  "extra_software": [
+    "winfsp"
+  ],
+  "studio_platform": "Win2016x64",
+  "name": "HLK2004"
+}

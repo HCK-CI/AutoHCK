@@ -13,7 +13,7 @@ module AutoHCK
     PLATFORMS_JSON_DIR = 'lib/engines/hcktest/platforms'
     CONFIG_JSON = 'lib/engines/hckinstall/hckinstall.json'
     ISO_JSON = 'lib/engines/hckinstall/iso.json'
-    KIT_JSON = 'lib/engines/hckinstall/kit.json'
+    KIT_JSON_DIR = 'lib/engines/hckinstall/kits'
     FW_JSON = 'lib/setupmanagers/qemuhck/fw.json'
     DRIVERS_JSON_DIR = 'lib/engines/hcktest/drivers'
     ENGINE_MODE = 'install'
@@ -50,12 +50,12 @@ module AutoHCK
       res || raise(InvalidConfigFile, "ISO info for #{platform_name} does not exist")
     end
 
+    sig { params(kit_name: String).returns(Models::Kit) }
     def read_kit(kit_name)
-      kit_list = Json.read_json(KIT_JSON, @logger)
+      kit_json = "#{KIT_JSON_DIR}/#{kit_name}.json"
+
       @logger.info("Loading kit by name: #{kit_name}")
-      res = kit_list[kit_name]
-      @logger.fatal("Kit info with name #{kit_name} does not exist") unless res
-      res || raise(InvalidConfigFile, "Kit info with name #{kit_name} does not exist")
+      Models::Kit.from_json_file(kit_json, @logger)
     end
 
     def init_config
@@ -68,7 +68,7 @@ module AutoHCK
     end
 
     def studio_platform(kit)
-      res = @kit_info['studio_platform']
+      res = @kit_info.studio_platform
       @logger.info("Loading studio platform for kit: #{kit}")
       @logger.fatal("Kit studio platform for kit #{kit} does not exist") unless res
       res || raise(InvalidConfigFile, "Kit studio platform for kit #{kit} does not exist")
@@ -93,13 +93,11 @@ module AutoHCK
     end
 
     def prepare_extra_sw
-      [@kit_info, @project.engine_platform].each do |source|
-        next if source['extra_software'].nil?
+      extra_software = [*@kit_info.extra_software, *@project.engine_platform['extra_software']]
 
-        @project.extra_sw_manager.prepare_software_packages(
-          source['extra_software'], @project.engine_platform['kit'], ENGINE_MODE
-        )
-      end
+      @project.extra_sw_manager.prepare_software_packages(
+        extra_software, @project.engine_platform['kit'], ENGINE_MODE
+      )
 
       @project.extra_sw_manager.copy_to_setup_scripts(@hck_setup_scripts_path)
     end
@@ -255,11 +253,11 @@ module AutoHCK
       @kit_path = find_kit(kit_type, kit_version)
 
       if @kit_path.nil?
-        if @kit_info['download_url'].nil?
+        if @kit_info.download_url.nil?
           raise(EngineError, 'HLK installer download URL is not provided and installer is not found')
         end
 
-        @kit_path = download_kit_installer(@kit_info['download_url'],
+        @kit_path = download_kit_installer(@kit_info.download_url,
                                            "#{kit_type}#{kit_version}", @hck_setup_scripts_path)
       else
         @logger.info("HLK installer #{kit_type}#{kit_version} already exists")

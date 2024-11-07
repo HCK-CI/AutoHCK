@@ -1,0 +1,8 @@
+{
+  "extra_software": [
+    "Disable_SNV",
+    "winfsp"
+  ],
+  "studio_platform": "Win2022x64",
+  "name": "HLK11_next"
+}

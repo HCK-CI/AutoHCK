@@ -1,0 +1,9 @@
+{
+  "download_url": "https://go.microsoft.com/fwlink/?linkid=2289923",
+  "extra_software": [
+    "Test-NETHLK",
+    "winfsp"
+  ],
+  "studio_platform": "Win2022x64",
+  "name": "HLK11_24H2"
+}
