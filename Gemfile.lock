@@ -215,6 +215,7 @@ DEPENDENCIES
   dotenv
   dropbox_api
   filelock
+  httpclient
   mono_logger
   octokit
   openssl
