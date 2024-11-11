@@ -128,8 +128,13 @@ module AutoHCK
     def check_run_termination
       return if @github.nil?
 
-      pr = @github.find_pr
-
+      begin
+        pr = @github.find_pr
+      rescue GithubPullRequestLoadError => e
+        @logger.warn("Error while checking PR status: #{e}")
+        @logger.warn('Continuing CI run, PR status will be checked later')
+        return
+      end
       # PR is nil when it was force-pushed
       # PR is closed when it was closed or merged
       @run_terminated = pr.nil? || @github.pr_closed?(pr)
