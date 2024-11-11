@@ -14,6 +14,8 @@ module AutoHCK
   # A custom GithubInitializationError error exception
   class GithubInitializationError < AutoHCKError; end
 
+  class GithubPullRequestLoadError < AutoHCKError; end
+
   # A custom Could not open json file exception
   class OpenJsonError < StandardError; end
 

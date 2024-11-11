@@ -39,6 +39,7 @@ module AutoHCK
   autoload_relative :ExtraSoftwareMissingConfig, 'auxiliary/extra_software/exceptions'
   autoload_relative :Github, 'auxiliary/github'
   autoload_relative :GithubInitializationError, 'exceptions'
+  autoload_relative :GithubPullRequestLoadError, 'exceptions'
   autoload_relative :HCKClient, 'setupmanagers/hckclient'
   autoload_relative :HCKInstall, 'engines/hckinstall/hckinstall'
   autoload_relative :HCKStudio, 'setupmanagers/hckstudio'

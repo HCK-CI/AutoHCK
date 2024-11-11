@@ -132,7 +132,7 @@ module AutoHCK
            Octokit::BadGateway, Octokit::InternalServerError => e
       @logger.warn("Github server connection error: #{e.message}")
       # we should fail if can't get updated PR information
-      raise unless (retries += 1) < GITHUB_API_RETRIES
+      raise GithubPullRequestLoadError, e unless (retries += 1) < GITHUB_API_RETRIES
 
       sleep GITHUB_API_RETRY_SLEEP
       @logger.info('Trying again execute github.pulls')
