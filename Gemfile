@@ -11,6 +11,7 @@ gem 'curb'
 gem 'dotenv'
 gem 'dropbox_api'
 gem 'filelock'
+gem 'httpclient'
 gem 'mono_logger'
 gem 'octokit'
 gem 'openssl', require: false
