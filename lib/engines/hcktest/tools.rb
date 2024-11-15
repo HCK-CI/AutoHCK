@@ -5,7 +5,8 @@ module AutoHCK
   # Tools class
   class Tools
     ACTION_RETRIES = 5
-    ACTION_RETRY_SLEEP = 10
+    HLK_ACTION_RETRY_SLEEP = 10
+    ACTION_RETRY_SLEEP = 90
     def initialize(project, ip_addr, clients)
       @logger = project.logger
       @config = project.config
@@ -100,11 +101,11 @@ module AutoHCK
         break if ret
 
         @logger.warn("Running HLK tools command (#{action}) failed")
-        sleep ACTION_RETRY_SLEEP
+        sleep HLK_ACTION_RETRY_SLEEP
         @logger.info("Trying again to run HLK tools command (#{action})")
       rescue StandardError => e
         @logger.warn("Running HLK tools command (#{action}) failed with #{e}")
-        sleep ACTION_RETRY_SLEEP
+        sleep HLK_ACTION_RETRY_SLEEP
         @logger.info("Trying again to run HLK tools command (#{action})")
       end
 
