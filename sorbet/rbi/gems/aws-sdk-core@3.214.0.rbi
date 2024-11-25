@@ -608,67 +608,8 @@ Aws::CORE_GEM_VERSION = T.let(T.unsafe(nil), String)
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#5
-module Aws::Cbor
-  class << self
-    # @api private
-    #
-    # source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#74
-    def decode(bytes); end
-
-    # @api private
-    #
-    # source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#70
-    def encode(data); end
-
-    # @api private
-    # @return [Class] Returns the default engine.
-    #   One of:
-    #
-    #   * {CborEngine}
-    #
-    # source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#65
-    def engine; end
-
-    # @api private
-    # @param engine [Symbol, Class] Must be one of the following values:
-    #
-    #   * :cbor
-    #
-    # source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#56
-    def engine=(engine); end
-
-    # @api private
-    #
-    # source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#79
-    def set_default_engine; end
-
-    private
-
-    # @api private
-    #
-    # source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#91
-    def load_engine(name); end
-
-    # @api private
-    #
-    # source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#97
-    def try_load_engine(name); end
-  end
-end
-
-# Pure Ruby implementation of CBOR encode and decode
-#
-# source://aws-sdk-core//lib/aws-sdk-core/cbor/cbor_engine.rb#9
-module Aws::Cbor::CborEngine
-  class << self
-    # source://aws-sdk-core//lib/aws-sdk-core/cbor/cbor_engine.rb#14
-    def decode(bytes); end
-
-    # source://aws-sdk-core//lib/aws-sdk-core/cbor/cbor_engine.rb#10
-    def encode(data); end
-  end
-end
+# source://aws-sdk-core//lib/aws-sdk-core/cbor/encoder.rb#6
+module Aws::Cbor; end
 
 # Pure Ruby implementation of CBOR Decoder
 #
@@ -982,28 +923,28 @@ Aws::Cbor::Encoder::TAG_TYPE_EPOCH = T.let(T.unsafe(nil), Integer)
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#22
+# source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#25
 class Aws::Cbor::Error < ::StandardError; end
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#36
+# source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#39
 class Aws::Cbor::ExtraBytesError < ::Aws::Cbor::Error
   # @api private
   # @return [ExtraBytesError] a new instance of ExtraBytesError
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#37
+  # source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#40
   def initialize(pos, size); end
 end
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#24
+# source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#27
 class Aws::Cbor::OutOfBytesError < ::Aws::Cbor::Error
   # @api private
   # @return [OutOfBytesError] a new instance of OutOfBytesError
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#25
+  # source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#28
   def initialize(n, left); end
 end
 
@@ -1017,7 +958,7 @@ end
 #
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#20
+# source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#23
 class Aws::Cbor::Tagged < ::Struct
   # The tag number.
   #
@@ -1050,28 +991,28 @@ end
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#44
+# source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#47
 class Aws::Cbor::UnexpectedAdditionalInformationError < ::Aws::Cbor::Error
   # @api private
   # @return [UnexpectedAdditionalInformationError] a new instance of UnexpectedAdditionalInformationError
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#45
+  # source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#48
   def initialize(add_info); end
 end
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#42
+# source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#45
 class Aws::Cbor::UnexpectedBreakCodeError < ::Aws::Cbor::Error; end
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#30
+# source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#33
 class Aws::Cbor::UnknownTypeError < ::Aws::Cbor::Error
   # @api private
   # @return [UnknownTypeError] a new instance of UnknownTypeError
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#31
+  # source://aws-sdk-core//lib/aws-sdk-core/cbor.rb#34
   def initialize(type); end
 end
 
@@ -2817,7 +2758,7 @@ module Aws::Endpoints::Matchers
     #
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#108
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#101
     def aws_parse_arn(value); end
 
     # aws.partition(value: string) Option<Partition>
@@ -2832,7 +2773,7 @@ module Aws::Endpoints::Matchers
     # @api private
     # @return [Boolean]
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#120
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#113
     def aws_virtual_hostable_s3_bucket?(value, allow_sub_domains = T.unsafe(nil)); end
 
     # booleanEquals(value1: bool, value2: bool) bool
@@ -3950,27 +3891,27 @@ class Aws::Json::ErrorHandler < ::Aws::ErrorHandler
 
   private
 
-  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#82
+  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#83
   def apply_error_headers(rule, context, data); end
 
   # @return [Boolean]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#43
+  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#44
   def aws_query_error?(context); end
 
   # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#26
   def error_code(json, context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#56
+  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#57
   def error_message(code, json); end
 
   # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#16
   def extract_error(body, context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#64
+  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#65
   def parse_error_data(context, body, code); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#48
+  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#49
   def remove_prefix(error_code, context); end
 end
 
@@ -3984,35 +3925,35 @@ class Aws::Json::Handler < ::Seahorse::Client::Handler
 
   private
 
-  # source://aws-sdk-core//lib/aws-sdk-core/json/handler.rb#80
+  # source://aws-sdk-core//lib/aws-sdk-core/json/handler.rb#81
   def apply_request_id(context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/json/handler.rb#27
+  # source://aws-sdk-core//lib/aws-sdk-core/json/handler.rb#28
   def build_body(context); end
 
   # source://aws-sdk-core//lib/aws-sdk-core/json/handler.rb#20
   def build_request(context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/json/handler.rb#71
+  # source://aws-sdk-core//lib/aws-sdk-core/json/handler.rb#72
   def content_type(context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/json/handler.rb#39
+  # source://aws-sdk-core//lib/aws-sdk-core/json/handler.rb#40
   def parse_body(context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/json/handler.rb#35
+  # source://aws-sdk-core//lib/aws-sdk-core/json/handler.rb#36
   def parse_response(response); end
 
   # @return [Boolean]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/json/handler.rb#88
+  # source://aws-sdk-core//lib/aws-sdk-core/json/handler.rb#89
   def query_compatible?(context); end
 
   # @return [Boolean]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/json/handler.rb#84
+  # source://aws-sdk-core//lib/aws-sdk-core/json/handler.rb#85
   def simple_json?(context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/json/handler.rb#75
+  # source://aws-sdk-core//lib/aws-sdk-core/json/handler.rb#76
   def target(context); end
 end
 
@@ -5573,7 +5514,7 @@ end
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/plugins/http_checksum.rb#9
+# source://aws-sdk-core//lib/aws-sdk-core/plugins/http_checksum.rb#8
 class Aws::Plugins::HttpChecksum < ::Seahorse::Client::Plugin
   # @api private
   #
@@ -5824,29 +5765,43 @@ class Aws::Plugins::RegionalEndpoint < ::Seahorse::Client::Plugin
   # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#82
   def after_initialize(client); end
 
+  private
+
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#101
+  def initialize_default_endpoint(client); end
+
+  # set a default endpoint in config using legacy (endpoints.json) resolver
+  #
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#114
+  def resolve_legacy_endpoint(cfg); end
+
   class << self
     private
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#174
+    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#211
     def env_global_endpoint(cfg); end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#164
+    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#201
     def env_service_endpoint(cfg); end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#198
+    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#235
     def handle_legacy_pseudo_regions(cfg); end
 
     # get a custom configured endpoint from ENV or configuration
     #
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#157
+    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#194
     def resolve_custom_config_endpoint(cfg); end
 
     # NOTE: with Endpoints 2.0, some of this logic is deprecated
@@ -5859,51 +5814,44 @@ class Aws::Plugins::RegionalEndpoint < ::Seahorse::Client::Plugin
     #
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#140
+    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#176
     def resolve_endpoint(cfg); end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#127
+    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#163
     def resolve_ignore_configured_endpoint_urls(cfg); end
 
-    # set a default endpoint in config using legacy (endpoints.json) resolver
-    #
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#210
-    def resolve_legacy_endpoint(cfg); end
-
-    # @api private
-    #
-    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#99
+    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#135
     def resolve_region(cfg); end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#107
+    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#143
     def resolve_sigv4a_signing_region_set(cfg); end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#113
+    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#149
     def resolve_use_dualstack_endpoint(cfg); end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#121
+    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#157
     def resolve_use_fips_endpoint(cfg); end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#182
+    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#219
     def shared_config_endpoint(cfg); end
 
     # check region is a valid RFC host label
     #
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#192
+    # source://aws-sdk-core//lib/aws-sdk-core/plugins/regional_endpoint.rb#229
     def validate_region!(region); end
   end
 end
@@ -6427,7 +6375,7 @@ Aws::Plugins::Retries::RetryQuota::TIMEOUT_RETRY_COST = T.let(T.unsafe(nil), Int
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/plugins/retry_errors.rb#13
+# source://aws-sdk-core//lib/aws-sdk-core/plugins/retry_errors.rb#12
 class Aws::Plugins::RetryErrors < ::Seahorse::Client::Plugin
   # @api private
   #
@@ -6476,7 +6424,7 @@ Aws::Plugins::RetryErrors::FULL_JITTER = T.let(T.unsafe(nil), Proc)
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/plugins/retry_errors.rb#228
+# source://aws-sdk-core//lib/aws-sdk-core/plugins/retry_errors.rb#227
 class Aws::Plugins::RetryErrors::Handler < ::Seahorse::Client::Handler
   # @api private
   #
@@ -6610,7 +6558,7 @@ Aws::Plugins::RetryErrors::NO_JITTER = T.let(T.unsafe(nil), Proc)
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#10
+# source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#8
 class Aws::Plugins::Sign < ::Seahorse::Client::Plugin
   # @api private
   #
@@ -8280,8 +8228,56 @@ class Aws::Rest::Response::StatusCode
   def apply(http_resp, data); end
 end
 
-# source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/handler.rb#4
-module Aws::RpcV2; end
+# @api private
+#
+# source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/builder.rb#6
+module Aws::RpcV2
+  class << self
+    # @api private
+    #
+    # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2.rb#37
+    def decode(bytes); end
+
+    # @api private
+    #
+    # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2.rb#33
+    def encode(data); end
+
+    # @api private
+    # @return [Class] Returns the default engine.
+    #   One of:
+    #
+    #   * {CborEngine}
+    #
+    # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2.rb#28
+    def engine; end
+
+    # @api private
+    # @param engine [Symbol, Class] Must be one of the following values:
+    #
+    #   * :cbor
+    #
+    # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2.rb#19
+    def engine=(engine); end
+
+    # @api private
+    #
+    # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2.rb#42
+    def set_default_engine; end
+
+    private
+
+    # @api private
+    #
+    # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2.rb#54
+    def load_engine(name); end
+
+    # @api private
+    #
+    # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2.rb#60
+    def try_load_engine(name); end
+  end
+end
 
 # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/builder.rb#7
 class Aws::RpcV2::Builder
@@ -8313,6 +8309,19 @@ class Aws::RpcV2::Builder
   def structure(ref, values); end
 end
 
+# Pure Ruby implementation of CBOR encode and decode
+#
+# source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/cbor_engine.rb#8
+module Aws::RpcV2::CborEngine
+  class << self
+    # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/cbor_engine.rb#13
+    def decode(bytes); end
+
+    # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/cbor_engine.rb#9
+    def encode(data); end
+  end
+end
+
 # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/content_type_handler.rb#5
 class Aws::RpcV2::ContentTypeHandler < ::Seahorse::Client::Handler
   # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/content_type_handler.rb#6
@@ -8322,17 +8331,17 @@ class Aws::RpcV2::ContentTypeHandler < ::Seahorse::Client::Handler
 
   # @return [Boolean]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/content_type_handler.rb#40
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/content_type_handler.rb#42
   def empty_input_structure?(context); end
 
   # @return [Boolean]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/content_type_handler.rb#26
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/content_type_handler.rb#28
   def eventstream_input?(context); end
 
   # @return [Boolean]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/content_type_handler.rb#33
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/content_type_handler.rb#35
   def eventstream_output?(context); end
 end
 
@@ -8345,7 +8354,7 @@ class Aws::RpcV2::ErrorHandler < ::Aws::ErrorHandler
 
   # @return [Boolean]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#70
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#71
   def aws_query_error?(context); end
 
   # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#39
@@ -8354,10 +8363,10 @@ class Aws::RpcV2::ErrorHandler < ::Aws::ErrorHandler
   # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#29
   def extract_error(body, context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#54
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#55
   def parse_error_data(context, body, code); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#75
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#76
   def remove_prefix(error_code, context); end
 
   # @return [Boolean]
@@ -8366,7 +8375,7 @@ class Aws::RpcV2::ErrorHandler < ::Aws::ErrorHandler
   def valid_response?(context); end
 end
 
-# source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/handler.rb#7
+# source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/handler.rb#5
 class Aws::RpcV2::Handler < ::Seahorse::Client::Handler
   # @param context [Seahorse::Client::RequestContext]
   # @return [Seahorse::Client::Response]
@@ -8376,24 +8385,24 @@ class Aws::RpcV2::Handler < ::Seahorse::Client::Handler
 
   private
 
-  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/handler.rb#69
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/handler.rb#70
   def apply_request_id(context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/handler.rb#35
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/handler.rb#36
   def build_body(context); end
 
   # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/handler.rb#22
   def build_request(context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/handler.rb#29
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/handler.rb#30
   def build_url(context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/handler.rb#39
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/handler.rb#40
   def parse_body(context); end
 
   # @return [Boolean]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/handler.rb#73
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/handler.rb#74
   def query_compatible?(context); end
 
   # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/handler.rb#18
@@ -8848,6 +8857,10 @@ class Aws::SSO::EndpointParameters < ::Struct
 
   class << self
     def [](*_arg0); end
+
+    # source://aws-sdk-core//lib/aws-sdk-sso/endpoint_parameters.rb#60
+    def create(config, options = T.unsafe(nil)); end
+
     def inspect; end
     def keyword_init?; end
     def members; end
@@ -8866,53 +8879,12 @@ end
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sso/endpoints.rb#13
-module Aws::SSO::Endpoints; end
-
-# @api private
-#
-# source://aws-sdk-core//lib/aws-sdk-sso/endpoints.rb#15
-class Aws::SSO::Endpoints::GetRoleCredentials
+module Aws::SSO::Endpoints
   class << self
     # @api private
     #
     # source://aws-sdk-core//lib/aws-sdk-sso/endpoints.rb#16
-    def build(context); end
-  end
-end
-
-# @api private
-#
-# source://aws-sdk-core//lib/aws-sdk-sso/endpoints.rb#26
-class Aws::SSO::Endpoints::ListAccountRoles
-  class << self
-    # @api private
-    #
-    # source://aws-sdk-core//lib/aws-sdk-sso/endpoints.rb#27
-    def build(context); end
-  end
-end
-
-# @api private
-#
-# source://aws-sdk-core//lib/aws-sdk-sso/endpoints.rb#37
-class Aws::SSO::Endpoints::ListAccounts
-  class << self
-    # @api private
-    #
-    # source://aws-sdk-core//lib/aws-sdk-sso/endpoints.rb#38
-    def build(context); end
-  end
-end
-
-# @api private
-#
-# source://aws-sdk-core//lib/aws-sdk-sso/endpoints.rb#48
-class Aws::SSO::Endpoints::Logout
-  class << self
-    # @api private
-    #
-    # source://aws-sdk-core//lib/aws-sdk-sso/endpoints.rb#49
-    def build(context); end
+    def parameters_for_operation(context); end
   end
 end
 
@@ -9022,7 +8994,7 @@ module Aws::SSO::Plugins; end
 
 # source://aws-sdk-core//lib/aws-sdk-sso/plugins/endpoints.rb#13
 class Aws::SSO::Plugins::Endpoints < ::Seahorse::Client::Plugin
-  # source://aws-sdk-core//lib/aws-sdk-sso/plugins/endpoints.rb#85
+  # source://aws-sdk-core//lib/aws-sdk-sso/plugins/endpoints.rb#72
   def add_handlers(handlers, _config); end
 end
 
@@ -9041,11 +9013,6 @@ class Aws::SSO::Plugins::Endpoints::Handler < ::Seahorse::Client::Handler
   #
   # source://aws-sdk-core//lib/aws-sdk-sso/plugins/endpoints.rb#60
   def apply_endpoint_headers(context, headers); end
-
-  # @api private
-  #
-  # source://aws-sdk-core//lib/aws-sdk-sso/plugins/endpoints.rb#71
-  def parameters_for_operation(context); end
 
   # @api private
   #
@@ -10059,6 +10026,10 @@ class Aws::SSOOIDC::EndpointParameters < ::Struct
 
   class << self
     def [](*_arg0); end
+
+    # source://aws-sdk-core//lib/aws-sdk-ssooidc/endpoint_parameters.rb#60
+    def create(config, options = T.unsafe(nil)); end
+
     def inspect; end
     def keyword_init?; end
     def members; end
@@ -10077,53 +10048,12 @@ end
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-ssooidc/endpoints.rb#13
-module Aws::SSOOIDC::Endpoints; end
-
-# @api private
-#
-# source://aws-sdk-core//lib/aws-sdk-ssooidc/endpoints.rb#15
-class Aws::SSOOIDC::Endpoints::CreateToken
+module Aws::SSOOIDC::Endpoints
   class << self
     # @api private
     #
     # source://aws-sdk-core//lib/aws-sdk-ssooidc/endpoints.rb#16
-    def build(context); end
-  end
-end
-
-# @api private
-#
-# source://aws-sdk-core//lib/aws-sdk-ssooidc/endpoints.rb#26
-class Aws::SSOOIDC::Endpoints::CreateTokenWithIAM
-  class << self
-    # @api private
-    #
-    # source://aws-sdk-core//lib/aws-sdk-ssooidc/endpoints.rb#27
-    def build(context); end
-  end
-end
-
-# @api private
-#
-# source://aws-sdk-core//lib/aws-sdk-ssooidc/endpoints.rb#37
-class Aws::SSOOIDC::Endpoints::RegisterClient
-  class << self
-    # @api private
-    #
-    # source://aws-sdk-core//lib/aws-sdk-ssooidc/endpoints.rb#38
-    def build(context); end
-  end
-end
-
-# @api private
-#
-# source://aws-sdk-core//lib/aws-sdk-ssooidc/endpoints.rb#48
-class Aws::SSOOIDC::Endpoints::StartDeviceAuthorization
-  class << self
-    # @api private
-    #
-    # source://aws-sdk-core//lib/aws-sdk-ssooidc/endpoints.rb#49
-    def build(context); end
+    def parameters_for_operation(context); end
   end
 end
 
@@ -10483,7 +10413,7 @@ module Aws::SSOOIDC::Plugins; end
 
 # source://aws-sdk-core//lib/aws-sdk-ssooidc/plugins/endpoints.rb#13
 class Aws::SSOOIDC::Plugins::Endpoints < ::Seahorse::Client::Plugin
-  # source://aws-sdk-core//lib/aws-sdk-ssooidc/plugins/endpoints.rb#85
+  # source://aws-sdk-core//lib/aws-sdk-ssooidc/plugins/endpoints.rb#72
   def add_handlers(handlers, _config); end
 end
 
@@ -10502,11 +10432,6 @@ class Aws::SSOOIDC::Plugins::Endpoints::Handler < ::Seahorse::Client::Handler
   #
   # source://aws-sdk-core//lib/aws-sdk-ssooidc/plugins/endpoints.rb#60
   def apply_endpoint_headers(context, headers); end
-
-  # @api private
-  #
-  # source://aws-sdk-core//lib/aws-sdk-ssooidc/plugins/endpoints.rb#71
-  def parameters_for_operation(context); end
 
   # @api private
   #
@@ -10907,8 +10832,8 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # token. Typically, you use `AssumeRole` within your account or for
   # cross-account access. For a comparison of `AssumeRole` with other API
   # operations that produce temporary credentials, see [Requesting
-  # Temporary Security Credentials][1] and [Comparing the Amazon Web
-  # Services STS API operations][2] in the *IAM User Guide*.
+  # Temporary Security Credentials][1] and [Compare STS credentials][2] in
+  # the *IAM User Guide*.
   #
   # **Permissions**
   #
@@ -10917,9 +10842,9 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # following exception: You cannot call the Amazon Web Services STS
   # `GetFederationToken` or `GetSessionToken` API operations.
   #
-  # (Optional) You can pass inline or managed [session policies][3] to
-  # this operation. You can pass a single JSON policy document to use as
-  # an inline session policy. You can also specify up to 10 managed policy
+  # (Optional) You can pass inline or managed session policies to this
+  # operation. You can pass a single JSON policy document to use as an
+  # inline session policy. You can also specify up to 10 managed policy
   # Amazon Resource Names (ARNs) to use as managed session policies. The
   # plaintext that you use for both inline and managed session policies
   # can't exceed 2,048 characters. Passing policies to this operation
@@ -10992,7 +10917,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # denied. The condition in a trust policy that tests for MFA
   # authentication might look like the following example.
   #
-  # `"Condition": \{"Bool": \{"aws:MultiFactorAuthPresent": true\}\}`
+  # `"Condition": {"Bool": {"aws:MultiFactorAuthPresent": true}}`
   #
   # For more information, see [Configuring MFA-Protected API Access][8] in
   # the *IAM User Guide* guide.
@@ -11005,7 +10930,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #
   #
   # [1]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html
-  # [2]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html#stsapi_comparison
+  # [2]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_sts-comparison.html
   # [3]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_session
   # [4]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html
   # [5]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html
@@ -11116,7 +11041,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #   * {Types::AssumeRoleResponse#source_identity #source_identity} => String
   # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRole AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#935
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#950
   def assume_role(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns a set of temporary security credentials for users who have
@@ -11126,8 +11051,8 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # user-specific credentials or configuration. For a comparison of
   # `AssumeRoleWithSAML` with the other API operations that produce
   # temporary credentials, see [Requesting Temporary Security
-  # Credentials][1] and [Comparing the Amazon Web Services STS API
-  # operations][2] in the *IAM User Guide*.
+  # Credentials][1] and [Compare STS credentials][2] in the *IAM User
+  # Guide*.
   #
   # The temporary security credentials returned by this operation consist
   # of an access key ID, a secret access key, and a security token.
@@ -11257,7 +11182,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #
   #
   # [1]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html
-  # [2]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html#stsapi_comparison
+  # [2]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_sts-comparison.html
   # [3]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html#id_roles_use_view-role-max-session
   # [4]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html
   # [5]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html#iam-term-role-chaining
@@ -11349,7 +11274,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #   * {Types::AssumeRoleWithSAMLResponse#source_identity #source_identity} => String
   # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRoleWithSAML AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1287
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1305
   def assume_role_with_saml(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns a set of temporary security credentials for users who have
@@ -11380,8 +11305,8 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # a token from the web identity provider. For a comparison of
   # `AssumeRoleWithWebIdentity` with the other API operations that produce
   # temporary credentials, see [Requesting Temporary Security
-  # Credentials][4] and [Comparing the Amazon Web Services STS API
-  # operations][5] in the *IAM User Guide*.
+  # Credentials][4] and [Compare STS credentials][5] in the *IAM User
+  # Guide*.
   #
   # The temporary security credentials returned by this API consist of an
   # access key ID, a secret access key, and a security token. Applications
@@ -11396,9 +11321,9 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # your session. You can provide a value from 900 seconds (15 minutes) up
   # to the maximum session duration setting for the role. This setting can
   # have a value from 1 hour to 12 hours. To learn how to view the maximum
-  # value for your role, see [View the Maximum Session Duration Setting
-  # for a Role][6] in the *IAM User Guide*. The maximum session duration
-  # limit applies when you use the `AssumeRole*` API operations or the
+  # value for your role, see [Update the maximum session duration for a
+  # role ][6] in the *IAM User Guide*. The maximum session duration limit
+  # applies when you use the `AssumeRole*` API operations or the
   # `assume-role*` CLI commands. However the limit does not apply when you
   # use those operations to create a console URL. For more information,
   # see [Using IAM Roles][7] in the *IAM User Guide*.
@@ -11476,16 +11401,11 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # instead use a GUID or a pairwise identifier, as [suggested in the OIDC
   # specification][14].
   #
-  # For more information about how to use web identity federation and the
+  # For more information about how to use OIDC federation and the
   # `AssumeRoleWithWebIdentity` API, see the following resources:
   #
   # * [Using Web Identity Federation API Operations for Mobile Apps][15]
   #   and [Federation Through a Web-based Identity Provider][16].
-  #
-  # * [ Web Identity Federation Playground][17]. Walk through the process
-  #   of authenticating through Login with Amazon, Facebook, or Google,
-  #   getting temporary security credentials, and then using those
-  #   credentials to make a request to Amazon Web Services.
   #
   # * [Amazon Web Services SDK for iOS Developer Guide][2] and [Amazon Web
   #   Services SDK for Android Developer Guide][3]. These toolkits contain
@@ -11493,18 +11413,14 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #   toolkits then show how to use the information from these providers
   #   to get and use temporary security credentials.
   #
-  # * [Web Identity Federation with Mobile Applications][18]. This article
-  #   discusses web identity federation and shows an example of how to use
-  #   web identity federation to get access to content in Amazon S3.
-  #
   #
   #
   # [1]: https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-identity.html
   # [2]: http://aws.amazon.com/sdkforios/
   # [3]: http://aws.amazon.com/sdkforandroid/
   # [4]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html
-  # [5]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html#stsapi_comparison
-  # [6]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html#id_roles_use_view-role-max-session
+  # [5]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_sts-comparison.html
+  # [6]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_update-role-settings.html#id_roles_update-session-duration
   # [7]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html
   # [8]: https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_session
   # [9]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html
@@ -11515,8 +11431,6 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # [14]: http://openid.net/specs/openid-connect-core-1_0.html#SubjectIDTypes
   # [15]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_oidc_manual.html
   # [16]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html#api_assumerolewithwebidentity
-  # [17]: https://aws.amazon.com/blogs/aws/the-aws-web-identity-federation-playground/
-  # [18]: http://aws.amazon.com/articles/web-identity-federation-with-mobile-applications
   #
   # @example Example: To assume a role as an OpenID Connect-federated user
   #
@@ -11594,13 +11508,90 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #   * {Types::AssumeRoleWithWebIdentityResponse#source_identity #source_identity} => String
   # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRoleWithWebIdentity AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1665
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1705
   def assume_role_with_web_identity(params = T.unsafe(nil), options = T.unsafe(nil)); end
+
+  # Returns a set of short term credentials you can use to perform
+  # privileged tasks in a member account.
+  #
+  # Before you can launch a privileged session, you must have enabled
+  # centralized root access in your organization. For steps to enable this
+  # feature, see [Centralize root access for member accounts][1] in the
+  # *IAM User Guide*.
+  #
+  # <note markdown="1"> The global endpoint is not supported for AssumeRoot. You must send
+  # this request to a Regional STS endpoint. For more information, see
+  # [Endpoints][2].
+  #
+  #  </note>
+  #
+  # You can track AssumeRoot in CloudTrail logs to determine what actions
+  # were performed in a session. For more information, see [Track
+  # privileged tasks in CloudTrail][3] in the *IAM User Guide*.
+  #
+  #
+  #
+  # [1]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-enable-root-access.html
+  # [2]: https://docs.aws.amazon.com/STS/latest/APIReference/welcome.html#sts-endpoints
+  # [3]: https://docs.aws.amazon.com/IAM/latest/UserGuide/cloudtrail-track-privileged-tasks.html
+  #
+  # @example Example: To launch a privileged session
+  #
+  #   # The following command retrieves a set of short-term credentials you can use to unlock an S3 bucket for a member account
+  #   # by removing the bucket policy.
+  #
+  #   resp = client.assume_root({
+  #   duration_seconds: 900,
+  #   target_principal: "111122223333",
+  #   task_policy_arn: {
+  #   arn: "arn:aws:iam::aws:policy/root-task/S3UnlockBucketPolicy",
+  #   },
+  #   })
+  #
+  #   resp.to_h outputs the following:
+  #   {
+  #   credentials: {
+  #   access_key_id: "ASIAJEXAMPLEXEG2JICEA",
+  #   expiration: Time.parse("2024-11-15T00:05:07Z"),
+  #   secret_access_key: "9drTJvcXLB89EXAMPLELB8923FB892xMFI",
+  #   session_token: "AQoXdzELDDY//////////wEaoAK1wvxJY12r2IrDFT2IvAzTCn3zHoZ7YNtpiQLF0MqZye/qwjzP2iEXAMPLEbw/m3hsj8VBTkPORGvr9jM5sgP+w9IZWZnU+LWhmg+a5fDi2oTGUYcdg9uexQ4mtCHIHfi4citgqZTgco40Yqr4lIlo4V2b2Dyauk0eYFNebHtYlFVgAUj+7Indz3LU0aTWk1WKIjHmmMCIoTkyYp/k7kUG7moeEYKSitwQIi6Gjn+nyzM+PtoA3685ixzv0R7i5rjQi0YE0lf1oeie3bDiNHncmzosRM6SFiPzSvp6h/32xQuZsjcypmwsPSDtTPYcs0+YN/8BRi2/IcrxSpnWEXAMPLEXSDFTAQAM6Dl9zR0tXoybnlrZIwMLlMi1Kcgo5OytwU=",
+  #   },
+  #   source_identity: "Alice",
+  #   }
+  # @example Request syntax with placeholder values
+  #
+  #   resp = client.assume_root({
+  #   target_principal: "TargetPrincipalType", # required
+  #   task_policy_arn: { # required
+  #   arn: "arnType",
+  #   },
+  #   duration_seconds: 1,
+  #   })
+  # @example Response structure
+  #
+  #   resp.credentials.access_key_id #=> String
+  #   resp.credentials.secret_access_key #=> String
+  #   resp.credentials.session_token #=> String
+  #   resp.credentials.expiration #=> Time
+  #   resp.source_identity #=> String
+  # @option params
+  # @option params
+  # @option params
+  # @overload assume_root
+  # @param params [Hash] ({})
+  # @return [Types::AssumeRootResponse] Returns a {Seahorse::Client::Response response} object which responds to the following methods:
+  #
+  #   * {Types::AssumeRootResponse#credentials #credentials} => Types::Credentials
+  #   * {Types::AssumeRootResponse#source_identity #source_identity} => String
+  # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRoot AWS API Documentation
+  #
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1822
+  def assume_root(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # @api private
   # @param params [{}]
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2405
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2562
   def build_request(operation_name, params = T.unsafe(nil)); end
 
   # Decodes additional information about the authorization status of a
@@ -11672,7 +11663,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #   * {Types::DecodeAuthorizationMessageResponse#decoded_message #decoded_message} => String
   # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/DecodeAuthorizationMessage AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1746
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1903
   def decode_authorization_message(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns the account identifier for the specified access key ID.
@@ -11722,7 +11713,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #   * {Types::GetAccessKeyInfoResponse#account #account} => String
   # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetAccessKeyInfo AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1807
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1964
   def get_access_key_info(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns details about the IAM user or role whose credentials are used
@@ -11798,7 +11789,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #   * {Types::GetCallerIdentityResponse#arn #arn} => String
   # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetCallerIdentity AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1891
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2048
   def get_caller_identity(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns a set of temporary security credentials (consisting of an
@@ -11813,8 +11804,8 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # usually in a server-based application. For a comparison of
   # `GetFederationToken` with the other API operations that produce
   # temporary credentials, see [Requesting Temporary Security
-  # Credentials][1] and [Comparing the Amazon Web Services STS API
-  # operations][2] in the *IAM User Guide*.
+  # Credentials][1] and [Compare STS credentials][2] in the *IAM User
+  # Guide*.
   #
   # Although it is possible to call `GetFederationToken` using the
   # security credentials of an Amazon Web Services account root user
@@ -11911,7 +11902,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #
   #
   # [1]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html
-  # [2]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html#stsapi_comparison
+  # [2]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_sts-comparison.html
   # [3]: https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#lock-away-credentials
   # [4]: http://aws.amazon.com/cognito/
   # [5]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html#api_assumerolewithwebidentity
@@ -11993,7 +11984,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #   * {Types::GetFederationTokenResponse#packed_policy_size #packed_policy_size} => Integer
   # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetFederationToken AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2239
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2396
   def get_federation_token(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns a set of temporary credentials for an Amazon Web Services
@@ -12010,8 +12001,8 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # An incorrect MFA code causes the API to return an access denied error.
   # For a comparison of `GetSessionToken` with the other API operations
   # that produce temporary credentials, see [Requesting Temporary Security
-  # Credentials][1] and [Comparing the Amazon Web Services STS API
-  # operations][2] in the *IAM User Guide*.
+  # Credentials][1] and [Compare STS credentials][2] in the *IAM User
+  # Guide*.
   #
   # <note markdown="1"> No permissions are required for users to perform this operation. The
   # purpose of the `sts:GetSessionToken` operation is to authenticate the
@@ -12066,7 +12057,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #
   #
   # [1]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html
-  # [2]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html#stsapi_comparison
+  # [2]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_sts-comparison.html
   # [3]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_control-access_getsessiontoken.html
   # [4]: https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#lock-away-credentials
   # [5]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html#api_getsessiontoken
@@ -12111,24 +12102,24 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #   * {Types::GetSessionTokenResponse#credentials #credentials} => Types::Credentials
   # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetSessionToken AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2396
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2553
   def get_session_token(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # @api private
   # @deprecated
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2425
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2582
   def waiter_names; end
 
   class << self
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2435
+    # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2592
     def errors_module; end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2432
+    # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2589
     def identifier; end
   end
 end
@@ -12142,7 +12133,7 @@ end
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#249
+# source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#262
 Aws::STS::ClientApi::API = T.let(T.unsafe(nil), Seahorse::Model::Api)
 
 # @api private
@@ -12178,157 +12169,177 @@ Aws::STS::ClientApi::AssumeRoleWithWebIdentityResponse = T.let(T.unsafe(nil), Se
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#23
-Aws::STS::ClientApi::AssumedRoleUser = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::AssumeRootRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#24
-Aws::STS::ClientApi::Audience = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::STS::ClientApi::AssumeRootResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#25
-Aws::STS::ClientApi::Credentials = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::AssumedRoleUser = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#26
-Aws::STS::ClientApi::DecodeAuthorizationMessageRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::Audience = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#27
-Aws::STS::ClientApi::DecodeAuthorizationMessageResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::Credentials = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#28
-Aws::STS::ClientApi::ExpiredTokenException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::DecodeAuthorizationMessageRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#29
-Aws::STS::ClientApi::FederatedUser = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::DecodeAuthorizationMessageResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#30
-Aws::STS::ClientApi::GetAccessKeyInfoRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::ExpiredTokenException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#31
-Aws::STS::ClientApi::GetAccessKeyInfoResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::FederatedUser = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#32
-Aws::STS::ClientApi::GetCallerIdentityRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::GetAccessKeyInfoRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#33
-Aws::STS::ClientApi::GetCallerIdentityResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::GetAccessKeyInfoResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#34
-Aws::STS::ClientApi::GetFederationTokenRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::GetCallerIdentityRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#35
-Aws::STS::ClientApi::GetFederationTokenResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::GetCallerIdentityResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#36
-Aws::STS::ClientApi::GetSessionTokenRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::GetFederationTokenRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#37
-Aws::STS::ClientApi::GetSessionTokenResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::GetFederationTokenResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#38
-Aws::STS::ClientApi::IDPCommunicationErrorException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::GetSessionTokenRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#39
-Aws::STS::ClientApi::IDPRejectedClaimException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::GetSessionTokenResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#40
-Aws::STS::ClientApi::InvalidAuthorizationMessageException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::IDPCommunicationErrorException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#41
-Aws::STS::ClientApi::InvalidIdentityTokenException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::IDPRejectedClaimException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#42
-Aws::STS::ClientApi::Issuer = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::STS::ClientApi::InvalidAuthorizationMessageException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#43
-Aws::STS::ClientApi::MalformedPolicyDocumentException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::InvalidIdentityTokenException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#44
-Aws::STS::ClientApi::NameQualifier = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::STS::ClientApi::Issuer = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#45
-Aws::STS::ClientApi::PackedPolicyTooLargeException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::MalformedPolicyDocumentException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#46
-Aws::STS::ClientApi::PolicyDescriptorType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::NameQualifier = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#47
-Aws::STS::ClientApi::ProvidedContext = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::PackedPolicyTooLargeException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#48
-Aws::STS::ClientApi::ProvidedContextsListType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::ListShape)
+Aws::STS::ClientApi::PolicyDescriptorType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#49
-Aws::STS::ClientApi::RegionDisabledException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::STS::ClientApi::ProvidedContext = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#50
-Aws::STS::ClientApi::SAMLAssertionType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::STS::ClientApi::ProvidedContextsListType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::ListShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#51
-Aws::STS::ClientApi::Subject = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::STS::ClientApi::RegionDisabledException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#52
-Aws::STS::ClientApi::SubjectType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::STS::ClientApi::RootDurationSecondsType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::IntegerShape)
 
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#53
+Aws::STS::ClientApi::SAMLAssertionType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+
+# @api private
+#
+# source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#54
+Aws::STS::ClientApi::Subject = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+
+# @api private
+#
+# source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#55
+Aws::STS::ClientApi::SubjectType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+
+# @api private
+#
+# source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#56
 Aws::STS::ClientApi::Tag = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+
+# @api private
+#
+# source://aws-sdk-core//lib/aws-sdk-sts/client_api.rb#57
+Aws::STS::ClientApi::TargetPrincipalType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # Endpoint parameters used to influence endpoints per request.
 #
@@ -12393,6 +12404,10 @@ class Aws::STS::EndpointParameters < ::Struct
 
   class << self
     def [](*_arg0); end
+
+    # source://aws-sdk-core//lib/aws-sdk-sts/endpoint_parameters.rb#69
+    def create(config, options = T.unsafe(nil)); end
+
     def inspect; end
     def keyword_init?; end
     def members; end
@@ -12411,101 +12426,12 @@ end
 # @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-sts/endpoints.rb#13
-module Aws::STS::Endpoints; end
-
-# @api private
-#
-# source://aws-sdk-core//lib/aws-sdk-sts/endpoints.rb#15
-class Aws::STS::Endpoints::AssumeRole
+module Aws::STS::Endpoints
   class << self
     # @api private
     #
     # source://aws-sdk-core//lib/aws-sdk-sts/endpoints.rb#16
-    def build(context); end
-  end
-end
-
-# @api private
-#
-# source://aws-sdk-core//lib/aws-sdk-sts/endpoints.rb#27
-class Aws::STS::Endpoints::AssumeRoleWithSAML
-  class << self
-    # @api private
-    #
-    # source://aws-sdk-core//lib/aws-sdk-sts/endpoints.rb#28
-    def build(context); end
-  end
-end
-
-# @api private
-#
-# source://aws-sdk-core//lib/aws-sdk-sts/endpoints.rb#39
-class Aws::STS::Endpoints::AssumeRoleWithWebIdentity
-  class << self
-    # @api private
-    #
-    # source://aws-sdk-core//lib/aws-sdk-sts/endpoints.rb#40
-    def build(context); end
-  end
-end
-
-# @api private
-#
-# source://aws-sdk-core//lib/aws-sdk-sts/endpoints.rb#51
-class Aws::STS::Endpoints::DecodeAuthorizationMessage
-  class << self
-    # @api private
-    #
-    # source://aws-sdk-core//lib/aws-sdk-sts/endpoints.rb#52
-    def build(context); end
-  end
-end
-
-# @api private
-#
-# source://aws-sdk-core//lib/aws-sdk-sts/endpoints.rb#63
-class Aws::STS::Endpoints::GetAccessKeyInfo
-  class << self
-    # @api private
-    #
-    # source://aws-sdk-core//lib/aws-sdk-sts/endpoints.rb#64
-    def build(context); end
-  end
-end
-
-# @api private
-#
-# source://aws-sdk-core//lib/aws-sdk-sts/endpoints.rb#75
-class Aws::STS::Endpoints::GetCallerIdentity
-  class << self
-    # @api private
-    #
-    # source://aws-sdk-core//lib/aws-sdk-sts/endpoints.rb#76
-    def build(context); end
-  end
-end
-
-# @api private
-#
-# source://aws-sdk-core//lib/aws-sdk-sts/endpoints.rb#87
-class Aws::STS::Endpoints::GetFederationToken
-  class << self
-    # @api private
-    #
-    # source://aws-sdk-core//lib/aws-sdk-sts/endpoints.rb#88
-    def build(context); end
-  end
-end
-
-# @api private
-#
-# source://aws-sdk-core//lib/aws-sdk-sts/endpoints.rb#99
-class Aws::STS::Endpoints::GetSessionToken
-  class << self
-    # @api private
-    #
-    # source://aws-sdk-core//lib/aws-sdk-sts/endpoints.rb#100
-    def build(context); end
+    def parameters_for_operation(context); end
   end
 end
 
@@ -12683,7 +12609,7 @@ module Aws::STS::Plugins; end
 
 # source://aws-sdk-core//lib/aws-sdk-sts/plugins/endpoints.rb#13
 class Aws::STS::Plugins::Endpoints < ::Seahorse::Client::Plugin
-  # source://aws-sdk-core//lib/aws-sdk-sts/plugins/endpoints.rb#93
+  # source://aws-sdk-core//lib/aws-sdk-sts/plugins/endpoints.rb#72
   def add_handlers(handlers, _config); end
 end
 
@@ -12702,11 +12628,6 @@ class Aws::STS::Plugins::Endpoints::Handler < ::Seahorse::Client::Handler
   #
   # source://aws-sdk-core//lib/aws-sdk-sts/plugins/endpoints.rb#60
   def apply_endpoint_headers(context, headers); end
-
-  # @api private
-  #
-  # source://aws-sdk-core//lib/aws-sdk-sts/plugins/endpoints.rb#71
-  def parameters_for_operation(context); end
 
   # @api private
   #
@@ -12779,12 +12700,12 @@ module Aws::STS::Types; end
 
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRoleRequest AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#317
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#332
 class Aws::STS::Types::AssumeRoleRequest < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#318
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#333
 Aws::STS::Types::AssumeRoleRequest::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Contains the response to a successful AssumeRole request, including
@@ -12793,22 +12714,22 @@ Aws::STS::Types::AssumeRoleRequest::SENSITIVE = T.let(T.unsafe(nil), Array)
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRoleResponse AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#383
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#398
 class Aws::STS::Types::AssumeRoleResponse < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#384
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#399
 Aws::STS::Types::AssumeRoleResponse::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRoleWithSAMLRequest AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#524
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#542
 class Aws::STS::Types::AssumeRoleWithSAMLRequest < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#525
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#543
 Aws::STS::Types::AssumeRoleWithSAMLRequest::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Contains the response to a successful AssumeRoleWithSAML request,
@@ -12817,22 +12738,22 @@ Aws::STS::Types::AssumeRoleWithSAMLRequest::SENSITIVE = T.let(T.unsafe(nil), Arr
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRoleWithSAMLResponse AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#640
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#661
 class Aws::STS::Types::AssumeRoleWithSAMLResponse < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#641
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#662
 Aws::STS::Types::AssumeRoleWithSAMLResponse::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRoleWithWebIdentityRequest AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#797
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#851
 class Aws::STS::Types::AssumeRoleWithWebIdentityRequest < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#798
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#852
 Aws::STS::Types::AssumeRoleWithWebIdentityRequest::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Contains the response to a successful AssumeRoleWithWebIdentity
@@ -12841,47 +12762,67 @@ Aws::STS::Types::AssumeRoleWithWebIdentityRequest::SENSITIVE = T.let(T.unsafe(ni
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRoleWithWebIdentityResponse AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#898
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#952
 class Aws::STS::Types::AssumeRoleWithWebIdentityResponse < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#899
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#953
 Aws::STS::Types::AssumeRoleWithWebIdentityResponse::SENSITIVE = T.let(T.unsafe(nil), Array)
+
+# @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRootRequest AWS API Documentation
+#
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1001
+class Aws::STS::Types::AssumeRootRequest < ::Struct
+  include ::Aws::Structure
+end
+
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1002
+Aws::STS::Types::AssumeRootRequest::SENSITIVE = T.let(T.unsafe(nil), Array)
+
+# @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRootResponse AWS API Documentation
+#
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1040
+class Aws::STS::Types::AssumeRootResponse < ::Struct
+  include ::Aws::Structure
+end
+
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1041
+Aws::STS::Types::AssumeRootResponse::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # The identifiers for the temporary security credentials that the
 # operation returns.
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumedRoleUser AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#927
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1069
 class Aws::STS::Types::AssumedRoleUser < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#928
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1070
 Aws::STS::Types::AssumedRoleUser::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Amazon Web Services credentials for API authentication.
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/Credentials AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#958
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1100
 class Aws::STS::Types::Credentials < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#959
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1101
 Aws::STS::Types::Credentials::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/DecodeAuthorizationMessageRequest AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#970
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1112
 class Aws::STS::Types::DecodeAuthorizationMessageRequest < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#971
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1113
 Aws::STS::Types::DecodeAuthorizationMessageRequest::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # A document that contains additional information about the
@@ -12890,12 +12831,12 @@ Aws::STS::Types::DecodeAuthorizationMessageRequest::SENSITIVE = T.let(T.unsafe(n
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/DecodeAuthorizationMessageResponse AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#986
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1128
 class Aws::STS::Types::DecodeAuthorizationMessageResponse < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#987
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1129
 Aws::STS::Types::DecodeAuthorizationMessageResponse::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # The web identity token that was passed is expired or is not valid. Get
@@ -12904,12 +12845,12 @@ Aws::STS::Types::DecodeAuthorizationMessageResponse::SENSITIVE = T.let(T.unsafe(
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/ExpiredTokenException AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1001
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1143
 class Aws::STS::Types::ExpiredTokenException < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1002
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1144
 Aws::STS::Types::ExpiredTokenException::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Identifiers for the federated user that is associated with the
@@ -12917,38 +12858,38 @@ Aws::STS::Types::ExpiredTokenException::SENSITIVE = T.let(T.unsafe(nil), Array)
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/FederatedUser AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1028
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1170
 class Aws::STS::Types::FederatedUser < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1029
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1171
 Aws::STS::Types::FederatedUser::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetAccessKeyInfoRequest AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1044
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1186
 class Aws::STS::Types::GetAccessKeyInfoRequest < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1045
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1187
 Aws::STS::Types::GetAccessKeyInfoRequest::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetAccessKeyInfoResponse AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1056
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1198
 class Aws::STS::Types::GetAccessKeyInfoResponse < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1057
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1199
 Aws::STS::Types::GetAccessKeyInfoResponse::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # @api private
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetCallerIdentityRequest AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1065
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1207
 class Aws::STS::Types::GetCallerIdentityRequest < ::Aws::EmptyStructure; end
 
 # Contains the response to a successful GetCallerIdentity request,
@@ -12956,22 +12897,22 @@ class Aws::STS::Types::GetCallerIdentityRequest < ::Aws::EmptyStructure; end
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetCallerIdentityResponse AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1096
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1238
 class Aws::STS::Types::GetCallerIdentityResponse < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1097
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1239
 Aws::STS::Types::GetCallerIdentityResponse::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetFederationTokenRequest AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1269
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1411
 class Aws::STS::Types::GetFederationTokenRequest < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1270
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1412
 Aws::STS::Types::GetFederationTokenRequest::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Contains the response to a successful GetFederationToken request,
@@ -12980,22 +12921,22 @@ Aws::STS::Types::GetFederationTokenRequest::SENSITIVE = T.let(T.unsafe(nil), Arr
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetFederationTokenResponse AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1308
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1450
 class Aws::STS::Types::GetFederationTokenResponse < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1309
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1451
 Aws::STS::Types::GetFederationTokenResponse::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetSessionTokenRequest AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1356
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1498
 class Aws::STS::Types::GetSessionTokenRequest < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1357
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1499
 Aws::STS::Types::GetSessionTokenRequest::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Contains the response to a successful GetSessionToken request,
@@ -13004,12 +12945,12 @@ Aws::STS::Types::GetSessionTokenRequest::SENSITIVE = T.let(T.unsafe(nil), Array)
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetSessionTokenResponse AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1379
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1521
 class Aws::STS::Types::GetSessionTokenResponse < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1380
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1522
 Aws::STS::Types::GetSessionTokenResponse::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # The request could not be fulfilled because the identity provider (IDP)
@@ -13021,12 +12962,12 @@ Aws::STS::Types::GetSessionTokenResponse::SENSITIVE = T.let(T.unsafe(nil), Array
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/IDPCommunicationErrorException AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1397
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1539
 class Aws::STS::Types::IDPCommunicationErrorException < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1398
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1540
 Aws::STS::Types::IDPCommunicationErrorException::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # The identity provider (IdP) reported that authentication failed. This
@@ -13038,26 +12979,27 @@ Aws::STS::Types::IDPCommunicationErrorException::SENSITIVE = T.let(T.unsafe(nil)
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/IDPRejectedClaimException AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1415
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1557
 class Aws::STS::Types::IDPRejectedClaimException < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1416
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1558
 Aws::STS::Types::IDPRejectedClaimException::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # The error returned if the message passed to
 # `DecodeAuthorizationMessage` was invalid. This can happen if the token
-# contains invalid characters, such as linebreaks.
+# contains invalid characters, such as line breaks, or if the message
+# has expired.
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/InvalidAuthorizationMessageException AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1430
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1573
 class Aws::STS::Types::InvalidAuthorizationMessageException < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1431
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1574
 Aws::STS::Types::InvalidAuthorizationMessageException::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # The web identity token that was passed could not be validated by
@@ -13066,12 +13008,12 @@ Aws::STS::Types::InvalidAuthorizationMessageException::SENSITIVE = T.let(T.unsaf
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/InvalidIdentityTokenException AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1445
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1588
 class Aws::STS::Types::InvalidIdentityTokenException < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1446
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1589
 Aws::STS::Types::InvalidIdentityTokenException::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # The request was rejected because the policy document was malformed.
@@ -13079,12 +13021,12 @@ Aws::STS::Types::InvalidIdentityTokenException::SENSITIVE = T.let(T.unsafe(nil),
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/MalformedPolicyDocumentException AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1459
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1602
 class Aws::STS::Types::MalformedPolicyDocumentException < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1460
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1603
 Aws::STS::Types::MalformedPolicyDocumentException::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # The request was rejected because the total packed size of the session
@@ -13107,12 +13049,12 @@ Aws::STS::Types::MalformedPolicyDocumentException::SENSITIVE = T.let(T.unsafe(ni
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/PackedPolicyTooLargeException AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1488
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1631
 class Aws::STS::Types::PackedPolicyTooLargeException < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1489
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1632
 Aws::STS::Types::PackedPolicyTooLargeException::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # A reference to the IAM managed policy that is passed as a session
@@ -13120,12 +13062,12 @@ Aws::STS::Types::PackedPolicyTooLargeException::SENSITIVE = T.let(T.unsafe(nil),
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/PolicyDescriptorType AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1510
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1653
 class Aws::STS::Types::PolicyDescriptorType < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1511
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1654
 Aws::STS::Types::PolicyDescriptorType::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Contains information about the provided context. This includes the
@@ -13134,19 +13076,19 @@ Aws::STS::Types::PolicyDescriptorType::SENSITIVE = T.let(T.unsafe(nil), Array)
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/ProvidedContext AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1534
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1677
 class Aws::STS::Types::ProvidedContext < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1535
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1678
 Aws::STS::Types::ProvidedContext::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # STS is not activated in the requested region for the account that is
 # being asked to generate credentials. The account administrator must
 # use the IAM console to activate STS in that region. For more
-# information, see [Activating and Deactivating Amazon Web Services STS
-# in an Amazon Web Services Region][1] in the *IAM User Guide*.
+# information, see [Activating and Deactivating STS in an Amazon Web
+# Services Region][1] in the *IAM User Guide*.
 #
 #
 #
@@ -13154,12 +13096,12 @@ Aws::STS::Types::ProvidedContext::SENSITIVE = T.let(T.unsafe(nil), Array)
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/RegionDisabledException AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1555
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1698
 class Aws::STS::Types::RegionDisabledException < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1556
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1699
 Aws::STS::Types::RegionDisabledException::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # You can pass custom key-value pair attributes when you assume a role
@@ -13174,12 +13116,12 @@ Aws::STS::Types::RegionDisabledException::SENSITIVE = T.let(T.unsafe(nil), Array
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/Tag AWS API Documentation
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1598
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1741
 class Aws::STS::Types::Tag < ::Struct
   include ::Aws::Structure
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1599
+# source://aws-sdk-core//lib/aws-sdk-sts/types.rb#1742
 Aws::STS::Types::Tag::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # @api private
@@ -13670,7 +13612,7 @@ module Aws::Structure::Union
   def value; end
 end
 
-# setup autoloading for Stubbing module
+# @api private
 #
 # source://aws-sdk-core//lib/aws-sdk-core/stubbing.rb#5
 module Aws::Stubbing; end
@@ -13727,149 +13669,226 @@ class Aws::Stubbing::EmptyStub
   def stub_structure(ref, visited); end
 end
 
+# @api private
+#
 # source://aws-sdk-core//lib/aws-sdk-core/stubbing.rb#11
 module Aws::Stubbing::Protocols; end
 
 # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/api_gateway.rb#6
 class Aws::Stubbing::Protocols::ApiGateway < ::Aws::Stubbing::Protocols::RestJson; end
 
-# source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/ec2.rb#6
+# @api private
+#
+# source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/ec2.rb#7
 class Aws::Stubbing::Protocols::EC2
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/ec2.rb#8
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/ec2.rb#9
   def stub_data(api, operation, data); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/ec2.rb#18
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/ec2.rb#19
   def stub_error(error_code); end
 
   private
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/ec2.rb#34
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/ec2.rb#35
   def build_body(api, operation, data); end
 end
 
-# source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/json.rb#6
+# @api private
+#
+# source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/json.rb#7
 class Aws::Stubbing::Protocols::Json
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/json.rb#8
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/json.rb#9
   def stub_data(api, operation, data); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/json.rb#17
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/json.rb#18
   def stub_error(error_code); end
 
   private
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/json.rb#35
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/json.rb#36
   def build_body(operation, data); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/json.rb#31
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/json.rb#32
   def content_type(api); end
 end
 
-# source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/query.rb#6
+# @api private
+#
+# source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/query.rb#7
 class Aws::Stubbing::Protocols::Query
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/query.rb#8
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/query.rb#9
   def stub_data(api, operation, data); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/query.rb#15
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/query.rb#16
   def stub_error(error_code); end
 
   private
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/query.rb#24
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/query.rb#25
   def build_body(api, operation, data); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/query.rb#39
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/query.rb#40
   def xmlns(api); end
 end
 
-# source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#8
+# @api private
+#
+# source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#9
 class Aws::Stubbing::Protocols::Rest
   include ::Seahorse::Model::Shapes
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#12
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#13
   def stub_data(api, operation, data); end
 
   private
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#41
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#42
   def apply_body(api, operation, resp, data); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#37
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#38
   def apply_headers(operation, resp, data); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#29
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#30
   def apply_status_code(operation, resp, data); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#45
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#46
   def build_body(api, operation, data); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#105
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#106
   def encode_error(opts, event_data); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#185
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#186
   def encode_event(opts, rules, event_data, builder); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#85
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#86
   def encode_eventstream_response(rules, data, builder); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#135
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#136
   def encode_modeled_event(opts, rules, event_type, event_data, builder); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#121
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#122
   def encode_unknown_event(opts, event_type, event_data); end
 
+  # @api private
   # @return [Boolean]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#81
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#82
   def eventstream?(rules); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#77
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#78
   def head_operation(operation); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#22
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#23
   def new_http_response; end
 
+  # @api private
   # @return [Boolean]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#65
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest.rb#66
   def streaming?(ref); end
 end
 
-# source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest_json.rb#6
+# @api private
+#
+# source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest_json.rb#7
 class Aws::Stubbing::Protocols::RestJson < ::Aws::Stubbing::Protocols::Rest
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest_json.rb#8
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest_json.rb#9
   def body_for(_a, _b, rules, data); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest_json.rb#16
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest_json.rb#17
   def stub_error(error_code); end
 end
 
-# source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest_xml.rb#6
+# @api private
+#
+# source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest_xml.rb#7
 class Aws::Stubbing::Protocols::RestXml < ::Aws::Stubbing::Protocols::Rest
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest_xml.rb#8
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest_xml.rb#9
   def body_for(api, operation, rules, data); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest_xml.rb#20
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest_xml.rb#21
   def stub_error(error_code); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest_xml.rb#27
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rest_xml.rb#28
   def xmlns(api); end
 end
 
-# source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rpc_v2.rb#6
+# @api private
+#
+# source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rpc_v2.rb#7
 class Aws::Stubbing::Protocols::RpcV2
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rpc_v2.rb#8
-  def stub_data(api, operation, data); end
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rpc_v2.rb#9
+  def stub_data(_api, operation, data); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rpc_v2.rb#17
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rpc_v2.rb#19
   def stub_error(error_code); end
 
   private
 
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rpc_v2.rb#35
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rpc_v2.rb#33
   def build_body(operation, data); end
-
-  # source://aws-sdk-core//lib/aws-sdk-core/stubbing/protocols/rpc_v2.rb#31
-  def content_type(api); end
 end
 
 # @api private
@@ -14071,7 +14090,7 @@ end
 # OpenTelemetry-based {ContextManagerBase}, manages context and
 # used to return the current context within a trace.
 #
-# source://aws-sdk-core//lib/aws-sdk-core/telemetry/otel.rb#210
+# source://aws-sdk-core//lib/aws-sdk-core/telemetry/otel.rb#207
 class Aws::Telemetry::OTelContextManager < ::Aws::Telemetry::ContextManagerBase
   # Associates a Context with the caller’s current execution unit.
   # Returns a token to be used with the matching call to detach.
@@ -17978,7 +17997,7 @@ class Seahorse::Client::Plugins::ContentLength < ::Seahorse::Client::Plugin; end
 
 # @api private
 #
-# source://aws-sdk-core//lib/seahorse/client/plugins/content_length.rb#12
+# source://aws-sdk-core//lib/seahorse/client/plugins/content_length.rb#9
 class Seahorse::Client::Plugins::ContentLength::Handler < ::Seahorse::Client::Handler
   # @api private
   #
@@ -18075,7 +18094,7 @@ class Seahorse::Client::Plugins::ReadCallbackIO
   # source://aws-sdk-core//lib/seahorse/client/plugins/request_callback.rb#34
   def read(*args); end
 
-  # source://forwardable/1.3.2/forwardable.rb#229
+  # source://forwardable/1.3.3/forwardable.rb#231
   def size(*args, **_arg1, &block); end
 
   private
@@ -18366,7 +18385,7 @@ class Seahorse::Client::RequestContext
   def tracer=(_arg0); end
 end
 
-# source://aws-sdk-core//lib/seahorse/client/response.rb#11
+# source://aws-sdk-core//lib/seahorse/client/response.rb#7
 class Seahorse::Client::Response
   # @option options
   # @option options
