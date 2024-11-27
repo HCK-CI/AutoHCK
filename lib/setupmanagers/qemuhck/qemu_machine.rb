@@ -154,7 +154,8 @@ module AutoHCK
       boot_from_snapshot: false,
       attach_iso_list: [],
       dump_only: false,
-      secure: false
+      secure: false,
+      reuse_tpm: false
     }.freeze
 
     MACHINE_JSON = 'lib/setupmanagers/qemuhck/machine.json'
@@ -329,7 +330,16 @@ module AutoHCK
 
     sig { returns(T::Array[String]) }
     def device_config_commands
-      @device_infos.map(&:config_commands).flatten.compact
+      filter_commands(@device_infos.map(&:config_commands).flatten.compact)
+    end
+
+    def filter_commands(commands)
+      commands.reject do |cmd|
+        if cmd.include?('@swtpm_setup_bin@') && @run_opts[:reuse_tpm]
+          @logger.warn('Skipping SWTPM installation')
+          true
+        end
+      end
     end
 
     sig { returns(T::Array[String]) }

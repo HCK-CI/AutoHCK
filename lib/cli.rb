@@ -4,7 +4,8 @@
 module AutoHCK
   # class CLI
   class CLI
-    attr_reader :common, :install, :test, :mode
+    attr_reader :install, :mode
+    attr_accessor :common, :test
 
     def initialize
       @common = CommonOptions.new
@@ -85,7 +86,7 @@ module AutoHCK
       attr_accessor :platform, :drivers, :driver_path, :commit, :svvp, :dump,
                     :gthb_context_prefix, :gthb_context_suffix, :playlist, :select_test_names,
                     :reject_test_names, :reject_report_sections, :boot_device,
-                    :allow_test_duplication, :manual, :package_with_playlist
+                    :allow_test_duplication, :manual, :package_with_playlist, :session, :latest_session
 
       def create_parser
         OptionParser.new do |parser|
@@ -179,6 +180,14 @@ module AutoHCK
         parser.on('--package-with-playlist', TrueClass,
                   'Load playlist into HLKX project package',
                   &method(:package_with_playlist=))
+
+        parser.on('--session <path>', String,
+                  'Load session from workspace',
+                  &method(:session=))
+
+        parser.on('--latest-session', TrueClass,
+                  'Load previous session',
+                  &method(:latest_session=))
       end
       # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
     end
@@ -236,6 +245,12 @@ module AutoHCK
       left = @parser.order(args)
       @mode = left.shift
       @sub_parser[@mode]&.order!(left) unless @mode.nil?
+
+      restore_session if @test.latest_session || @test.session
+    end
+
+    def restore_session
+      AutoHCK::Session.load(self)
     end
   end
 end
