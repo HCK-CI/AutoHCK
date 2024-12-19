@@ -4,7 +4,8 @@
 module AutoHCK
   # class CLI
   class CLI
-    attr_reader :common, :install, :test, :mode
+    attr_reader :install, :mode
+    attr_accessor :common, :test
 
     def initialize
       @common = CommonOptions.new
@@ -20,8 +21,15 @@ module AutoHCK
     end
 
     # class CommonOptions
-    class CommonOptions
-      attr_accessor :verbose, :config, :client_world_net, :id, :share_on_host_path, :workspace_path
+    class CommonOptions < T::Struct
+      include T::Sig
+
+      prop :verbose, T.nilable(T::Boolean), default: false
+      prop :config, T.nilable(String)
+      prop :client_world_net, T.nilable(T::Boolean), default: false
+      prop :id, T.nilable(Integer), default: 2
+      prop :share_on_host_path, T.nilable(String)
+      prop :workspace_path, T.nilable(String)
 
       def create_parser(sub_parser)
         OptionParser.new do |parser|
@@ -40,12 +48,6 @@ module AutoHCK
 
       # rubocop:disable Metrics/MethodLength
       def define_options(parser)
-        @verbose = false
-        @config = nil
-        @client_world_net = false
-        @id = 2
-        @share_on_host_path = nil
-
         parser.on('--share-on-host-path <path>', String,
                   'For using Transfer Network specify the directory to share on host machine') do |share_on_host_path|
           @share_on_host_path = share_on_host_path
@@ -81,11 +83,27 @@ module AutoHCK
     end
 
     # class TestOptions
-    class TestOptions
-      attr_accessor :platform, :drivers, :driver_path, :commit, :svvp, :dump,
-                    :gthb_context_prefix, :gthb_context_suffix, :playlist, :select_test_names,
-                    :reject_test_names, :reject_report_sections, :boot_device,
-                    :allow_test_duplication, :manual, :package_with_playlist
+    class TestOptions < T::Struct
+      include T::Sig
+
+      prop :platform, T.nilable(String)
+      prop :drivers, T.nilable(T::Array[String])
+      prop :driver_path, T.nilable(String)
+      prop :commit, T.nilable(String)
+      prop :svvp, T.nilable(T::Boolean)
+      prop :dump, T.nilable(T::Boolean)
+      prop :gthb_context_prefix, T.nilable(String)
+      prop :gthb_context_suffix, T.nilable(String)
+      prop :playlist, T.nilable(String)
+      prop :select_test_names, T.nilable(String)
+      prop :reject_test_names, T.nilable(String)
+      prop :reject_report_sections, T.nilable(T::Array[String]), default: []
+      prop :boot_device, T.nilable(String)
+      prop :allow_test_duplication, T.nilable(T::Boolean)
+      prop :manual, T.nilable(T::Boolean)
+      prop :package_with_playlist, T.nilable(T::Boolean)
+      prop :session, T.nilable(String)
+      prop :latest_session, T.nilable(T::Boolean)
 
       def create_parser
         OptionParser.new do |parser|
@@ -179,13 +197,28 @@ module AutoHCK
         parser.on('--package-with-playlist', TrueClass,
                   'Load playlist into HLKX project package',
                   &method(:package_with_playlist=))
+
+        parser.on('--session <path>', String,
+                  'Load session from workspace',
+                  &method(:session=))
+
+        parser.on('--latest-session', TrueClass,
+                  'Load previous session',
+                  &method(:latest_session=))
       end
       # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
     end
 
     # class InstallOptions
-    class InstallOptions
-      attr_accessor :platform, :force, :skip_client, :drivers, :driver_path, :debug
+    class InstallOptions < T::Struct
+      include T::Sig
+
+      prop :platform, T.nilable(String)
+      prop :force, T::Boolean, default: false
+      prop :skip_client, T::Boolean, default: false
+      prop :drivers, T::Array[String], default: []
+      prop :driver_path, T.nilable(String)
+      prop :debug, T::Boolean, default: false
 
       def create_parser
         OptionParser.new do |parser|
@@ -236,6 +269,12 @@ module AutoHCK
       left = @parser.order(args)
       @mode = left.shift
       @sub_parser[@mode]&.order!(left) unless @mode.nil?
+
+      restore_session if @test.latest_session || @test.session
+    end
+
+    def restore_session
+      AutoHCK::Session.load(self)
     end
   end
 end

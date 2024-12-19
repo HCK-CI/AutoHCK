@@ -11,6 +11,7 @@ module AutoHCK
     autoload_relative :HCKTestConfig, 'models/hcktest_config'
     autoload_relative :JsonHelper, 'models/json_helper'
     autoload_relative :SVVPConfig, 'models/svvp_config'
+    autoload_relative :Session, 'models/session'
     autoload_relative :QemuHCKDevice, 'models/qemuhck_device'
   end
 end
