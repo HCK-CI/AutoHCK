@@ -217,50 +217,46 @@ end
 class Dotenv::Parser
   # @return [Parser] a new instance of Parser
   #
-  # source://dotenv//lib/dotenv/parser.rb#40
+  # source://dotenv//lib/dotenv/parser.rb#44
   def initialize(string, overwrite: T.unsafe(nil)); end
 
-  # source://dotenv//lib/dotenv/parser.rb#46
+  # source://dotenv//lib/dotenv/parser.rb#51
   def call; end
 
   private
 
-  # source://dotenv//lib/dotenv/parser.rb#82
-  def expand_newlines(value); end
-
-  # source://dotenv//lib/dotenv/parser.rb#62
-  def parse_line(line); end
-
-  # source://dotenv//lib/dotenv/parser.rb#70
-  def parse_value(value); end
-
-  # source://dotenv//lib/dotenv/parser.rb#104
-  def perform_substitutions(value, maybe_quote); end
-
-  # source://dotenv//lib/dotenv/parser.rb#78
-  def unescape_characters(value); end
-
-  # source://dotenv//lib/dotenv/parser.rb#94
-  def unescape_value(value, maybe_quote); end
-
+  # Determine if a variable is already defined and should not be overwritten.
+  #
   # @return [Boolean]
   #
-  # source://dotenv//lib/dotenv/parser.rb#90
-  def variable_not_set?(line); end
+  # source://dotenv//lib/dotenv/parser.rb#74
+  def existing?(key); end
+
+  # source://dotenv//lib/dotenv/parser.rb#100
+  def expand_newlines(value); end
+
+  # source://dotenv//lib/dotenv/parser.rb#79
+  def parse_value(value); end
+
+  # source://dotenv//lib/dotenv/parser.rb#96
+  def unescape_characters(value); end
 
   class << self
-    # source://dotenv//lib/dotenv/parser.rb#35
+    # source://dotenv//lib/dotenv/parser.rb#39
     def call(*_arg0, **_arg1, &_arg2); end
 
     # Returns the value of attribute substitutions.
     #
-    # source://dotenv//lib/dotenv/parser.rb#33
+    # source://dotenv//lib/dotenv/parser.rb#37
     def substitutions; end
   end
 end
 
-# source://dotenv//lib/dotenv/parser.rb#14
+# source://dotenv//lib/dotenv/parser.rb#16
 Dotenv::Parser::LINE = T.let(T.unsafe(nil), Regexp)
+
+# source://dotenv//lib/dotenv/parser.rb#78
+Dotenv::Parser::QUOTED_STRING = T.let(T.unsafe(nil), Regexp)
 
 # An internal monitor to synchronize access to ENV in multi-threaded environments.
 #
@@ -278,7 +274,7 @@ module Dotenv::Substitutions; end
 module Dotenv::Substitutions::Command
   class << self
     # source://dotenv//lib/dotenv/substitutions/command.rb#23
-    def call(value, _env, overwrite: T.unsafe(nil)); end
+    def call(value, _env); end
   end
 end
 
@@ -291,12 +287,7 @@ end
 module Dotenv::Substitutions::Variable
   class << self
     # source://dotenv//lib/dotenv/substitutions/variable.rb#21
-    def call(value, env, overwrite: T.unsafe(nil)); end
-
-    private
-
-    # source://dotenv//lib/dotenv/substitutions/variable.rb#31
-    def substitute(match, variable, env); end
+    def call(value, env); end
   end
 end
 
