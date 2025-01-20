@@ -1,81 +1,81 @@
 {
-    "playlists_path": "./playlists",
-    "filters_path": "./filters/UpdateFilters.sql",
-    "tests_config": [
-      {
-        "tests": [
-          "Secure Boot Test - Customized Deployment Basic Test",
-          "Secure Boot Manual Logo Test",
-          "Secure Boot Logo Test"
-        ],
-        "secure":true
-      },
-      {
-        "tests": [
-          "USB Type-C ACPI Validation"
-        ],
-        "parameters": [
-          {
-            "name": "NumberOfUsbTypeCPorts",
-            "value": 0
-          }
-        ]
-      },
-      {
-        "tests": [
-          "Flush Test"
-        ],
-        "parameters": [
-          {
-            "name": "IP",
-            "value": "192.168.100.100"
-          },
-          {
-            "name": "Outlet",
-            "value": "161"
-          }
-        ]
-      },
-      {
-        "tests": [
-          "[NdisStudio] NdisPoll keyword functional validation",
-          "[NdisStudio] OidRequestTest - OID_GEN_VENDOR_DRIVER_VERSION Verification",
-          "[NdisStudio] NdisPoll keyword validation",
-          "[NdisStudio] OidRequestTest - OID_GEN_XMIT_OK and OID_GEN_RCV_OK Verification",
-          "[NdisStudio] OidRequestTest - OID_GEN_VENDOR_ID Verification"
-        ],
-        "pre_test_commands": [
-          {
-            "desc": "Disable NTP service startup",
-            "guest_run": "Set-Service -Name w32time -StartupType Disabled"
-          },
-          {
-            "desc": "Disable NTP service",
-            "guest_run": "Stop-Service w32time"
-          },
-          {
-            "desc": "Set date to January 1st 2024",
-            "guest_run": "Set-Date '2024-01-01'"
-          }
-        ],
-        "post_test_commands": [
-          {
-            "desc": "Enable NTP service startup",
-            "guest_run": "Set-Service -Name w32time -StartupType Automatic"
-          },
-          {
-            "desc": "Enable NTP service",
-            "guest_run": "Start-Service w32time"
-          },
-          {
-            "desc": "Force time sync",
-            "guest_run": "w32tm /resync /force"
-          },
-          {
-            "desc": "Verify date is not January 2024",
-            "guest_run": "if ((Get-Date).Month -eq 1 -and (Get-Date).Year -eq 2024) { exit 1 } else { exit 0 }"
-          }
-        ]
-      }
-    ]
+  "playlists_path": "./playlists",
+  "filters_path": "./filters/UpdateFilters.sql",
+  "tests_config": [
+    {
+      "tests": [
+        "Secure Boot Test - Customized Deployment Basic Test",
+        "Secure Boot Manual Logo Test",
+        "Secure Boot Logo Test"
+      ],
+      "secure": true
+    },
+    {
+      "tests": [
+        "USB Type-C ACPI Validation"
+      ],
+      "parameters": [
+        {
+          "name": "NumberOfUsbTypeCPorts",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "tests": [
+        "Flush Test"
+      ],
+      "parameters": [
+        {
+          "name": "IP",
+          "value": "192.168.100.100"
+        },
+        {
+          "name": "Outlet",
+          "value": "161"
+        }
+      ]
+    },
+    {
+      "tests": [
+        "[NdisStudio] NdisPoll keyword functional validation",
+        "[NdisStudio] OidRequestTest - OID_GEN_VENDOR_DRIVER_VERSION Verification",
+        "[NdisStudio] NdisPoll keyword validation",
+        "[NdisStudio] OidRequestTest - OID_GEN_XMIT_OK and OID_GEN_RCV_OK Verification",
+        "[NdisStudio] OidRequestTest - OID_GEN_VENDOR_ID Verification"
+      ],
+      "pre_test_commands": [
+        {
+          "desc": "Disable NTP service startup",
+          "guest_run": "Set-Service -Name w32time -StartupType Disabled"
+        },
+        {
+          "desc": "Disable NTP service",
+          "guest_run": "Stop-Service w32time"
+        },
+        {
+          "desc": "Set date to January 1st 2024",
+          "guest_run": "Set-Date '2024-01-01'"
+        }
+      ],
+      "post_test_commands": [
+        {
+          "desc": "Enable NTP service startup",
+          "guest_run": "Set-Service -Name w32time -StartupType Automatic"
+        },
+        {
+          "desc": "Enable NTP service",
+          "guest_run": "Start-Service w32time"
+        },
+        {
+          "desc": "Force time sync",
+          "guest_run": "w32tm /resync /force"
+        },
+        {
+          "desc": "Verify date is not January 2024",
+          "guest_run": "if ((Get-Date).Month -eq 1 -and (Get-Date).Year -eq 2024) { exit 1 } else { exit 0 }"
+        }
+      ]
+    }
+  ]
 }
