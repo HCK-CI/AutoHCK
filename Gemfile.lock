@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/HCK-CI/rtoolsHCK.git
-  revision: 171c8403d8ad3da347ecd9ef2a0db5b6f962461b
-  tag: v0.5.1
+  revision: 6473e3e9453cd6ca0116df9d1b0af206677a91ee
+  tag: v0.5.2
   specs:
-    rtoolsHCK (0.5.1)
+    rtoolsHCK (0.5.2)
       bundler
       rdoc
       winrm (= 2.3.9)
@@ -51,6 +51,7 @@ GEM
     connection_pool (2.4.1)
     csv (3.3.0)
     curb (1.0.6)
+    date (3.4.1)
     diff-lcs (1.5.1)
     dotenv (3.1.7)
     drb (2.2.1)
@@ -108,7 +109,8 @@ GEM
       ast (~> 2.4.1)
       racc
     prism (1.2.0)
-    psych (5.1.2)
+    psych (5.2.3)
+      date
       stringio
     public_suffix (6.0.1)
     racc (1.8.1)
@@ -117,10 +119,10 @@ GEM
     rbi (0.2.1)
       prism (~> 1.0)
       sorbet-runtime (>= 0.5.9204)
-    rdoc (6.7.0)
+    rdoc (6.11.0)
       psych (>= 4.0.0)
     regexp_parser (2.10.0)
-    rexml (3.3.9)
+    rexml (3.4.0)
     rspec (3.13.0)
       rspec-core (~> 3.13.0)
       rspec-expectations (~> 3.13.0)
@@ -169,7 +171,7 @@ GEM
       prism (>= 0.28.0)
       sorbet-static-and-runtime (>= 0.5.10187)
       thor (>= 0.19.2)
-    stringio (3.1.1)
+    stringio (3.1.2)
     tapioca (0.16.5)
       bundler (>= 2.2.25)
       netrc (>= 0.11.0)
