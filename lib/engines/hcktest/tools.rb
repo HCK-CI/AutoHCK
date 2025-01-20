@@ -29,6 +29,9 @@ module AutoHCK
     # A custom RunOnMachine error exception
     class RunOnMachineError < AutoHCKError; end
 
+    # A custom RunOnStudio error exception
+    class RunOnStudioError < AutoHCKError; end
+
     # A custom UploadToMachineError error exception
     class UploadToMachineError < AutoHCKError; end
 
@@ -158,6 +161,23 @@ module AutoHCK
       retry_tools_command(__method__) do
         act_with_tools { _1.delete_machine(machine, pool) }
       end
+    end
+
+    def run_on_studio(command)
+      retries ||= 0
+      ret = act_with_tools { _1.run_on_studio(command) }
+
+      return ret if ret
+
+      e_message = "Running command (#{command}) on studio failed"
+      raise RunOnStudioError, e_message
+    rescue RunOnStudioError => e
+      @logger.warn(e.message)
+      raise unless (retries += 1) < ACTION_RETRIES
+
+      sleep ACTION_RETRY_SLEEP
+      @logger.info("Trying again to run command (#{command}) on studio")
+      retry
     end
 
     def run_on_machine(machine, desc, cmd)
