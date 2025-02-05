@@ -2,7 +2,8 @@
   "download_url": "https://go.microsoft.com/fwlink/?linkid=2289283",
   "extra_software": [
     "Test-NETHLK",
-    "winfsp"
+    "winfsp",
+    "RoMetadataDll"
   ],
   "studio_platform": "Win2022x64",
   "name": "HLK2025"
