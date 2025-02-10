@@ -1,26 +1,24 @@
 {
-  "name": "Win2022nextx64_host_uefi_viommu",
-  "kit": "HLK2022_next",
+  "name": "Win2025x64_host",
+  "kit": "HLK2025",
   "setupmanager": "qemuhck",
-  "fw_type": "uefi",
-  "viommu_state": true,
   "enlightenments_state": true,
   "cpu": "host",
-  "st_image": "HLK2022_next-uefi.qcow2",
+  "st_image": "HLK2025.qcow2",
   "clients": {
     "c1": {
       "name": "CL1",
       "cpus": 4,
       "memory_gb": 8,
       "winrm_port": 4002,
-      "image": "HLK2022_next-C1-Win2022nextx64-host-uefi-viommu.qcow2"
+      "image": "HLK2025-C1-Win2025x64.qcow2"
     },
     "c2": {
       "name": "CL2",
       "cpus": 4,
       "memory_gb": 8,
       "winrm_port": 4003,
-      "image": "HLK2022_next-C2-Win2022nextx64-host-uefi-viommu.qcow2"
+      "image": "HLK2025-C2-Win2025x64.qcow2"
     }
   }
 }
