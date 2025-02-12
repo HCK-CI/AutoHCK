@@ -120,7 +120,7 @@ module AutoHCK
     def create_project_folder
       handle_exceptions(__method__) do
         @path = "/#{@repo}/CI/#{@tag}-#{@timestamp}"
-        @dropbox.create_folder(@path)
+        @dropbox.create_folder(@path) unless folder_exists?(@path)
         @dropbox.share_folder(@path)
         @url = "#{@dropbox.create_shared_link_with_settings(@path).url}&lst="
         @logger.info("Dropbox project folder created: #{@url}")
@@ -151,6 +151,12 @@ module AutoHCK
       rescue DropboxApi::Errors::NotFoundError
         false
       end
+    end
+
+    def folder_exists?(folder_path)
+      @dropbox.get_metadata(folder_path).is_a?(DropboxApi::Metadata::Folder)
+    rescue DropboxApi::Errors::NotFoundError
+      false
     end
 
     def close; end
