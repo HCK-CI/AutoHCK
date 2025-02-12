@@ -120,7 +120,11 @@ module AutoHCK
     def create_project_folder
       handle_exceptions(__method__) do
         @path = "/#{@repo}/CI/#{@tag}-#{@timestamp}"
-        @dropbox.create_folder(@path)
+        begin
+          @dropbox.create_folder(@path)
+        rescue DropboxApi::Errors::FolderConflictError
+          @logger.warn("Dropbox project folder already exists: #{@path}")
+        end
         @dropbox.share_folder(@path)
         @url = "#{@dropbox.create_shared_link_with_settings(@path).url}&lst="
         @logger.info("Dropbox project folder created: #{@url}")
