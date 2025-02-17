@@ -3,6 +3,6 @@
   "extra_software": [
     "winfsp"
   ],
-  "studio_platform": "Win2016x64",
+  "studio_platform": "Win2022x64",
   "name": "HLK2004"
 }
