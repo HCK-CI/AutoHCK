@@ -44,7 +44,7 @@ module AutoHCK
       else
         yield
       end
-    rescue Faraday::ConnectionFailed
+    rescue Faraday::ConnectionFailed, OAuth2::ConnectionError
       @logger.warn("Dropbox connection lost while #{where}")
       raise unless (retries += 1) < @action_retries
 
