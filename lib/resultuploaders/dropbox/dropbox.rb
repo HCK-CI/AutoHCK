@@ -118,9 +118,9 @@ module AutoHCK
     end
 
     def create_project_folder
+      @path = "/#{@repo}/CI/#{@tag}-#{@timestamp}"
+      handle_exceptions(__method__) { @dropbox.create_folder(@path) }
       handle_exceptions(__method__) do
-        @path = "/#{@repo}/CI/#{@tag}-#{@timestamp}"
-        @dropbox.create_folder(@path)
         @dropbox.share_folder(@path)
         @url = "#{@dropbox.create_shared_link_with_settings(@path).url}&lst="
         @logger.info("Dropbox project folder created: #{@url}")
