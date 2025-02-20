@@ -12,11 +12,6 @@
     }
   ],
   "reject_test_names": [
-    "[NdisStudio] NdisPoll keyword functional validation",
-    "[NdisStudio] OidRequestTest - OID_GEN_VENDOR_DRIVER_VERSION Verification",
-    "[NdisStudio] NdisPoll keyword validation",
-    "[NdisStudio] OidRequestTest - OID_GEN_XMIT_OK and OID_GEN_RCV_OK Verification",
-    "[NdisStudio] OidRequestTest - OID_GEN_VENDOR_ID Verification",
     "NDISTest 6.5 - [2 Machine] - MPE_Ethernet.xml",
     "NDISTest 6.0 - [1 Machine] - 1c_Mini6RSSOids",
     "PrivateCloudSimulator - Device.Network.LAN.10GbOrGreater",
