@@ -80,6 +80,8 @@ module AutoHCK
       connect
       verify_tools
       update_filters
+      return if @project.restored?
+
       create_pool
       create_project
     end
