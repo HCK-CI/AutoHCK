@@ -10,11 +10,11 @@ gem 'csv'
 gem 'curb'
 gem 'dotenv'
 gem 'dropbox_api'
+gem 'openssl', require: false
 gem 'filelock'
 gem 'httpclient'
-gem 'mono_logger'
 gem 'octokit'
-gem 'openssl', require: false
+gem 'mono_logger'
 gem 'rtoolsHCK', git: 'https://github.com/HCK-CI/rtoolsHCK.git', tag: 'v0.5.3'
 gem 'rubyzip'
 gem 'sentry-ruby'

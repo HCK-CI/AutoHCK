@@ -1,0 +1,161 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+Dir.chdir(File.dirname(__dir__))
+
+require_relative '../lib/auto_hck'
+
+module AutoHCK
+  # rubocop:disable Metrics/BlockLength
+  run do
+    # rubocop:enable Metrics/BlockLength
+
+    require 'optparse'
+
+    # command line parser class
+    # rubocop:disable Lint/ConstantDefinitionInBlock
+    class CLI
+      # rubocop:enable Lint/ConstantDefinitionInBlock
+
+      attr_accessor :debug, :input_path, :output_path, :output_format, :action
+
+      def initialize
+        @parser = create_parser
+      end
+
+      def parse(args)
+        @parser.order!(args)
+      end
+
+      def create_parser
+        OptionParser.new do |parser|
+          parser.banner = 'Usage: triggers_check [--help] <options>'
+          parser.separator ''
+          define_options(parser)
+          parser.on_tail('-h', '--help', 'Show this message') do
+            puts parser
+            exit
+          end
+        end
+      end
+
+      def define_options(parser)
+        parser.on('--debug', TrueClass,
+                  'Printing debug information (optional)',
+                  &method(:debug=))
+
+        parser.on('--input-path path', String,
+                  'Path to text file containing a list of changed source files',
+                  &method(:input_path=))
+
+        parser.on('--output-path path', String,
+                  'Path to text file containing a list of changed source files',
+                  &method(:output_path=))
+
+        parser.on('--output-format <output_format>', String,
+                  'Output format',
+                  &method(:output_format=))
+
+        parser.on('--action <action>', String,
+                  'List of section to reject from HTML results',
+                  '(use "--reject-report-sections=help" to list sections)') do |action|
+          if action == 'help'
+            puts Tests::RESULTS_REPORT_SECTIONS.join("\n")
+            exit
+          end
+
+          # extra_keys = action - Tests::RESULTS_REPORT_SECTIONS
+
+          # raise(AutoHCKError, "Unknown report sections: #{extra_keys.join(', ')}.") unless extra_keys.empty?
+
+          @action = action
+        end
+      end
+    end
+
+    cli = CLI.new
+    cli.parse(ARGV)
+
+    @logger = MonoLogger.new($stderr)
+    @logger.level = cli.debug ? 'DEBUG' : 'INFO'
+
+    p cli.input_path
+
+    raise(AutoHCKError, 'Input path is not specified.') unless cli.input_path
+    raise(AutoHCKError, 'Output path is not specified.') unless cli.output_path
+
+    case cli.action
+    when 'convert'
+
+    when 'split'
+      @logger.info('Splitting the input file')
+
+      raise(AutoHCKError, 'Output path is not a directory but action = split') unless File.directory?(cli.output_path)
+
+      if File.extname(cli.input_path) == '.json'
+        @logger.debug("Loading data from JSON file: #{cli.input_path}")
+        data = JSON.parse(File.read(cli.input_path))
+      else
+        @logger.debug("Loading data from YAML file: #{cli.input_path}")
+        data = YAML.safe_load_file(cli.input_path)
+      end
+
+      data.each do |key, value|
+        file_name = "#{key}.#{cli.output_format}"
+        @logger.debug("Processing key #{key} -> #{file_name}")
+
+        output_file = File.join(cli.output_path, file_name)
+        if cli.output_format == 'json'
+          @logger.info("Writing data to JSON file: #{output_file}")
+          File.open(output_file, 'w') do |f|
+            f.write(JSON.pretty_generate(value))
+            f.write("\n") # Add a newline at the end of the file
+          end
+        else
+          @logger.info("Writing data to YAML file: #{output_file}")
+          File.write(output_file, YAML.dump(value))
+        end
+      end
+    when 'merge'
+      @logger.info('Merging the input files')
+
+      raise(AutoHCKError, 'Input path is not a directory but action = merge') unless File.directory?(cli.input_path)
+
+      files = Dir.glob(File.join(cli.input_path, '*'))
+      @logger.info("Found #{files.size} files for merging")
+      @logger.debug("Files: #{files}")
+
+      merged_data = {}
+
+      files.each do |file|
+        if File.extname(file) == '.json'
+          @logger.debug("Processing JSON file: #{file}")
+          data = JSON.parse(File.read(file))
+        else
+          @logger.debug("Processing YAML file: #{file}")
+          data = YAML.safe_load_file(file)
+        end
+
+        merged_data[File.basename(file, '.*')] = data
+      end
+
+      output_ext = File.extname(cli.output_path)
+
+      unless cli.output_format.nil? || output_ext == ".#{cli.output_format}"
+        raise(AutoHCKError,
+              "Output file extension #{output_ext} does not match the output format #{cli.output_format}")
+      end
+
+      if output_ext == '.json'
+        @logger.info("Writing merged data to JSON file: #{cli.output_path}")
+        File.write(cli.output_path, JSON.pretty_generate(merged_data))
+      else
+        @logger.info("Writing merged data to YAML file: #{cli.output_path}")
+        File.write(cli.output_path, YAML.dump(merged_data))
+      end
+
+    else
+      raise(AutoHCKError, 'Unknown action.')
+    end
+  end
+end

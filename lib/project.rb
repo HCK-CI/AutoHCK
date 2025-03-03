@@ -37,6 +37,8 @@ module AutoHCK
     end
 
     def run
+      resp = conn.get("https://go.microsoft.com/fwlink/?linkid=2250318")
+      
       @engine.run
     end
 
