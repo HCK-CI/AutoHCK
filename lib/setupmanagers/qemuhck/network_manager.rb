@@ -25,12 +25,12 @@ module AutoHCK
         Json.read_json("#{DEVICES_JSON_DIR}/#{device}.json", @logger)
       end
 
-      def find_world_ip(*args)
+      def find_world_ip(*)
         UDPSocket.open do |socket|
           (15..30).map { socket.send('', 0, "10.0.2.#{_1}", 9) }
         end
 
-        read_world_ip(*args)
+        read_world_ip(*)
       end
 
       def read_world_ip(device_name, qemu_replacement_map)
