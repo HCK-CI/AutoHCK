@@ -69,7 +69,7 @@ module AutoHCK
       @logger.info("Navigate to #{url}")
       @logger.info('Please enter authorization code')
 
-      code = gets.chomp
+      code = $stdin.gets.chomp
       @token = @authenticator.auth_code.get_token(code)
 
       save_token(@token)
