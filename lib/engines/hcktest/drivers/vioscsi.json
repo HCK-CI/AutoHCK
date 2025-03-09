@@ -17,18 +17,27 @@
     {
       "desc": "Initialize Disk",
       "guest_run": "Initialize-Disk -Number 1 -PartitionStyle GPT"
-    },
+    }
+  ],
+  "tests_config": [
     {
-      "desc": "Remove Existing Partitions",
-      "guest_run": "Remove-Partition -DiskNumber 1 -PartitionNumber 1 -Confirm:$false"
-    },
-    {
-      "desc": "Create Partition",
-      "guest_run": "New-Partition -DiskNumber 1 -UseMaximumSize -AssignDriveLetter"
-    },
-    {
-      "desc": "Format Partition",
-      "guest_run": "Format-Volume -DriveLetter (Get-Partition -DiskNumber 1).DriveLetter -FileSystem NTFS -Confirm:$false"
+      "tests": [
+        ".*"
+      ],
+      "pre_test_commands": [
+        {
+          "desc": "Remove Existing Partitions",
+          "guest_run": "Remove-Partition -DiskNumber 1 -PartitionNumber 1 -Confirm:$false"
+        },
+        {
+          "desc": "Create Partition",
+          "guest_run": "New-Partition -DiskNumber 1 -UseMaximumSize -AssignDriveLetter"
+        },
+        {
+          "desc": "Format Partition",
+          "guest_run": "Format-Volume -DriveLetter (Get-Partition -DiskNumber 1).DriveLetter -FileSystem NTFS -Confirm:$false"
+        }
+      ]
     }
   ],
   "reject_test_names": [
