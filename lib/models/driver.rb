@@ -30,6 +30,7 @@ module AutoHCK
       const :extra_software, T.nilable(T::Array[String])
       const :reject_test_names, T.nilable(T::Array[String])
       const :select_test_names, T.nilable(T::Array[String])
+      const :tests_config, T::Array[TestConfig], default: []
     end
   end
 end
