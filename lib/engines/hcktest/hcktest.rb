@@ -287,7 +287,9 @@ module AutoHCK
     def group_tests_by_config
       grouped_tests = { secure: [] }
 
-      @config.tests_config.each do |test_group|
+      tests_config = @config.tests_config + @drivers.flat_map(&:tests_config)
+
+      tests_config.each do |test_group|
         selected_tests = @test_list.select { |test| test_group.tests.include?(test['name']) }
         grouped_tests[:secure] += selected_tests if test_group.secure
       end

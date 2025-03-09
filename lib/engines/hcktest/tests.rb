@@ -133,9 +133,11 @@ module AutoHCK
     end
 
     def select_test_config(test_name, config)
-      @project.engine.config.tests_config
-              .select { _1.tests.include?(test_name) }
-              .flat_map(&config)
+      tests_config = @project.engine.config.tests_config + @project.engine.drivers.flat_map(&:tests_config)
+
+      tests_config
+        .select { _1.tests.include?(test_name) }
+        .flat_map(&config)
     end
 
     def test_parameters(test_name)
