@@ -8,6 +8,7 @@ module AutoHCK
     autoload_relative :DriverInstallMethods, 'models/driver_install_methods'
     autoload_relative :Driver, 'models/driver'
     autoload_relative :Kit, 'models/kit'
+    autoload_relative :TestConfig, 'models/test_config'
     autoload_relative :HCKTestConfig, 'models/hcktest_config'
     autoload_relative :JsonHelper, 'models/json_helper'
     autoload_relative :SVVPConfig, 'models/svvp_config'
