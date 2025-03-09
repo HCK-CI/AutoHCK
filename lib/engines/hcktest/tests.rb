@@ -139,7 +139,7 @@ module AutoHCK
       end
 
       tests_config
-        .select { _1.tests.include?(test_name) }
+        .select { Regexp.new(_1.tests.join('|')).match?(test_name) }
         .flat_map(&config)
     end
 
