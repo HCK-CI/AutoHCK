@@ -1,0 +1,68 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+Dir.chdir(File.dirname(__dir__))
+
+require_relative '../lib/auto_hck'
+
+module AutoHCK
+  MONTH_IN_SECS = 2_592_000
+
+  module CleanupWorkspace
+    VERSION = '0.1.0'
+
+    def delete?(timestamp)
+      test_time = Time.strptime(timestamp, '%Y_%m_%d_%H_%M_%S')
+      Time.now - test_time > MONTH_IN_SECS
+    end
+
+    def delete(test_run)
+      puts "Deleting #{test_run}"
+      FileUtils.remove_entry_secure(test_run, true)
+    end
+
+    def workspace_folders(workspace_path)
+      pattern = File.join(
+        workspace_path,
+        '**',
+        '[0-9][0-9][0-9][0-9]_' \
+        '[0-9][0-9]_' \
+        '[0-9][0-9]_' \
+        '[0-9][0-9]_' \
+        '[0-9][0-9]_' \
+        '[0-9][0-9]'
+      )
+
+      Dir.glob(pattern).select(&File.method(:directory?))
+    end
+
+    def cleanup
+      config = AutoHCK::Config.read
+      workspace_path = config['workspace_path']
+      workspace_folders(workspace_path).each do |test_run|
+        delete(test_run) if delete?(test_run.split('/').last)
+      end
+    end
+  end
+
+  run do
+    extend CleanupWorkspace
+
+    parser = OptionParser.new do |opts|
+      opts.banner = 'Usage: cleanup.rb [options]'
+
+      opts.on('-v', '--version', 'displays version and exit') do
+        puts VERSION
+        exit
+      end
+
+      opts.on('-h', '--help', 'display help and exit') do
+        puts opts
+        exit
+      end
+    end
+
+    parser.parse!
+    cleanup
+  end
+end
