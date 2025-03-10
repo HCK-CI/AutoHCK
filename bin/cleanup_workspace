@@ -1,0 +1,70 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+Dir.chdir(File.dirname(__dir__))
+
+require_relative '../lib/auto_hck'
+
+module AutoHCK
+  class WorkspaceCleaner
+    def initialize(cleanup_time)
+      @cleanup_time = cleanup_time || 2_592_000 # Default to 30 days
+    end
+
+    def delete?(timestamp)
+      test_time = Time.strptime(timestamp, '%Y_%m_%d_%H_%M_%S')
+      Time.now - test_time > @cleanup_time
+    end
+
+    def delete(test_run)
+      puts "Deleting #{test_run}"
+      FileUtils.remove_entry(test_run, true)
+    rescue StandardError => e
+      puts "Error deleting #{test_run}: #{e}"
+    end
+
+    def workspace_folders(workspace_path)
+      timestamp_regex = /^\d{4}_\d{2}_\d{2}_\d{2}_\d{2}_\d{2}$/
+
+      Dir.glob(File.join(workspace_path, '*', '*', '*')).select do |path|
+        File.directory?(path) && timestamp_regex.match?(File.basename(path))
+      end
+    end
+
+    def cleanup
+      config = AutoHCK::Config.read
+      workspace_path = config['workspace_path']
+      folders = workspace_folders(workspace_path)
+
+      puts "Found #{folders.count} timestamp folders in workspace"
+      deleted_count = folders.count do |test_run|
+        should_delete = delete?(File.basename(test_run))
+        delete(test_run) if should_delete
+        should_delete
+      end
+
+      puts "Cleanup complete: #{deleted_count} folders deleted, #{folders.count - deleted_count} folders kept"
+    end
+  end
+
+  run do
+    cleanup_time = nil
+
+    parser = OptionParser.new do |opts|
+      opts.banner = 'Usage: bin/cleanup_workspace [options]'
+
+      opts.on('-t', '--time <time in seconds>', Integer,
+              'Time to keep workspace folders in seconds') do |time|
+        cleanup_time = time
+      end
+
+      opts.on('-h', '--help', 'display help and exit') do
+        puts opts
+        exit
+      end
+    end
+
+    parser.parse!
+    WorkspaceCleaner.new(cleanup_time).cleanup
+  end
+end
