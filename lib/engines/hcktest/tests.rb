@@ -136,7 +136,7 @@ module AutoHCK
       tests_config = @project.engine.config.tests_config + @project.engine.drivers.flat_map(&:tests_config)
 
       tests_config
-        .select { Regexp.union(_1.tests).match?(test_name) }
+        .select { |test_config| Regexp.union(test_config.tests.map { Regexp.new(_1) }).match?(test_name) }
         .flat_map(&config)
     end
 
