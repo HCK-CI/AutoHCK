@@ -53,6 +53,9 @@ module AutoHCK
     # A custom InstallMachineDriverPackage error exception
     class InstallMachineDriverPackageError < AutoHCKError; end
 
+    # A custom ListTestResultsError error exception
+    class ListTestResultsError < AutoHCKError; end
+
     # A thread safe class that wraps an object instace with critical data
     class ThreadSafe < BasicObject
       def initialize(object, mutex)
@@ -357,10 +360,21 @@ module AutoHCK
       end
     end
 
-    def list_test_results(test_id, target_key, machine, tag)
-      retry_tools_command(__method__) do
-        act_with_tools { _1.list_test_results(test_id, target_key, tag, machine, tag) }
-      end
+    def list_test_results(test, target_key, machine, tag)
+      retries ||= 0
+      ret = act_with_tools { _1.list_test_results(test['id'], target_key, tag, machine, tag) }
+
+      return ret if ret
+
+      e_message = "Failed listing test results for test: #{test['name']}"
+      raise ListTestResultsError, e_message
+    rescue ListTestResultsError => e
+      @logger.warn(e.message)
+      raise unless (retries += 1) < ACTION_RETRIES
+
+      sleep HLK_ACTION_RETRY_SLEEP
+      @logger.info("Trying again to get results for test: #{test['name']}")
+      retry
     end
 
     def get_test_info(id, key, machine, tag)
