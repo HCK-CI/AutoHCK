@@ -118,11 +118,15 @@ module AutoHCK
       set_test_status(id, 'Hangs on at running state?')
     end
 
+    def last_test_result(id)
+      results = @tools.list_test_results(id, @target['key'], @client.name, @tag)
+      results.max_by { |k| k['instanceid'].to_i }
+    end
+
     def wait_queued_test(id)
       loop do
         sleep 5
-        results = @tools.list_test_results(id, @target['key'], @client.name, @tag)
-        last_result = results.max_by { |k| k['instanceid'].to_i }
+        last_result = last_test_result(id)
 
         check_test_queued_time
 
