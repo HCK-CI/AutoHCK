@@ -230,8 +230,24 @@ module AutoHCK
     end
 
     def print_test_results(test)
-      results = @tests.find { |t| t['id'] == test['id'] }
-      @logger.info("#{results['status']}: #{test['name']}")
+      test_name = test['name']
+      @logger.info("Getting test results for #{test_name}")
+
+      # When test is running ones HLK will report result immediately
+      # When test is running more than ones HLK can mark test as PASS/FAIL
+      # even before all cleanup stages finises and result is Running
+      # so let's wait for result, but this is not error if real result
+      # will not be received
+      last_result = {}
+      (time_to_seconds(RUNNING_TEST_TIMEOUT) / 60).to_i.times do
+        last_result = last_test_result(test['id'])
+
+        break if last_result['status'] != 'Running'
+
+        sleep 60
+      end
+
+      @logger.info("#{last_result['status']}: #{test_name}")
       @logger.info("Test information page: #{test['url']}")
     end
 
@@ -373,6 +389,7 @@ module AutoHCK
     end
 
     def handle_finished_tests(tests)
+      @logger.debug("Handling finished tests: #{tests}")
       tests.each do |test|
         @tests_extra[test['id']]['status'] = nil
 
