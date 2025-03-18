@@ -212,7 +212,12 @@ module AutoHCK
     end
 
     def done_tests
-      @tests.select { |test| test_finished?(test) }
+      # When test is running more than ones HLK reports test['status'] = PASS/FAIL
+      # even when test is still running again. So we need to check test['executionstate']
+      # to be sure that test is really finished.
+      # Otherwise new_done function can report test as finished multiple times just with
+      # different executionstate.
+      @tests.select { |test| test_finished?(test) && test['executionstate'] == 'NotRunning' }
     end
 
     def on_test_start(test)
