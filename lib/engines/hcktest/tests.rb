@@ -422,10 +422,23 @@ module AutoHCK
     end
 
     def check_new_finished_tests
-      return unless new_done.any?
+      @logger.debug('Checking new finished tests')
+      new_done_tests = new_done
+      @logger.debug("New done tests: #{new_done_tests}")
+
+      # We need this to detect finishing of test that run several times.
+      # HLK always report result PASS/FAIL after first test run
+      # independently of extra test run. To detect that test changed
+      # we need to look into test results.
+      last_done_tests = []
+      unless @last_queued_id.nil?
+        last_result = last_test_result(@last_queued_id)
+        @logger.debug("Last result status of last queued test: #{last_result['status']}")
+        last_done_tests = [@tests.find { |test| test['id'] == @last_queued_id }] if test_finished?(last_result)
+      end
 
       apply_filters
-      handle_finished_tests(new_done)
+      handle_finished_tests((new_done_tests + last_done_tests).uniq)
     end
 
     def handle_test_running
