@@ -187,7 +187,6 @@ module AutoHCK
       @drive_cache_options = []
       @define_variables = {}
       @run_opts = {}
-      @configured = false
     end
 
     def load_options(options)
@@ -200,6 +199,7 @@ module AutoHCK
       @id_second = @id[2..3]
       @client_id = format('%02d', @options['client_id'])
       @run_name = "QemuMachine#{@id}_CL#{@client_id}"
+      @configured = @options['configured']
 
       @devices_list << @options['devices_list']
       @workspace_path = @options['workspace_path']

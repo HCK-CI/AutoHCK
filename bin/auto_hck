@@ -10,6 +10,9 @@ module AutoHCK
     cli = CLI.new
     cli.parse(ARGV)
 
+    session_path = cli.test.latest_session ? "#{Config.read['workspace_path']}/latest" : cli.test.session
+    cli = Session.load(session_path, cli) if session_path
+
     ENV.store 'LC_ALL', 'en_US.UTF-8'
 
     Trap.init_traps(%w[TERM INT])
