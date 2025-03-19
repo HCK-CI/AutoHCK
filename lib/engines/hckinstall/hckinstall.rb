@@ -74,13 +74,9 @@ module AutoHCK
       res || raise(InvalidConfigFile, "Kit studio platform for kit #{kit} does not exist")
     end
 
-    def client_platform
-      @project.engine_platform['clients'].values.first['image'][/Win\w+x(86|64)/]
-    end
-
     def init_iso_info
       @studio_iso_info = read_iso(studio_platform(@project.engine_platform['kit']))
-      @client_iso_info = read_iso(client_platform)
+      @client_iso_info = read_iso(@project.engine_platform['iso'])
 
       @setup_studio_iso = "#{@project.workspace_path}/setup-studio.iso"
       @setup_client_iso = "#{@project.workspace_path}/setup-client.iso"
