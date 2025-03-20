@@ -232,8 +232,12 @@ module AutoHCK
     end
 
     def archive_test_results(test)
-      res = @tools.zip_test_result_logs(test['id'], @target['key'], @client.name,
-                                        @tag)
+      res = @tools.zip_test_result_logs(result_index: -1,
+                                        test: test['id'],
+                                        target: @target['key'],
+                                        project: @tag,
+                                        machine: @client.name,
+                                        pool: @tag)
       @logger.info('Test archive successfully created')
       update_remote(test['id'], res['hostlogszippath'], res['status'], res['testname'])
       @logger.info('Test archive uploaded via the result uploader')
