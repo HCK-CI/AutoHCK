@@ -28,7 +28,7 @@ module AutoHCK
       @playlist = Playlist.new(client, project, target, tools, @client.kit)
       @tests = []
       @tests_extra = {}
-      @last_done = []
+      @tests_results = []
       @results_template = ERB.new(File.read('lib/templates/report.html.erb'))
     end
 
@@ -43,6 +43,12 @@ module AutoHCK
 
       @logger.info('Trying again to list tests')
       retry
+    end
+
+    def update_tests_results
+      last_done_results = done_test_results
+      @tests_results = @tools.list_all_results(@target['key'], @client.name, @tag)
+      @new_done_results = done_test_results - last_done_results
     end
 
     def verify_target
@@ -192,6 +198,10 @@ module AutoHCK
       @tests.count { |test| test['status'] == status }
     end
 
+    def results_count(status)
+      @tests_results.count { |test| test['status'] == status }
+    end
+
     def tests_stats
       cnt_passed = status_count('Passed')
       cnt_failed = status_count('Failed')
@@ -211,6 +221,10 @@ module AutoHCK
       @tests.select { |test| test_finished?(test) }
     end
 
+    def done_test_results
+      @tests_results.select { |test_result| test_finished?(test_result) }
+    end
+
     def on_test_start(test)
       @logger.info(">>> Currently running: #{test['name']} [#{test['estimatedruntime']}]")
 
@@ -225,19 +239,19 @@ module AutoHCK
       @logger.info("<<< Passed: #{stats['passed']} | Failed: #{stats['failed']} | InQueue: #{stats['inqueue']}")
     end
 
-    def print_test_results(test)
-      results = @tests.find { |t| t['id'] == test['id'] }
-      @logger.info("#{results['status']}: #{test['name']}")
+    def print_test_results(test, test_result)
+      @logger.info("#{test_result['status']}: #{test['name']}")
       @logger.info("Test information page: #{test['url']}")
     end
 
-    def archive_test_results(test)
-      res = @tools.zip_test_result_logs(result_index: -1,
+    def archive_test_results(test, test_result)
+      res = @tools.zip_test_result_logs(result_index: test_result['instanceid'],
                                         test: test['id'],
                                         target: @target['key'],
                                         project: @tag,
                                         machine: @client.name,
-                                        pool: @tag)
+                                        pool: @tag,
+                                        index_instance_id: true)
       @logger.info('Test archive successfully created')
       update_remote(test['id'], res['hostlogszippath'], res['status'], res['testname'])
       @logger.info('Test archive uploaded via the result uploader')
@@ -333,7 +347,11 @@ module AutoHCK
     end
 
     def all_tests_finished?
-      status_count('InQueue').zero? && current_test.nil?
+      status_count('InQueue').zero? &&
+        # TestResult.Status does not return Queued
+        # (if a test is scheduled or running it returns Running).
+        results_count('Running').zero? &&
+        current_test.nil?
     end
 
     def download_memory_dump(machine, l_tmp_path)
@@ -358,30 +376,40 @@ module AutoHCK
       downloaded_client || downloaded_support
     end
 
-    def collect_memory_dumps(test)
-      id = test['id']
-
-      l_zip_path = "#{@project.workspace_path}/memory_dump_#{id}.zip"
-      l_tmp_path = "#{@project.workspace_path}/tmp_#{id}"
+    def collect_memory_dumps(test_id)
+      l_zip_path = "#{@project.workspace_path}/memory_dump_#{test_id}.zip"
+      l_tmp_path = "#{@project.workspace_path}/tmp_#{test_id}"
 
       if download_memory_dumps(l_tmp_path)
         create_zip_from_directory(l_zip_path, l_tmp_path)
-        @tests_extra[id]['dump'] = l_zip_path
+        @tests_extra[test_id]['dump'] = l_zip_path
       end
 
       FileUtils.rm_rf(l_tmp_path)
     end
 
-    def handle_finished_tests(tests)
-      tests.each do |test|
+    def handle_finished_test_result(test, test_result)
+      collect_memory_dumps(test['id'])
+
+      print_test_results(test, test_result)
+      archive_test_results(test, test_result)
+    end
+
+    def test_for_result(result)
+      @tests.find { |test| test['name'] == result['name'] }
+    end
+
+    def handle_finished_test_results(results)
+      # We need to list tests again to get the latest status of the tests
+      list_tests
+      @project.github.update(tests_stats) if @project.github&.connected?
+
+      results.each do |result|
+        test = test_for_result(result)
+        next if test.nil?
+
         @tests_extra[test['id']]['status'] = nil
-
-        @project.github.update(tests_stats) if @project.github&.connected?
-
-        collect_memory_dumps(test)
-
-        print_test_results(test)
-        archive_test_results(test)
+        handle_finished_test_result(test, result)
 
         @last_queued_id = nil if test['id'] == @last_queued_id
       end
@@ -393,22 +421,19 @@ module AutoHCK
       @support&.reset_to_ready_state
     end
 
-    def new_done
-      list_tests
-      done_tests - @last_done
-    end
-
     def apply_filters
       @logger.info('Applying filters on finished tests')
       @tools.apply_project_filters(@tag)
       sleep APPLYING_FILTERS_INTERVAL
     end
 
-    def check_new_finished_tests
-      return unless new_done.any?
+    def check_new_finished_results
+      # Update tests results to get the latest status of the tests
+      update_tests_results
+      return unless @new_done_results.any?
 
       apply_filters
-      handle_finished_tests(new_done)
+      handle_finished_test_results(@new_done_results)
     end
 
     def handle_test_running
@@ -417,14 +442,13 @@ module AutoHCK
       until all_tests_finished? || @project.run_terminated
         @project.check_run_termination
         reset_clients_to_ready_state
-        check_new_finished_tests
+        check_new_finished_results
         check_test_queued_time
         check_test_duration_time
         if current_test != running
           running = current_test
           on_test_start(running) if running
         end
-        @last_done = done_tests
         sleep HANDLE_TESTS_POLLING_INTERVAL
       end
     end
