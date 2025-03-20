@@ -363,6 +363,12 @@ module AutoHCK
       end
     end
 
+    def list_all_results(target_key, machine, tag)
+      retry_tools_command(__method__) do
+        act_with_tools { _1.list_all_results(target_key, tag, machine, tag) }
+      end
+    end
+
     def get_test_info(id, key, machine, tag)
       retry_tools_command(__method__) do
         act_with_tools { _1.get_test_info(id, key, tag, machine, tag) }
@@ -387,9 +393,9 @@ module AutoHCK
       end
     end
 
-    def zip_test_result_logs(test_id, target_key, machine, tag)
+    def zip_test_result_logs(test_id, target_key, machine, tag, index = -1, index_instance_id = false)
       retries ||= 0
-      ret = act_with_tools { _1.zip_test_result_logs(-1, test_id, target_key, tag, machine, tag) }
+      ret = act_with_tools { _1.zip_test_result_logs(index, test_id, target_key, tag, machine, tag, index_instance_id) }
 
       return ret if ret
 
