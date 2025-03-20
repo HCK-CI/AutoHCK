@@ -243,7 +243,7 @@ module AutoHCK
         @project.logger.info('HLK test target is not defined, allow in manual mode')
       end
 
-      @test_list = @tests.list_tests(log: true)
+      @test_list = @tests.update_tests(log: true)
     end
 
     def auto_run
