@@ -321,12 +321,12 @@ module AutoHCK
 
     def update_remote(test_id, test_logs_path, status, testname)
       delete_old_remote(testname)
-      new_filename = "#{status}: #{testname}"
+      new_filename = "#{status}_#{testname}"
       r_name = new_filename + File.extname(test_logs_path)
       @project.result_uploader.upload_file(test_logs_path, r_name)
 
       if @tests_extra.dig(test_id, 'dump')
-        r_name = "Minidump: #{testname}.zip"
+        r_name = "Minidump_#{testname}.zip"
         @project.result_uploader.upload_file(@tests_extra.dig(test_id, 'dump'), r_name)
       end
 
@@ -334,11 +334,11 @@ module AutoHCK
     end
 
     def delete_old_remote(test_name)
-      r_name = "Minidump: #{test_name}.zip"
+      r_name = "Minidump_#{test_name}.zip"
       @project.result_uploader.delete_file(r_name)
-      r_name = "Failed: #{test_name}.zip"
+      r_name = "Failed_#{test_name}.zip"
       @project.result_uploader.delete_file(r_name)
-      r_name = "Passed: #{test_name}.zip"
+      r_name = "Passed_#{test_name}.zip"
       @project.result_uploader.delete_file(r_name)
     end
 
