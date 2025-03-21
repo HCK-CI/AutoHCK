@@ -193,19 +193,15 @@ module AutoHCK
       @tests.find { |test| test['executionstate'] == 'Running' }
     end
 
-    def status_count(status)
-      @tests.count { |test| test['status'] == status }
-    end
-
     def tests_stats
-      cnt_passed = status_count('Passed')
-      cnt_failed = status_count('Failed')
+      cnt_passed = tests_stats_status_count('Passed')
+      cnt_failed = tests_stats_status_count('Failed')
       total = @tests.count
 
       { 'current' => current_test, 'passed' => cnt_passed,
         'failed' => cnt_failed, 'inqueue' => total - cnt_passed - cnt_failed,
         'skipped' => @playlist.rejected_test.count,
-        'currentcount' => done_tests.count + 1, 'total' => total }
+        'currentcount' => cnt_passed + cnt_failed + 1, 'total' => total }
     end
 
     def test_finished?(test)
