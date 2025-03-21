@@ -197,27 +197,28 @@ module AutoHCK
       @tests.find { |test| test['executionstate'] == 'Running' }
     end
 
-    def status_count(status)
-      @tests.count { |test| test['status'] == status }
-    end
-
     def tests_stats
-      cnt_passed = status_count('Passed')
-      cnt_failed = status_count('Failed')
+      cnt_passed = tests_stats_status_count('Passed')
+      cnt_failed = tests_stats_status_count('Failed')
       total = @tests.count
 
       { 'current' => current_test, 'passed' => cnt_passed,
         'failed' => cnt_failed, 'inqueue' => total - cnt_passed - cnt_failed,
         'skipped' => @playlist.rejected_test.count,
-        'currentcount' => done_tests.count + 1, 'total' => total }
+        'currentcount' => cnt_passed + cnt_failed + 1, 'total' => total }
     end
 
     def test_finished?(test)
       %w[Passed Failed].include? test['status']
     end
 
-    def done_tests
-      @tests.select { |test| test_finished?(test) }
+    def tests_stats_status_count(status)
+      # When test is running more than once HLK reports test['status'] = PASS/FAIL
+      # even when test is still running again. So we need to check test['executionstate']
+      # to be sure that test is really finished.
+      # Otherwise update_tests_status function can report test as finished multiple times
+      # just with different executionstate.
+      @tests.count { |test| test['status'] == status && test['executionstate'] == 'NotRunning' }
     end
 
     def done_test_results
