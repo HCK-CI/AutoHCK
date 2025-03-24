@@ -150,8 +150,8 @@ module AutoHCK
     def configure(run_only: false)
       @tools = @studio.tools
       @cooldown_thread = Thread.new do
-        unless pool == @project.engine_tag
-          return_when_client_up
+        if @project.restored? || pool != @project.engine_tag
+          return_when_client_up unless @project.restored?
           if run_only
             @logger.info("Preparing client skipped #{@name}...")
 
