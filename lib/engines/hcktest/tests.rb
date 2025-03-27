@@ -326,6 +326,10 @@ module AutoHCK
       r_name = "#{status}_#{test_instance_id}_#{testname}#{File.extname(test_logs_path)}"
       @project.result_uploader.upload_file(test_logs_path, r_name)
 
+      r_name = "Result_#{test_instance_id}_#{testname}.json"
+      File.write("#{@project.workspace_path}/#{r_name}", JSON.pretty_generate(test_result))
+      @project.result_uploader.upload_file("#{@project.workspace_path}/#{r_name}", r_name)
+
       if @tests_extra.dig(test_id, 'dump')
         r_name = "Minidump_#{test_instance_id}_#{testname}.zip"
         @project.result_uploader.upload_file(@tests_extra.dig(test_id, 'dump'), r_name)
@@ -336,6 +340,8 @@ module AutoHCK
 
     def delete_old_remote(test_name, result_instance_id)
       r_name = "Minidump_#{result_instance_id}_#{test_name}.zip"
+      @project.result_uploader.delete_file(r_name)
+      r_name = "Result_#{result_instance_id}_#{test_name}.json"
       @project.result_uploader.delete_file(r_name)
       r_name = "Failed_#{result_instance_id}_#{test_name}.zip"
       @project.result_uploader.delete_file(r_name)
