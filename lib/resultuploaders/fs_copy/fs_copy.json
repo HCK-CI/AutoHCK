@@ -1,0 +1,4 @@
+{
+    "host_path": "/mnt/nfs",
+    "base_url": "http://nfs-server.local:8080/"
+}
