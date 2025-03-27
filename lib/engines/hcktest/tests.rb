@@ -320,13 +320,14 @@ module AutoHCK
     end
 
     def update_remote(test_id, test_result, test_logs_path, status, testname)
-      delete_old_remote(testname, test_result['instanceid'])
-      new_filename = "#{status}_#{testname}"
-      r_name = new_filename + File.extname(test_logs_path)
+      test_instance_id = test_result['instanceid']
+      delete_old_remote(testname, test_instance_id)
+
+      r_name = "#{status}_#{test_instance_id}_#{testname}#{File.extname(test_logs_path)}"
       @project.result_uploader.upload_file(test_logs_path, r_name)
 
       if @tests_extra.dig(test_id, 'dump')
-        r_name = "Minidump_#{test_result['instanceid']}_#{testname}.zip"
+        r_name = "Minidump_#{test_instance_id}_#{testname}.zip"
         @project.result_uploader.upload_file(@tests_extra.dig(test_id, 'dump'), r_name)
       end
 
