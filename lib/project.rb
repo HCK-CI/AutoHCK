@@ -9,7 +9,7 @@ module AutoHCK
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :id,
                 :workspace_path, :github, :result_uploader, :engine_tag,
                 :engine_platform, :engine_type, :options, :extra_sw_manager,
-                :run_terminated
+                :run_terminated, :test_suite
 
     def initialize(scope, options)
       @scope = scope
@@ -20,6 +20,23 @@ module AutoHCK
       init_workspace
       @id = options.common.id
       scope << self
+    end
+
+    def prepare_junit
+      @test_suites = JUnit::TestSuites.new(name: @engine_tag)
+      @test_suite = JUnit::TestSuite.new(name: @engine_tag)
+      @test_suites.add_test_suite(@test_suite)
+
+      @test_suite.add_property(name: 'engine', value: @engine_name)
+      @test_suite.add_property(name: 'platform', value: @engine_platform['name'])
+      @test_suite.add_property(name: 'drivers', value: @options.test&.drivers&.join(','))
+      @test_suite.add_property(name: 'svvp', value: @options.test.svvp)
+    end
+
+    def generate_and_save_junit
+      builder = Nokogiri::XML::Builder.new { |xml| @test_suites.xml(xml) }
+      File.write("#{workspace_path}/junit.xml", builder.to_xml)
+      @result_uploader.upload_file("#{workspace_path}/junit.xml", 'junit.xml')
     end
 
     def prepare
@@ -85,6 +102,9 @@ module AutoHCK
       @result_uploader = ResultUploader.new(@scope, self)
       @result_uploader.connect
       @result_uploader.create_project_folder
+
+      @test_suite.add_property(name: 'results_url', value: @result_uploader.url)
+      @test_suite.add_property(name: 'results_html', value: @result_uploader.html_url)
     end
 
     def github_handling_context
@@ -182,6 +202,8 @@ module AutoHCK
 
     def close
       @logger.debug('Closing AutoHCK project')
+      generate_junit
+
       @result_uploader&.upload_file(@logfile_path, 'AutoHCK.log')
     end
   end
