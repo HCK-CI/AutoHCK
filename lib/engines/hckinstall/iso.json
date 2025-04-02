@@ -1,6 +1,6 @@
 {
-  "Win2019x64": {
-    "path": "en_windows_server_2019_updated_oct_2020_x64_dvd_7484fc77.iso",
+  "Win2022x64": {
+    "path": "en_windows_server_2022_updated_oct_2020_x64_dvd_7484fc77.iso",
     "studio": {
       "windows_image_names": "Windows Server 2019 SERVERSTANDARD",
       "product_key": "AAAAA-AAAAA-AAAAA-AAAAA-AAAAA"
@@ -8,6 +8,17 @@
     "client": {
       "windows_image_names": "Windows Server 2019 SERVERSTANDARDCORE",
       "product_key": "AAAAA-AAAAA-AAAAA-AAAAA-AAAAA"
+    }
+  }, 
+  "Win2022x64_GUI": {
+    "path": "en_windows_server_2022_x64_dvd_7f6f8e3e.iso",
+    "studio": {
+      "windows_image_names": "Windows Server 2022 SERVERSTANDARD",
+      "product_key": "BBBBB-BBBBB-BBBBB-BBBBB-BBBBB"
+    },
+    "client": {
+      "windows_image_names": "Windows Server 2022 SERVERSTANDARD",
+      "product_key": "BBBBB-BBBBB-BBBBB-BBBBB-BBBBB"
     }
   }
 }
