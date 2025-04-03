@@ -1,6 +1,7 @@
 {
   "name": "Win2022x64",
   "kit": "HLK2022",
+  "vbs_state": true,
   "setupmanager": "qemuhck",
   "st_image": "HLK2022.qcow2",
   "clients": {

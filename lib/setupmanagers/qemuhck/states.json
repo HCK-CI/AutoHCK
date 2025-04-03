@@ -65,5 +65,16 @@
                 "tpm-tis"
             ]
         }
+    },
+    "vbs_state": {
+        "true": {
+            "post_start_commands": [
+                {
+                    "desc": "Enable VBS on the guest (Rebboot required)",
+                    "guest_run": "powershell.exe -Command \"Set-ItemProperty -Path 'HKLM:\\\\SYSTEM\\\\CurrentControlSet\\\\Control\\\\DeviceGuard' -Name 'EnableVirtualizationBasedSecurity' -Value 1; Set-ItemProperty -Path 'HKLM:\\\\SYSTEM\\\\CurrentControlSet\\\\Control\\\\Lsa' -Name 'LsaCfgFlags' -Value 1; Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart; Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All -NoRestart\"",
+                    "guest_reboot": true
+                }
+            ]
+        }
     }
 }
