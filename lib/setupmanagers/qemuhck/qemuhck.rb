@@ -9,10 +9,10 @@ module AutoHCK
 
     include Helper
 
-    attr_reader :kit, :project
+    attr_reader :kit, :project, :clients_vm
 
     QEMUHCK_INFO_LOG_FILE = 'qemuhck.txt'
-    OPT_NAMES = %w[viommu_state s3_state s4_state enlightenments_state vhost_state machine_type fw_type cpu].freeze
+    OPT_NAMES = %w[viommu_state s3_state s4_state enlightenments_state vhost_state machine_type fw_type cpu vbs_state].freeze
 
     def initialize(project)
       initialize_project project

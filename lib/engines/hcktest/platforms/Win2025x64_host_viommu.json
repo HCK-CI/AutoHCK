@@ -6,6 +6,7 @@
   "enlightenments_state": true,
   "cpu": "host",
   "st_image": "HLK2025.qcow2",
+  "vbs_state": true,
   "clients": {
     "c1": {
       "name": "CL1",
