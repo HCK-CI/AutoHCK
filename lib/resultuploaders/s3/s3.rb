@@ -22,17 +22,7 @@ module AutoHCK
     # downloaded rather than rendered directly, thus preventing HTML files from being displayed.
     attr_reader :url
 
-    def initialize(project)
-      tag = project.engine_tag
-      timestamp = project.timestamp
-      repo = project.config['repository']
-      @path = "#{repo}/CI/#{tag}-#{timestamp}"
-
-      @logger = project.logger
-
-      @bucket = new_bucket
-
-      @index_obj = @bucket.object("#{@path}/#{INDEX_FILE_NAME}")
+    def initialize
       @index_template = ERB.new(File.read('lib/templates/index.html.erb'))
       @filenames = []
     end
@@ -57,7 +47,18 @@ module AutoHCK
     # from causing errors while adhering to the expected API structure.
     def ask_token; end
 
-    def connect
+    def connect(project)
+      tag = project.engine_tag
+      timestamp = project.timestamp
+      repo = project.config['repository']
+      @path = "#{repo}/CI/#{tag}-#{timestamp}"
+
+      @logger = project.logger
+
+      @bucket = new_bucket
+
+      @index_obj = @bucket.object("#{@path}/#{INDEX_FILE_NAME}")
+
       true
     end
 
