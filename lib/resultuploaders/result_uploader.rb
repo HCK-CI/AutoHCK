@@ -38,7 +38,7 @@ module AutoHCK
       @uploaders = {}
       @project.config['result_uploaders'].uniq.each do |type|
         if UploaderFactory.can_create?(type)
-          @uploaders[type] = UploaderFactory.create(type, @project)
+          @scope << (@uploaders[type] = UploaderFactory.create(type, @project))
         else
           @project.logger.info("Unknown type uploader #{type}, (ignoring)")
         end
@@ -53,7 +53,6 @@ module AutoHCK
       @uploaders.each_pair do |type, uploader|
         if uploader.connect
           @connected_uploaders[type] = uploader
-          @scope << uploader
         else
           @project.logger.info("#{type} connection failed, (ignoring)")
         end
