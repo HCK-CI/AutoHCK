@@ -11,24 +11,25 @@ module AutoHCK
 
     attr_reader :url
 
-    def initialize(project)
+    def initialize
+      @client_id = ENV.fetch('AUTOHCK_DROPBOX_CLIENT_ID')
+      @client_secret = ENV.fetch('AUTOHCK_DROPBOX_CLIENT_SECRET')
+
+      @authenticator = DropboxApi::Authenticator.new(@client_id, @client_secret)
+
+      @dropbox = nil
+      @url = nil
+    end
+
+    def initialize_project(project)
       @tag = project.engine_tag
       @timestamp = project.timestamp
       @logger = project.logger
       @repo = project.config['repository']
 
       @config = Json.read_json(CONFIG_JSON, @logger)
-
-      @client_id = ENV.fetch('AUTOHCK_DROPBOX_CLIENT_ID')
-      @client_secret = ENV.fetch('AUTOHCK_DROPBOX_CLIENT_SECRET')
-
       @action_retries = @config['action_retries']
       @action_retry_sleep = @config['action_retry_sleep']
-
-      @authenticator = DropboxApi::Authenticator.new(@client_id, @client_secret)
-
-      @dropbox = nil
-      @url = nil
     end
 
     def html_url; end
@@ -97,7 +98,8 @@ module AutoHCK
       @token = OAuth2::AccessToken.from_hash(@authenticator, hash)
     end
 
-    def connect
+    def connect(project)
+      initialize_project(project)
       load_token if @token.nil?
 
       if @token

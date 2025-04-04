@@ -19,6 +19,11 @@ module AutoHCK
       init_class_variables
       init_workspace
       @id = options.common.id
+      # ResultUploader must be initialized before adding project to scope
+      # Project uses ResultUploader on close, so ResultUploader must exist
+      # when project is closed
+      @result_uploader = ResultUploader.new(@scope, self)
+
       scope << self
     end
 
@@ -82,7 +87,6 @@ module AutoHCK
 
     def configure_result_uploader
       @logger.info('Initializing result uploaders')
-      @result_uploader = ResultUploader.new(@scope, self)
       @result_uploader.connect
       @result_uploader.create_project_folder
     end
