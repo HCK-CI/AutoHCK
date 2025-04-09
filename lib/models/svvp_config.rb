@@ -11,6 +11,7 @@ module AutoHCK
 
       const :viommu_state, T::Boolean, default: false
       const :enlightenments_state, T::Boolean, default: false
+      const :ctrl_net_device, String, default: 'e1000e'
     end
 
     # SVVPConfig class

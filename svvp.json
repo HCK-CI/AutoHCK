@@ -7,6 +7,7 @@
     "tpm"
   ],
   "clients_options": {
+    "ctrl_net_device": "virtio-net-pci",
     "viommu_state": true
   },
   "reject_test_names": [
