@@ -179,6 +179,7 @@ module AutoHCK
     end
 
     def define_local_variables
+      @post_start_commands = []
       @devices_list = []
       @device_commands = []
       @machine_options = %w[@machine_name@]
@@ -188,6 +189,13 @@ module AutoHCK
       @define_variables = {}
       @run_opts = {}
       @configured = false
+    end
+
+    sig { returns(T::Array[Models::CommandInfo]) }
+    def post_start_commands
+      @post_start_commands.map do |command|
+        Models::CommandInfo.from_hash(command)
+      end
     end
 
     def load_options(options)
