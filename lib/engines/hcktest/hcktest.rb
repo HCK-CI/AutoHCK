@@ -124,7 +124,8 @@ module AutoHCK
       if options.test.svvp
         svvp_info = Models::SVVPConfig.from_json_file(SVVP_JSON, logger)
 
-        platform['viommu_state'] ||= svvp_info.viommu_state
+        platform['clients_options'] ||= {}
+        platform['clients_options'].merge!(svvp_info.clients_options.serialize)
       end
 
       platform
