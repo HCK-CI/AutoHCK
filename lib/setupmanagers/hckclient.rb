@@ -21,6 +21,7 @@ module AutoHCK
       @logger.info("Starting client #{name}")
       @runner = setup_manager.run_client(scope, @name, run_opts)
       scope << self
+      @setup_manager = setup_manager
     end
 
     def pool
@@ -72,14 +73,20 @@ module AutoHCK
       raise ClientRunError, "Couldn't set #{@name} state to Ready"
     end
 
-    def run_post_start_commands
-      @project.engine.drivers&.each do |driver|
-        driver.post_start_commands&.each do |command|
-          return unless command.guest_run
+    def post_start_commands
+      @project.engine.drivers&.flat_map(&:post_start_commands)&.select(&:guest_run).to_a +
+        @setup_manager.clients_vm[@name].post_start_commands&.select(&:guest_run).to_a
+    end
 
-          @logger.info("Running command (#{command.desc}) on client #{@name}")
-          @tools.run_on_machine(@name, command.desc, command.guest_run)
-        end
+    def run_post_start_commands
+      post_start_commands&.each do |command|
+        @logger.info("Running command (#{command.desc}) on client #{@name}")
+        @tools.run_on_machine(@name, command.desc, command.guest_run)
+        next unless command.guest_reboot
+
+        @logger.info("Rebooting client #{@name} after command (#{command.desc})")
+        @tools.restart_machine(@name)
+        reconfigure_machine
       end
     end
 
