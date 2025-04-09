@@ -74,6 +74,14 @@ module AutoHCK
       options
     end
 
+    def platform_client_options
+      options = platform_options
+      OPT_NAMES.each do |name|
+        options[name] = @platform.dig('clients_options', name) unless @platform.dig('clients_options', name).nil?
+      end
+      options
+    end
+
     def boot_device
       return {} if @project.options.test.boot_device.nil?
 
@@ -93,7 +101,7 @@ module AutoHCK
     end
 
     def initialize_clients_vm
-      options = drivers_options.merge(platform_options)
+      options = drivers_options.merge(platform_client_options)
       @platform['clients'].each_with_index do |(_k, v), i|
         vm_options = options.merge({
           'client_id' => i + 1,

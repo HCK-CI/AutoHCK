@@ -2,8 +2,10 @@
   "name": "Win2025x64_host_viommu",
   "kit": "HLK2025",
   "setupmanager": "qemuhck",
-  "viommu_state": true,
-  "enlightenments_state": true,
+  "clients_options": {
+    "viommu_state": true,
+    "enlightenments_state": true
+  },
   "cpu": "host",
   "st_image": "HLK2025.qcow2",
   "clients": {

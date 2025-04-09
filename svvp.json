@@ -6,7 +6,9 @@
     "fwcfg64",
     "tpm"
   ],
-  "viommu_state": true,
+  "clients_options": {
+    "viommu_state": true
+  },
   "reject_test_names": [
     "__Windows_11_22H2_reject_test_names",
     "Secure Boot Manual Logo Test",
