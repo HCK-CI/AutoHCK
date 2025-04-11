@@ -22,8 +22,8 @@ module AutoHCK
         [uploader_name, AutoHCK.const_get(class_name)]
       end.to_h.freeze
 
-      def self.create(type, project)
-        UPLOADERS[type].new(project)
+      def self.create(type)
+        UPLOADERS[type].new
       end
 
       def self.can_create?(type)
@@ -38,7 +38,7 @@ module AutoHCK
       @uploaders = {}
       @project.config['result_uploaders'].uniq.each do |type|
         if UploaderFactory.can_create?(type)
-          @uploaders[type] = UploaderFactory.create(type, @project)
+          @scope << (@uploaders[type] = UploaderFactory.create(type))
         else
           @project.logger.info("Unknown type uploader #{type}, (ignoring)")
         end
@@ -51,9 +51,8 @@ module AutoHCK
 
     def connect
       @uploaders.each_pair do |type, uploader|
-        if uploader.connect
+        if uploader.connect(@project)
           @connected_uploaders[type] = uploader
-          @scope << uploader
         else
           @project.logger.info("#{type} connection failed, (ignoring)")
         end

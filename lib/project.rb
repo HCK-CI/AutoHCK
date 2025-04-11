@@ -14,11 +14,17 @@ module AutoHCK
     def initialize(scope, options)
       @scope = scope
       @options = options
+      init_timestamp
       Json.update_json_override(options.common.config) unless options.common.config.nil?
       init_multilog(options.common.verbose)
       init_class_variables
       init_workspace
       @id = options.common.id
+      # ResultUploader must be initialized before adding project to scope
+      # Project uses ResultUploader on close, so ResultUploader must exist
+      # when project is closed
+      @result_uploader = ResultUploader.new(@scope, self)
+
       scope << self
     end
 
@@ -69,9 +75,17 @@ module AutoHCK
       @logger.add_logger(@pre_logger)
     end
 
+    def init_timestamp
+      unless @options.common.workspace_path.nil?
+        @timestamp = @options.common.workspace_path.split('/').last
+        return
+      end
+
+      @timestamp = current_timestamp
+    end
+
     def init_class_variables
       @config = Config.read
-      @timestamp = current_timestamp
       @engine_name = @config["#{@options.mode}_engine"]
       @engine_type = Engine.select(@engine_name)
       @engine_tag = @engine_type.tag(@options)
@@ -82,7 +96,6 @@ module AutoHCK
 
     def configure_result_uploader
       @logger.info('Initializing result uploaders')
-      @result_uploader = ResultUploader.new(@scope, self)
       @result_uploader.connect
       @result_uploader.create_project_folder
     end
