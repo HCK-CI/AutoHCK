@@ -100,6 +100,8 @@ GEM
     net-http (0.6.0)
       uri
     netrc (0.11.0)
+    nokogiri (1.18.6-x86_64-linux-gnu)
+      racc (~> 1.4)
     nori (2.7.1)
       bigdecimal
     oauth2 (1.4.11)
@@ -233,6 +235,7 @@ DEPENDENCIES
   filelock
   httpclient
   mono_logger
+  nokogiri
   octokit
   openssl
   rspec
