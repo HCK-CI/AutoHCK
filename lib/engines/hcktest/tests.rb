@@ -28,7 +28,7 @@ module AutoHCK
       @playlist = Playlist.new(client, project, target, tools, @client.kit)
       @tests = []
       @tests_extra = {}
-      @last_done = []
+      @test_results = []
       @results_template = ERB.new(File.read('lib/templates/report.html.erb'))
     end
 
@@ -43,6 +43,15 @@ module AutoHCK
 
       @logger.info('Trying again to list tests')
       retry
+    end
+
+    def update_tests_status
+      last_done_test_results = done_test_results
+      @test_results = @tools.list_all_results(@target['key'], @client.name, @tag)
+      @new_done_test_results = done_test_results - last_done_test_results
+
+      # We need to list tests again to get the latest status of the tests
+      list_tests
     end
 
     def verify_target
@@ -188,27 +197,32 @@ module AutoHCK
       @tests.find { |test| test['executionstate'] == 'Running' }
     end
 
-    def status_count(status)
-      @tests.count { |test| test['status'] == status }
-    end
-
     def tests_stats
-      cnt_passed = status_count('Passed')
-      cnt_failed = status_count('Failed')
+      cnt_passed = tests_stats_status_count('Passed')
+      cnt_failed = tests_stats_status_count('Failed')
       total = @tests.count
 
       { 'current' => current_test, 'passed' => cnt_passed,
         'failed' => cnt_failed, 'inqueue' => total - cnt_passed - cnt_failed,
         'skipped' => @playlist.rejected_test.count,
-        'currentcount' => done_tests.count + 1, 'total' => total }
+        'currentcount' => cnt_passed + cnt_failed + 1, 'total' => total }
     end
 
     def test_finished?(test)
       %w[Passed Failed].include? test['status']
     end
 
-    def done_tests
-      @tests.select { |test| test_finished?(test) }
+    def tests_stats_status_count(status)
+      # When test is running more than once HLK reports test['status'] = PASS/FAIL
+      # even when test is still running again. So we need to check test['executionstate']
+      # to be sure that test is really finished.
+      # Otherwise update_tests_status function can report test as finished multiple times
+      # just with different executionstate.
+      @tests.count { |test| test['status'] == status && test['executionstate'] == 'NotRunning' }
+    end
+
+    def done_test_results
+      @test_results.select { |test_result| test_finished?(test_result) }
     end
 
     def on_test_start(test)
@@ -225,17 +239,21 @@ module AutoHCK
       @logger.info("<<< Passed: #{stats['passed']} | Failed: #{stats['failed']} | InQueue: #{stats['inqueue']}")
     end
 
-    def print_test_results(test)
-      results = @tests.find { |t| t['id'] == test['id'] }
-      @logger.info("#{results['status']}: #{test['name']}")
+    def print_test_results(test, test_result)
+      @logger.info("#{test_result['status']}: #{test['name']}")
       @logger.info("Test information page: #{test['url']}")
     end
 
-    def archive_test_results(test)
-      res = @tools.zip_test_result_logs(test['id'], @target['key'], @client.name,
-                                        @tag)
+    def archive_test_results(test, test_result)
+      res = @tools.zip_test_result_logs(result_index: test_result['instanceid'],
+                                        test: test['id'],
+                                        target: @target['key'],
+                                        project: @tag,
+                                        machine: @client.name,
+                                        pool: @tag,
+                                        index_instance_id: true)
       @logger.info('Test archive successfully created')
-      update_remote(test['id'], res['hostlogszippath'], res['status'], res['testname'])
+      update_remote(test['id'], test_result, res['hostlogszippath'], res['status'], res['testname'])
       @logger.info('Test archive uploaded via the result uploader')
     rescue Tools::ZipTestResultLogsError
       @logger.info('Skipping archiving test result logs')
@@ -305,31 +323,50 @@ module AutoHCK
       generate_report
     end
 
-    def update_remote(test_id, test_logs_path, status, testname)
-      delete_old_remote(testname)
-      new_filename = "#{status}: #{testname}"
-      r_name = new_filename + File.extname(test_logs_path)
+    def update_remote(test_id, test_result, test_logs_path, status, testname)
+      test_instance_id = test_result['instanceid']
+      delete_old_remote(testname, test_instance_id)
+
+      r_name = "#{status}_#{test_instance_id}_#{testname}#{File.extname(test_logs_path)}"
       @project.result_uploader.upload_file(test_logs_path, r_name)
 
+      r_name = "Result_#{test_instance_id}_#{testname}.json"
+      File.write("#{@project.workspace_path}/#{r_name}", JSON.pretty_generate(test_result))
+      @project.result_uploader.upload_file("#{@project.workspace_path}/#{r_name}", r_name)
+
       if @tests_extra.dig(test_id, 'dump')
-        r_name = "Minidump: #{testname}.zip"
+        r_name = "Minidump_#{test_instance_id}_#{testname}.zip"
         @project.result_uploader.upload_file(@tests_extra.dig(test_id, 'dump'), r_name)
       end
 
       update_summary_results_log
     end
 
-    def delete_old_remote(test_name)
-      r_name = "Minidump: #{test_name}.zip"
+    def delete_old_remote(test_name, result_instance_id)
+      r_name = "Minidump_#{result_instance_id}_#{test_name}.zip"
       @project.result_uploader.delete_file(r_name)
-      r_name = "Failed: #{test_name}.zip"
+      r_name = "Result_#{result_instance_id}_#{test_name}.json"
       @project.result_uploader.delete_file(r_name)
-      r_name = "Passed: #{test_name}.zip"
+      r_name = "Failed_#{result_instance_id}_#{test_name}.zip"
+      @project.result_uploader.delete_file(r_name)
+      r_name = "Passed_#{result_instance_id}_#{test_name}.zip"
       @project.result_uploader.delete_file(r_name)
     end
 
     def all_tests_finished?
-      status_count('InQueue').zero? && current_test.nil?
+      # When the test runs several times:
+      # Test 'status' changed to 'Passed/Failed' just after the test 'executionstate'
+      # moved from 'InQueue' to 'Running'
+      # Test 'executionstate' moves from 'Running' to 'NotRunning' just after the main
+      # part of the test is finished even if the cleanup stage is still running
+      # As a result `@new_done_test_results = []`, because test result `status` is
+      # not 'Passed/Failed' yet.
+
+      @tests.none? { _1['status'] == 'InQueue' } &&
+        # TestResult.Status does not return Queued
+        # (if a test is scheduled or running it returns Running).
+        @test_results.none? { _1['status'] == 'Running' } &&
+        current_test.nil?
     end
 
     def download_memory_dump(machine, l_tmp_path)
@@ -354,30 +391,38 @@ module AutoHCK
       downloaded_client || downloaded_support
     end
 
-    def collect_memory_dumps(test)
-      id = test['id']
-
-      l_zip_path = "#{@project.workspace_path}/memory_dump_#{id}.zip"
-      l_tmp_path = "#{@project.workspace_path}/tmp_#{id}"
+    def collect_memory_dumps(test_id)
+      l_zip_path = "#{@project.workspace_path}/memory_dump_#{test_id}.zip"
+      l_tmp_path = "#{@project.workspace_path}/tmp_#{test_id}"
 
       if download_memory_dumps(l_tmp_path)
         create_zip_from_directory(l_zip_path, l_tmp_path)
-        @tests_extra[id]['dump'] = l_zip_path
+        @tests_extra[test_id]['dump'] = l_zip_path
       end
 
       FileUtils.rm_rf(l_tmp_path)
     end
 
-    def handle_finished_tests(tests)
-      tests.each do |test|
+    def handle_finished_test_result(test, test_result)
+      collect_memory_dumps(test['id'])
+
+      print_test_results(test, test_result)
+      archive_test_results(test, test_result)
+    end
+
+    def test_for_result(result)
+      @tests.find { |test| test['name'] == result['name'] }
+    end
+
+    def handle_finished_test_results(results)
+      @project.github.update(tests_stats) if @project.github&.connected?
+
+      results.each do |result|
+        test = test_for_result(result)
+        next if test.nil?
+
         @tests_extra[test['id']]['status'] = nil
-
-        @project.github.update(tests_stats) if @project.github&.connected?
-
-        collect_memory_dumps(test)
-
-        print_test_results(test)
-        archive_test_results(test)
+        handle_finished_test_result(test, result)
 
         @last_queued_id = nil if test['id'] == @last_queued_id
       end
@@ -389,22 +434,17 @@ module AutoHCK
       @support&.reset_to_ready_state
     end
 
-    def new_done
-      list_tests
-      done_tests - @last_done
-    end
-
     def apply_filters
       @logger.info('Applying filters on finished tests')
       @tools.apply_project_filters(@tag)
       sleep APPLYING_FILTERS_INTERVAL
     end
 
-    def check_new_finished_tests
-      return unless new_done.any?
+    def check_new_finished_results
+      return unless @new_done_test_results.any?
 
       apply_filters
-      handle_finished_tests(new_done)
+      handle_finished_test_results(@new_done_test_results)
     end
 
     def handle_test_running
@@ -412,15 +452,16 @@ module AutoHCK
 
       until all_tests_finished? || @project.run_terminated
         @project.check_run_termination
+        # Update tests results to get the latest status of the tests
+        update_tests_status
         reset_clients_to_ready_state
-        check_new_finished_tests
+        check_new_finished_results
         check_test_queued_time
         check_test_duration_time
         if current_test != running
           running = current_test
           on_test_start(running) if running
         end
-        @last_done = done_tests
         sleep HANDLE_TESTS_POLLING_INTERVAL
       end
     end
