@@ -76,6 +76,7 @@ module AutoHCK
       @engine_type = Engine.select(@engine_name)
       @engine_tag = @engine_type.tag(@options)
       @engine_platform = @engine_type.platform(@logger, @options)
+      @engine_platform['vbs_state'] = @options.test.enable_vbs
       @setup_manager_type = @engine_platform.nil? ? nil : SetupManager.select(@engine_platform['setupmanager'])
       @run_terminated = false
     end
