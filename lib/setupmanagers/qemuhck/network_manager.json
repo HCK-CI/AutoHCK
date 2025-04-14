@@ -4,7 +4,7 @@
       "ifname": "cs_r@run_id@_c@client_id@",
       "mac": "56:@run_id_first@:@run_id_second@:@client_id@:cc:cc",
       "bus_name": "@ctrl_bus_name@",
-      "address": "03"
+      "address": "0x0"
     },
     "world": {
       "ifname": "ws_r@run_id@_c@client_id@",
