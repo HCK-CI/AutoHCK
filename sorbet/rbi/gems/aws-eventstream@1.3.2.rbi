@@ -8,28 +8,28 @@
 # source://aws-eventstream//lib/aws-eventstream/decoder.rb#7
 module Aws
   class << self
-    # source://aws-sdk-core/3.219.0/lib/aws-sdk-core.rb#93
+    # source://aws-sdk-core/3.222.2/lib/aws-sdk-core.rb#93
     def config; end
 
-    # source://aws-sdk-core/3.219.0/lib/aws-sdk-core.rb#96
+    # source://aws-sdk-core/3.222.2/lib/aws-sdk-core.rb#96
     def config=(config); end
 
-    # source://aws-sdk-core/3.219.0/lib/aws-sdk-core.rb#155
+    # source://aws-sdk-core/3.222.2/lib/aws-sdk-core.rb#155
     def eager_autoload!(*args); end
 
-    # source://aws-sdk-core/3.219.0/lib/aws-sdk-core.rb#148
+    # source://aws-sdk-core/3.222.2/lib/aws-sdk-core.rb#148
     def empty_connection_pools!; end
 
-    # source://aws-sdk-core/3.219.0/lib/aws-sdk-core.rb#105
+    # source://aws-sdk-core/3.222.2/lib/aws-sdk-core.rb#105
     def partition(partition_name); end
 
-    # source://aws-sdk-core/3.219.0/lib/aws-sdk-core.rb#110
+    # source://aws-sdk-core/3.222.2/lib/aws-sdk-core.rb#110
     def partitions; end
 
-    # source://aws-sdk-core/3.219.0/lib/aws-sdk-core.rb#86
+    # source://aws-sdk-core/3.222.2/lib/aws-sdk-core.rb#86
     def shared_config; end
 
-    # source://aws-sdk-core/3.219.0/lib/aws-sdk-core.rb#125
+    # source://aws-sdk-core/3.222.2/lib/aws-sdk-core.rb#125
     def use_bundled_cert!; end
   end
 end
@@ -216,7 +216,7 @@ class Aws::EventStream::Encoder
   #   will be returned. Else, encoded binary string is
   #   returned.
   #
-  # source://aws-eventstream//lib/aws-eventstream/encoder.rb#57
+  # source://aws-eventstream//lib/aws-eventstream/encoder.rb#63
   def encode(message, io = T.unsafe(nil)); end
 
   # Encodes headers part of an Aws::EventStream::Message
@@ -225,7 +225,7 @@ class Aws::EventStream::Encoder
   # @param message [Aws::EventStream::Message]
   # @return [String]
   #
-  # source://aws-eventstream//lib/aws-eventstream/encoder.rb#101
+  # source://aws-eventstream//lib/aws-eventstream/encoder.rb#110
   def encode_headers(message); end
 
   # Encodes an Aws::EventStream::Message
@@ -234,14 +234,24 @@ class Aws::EventStream::Encoder
   # @param message [Aws::EventStream::Message]
   # @return [String]
   #
-  # source://aws-eventstream//lib/aws-eventstream/encoder.rb#73
+  # source://aws-eventstream//lib/aws-eventstream/encoder.rb#79
   def encode_message(message); end
 
   private
 
-  # source://aws-eventstream//lib/aws-eventstream/encoder.rb#123
+  # source://aws-eventstream//lib/aws-eventstream/encoder.rb#135
   def encode_prelude(total_length, headers_length); end
 end
+
+# Maximum header length allowed (after encode) 128kb
+#
+# source://aws-eventstream//lib/aws-eventstream/encoder.rb#45
+Aws::EventStream::Encoder::MAX_HEADERS_LENGTH = T.let(T.unsafe(nil), Integer)
+
+# Maximum payload length allowed (after encode) 24mb
+#
+# source://aws-eventstream//lib/aws-eventstream/encoder.rb#48
+Aws::EventStream::Encoder::MAX_PAYLOAD_LENGTH = T.let(T.unsafe(nil), Integer)
 
 # bytes of total overhead in a message, including prelude
 # and 4 bytes total message crc checksum
@@ -251,6 +261,22 @@ Aws::EventStream::Encoder::OVERHEAD_LENGTH = T.let(T.unsafe(nil), Integer)
 
 # source://aws-eventstream//lib/aws-eventstream/errors.rb#5
 module Aws::EventStream::Errors; end
+
+# source://aws-eventstream//lib/aws-eventstream/errors.rb#41
+class Aws::EventStream::Errors::EventHeadersLengthExceedError < ::RuntimeError
+  # @return [EventHeadersLengthExceedError] a new instance of EventHeadersLengthExceedError
+  #
+  # source://aws-eventstream//lib/aws-eventstream/errors.rb#42
+  def initialize(*args); end
+end
+
+# source://aws-eventstream//lib/aws-eventstream/errors.rb#35
+class Aws::EventStream::Errors::EventPayloadLengthExceedError < ::RuntimeError
+  # @return [EventPayloadLengthExceedError] a new instance of EventPayloadLengthExceedError
+  #
+  # source://aws-eventstream//lib/aws-eventstream/errors.rb#36
+  def initialize(*args); end
+end
 
 # Raise when insufficient bytes of a message is received
 #

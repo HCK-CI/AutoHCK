@@ -2627,67 +2627,67 @@ end
 class CSV::Parser
   # @return [Parser] a new instance of Parser
   #
-  # source://csv//lib/csv/parser.rb#335
+  # source://csv//lib/csv/parser.rb#348
   def initialize(input, options); end
 
-  # source://csv//lib/csv/parser.rb#343
+  # source://csv//lib/csv/parser.rb#356
   def column_separator; end
 
-  # source://csv//lib/csv/parser.rb#355
+  # source://csv//lib/csv/parser.rb#368
   def field_size_limit; end
 
   # @return [Boolean]
   #
-  # source://csv//lib/csv/parser.rb#375
+  # source://csv//lib/csv/parser.rb#388
   def header_row?; end
 
-  # source://csv//lib/csv/parser.rb#371
+  # source://csv//lib/csv/parser.rb#384
   def headers; end
 
   # @return [Boolean]
   #
-  # source://csv//lib/csv/parser.rb#387
+  # source://csv//lib/csv/parser.rb#400
   def liberal_parsing?; end
 
-  # source://csv//lib/csv/parser.rb#395
+  # source://csv//lib/csv/parser.rb#408
   def line; end
 
-  # source://csv//lib/csv/parser.rb#391
+  # source://csv//lib/csv/parser.rb#404
   def lineno; end
 
-  # source://csv//lib/csv/parser.rb#359
+  # source://csv//lib/csv/parser.rb#372
   def max_field_size; end
 
-  # source://csv//lib/csv/parser.rb#399
+  # source://csv//lib/csv/parser.rb#412
   def parse(&block); end
 
-  # source://csv//lib/csv/parser.rb#351
+  # source://csv//lib/csv/parser.rb#364
   def quote_character; end
 
   # @return [Boolean]
   #
-  # source://csv//lib/csv/parser.rb#379
+  # source://csv//lib/csv/parser.rb#392
   def return_headers?; end
 
-  # source://csv//lib/csv/parser.rb#347
+  # source://csv//lib/csv/parser.rb#360
   def row_separator; end
 
   # @return [Boolean]
   #
-  # source://csv//lib/csv/parser.rb#383
+  # source://csv//lib/csv/parser.rb#396
   def skip_blanks?; end
 
-  # source://csv//lib/csv/parser.rb#363
+  # source://csv//lib/csv/parser.rb#376
   def skip_lines; end
 
   # @return [Boolean]
   #
-  # source://csv//lib/csv/parser.rb#367
+  # source://csv//lib/csv/parser.rb#380
   def unconverted_fields?; end
 
   # @return [Boolean]
   #
-  # source://csv//lib/csv/parser.rb#434
+  # source://csv//lib/csv/parser.rb#447
   def use_headers?; end
 
   private
@@ -2696,119 +2696,119 @@ class CSV::Parser
   # +row+ and an accessor method for +row+ called unconverted_fields().  The
   # variable is set to the contents of +fields+.
   #
-  # source://csv//lib/csv/parser.rb#1284
+  # source://csv//lib/csv/parser.rb#1294
   def add_unconverted_fields(row, fields); end
 
-  # source://csv//lib/csv/parser.rb#793
+  # source://csv//lib/csv/parser.rb#806
   def adjust_headers(headers, quoted_fields); end
 
-  # source://csv//lib/csv/parser.rb#868
+  # source://csv//lib/csv/parser.rb#881
   def build_scanner; end
 
-  # source://csv//lib/csv/parser.rb#715
+  # source://csv//lib/csv/parser.rb#728
   def detect_row_separator(sample, cr, lf); end
 
   # @yield [row]
   #
-  # source://csv//lib/csv/parser.rb#1255
+  # source://csv//lib/csv/parser.rb#1265
   def emit_row(row, quoted_fields = T.unsafe(nil), &block); end
 
-  # source://csv//lib/csv/parser.rb#1240
+  # source://csv//lib/csv/parser.rb#1250
   def ignore_broken_line; end
 
-  # source://csv//lib/csv/parser.rb#745
+  # source://csv//lib/csv/parser.rb#758
   def last_line; end
 
   # @return [Boolean]
   #
-  # source://csv//lib/csv/parser.rb#810
+  # source://csv//lib/csv/parser.rb#823
   def may_quoted?; end
 
-  # source://csv//lib/csv/parser.rb#1195
+  # source://csv//lib/csv/parser.rb#1205
   def parse_column_end; end
 
-  # source://csv//lib/csv/parser.rb#1095
+  # source://csv//lib/csv/parser.rb#1105
   def parse_column_value; end
 
-  # source://csv//lib/csv/parser.rb#779
+  # source://csv//lib/csv/parser.rb#792
   def parse_headers(row); end
 
-  # source://csv//lib/csv/parser.rb#935
+  # source://csv//lib/csv/parser.rb#945
   def parse_no_quote(&block); end
 
-  # source://csv//lib/csv/parser.rb#964
+  # source://csv//lib/csv/parser.rb#974
   def parse_quotable_loose(&block); end
 
-  # source://csv//lib/csv/parser.rb#1025
+  # source://csv//lib/csv/parser.rb#1035
   def parse_quotable_robust(&block); end
 
-  # source://csv//lib/csv/parser.rb#1153
+  # source://csv//lib/csv/parser.rb#1163
   def parse_quoted_column_value; end
 
-  # source://csv//lib/csv/parser.rb#1209
+  # source://csv//lib/csv/parser.rb#1219
   def parse_row_end; end
 
-  # source://csv//lib/csv/parser.rb#1125
+  # source://csv//lib/csv/parser.rb#1135
   def parse_unquoted_column_value; end
 
   # A set of tasks to prepare the file in order to parse it
   #
-  # source://csv//lib/csv/parser.rb#440
+  # source://csv//lib/csv/parser.rb#453
   def prepare; end
 
-  # source://csv//lib/csv/parser.rb#495
+  # source://csv//lib/csv/parser.rb#508
   def prepare_backslash; end
 
-  # source://csv//lib/csv/parser.rb#753
+  # source://csv//lib/csv/parser.rb#766
   def prepare_header; end
 
-  # source://csv//lib/csv/parser.rb#739
+  # source://csv//lib/csv/parser.rb#752
   def prepare_line; end
 
-  # source://csv//lib/csv/parser.rb#799
+  # source://csv//lib/csv/parser.rb#812
   def prepare_parser; end
 
-  # source://csv//lib/csv/parser.rb#479
+  # source://csv//lib/csv/parser.rb#492
   def prepare_quote_character; end
 
-  # source://csv//lib/csv/parser.rb#635
+  # source://csv//lib/csv/parser.rb#648
   def prepare_quoted; end
 
-  # source://csv//lib/csv/parser.rb#567
+  # source://csv//lib/csv/parser.rb#580
   def prepare_separators; end
 
-  # source://csv//lib/csv/parser.rb#510
+  # source://csv//lib/csv/parser.rb#523
   def prepare_skip_lines; end
 
-  # source://csv//lib/csv/parser.rb#527
+  # source://csv//lib/csv/parser.rb#540
   def prepare_strip; end
 
-  # source://csv//lib/csv/parser.rb#662
+  # source://csv//lib/csv/parser.rb#675
   def prepare_unquoted; end
 
-  # source://csv//lib/csv/parser.rb#455
+  # source://csv//lib/csv/parser.rb#468
   def prepare_variable; end
 
-  # source://csv//lib/csv/parser.rb#675
+  # source://csv//lib/csv/parser.rb#688
   def resolve_row_separator(separator); end
 
   # @return [Boolean]
   #
-  # source://csv//lib/csv/parser.rb#915
+  # source://csv//lib/csv/parser.rb#925
   def skip_line?(line); end
 
-  # source://csv//lib/csv/parser.rb#898
+  # source://csv//lib/csv/parser.rb#908
   def skip_needless_lines; end
 
-  # source://csv//lib/csv/parser.rb#1246
+  # source://csv//lib/csv/parser.rb#1256
   def start_row; end
 
-  # source://csv//lib/csv/parser.rb#1222
+  # source://csv//lib/csv/parser.rb#1232
   def strip_value(value); end
 
   # @raise [MalformedCSVError]
   #
-  # source://csv//lib/csv/parser.rb#927
+  # source://csv//lib/csv/parser.rb#937
   def validate_field_size(field); end
 
   # This method verifies that there are no (obvious) ambiguities with the
@@ -2816,8 +2816,18 @@ class CSV::Parser
   # and +strip+ were both equal to +\t+, then there would be no clear way to
   # parse the input.
   #
-  # source://csv//lib/csv/parser.rb#617
+  # source://csv//lib/csv/parser.rb#630
   def validate_strip_and_col_sep_options; end
+
+  class << self
+    # Convenient method to check whether the give input reached EOF
+    # or not.
+    #
+    # @return [Boolean]
+    #
+    # source://csv//lib/csv/parser.rb#25
+    def eof?(input); end
+  end
 end
 
 # CSV::InputsScanner receives IO inputs, encoding and the chunk_size.
@@ -2831,68 +2841,68 @@ end
 # CSV::InputsScanner.rest() returns the "rest" of the string (i.e. everything after the scan pointer).
 # If there is no more data (eos? = true), it returns "".
 #
-# source://csv//lib/csv/parser.rb#86
+# source://csv//lib/csv/parser.rb#99
 class CSV::Parser::InputsScanner
   # @return [InputsScanner] a new instance of InputsScanner
   #
-  # source://csv//lib/csv/parser.rb#87
+  # source://csv//lib/csv/parser.rb#100
   def initialize(inputs, encoding, row_separator, chunk_size: T.unsafe(nil)); end
 
-  # source://csv//lib/csv/parser.rb#257
+  # source://csv//lib/csv/parser.rb#270
   def check(pattern); end
 
   # @yield [buffer]
   #
-  # source://csv//lib/csv/parser.rb#97
+  # source://csv//lib/csv/parser.rb#110
   def each_line(row_separator); end
 
   # @return [Boolean]
   #
-  # source://csv//lib/csv/parser.rb#170
+  # source://csv//lib/csv/parser.rb#183
   def eos?; end
 
-  # source://csv//lib/csv/parser.rb#197
+  # source://csv//lib/csv/parser.rb#210
   def keep_back; end
 
-  # source://csv//lib/csv/parser.rb#236
+  # source://csv//lib/csv/parser.rb#249
   def keep_drop; end
 
-  # source://csv//lib/csv/parser.rb#181
+  # source://csv//lib/csv/parser.rb#194
   def keep_end; end
 
-  # source://csv//lib/csv/parser.rb#174
+  # source://csv//lib/csv/parser.rb#187
   def keep_start; end
 
-  # source://csv//lib/csv/parser.rb#253
+  # source://csv//lib/csv/parser.rb#266
   def rest; end
 
-  # source://csv//lib/csv/parser.rb#143
+  # source://csv//lib/csv/parser.rb#156
   def scan(pattern); end
 
-  # source://csv//lib/csv/parser.rb#154
+  # source://csv//lib/csv/parser.rb#167
   def scan_all(pattern); end
 
   private
 
-  # source://csv//lib/csv/parser.rb#266
+  # source://csv//lib/csv/parser.rb#279
   def adjust_last_keep; end
 
-  # source://csv//lib/csv/parser.rb#294
+  # source://csv//lib/csv/parser.rb#307
   def read_chunk; end
 
-  # source://csv//lib/csv/parser.rb#262
+  # source://csv//lib/csv/parser.rb#275
   def trace(*args); end
 end
 
 # Raised when encoding is invalid.
 #
-# source://csv//lib/csv/parser.rb#22
+# source://csv//lib/csv/parser.rb#35
 class CSV::Parser::InvalidEncoding < ::StandardError; end
 
-# source://csv//lib/csv/parser.rb#842
+# source://csv//lib/csv/parser.rb#855
 CSV::Parser::SCANNER_TEST = T.let(T.unsafe(nil), FalseClass)
 
-# source://csv//lib/csv/parser.rb#564
+# source://csv//lib/csv/parser.rb#577
 CSV::Parser::STRING_SCANNER_SCAN_ACCEPT_STRING = T.let(T.unsafe(nil), TrueClass)
 
 # CSV::Scanner receives a CSV output, scans it and return the content.
@@ -2904,26 +2914,26 @@ CSV::Parser::STRING_SCANNER_SCAN_ACCEPT_STRING = T.let(T.unsafe(nil), TrueClass)
 # on the methods. For more information, please visit:
 # https://ruby-doc.org/stdlib-2.6.1/libdoc/strscan/rdoc/StringScanner.html
 #
-# source://csv//lib/csv/parser.rb#39
+# source://csv//lib/csv/parser.rb#52
 class CSV::Parser::Scanner < ::StringScanner
   # @return [Scanner] a new instance of Scanner
   #
-  # source://csv//lib/csv/parser.rb#42
+  # source://csv//lib/csv/parser.rb#55
   def initialize(*args); end
 
-  # source://csv//lib/csv/parser.rb#47
+  # source://csv//lib/csv/parser.rb#60
   def each_line(row_separator); end
 
-  # source://csv//lib/csv/parser.rb#65
+  # source://csv//lib/csv/parser.rb#78
   def keep_back; end
 
-  # source://csv//lib/csv/parser.rb#69
+  # source://csv//lib/csv/parser.rb#82
   def keep_drop; end
 
-  # source://csv//lib/csv/parser.rb#60
+  # source://csv//lib/csv/parser.rb#73
   def keep_end; end
 
-  # source://csv//lib/csv/parser.rb#56
+  # source://csv//lib/csv/parser.rb#69
   def keep_start; end
 
   def scan_all(_arg0); end
@@ -2931,25 +2941,25 @@ end
 
 # Raised when unexpected case is happen.
 #
-# source://csv//lib/csv/parser.rb#26
+# source://csv//lib/csv/parser.rb#39
 class CSV::Parser::UnexpectedError < ::StandardError; end
 
-# source://csv//lib/csv/parser.rb#824
+# source://csv//lib/csv/parser.rb#837
 class CSV::Parser::UnoptimizedStringIO
   # @return [UnoptimizedStringIO] a new instance of UnoptimizedStringIO
   #
-  # source://csv//lib/csv/parser.rb#825
+  # source://csv//lib/csv/parser.rb#838
   def initialize(string); end
 
-  # source://csv//lib/csv/parser.rb#833
+  # source://csv//lib/csv/parser.rb#846
   def each_line(*args, &block); end
 
   # @return [Boolean]
   #
-  # source://csv//lib/csv/parser.rb#837
+  # source://csv//lib/csv/parser.rb#850
   def eof?; end
 
-  # source://csv//lib/csv/parser.rb#829
+  # source://csv//lib/csv/parser.rb#842
   def gets(*args); end
 end
 

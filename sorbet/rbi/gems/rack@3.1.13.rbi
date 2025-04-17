@@ -877,17 +877,17 @@ class Rack::ETag
 
   private
 
-  # source://rack//lib/rack/etag.rb#58
+  # source://rack//lib/rack/etag.rb#61
   def digest_body(body); end
 
   # @return [Boolean]
   #
-  # source://rack//lib/rack/etag.rb#50
+  # source://rack//lib/rack/etag.rb#53
   def etag_status?(status); end
 
   # @return [Boolean]
   #
-  # source://rack//lib/rack/etag.rb#54
+  # source://rack//lib/rack/etag.rb#57
   def skip_caching?(headers); end
 end
 
@@ -4283,7 +4283,7 @@ class Rack::Static
 
   # Convert HTTP header rules to HTTP headers
   #
-  # source://rack//lib/rack/static.rb#166
+  # source://rack//lib/rack/static.rb#167
   def applicable_rules(path); end
 
   # source://rack//lib/rack/static.rb#125

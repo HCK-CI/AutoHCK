@@ -1130,5 +1130,5 @@ end
 # source://diff-lcs//lib/diff/lcs/callbacks.rb#44
 Diff::LCS::SequenceCallbacks = Diff::LCS::DefaultCallbacks
 
-# source://diff-lcs//lib/diff/lcs.rb#52
+# source://diff-lcs//lib/diff/lcs/version.rb#5
 Diff::LCS::VERSION = T.let(T.unsafe(nil), String)
