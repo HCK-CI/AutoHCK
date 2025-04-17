@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<testsuites name="test_suites_name" time="135.0" failures="1" errors="1" skipped="2" tests="7">
+  <testsuite name="test_suite_name" file="test_suite_file" time="29.0" failures="1" errors="1" skipped="1" tests="4">
+    <testcase name="test_name1" classname="test_classname" time="1.0" file="test_file" line="1">
+      <failure message="test_message_failure" type="test_type_failure">test_description_failure</failure>
+      <properties>
+        <property name="test_name_property1" value="test_value_property1">test_description_property1</property>
+        <property name="test_name_property2" value="test_value_property2"></property>
+      </properties>
+    </testcase>
+    <testcase name="test_name2" classname="test_classname" time="1.0" file="test_file" line="18">
+      <error message="test_message_error">test_description_error</error>
+      <properties>
+        <property name="test_name_property3" value="">test_description_property3</property>
+      </properties>
+    </testcase>
+    <testcase name="test_name3" classname="test_classname" time="12.0" file="test_file" line="88">
+      <skipped message="test_message_skipped"></skipped>
+    </testcase>
+    <testcase name="test_name4" classname="test_classname" time="15.0" file="test_file" line="151">
+      <properties>
+        <property name="test_name4_property" value="test_value4_property">test_description4_property</property>
+      </properties>
+      <system-out>test_system_output</system-out>
+    </testcase>
+    <properties>
+      <property name="test_suite_name_property" value="test_suite_value_property"></property>
+    </properties>
+    <system-out>test_suite_system_output</system-out>
+  </testsuite>
+  <testsuite name="test_suite_name2" file="test_suite_file2" time="106.0" failures="0" errors="0" skipped="1" tests="3">
+    <testcase name="test2_name1" classname="test2_classname" time="18.0" file="test2_file" line="15"/>
+    <testcase name="test2_name2" classname="test2_classname2" time="1.0">
+      <skipped message="test2_message_skipped"></skipped>
+      <system-out>test2_system_output</system-out>
+    </testcase>
+    <testcase name="test2_name3" classname="test2_classname3" time="87.0">
+      <properties>
+        <property name="test2_name3_property" value="test2_value3_property"></property>
+      </properties>
+    </testcase>
+    <system-out>test_suite_system_error</system-out>
+  </testsuite>
+</testsuites>
