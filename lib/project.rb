@@ -11,14 +11,15 @@ module AutoHCK
                 :engine_platform, :engine_type, :options, :extra_sw_manager,
                 :run_terminated
 
-    def initialize(scope, options)
+    def initialize(scope, session)
       @scope = scope
-      @options = options
-      Json.update_json_override(options.common.config) unless options.common.config.nil?
-      init_multilog(options.common.verbose)
+      @options = session.cli
+      @session = session
+      Json.update_json_override(@options.common.config) unless @options.common.config.nil?
+      init_multilog(@options.common.verbose)
       init_class_variables
       init_workspace
-      @id = options.common.id
+      @id = @options.common.id
       scope << self
     end
 
@@ -150,7 +151,12 @@ module AutoHCK
         @workspace_path = @options.common.workspace_path
         return
       end
+      restored? ? restore_workspace : create_workspace
 
+      @setup_manager_type&.enter @workspace_path
+    end
+
+    def create_workspace
       @workspace_path = File.join(@config['workspace_path'],
                                   @engine_name,
                                   @engine_tag,
@@ -169,7 +175,22 @@ module AutoHCK
       end
 
       File.symlink(@workspace_path, "#{@config['workspace_path']}/latest")
-      @setup_manager_type&.enter @workspace_path
+    end
+
+    def restore_workspace
+      @workspace_path = @options.test.session
+
+      raise AutoHCKError, 'Workspace path does not exist could not load session' unless File.directory?(@workspace_path)
+
+      @logger.info("Loading workspace from #{@workspace_path}")
+    end
+
+    def save_session
+      @session.save(@workspace_path, @logger)
+    end
+
+    def restored?
+      !!@options.test.session
     end
 
     def handle_cancel

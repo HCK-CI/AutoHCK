@@ -10,6 +10,10 @@ module AutoHCK
     cli = CLI.new
     cli.parse(ARGV)
 
+    session = Session.new(cli: cli)
+    session_path = cli.test.latest_session ? "#{Config.read['workspace_path']}/latest" : cli.test.session
+    session.load(session_path, cli.common.workspace_path) if session_path
+
     ENV.store 'LC_ALL', 'en_US.UTF-8'
 
     Trap.init_traps(%w[TERM INT])
@@ -18,7 +22,7 @@ module AutoHCK
     Thread.report_on_exception = false
 
     ResourceScope.open do |scope|
-      @project = Project.new(scope, cli)
+      @project = Project.new(scope, session)
       Trap.project = @project
       @project.run if @project.prepare
     rescue StandardError => e
