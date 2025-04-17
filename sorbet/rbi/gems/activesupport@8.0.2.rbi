@@ -5,10 +5,6 @@
 # Please instead update this file by running `bin/tapioca gem activesupport`.
 
 
-class LoadError < ::ScriptError
-  include ::DidYouMean::Correctable
-end
-
 class NameError < ::StandardError
   include ::ErrorHighlight::CoreExt
   include ::DidYouMean::Correctable

@@ -217,10 +217,10 @@ end
 class Dotenv::Parser
   # @return [Parser] a new instance of Parser
   #
-  # source://dotenv//lib/dotenv/parser.rb#44
+  # source://dotenv//lib/dotenv/parser.rb#46
   def initialize(string, overwrite: T.unsafe(nil)); end
 
-  # source://dotenv//lib/dotenv/parser.rb#51
+  # source://dotenv//lib/dotenv/parser.rb#53
   def call; end
 
   private
@@ -229,25 +229,25 @@ class Dotenv::Parser
   #
   # @return [Boolean]
   #
-  # source://dotenv//lib/dotenv/parser.rb#74
+  # source://dotenv//lib/dotenv/parser.rb#76
   def existing?(key); end
 
-  # source://dotenv//lib/dotenv/parser.rb#100
+  # source://dotenv//lib/dotenv/parser.rb#101
   def expand_newlines(value); end
 
-  # source://dotenv//lib/dotenv/parser.rb#79
+  # source://dotenv//lib/dotenv/parser.rb#80
   def parse_value(value); end
 
-  # source://dotenv//lib/dotenv/parser.rb#96
+  # source://dotenv//lib/dotenv/parser.rb#97
   def unescape_characters(value); end
 
   class << self
-    # source://dotenv//lib/dotenv/parser.rb#39
+    # source://dotenv//lib/dotenv/parser.rb#41
     def call(*_arg0, **_arg1, &_arg2); end
 
     # Returns the value of attribute substitutions.
     #
-    # source://dotenv//lib/dotenv/parser.rb#37
+    # source://dotenv//lib/dotenv/parser.rb#39
     def substitutions; end
   end
 end
@@ -255,7 +255,7 @@ end
 # source://dotenv//lib/dotenv/parser.rb#16
 Dotenv::Parser::LINE = T.let(T.unsafe(nil), Regexp)
 
-# source://dotenv//lib/dotenv/parser.rb#78
+# source://dotenv//lib/dotenv/parser.rb#36
 Dotenv::Parser::QUOTED_STRING = T.let(T.unsafe(nil), Regexp)
 
 # An internal monitor to synchronize access to ENV in multi-threaded environments.
