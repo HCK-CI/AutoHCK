@@ -1,5 +1,6 @@
 {
   "name": "Win2016x64_bios",
+  "client_iso": "Win2016x64",
   "kit": "HLK1607",
   "setupmanager": "qemuhck",
   "fw_type": "bios",

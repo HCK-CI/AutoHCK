@@ -1,5 +1,6 @@
 {
   "name": "Win2025x64_host_viommu",
+  "client_iso": "Win2025x64",
   "kit": "HLK2025",
   "setupmanager": "qemuhck",
   "clients_options": {

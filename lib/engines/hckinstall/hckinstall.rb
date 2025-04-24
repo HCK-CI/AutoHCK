@@ -42,12 +42,12 @@ module AutoHCK
       Json.read_json(platform_json, logger)
     end
 
-    def read_iso(platform_name)
+    def read_iso(iso_name)
       iso = Json.read_json(ISO_JSON, @logger)
-      @logger.info("Loading ISO for platform: #{platform_name}")
-      res = iso[platform_name]
-      @logger.fatal("ISO info for #{platform_name} does not exist") unless res
-      res || raise(InvalidConfigFile, "ISO info for #{platform_name} does not exist")
+      @logger.info("Loading ISO info for: #{iso_name}")
+      res = iso[iso_name]
+      @logger.fatal("ISO info for #{iso_name} does not exist") unless res
+      res || raise(InvalidConfigFile, "ISO info for #{iso_name} does not exist")
     end
 
     sig { params(kit_name: String).returns(Models::Kit) }
@@ -67,20 +67,16 @@ module AutoHCK
       @install_timeout = @config['install_timeout']
     end
 
-    def studio_platform(kit)
+    def studio_iso_name(kit)
       res = @kit_info.studio_platform
-      @logger.info("Loading studio platform for kit: #{kit}")
+      @logger.info("Loading studio ISO name for kit: #{kit}")
       @logger.fatal("Kit studio platform for kit #{kit} does not exist") unless res
       res || raise(InvalidConfigFile, "Kit studio platform for kit #{kit} does not exist")
     end
 
-    def client_platform
-      @project.engine_platform['clients'].values.first['image'][/Win\w+x(86|64)/]
-    end
-
     def init_iso_info
-      @studio_iso_info = read_iso(studio_platform(@project.engine_platform['kit']))
-      @client_iso_info = read_iso(client_platform)
+      @studio_iso_info = read_iso(studio_iso_name(@project.engine_platform['kit']))
+      @client_iso_info = read_iso(@project.engine_platform['client_iso'])
 
       @setup_studio_iso = "#{@project.workspace_path}/setup-studio.iso"
       @setup_client_iso = "#{@project.workspace_path}/setup-client.iso"

@@ -1,5 +1,6 @@
 {
   "name": "Win2022x64",
+  "client_iso": "Win2022x64",
   "kit": "HLK2022",
   "setupmanager": "qemuhck",
   "st_image": "HLK2022.qcow2",

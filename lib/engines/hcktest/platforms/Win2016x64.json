@@ -1,5 +1,6 @@
 {
   "name": "Win2016x64",
+  "client_iso": "Win2016x64",
   "kit": "HLK1607",
   "setupmanager": "qemuhck",
   "st_image": "HLK1607.qcow2",
