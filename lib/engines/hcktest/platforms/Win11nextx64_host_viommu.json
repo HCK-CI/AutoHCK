@@ -1,5 +1,6 @@
 {
   "name": "Win11nextx64_host_viommu",
+  "client_iso": "Win11nextx64",
   "kit": "HLK11_next",
   "setupmanager": "qemuhck",
   "clients_options": {

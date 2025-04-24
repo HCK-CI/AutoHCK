@@ -1,5 +1,6 @@
 {
   "name": "Win2022nextx64_host_viommu",
+  "client_iso": "Win2022nextx64",
   "kit": "HLK2022_next",
   "setupmanager": "qemuhck",
   "clients_options": {

@@ -1,5 +1,6 @@
 {
   "name": "Win2019x64_bios",
+  "client_iso": "Win2019x64",
   "kit": "HLK1809server",
   "setupmanager": "qemuhck",
   "fw_type": "bios",

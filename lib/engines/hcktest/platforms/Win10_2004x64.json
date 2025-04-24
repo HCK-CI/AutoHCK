@@ -1,5 +1,6 @@
 {
   "name": "Win10_2004x64",
+  "client_iso": "Win10_2004x64",
   "kit": "HLK2004",
   "setupmanager": "qemuhck",
   "st_image": "HLK2004.qcow2",

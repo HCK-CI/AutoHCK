@@ -1,5 +1,6 @@
 {
   "name": "Win2019x64",
+  "client_iso": "Win2019x64",
   "kit": "HLK1809server",
   "setupmanager": "qemuhck",
   "st_image": "HLK1809.qcow2",

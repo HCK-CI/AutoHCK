@@ -1,5 +1,6 @@
 {
   "name": "Win11_22H2x64_host_viommu",
+  "client_iso": "Win11_22H2x64",
   "kit": "HLK11_22H2",
   "setupmanager": "qemuhck",
   "clients_options": {

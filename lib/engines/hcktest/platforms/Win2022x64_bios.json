@@ -1,5 +1,6 @@
 {
   "name": "Win2022x64_bios",
+  "client_iso": "Win2022x64",
   "kit": "HLK2022",
   "setupmanager": "qemuhck",
   "fw_type": "bios",
