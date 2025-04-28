@@ -58,21 +58,18 @@ module AutoHCK
     end
 
     def init_multilog(verbose)
-      @temp_pre_logger = StringIO.new
-      @pre_logger = MonoLogger.new(@temp_pre_logger)
-      @stderr_logger = MonoLogger.new($stderr)
-      @logger = MultiLogger.new(@pre_logger, @stderr_logger)
+      @string_log = StringIO.new
+      string_logger = MonoLogger.new(@string_log)
+      stderr_logger = MonoLogger.new($stderr)
+      @logger = MultiLogger.new(string_logger, stderr_logger)
       @logger.level = verbose ? 'DEBUG' : 'INFO'
     end
 
     def append_multilog(logfile_name)
       @logfile_name = logfile_name
       @logfile_path = "#{workspace_path}/#{@logfile_name}"
-      IO.copy_stream @temp_pre_logger, @logfile_path
-      @pre_logger.close
-      @logger.remove_logger(@pre_logger)
-      @pre_logger = MonoLogger.new(@logfile_path)
-      @logger.add_logger(@pre_logger)
+      IO.copy_stream @string_log, @logfile_path
+      @logger.add_logger(MonoLogger.new(@logfile_path))
     end
 
     def init_timestamp
