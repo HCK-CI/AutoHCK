@@ -45,6 +45,14 @@ module AutoHCK
       res || raise(SetupManagerError, "#{@platform['name']} does not exist")
     end
 
+    def hypervisor_info
+      @logger.info('Hypervisor info is currently not supported for physical machines')
+    end
+
+    def host_info
+      @logger.info('Host info is currently not supported for physical machines')
+    end
+
     def check_studio_image_exist
       @logger.info('Image checking is currently not supported for physical machines')
     end
