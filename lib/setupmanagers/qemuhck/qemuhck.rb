@@ -127,12 +127,18 @@ module AutoHCK
       logs.freeze
     end
 
-    def append_host_info(logs)
-      qemu_version = `#{@studio_vm.config['qemu_bin']} --version`.lines.first.strip
+    def hypervisor_info
+      `#{@studio_vm.config['qemu_bin']} --version`.lines.first.strip
+    end
 
+    def host_info
+      `uname -a`.strip
+    end
+
+    def append_host_info(logs)
       logs << <<~HOST_INFO
-        QEMU version: #{qemu_version}
-        System information: #{`uname -a`.strip}
+        QEMU version: #{hypervisor_info}
+        System information: #{host_info}
 
       HOST_INFO
     end
