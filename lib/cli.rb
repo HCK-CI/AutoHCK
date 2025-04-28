@@ -102,6 +102,7 @@ module AutoHCK
       # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       def define_options(parser)
         @reject_report_sections = []
+        @svvp = false
 
         parser.on('-p', '--platform <platform_name>', String,
                   'Platform for run test',
