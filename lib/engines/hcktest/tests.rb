@@ -29,9 +29,22 @@ module AutoHCK
       @logger = project.logger
       @playlist = Playlist.new(client, project, target, tools, @client.kit)
       @tests = T.let([], T::Array[Models::HLK::Test])
-      @tests_extra = {}
       @test_results = []
       @results_template = ERB.new(File.read('lib/templates/report.html.erb'))
+    end
+
+    sig { params(updated_tests: T::Array[Models::HLK::Test]).returns(T::Array[Models::HLK::Test]) }
+    def merge_tests_update(updated_tests)
+      # Initial load of tests, no extra information
+      return @tests = updated_tests if @tests.empty?
+
+      @tests.each do |test|
+        updated_test = updated_tests.find { _1.id == test.id }
+        # This should not happen, but to make Sorbet happy
+        raise(EngineError, "Test not found: #{test.id}") if updated_test.nil?
+
+        test.update_from_hck(updated_test)
+      end
     end
 
     sig { params(log: T::Boolean).returns(T::Array[Models::HLK::Test]) }
@@ -42,7 +55,7 @@ module AutoHCK
         @test_results = @tools.list_all_results(@target['key'], @client.name, @tag)
         @new_done_test_results = done_test_results - last_done_test_results
 
-        @tests = @playlist.list_tests(log)
+        merge_tests_update(@playlist.list_tests(log))
       rescue Playlist::ListTestsError => e
         @logger.warn(e.message)
         @logger.info('Reconnecting tools...')
@@ -84,10 +97,11 @@ module AutoHCK
       @support.name if support_needed?(test)
     end
 
-    def set_test_status(id, status)
-      return if @tests_extra.dig(id, 'status') == status
+    sig { params(test: Models::HLK::Test, status: String).void }
+    def set_test_status(test, status)
+      return if test.ex_status == status
 
-      @tests_extra[id]['status'] = status
+      test.ex_status = status
       update_summary_results_log
     end
 
@@ -95,39 +109,37 @@ module AutoHCK
       # We can't compare test objects directly because the list_tests
       # function updates the test object but the current_test function
       # returns the pure object.
+      @logger.debug("Checking queued time for test id: #{@last_queued_test&.id}. Current test: #{current_test}")
 
-      @logger.debug("Checking queued time for test id: #{@last_queued_id}. Current test: #{current_test}")
-      @logger.debug("Test extra information: #{@tests_extra[@last_queued_id]}")
+      # When @last_queued_test is nil then all queued tests are running or finished
+      return if @last_queued_test.nil?
 
-      # When @last_queued_id is nil then all queued tests are running or finished
-      return if @last_queued_id.nil?
+      @logger.debug("Test extra information: #{@last_queued_test.extra}")
 
       # When 'started_at' is not nil then last queued test is running or finished
-      return unless @tests_extra[@last_queued_id]['started_at'].nil?
+      return unless @last_queued_test.started_at.nil?
 
-      diff = time_diff(@tests_extra[@last_queued_id]['queued_at'], DateTime.now)
+      diff = time_diff(@last_queued_test.queued_at, DateTime.now)
 
       return if diff < time_to_seconds(QUEUE_TEST_TIMEOUT)
 
       @logger.warn("Test was queued #{seconds_to_time(diff)} ago! HCK hangs on?")
-      set_test_status(@last_queued_id, 'Hangs on at queued state?')
+      set_test_status(@last_queued_test, 'Hangs on at queued state?')
     end
 
     def check_test_duration_time
       return if (test = current_test).nil?
 
-      id = test.id
-      duration = test.duration
-      started_at = @tests_extra[id]['started_at']
+      started_at = test.started_at
 
       return if started_at.nil?
 
       diff = time_diff(started_at, DateTime.now)
 
-      return if diff < (2 * duration) + time_to_seconds(RUNNING_TEST_TIMEOUT)
+      return if diff < (2 * test.duration) + time_to_seconds(RUNNING_TEST_TIMEOUT)
 
       @logger.warn("Test was running #{seconds_to_time(diff)} ago! HCK hangs on?")
-      set_test_status(id, 'Hangs on at running state?')
+      set_test_status(test, 'Hangs on at running state?')
     end
 
     def wait_queued_test(id)
@@ -188,10 +200,9 @@ module AutoHCK
                         support: test_support(test),
                         parameters: test_parameters(test.name))
 
-      @tests_extra[test.id] ||= {}
-      @tests_extra[test.id]['queued_at'] = DateTime.now
+      test.queued_at = DateTime.now
 
-      @last_queued_id = test.id
+      @last_queued_test = test
 
       return unless wait
 
@@ -236,8 +247,8 @@ module AutoHCK
     def on_test_start(test)
       @logger.info(">>> Currently running: #{test.name} [#{test.estimatedruntime}]")
 
-      @tests_extra[test.id]['started_at'] = DateTime.now
-      @tests_extra[test.id]['status'] = nil
+      test.started_at = DateTime.now
+      test.ex_status = nil
 
       update_summary_results_log
     end
@@ -263,7 +274,7 @@ module AutoHCK
                                         pool: @tag,
                                         index_instance_id: true)
       @logger.info('Test archive successfully created')
-      update_remote(test.id, test_result, res['hostlogszippath'], res['status'], res['testname'])
+      update_remote(test, test_result, res['hostlogszippath'], res['status'], res['testname'])
       @logger.info('Test archive uploaded via the result uploader')
     rescue Tools::ZipTestResultLogsError
       @logger.info('Skipping archiving test result logs')
@@ -306,8 +317,8 @@ module AutoHCK
 
     def summary_results_log
       @tests.reduce('') do |sum, test|
-        extra_info = @tests_extra.dig(test.id, 'dump') ? '(with Minidump)' : ''
-        status = @tests_extra.dig(test.id, 'status') || test.status
+        extra_info = test.dump_path ? '(with Minidump)' : ''
+        status = test.ex_status || test.status
 
         sum + "#{status}: #{test.name} [#{test.estimatedruntime}]#{extra_info}#{format_times(test)}\n"
       end
@@ -315,9 +326,9 @@ module AutoHCK
 
     sig { params(test: Models::HLK::Test).returns(String) }
     def format_times(test)
-      queued_at = @tests_extra.dig(test.id, 'queued_at')
+      queued_at = test.queued_at
       queued_at_str = queued_at ? " [Queued time: #{queued_at}]" : ''
-      started_at = @tests_extra.dig(test.id, 'started_at')
+      started_at = test.started_at
       started_at_str = started_at ? " [Started time: #{started_at}]" : ''
 
       "#{queued_at_str}#{started_at_str}"
@@ -335,13 +346,13 @@ module AutoHCK
     end
 
     sig do
-      params(test_id: String,
+      params(test: Models::HLK::Test,
              test_result: T::Hash[String, T.untyped],
              test_logs_path: String,
              status: String,
              testname: String).void
     end
-    def update_remote(test_id, test_result, test_logs_path, status, testname)
+    def update_remote(test, test_result, test_logs_path, status, testname)
       test_instance_id = test_result['instanceid']
       delete_old_remote(testname, test_instance_id)
 
@@ -352,9 +363,9 @@ module AutoHCK
       File.write("#{@project.workspace_path}/#{r_name}", JSON.pretty_generate(test_result))
       @project.result_uploader.upload_file("#{@project.workspace_path}/#{r_name}", r_name)
 
-      if @tests_extra.dig(test_id, 'dump')
+      if test.dump_path
         r_name = "Minidump_#{test_instance_id}_#{testname}.zip"
-        @project.result_uploader.upload_file(@tests_extra.dig(test_id, 'dump'), r_name)
+        @project.result_uploader.upload_file(test.dump_path, r_name)
       end
 
       update_summary_results_log
@@ -409,13 +420,14 @@ module AutoHCK
       downloaded_client || downloaded_support
     end
 
-    def collect_memory_dumps(test_id)
-      l_zip_path = "#{@project.workspace_path}/memory_dump_#{test_id}.zip"
-      l_tmp_path = "#{@project.workspace_path}/tmp_#{test_id}"
+    sig { params(test: Models::HLK::Test).void }
+    def collect_memory_dumps(test)
+      l_zip_path = "#{@project.workspace_path}/memory_dump_#{test.id}.zip"
+      l_tmp_path = "#{@project.workspace_path}/tmp_#{test.id}"
 
       if download_memory_dumps(l_tmp_path)
         create_zip_from_directory(l_zip_path, l_tmp_path)
-        @tests_extra[test_id]['dump'] = l_zip_path
+        test.dump_path = l_zip_path
       end
 
       FileUtils.rm_rf(l_tmp_path)
@@ -423,7 +435,7 @@ module AutoHCK
 
     sig { params(test: Models::HLK::Test, test_result: T::Hash[String, T.untyped]).void }
     def handle_finished_test_result(test, test_result)
-      collect_memory_dumps(test.id)
+      collect_memory_dumps(test)
 
       print_test_results(test, test_result)
       archive_test_results(test, test_result)
@@ -445,10 +457,10 @@ module AutoHCK
         test = test_for_result(result)
         next if test.nil?
 
-        @tests_extra[test.id]['status'] = nil
+        test.ex_status = nil
         handle_finished_test_result(test, result)
 
-        @last_queued_id = nil if test.id == @last_queued_id
+        @last_queued_test = nil if test.id == @last_queued_test&.id
       end
       print_tests_stats
     end
