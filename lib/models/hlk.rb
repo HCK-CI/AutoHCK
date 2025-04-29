@@ -71,6 +71,35 @@ module AutoHCK
         prop :url, T.nilable(String)
         prop :run_count, Integer, default: 1
 
+        # Extra information
+        prop :ex_status, T.nilable(String)
+        prop :queued_at, T.nilable(DateTime)
+        prop :started_at, T.nilable(DateTime)
+        prop :dump_path, T.nilable(String)
+
+        sig { params(hck_test: Test).void }
+        def update_from_hck(hck_test)
+          @name = hck_test.name
+          @id = hck_test.id
+          @testtype = hck_test.testtype
+          @estimatedruntime = hck_test.estimatedruntime
+          @requiresspecialconfiguration = hck_test.requiresspecialconfiguration
+          @requiressupplementalcontent = hck_test.requiressupplementalcontent
+          @scheduleoptions = hck_test.scheduleoptions
+          @status = hck_test.status
+          @executionstate = hck_test.executionstate
+        end
+
+        sig { returns(T::Hash[String, T.untyped]) }
+        def extra
+          {
+            'ex_status' => ex_status,
+            'queued_at' => queued_at,
+            'started_at' => started_at,
+            'dump_path' => dump_path
+          }
+        end
+
         sig { returns(Float) }
         def duration
           time_to_seconds(estimatedruntime)
