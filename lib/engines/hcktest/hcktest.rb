@@ -161,7 +161,7 @@ module AutoHCK
     end
 
     def configure_and_synchronize_clients
-      run_only = @project.options.test.manual && @project.options.test.driver_path.nil?
+      run_only = @project.restored? || (@project.options.test.manual && @project.options.test.driver_path.nil?)
 
       @clients.each_value do |client|
         client.configure(run_only:)
@@ -178,13 +178,14 @@ module AutoHCK
       configure_and_synchronize_clients
       @studio.keep_snapshot
       @clients.each_value(&:keep_snapshot)
+      @project.save_session unless @project.restored?
     end
 
     def run_clients_and_configure_setup(scope, **opts)
       retries = 0
       begin
         scope.transaction do |tmp_scope|
-          run_clients tmp_scope, keep_alive: true, **opts
+          run_clients tmp_scope, keep_alive: true, **opts, **restored_options
 
           configure_setup_and_synchronize
         end
@@ -234,7 +235,6 @@ module AutoHCK
 
     def prepare_tests
       client, support = @clients.values
-
       @tests = Tests.new(client, support, @project, client.target, @studio.tools)
 
       if client.target.nil?
@@ -243,12 +243,24 @@ module AutoHCK
         @project.logger.info('HLK test target is not defined, allow in manual mode')
       end
 
+      @tests.verify_target if @project.restored?
+
       @test_list = @tests.update_tests(log: true)
+    end
+
+    def restored_options
+      return {} unless @project.restored?
+
+      {
+        boot_from_snapshot: true,
+        create_snapshot: false,
+        configured: true
+      }
     end
 
     def auto_run
       ResourceScope.open do |scope|
-        run_studio scope
+        run_studio(scope, create_snapshot: true, **restored_options)
         sleep 5 until @studio.up?
 
         run_tests_without_config
@@ -275,7 +287,7 @@ module AutoHCK
         next if tests.empty?
 
         ResourceScope.open do |scope|
-          run_clients_and_configure_setup(scope, group => true, create_snapshot: false, boot_from_snapshot: true)
+          run_clients_and_configure_setup(scope, group => true, create_snapshot: true, boot_from_snapshot: true)
 
           @logger.info("Clients ready, running #{group} tests")
           @tests.run(tests)
@@ -299,7 +311,7 @@ module AutoHCK
     end
 
     def run
-      upload_driver_package unless @driver_path.nil?
+      upload_driver_package unless @driver_path.nil? || @project.restored?
 
       if @project.options.test.dump
         @project.logger.info('AutoHCK started in dump only mode')
@@ -307,7 +319,6 @@ module AutoHCK
         dump_run
 
         @project.logger.info("Find all scripts in folder: #{@project.workspace_path}")
-        @project.logger.warn('Dump mode is only for basic tests.')
         @project.logger.warn('For specific configurations (e.g., Secure Boot tests), update scripts manually.')
       else
         auto_run
