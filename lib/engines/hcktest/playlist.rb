@@ -1,9 +1,11 @@
+# typed: true
 # frozen_string_literal: true
 
 # AutoHCK module
 module AutoHCK
   # Playlist class
   class Playlist
+    extend T::Sig
     include Helper
 
     attr_reader :rejected_test, :playlist
@@ -22,27 +24,28 @@ module AutoHCK
                     custom_playlist
                   end
 
-      @rejected_test = []
+      @rejected_test = T.let([], T::Array[Models::HLK::Test])
+      @tests = T.let([], T::Array[Models::HLK::Test])
     end
 
     # A custom ListTests error exception
     class ListTestsError < AutoHCKError; end
 
+    sig { params(test: Models::HLK::Test).returns(String) }
     def info_page_url(test)
       # TODO: Add check that URL returns 200 (OK), not 404 (Not Found)
-      "https://docs.microsoft.com/en-us/windows-hardware/test/hlk/testref/#{test['id']}"
+      "https://docs.microsoft.com/en-us/windows-hardware/test/hlk/testref/#{test.id}"
     end
 
+    sig { params(log: T::Boolean).returns(T::Array[Models::HLK::Test]) }
     def list_tests(log)
       return @tests = [] if @target.nil?
 
       @tests = @tools.list_tests(@target['key'], @machine, @project.engine_tag,
                                  @playlist)
-      raise ListTestsError, 'Failed to list tests' unless @tests
 
       @tests.each do |t|
-        t['url'] = info_page_url(t)
-        t['run_count'] = 1
+        t.url = info_page_url(t)
       end
 
       custom_select_test_names(log)
@@ -54,6 +57,7 @@ module AutoHCK
       @target = target
     end
 
+    sig { params(log: T::Boolean).returns(T.nilable(String)) }
     def ms_playlist(log)
       kit = @kit
       playlists_path = @project.engine.config.playlists_path
@@ -69,6 +73,7 @@ module AutoHCK
       workspace_file
     end
 
+    sig { returns(String) }
     def custom_playlist
       playlist = @project.options.test.playlist
 
@@ -80,20 +85,18 @@ module AutoHCK
       workspace_file
     end
 
+    sig { returns(T::Array[Models::HLK::Test]) }
     def sort_by_duration
-      @tests.each_with_index do |x, i|
-        @tests[i]['duration'] = time_to_seconds(x['estimatedruntime'])
-      end
-      @tests.sort_by! { |test| test['duration'] }
+      @tests.sort_by!(&:duration)
     end
 
     def intersect_select_tests(select_test_names)
       select_test_names_counted = select_test_names.tally
 
       @tests.select! do |test|
-        next unless select_test_names_counted.key?(test['name'])
+        next unless select_test_names_counted.key?(test.name)
 
-        test['run_count'] = select_test_names_counted[test['name']] if @project.options.test.allow_test_duplication
+        test.run_count = select_test_names_counted[test.name] if @project.options.test.allow_test_duplication
 
         true
       end
@@ -129,7 +132,7 @@ module AutoHCK
       return unless reject_test_names
 
       @tests.reject! do |test|
-        if reject_test_names.include?(test['name'])
+        if reject_test_names.include?(test.name)
           @rejected_test << test
           true
         else

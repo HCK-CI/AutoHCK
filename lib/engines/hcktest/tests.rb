@@ -1,9 +1,11 @@
+# typed: true
 # frozen_string_literal: true
 
 # AutoHCK module
 module AutoHCK
   # Tests class
   class Tests
+    extend T::Sig
     include Helper
 
     HANDLE_TESTS_POLLING_INTERVAL = 60
@@ -26,51 +28,56 @@ module AutoHCK
       @support = support
       @logger = project.logger
       @playlist = Playlist.new(client, project, target, tools, @client.kit)
-      @tests = []
+      @tests = T.let([], T::Array[Models::HLK::Test])
       @tests_extra = {}
       @test_results = []
       @results_template = ERB.new(File.read('lib/templates/report.html.erb'))
     end
 
+    sig { params(log: T::Boolean).returns(T::Array[Models::HLK::Test]) }
     def update_tests(log: false)
-      retries ||= 0
+      retries = 0
+      begin
+        last_done_test_results = done_test_results
+        @test_results = @tools.list_all_results(@target['key'], @client.name, @tag)
+        @new_done_test_results = done_test_results - last_done_test_results
 
-      last_done_test_results = done_test_results
-      @test_results = @tools.list_all_results(@target['key'], @client.name, @tag)
-      @new_done_test_results = done_test_results - last_done_test_results
+        @tests = @playlist.list_tests(log)
+      rescue Playlist::ListTestsError => e
+        @logger.warn(e.message)
+        @logger.info('Reconnecting tools...')
+        @tools.reconnect
+        raise unless (retries += 1) == 1 || verify_target
 
-      @tests = @playlist.list_tests(log)
-    rescue Playlist::ListTestsError => e
-      @logger.warn(e.message)
-      @logger.info('Reconnecting tools...')
-      @tools.reconnect
-      raise unless (retries += 1) == 1 || verify_target
-
-      @logger.info('Trying again to list tests')
-      retry
+        @logger.info('Trying again to list tests')
+        retry
+      end
     end
 
     def verify_target
-      retries ||= 0
-      @logger.info('Verifying target...')
-      target = Targets.new(@client, @project, @tools, @tag).search_target
-      return false if target.eql?(@target)
+      retries = 0
+      begin
+        @logger.info('Verifying target...')
+        target = Targets.new(@client, @project, @tools, @tag).search_target
+        return false if target.eql?(@target)
 
-      @logger.info('Target changed, updating...')
-      @target = target
-      @playlist.update_target(target)
-      true
-    rescue Targets::SearchTargetError => e
-      @logger.warn(e.message)
-      raise unless (retries += 1) < VERIFY_TARGET_RETRIES
+        @logger.info('Target changed, updating...')
+        @target = target
+        @playlist.update_target(target)
+        true
+      rescue Targets::SearchTargetError => e
+        @logger.warn(e.message)
+        raise unless (retries += 1) < VERIFY_TARGET_RETRIES
 
-      sleep VERIFY_TARGET_SLEEP
-      @logger.info('Trying again to verify target')
-      retry
+        sleep VERIFY_TARGET_SLEEP
+        @logger.info('Trying again to verify target')
+        retry
+      end
     end
 
+    sig { params(test: Models::HLK::Test).returns(T::Boolean) }
     def support_needed?(test)
-      (test['scheduleoptions'] & %w[6 RequiresMultipleMachines]) != []
+      (test.scheduleoptions & %w[6 RequiresMultipleMachines]) != []
     end
 
     def test_support(test)
@@ -109,8 +116,8 @@ module AutoHCK
     def check_test_duration_time
       return if (test = current_test).nil?
 
-      id = test['id']
-      duration = test['duration']
+      id = test.id
+      duration = test.duration
       started_at = @tests_extra[id]['started_at']
 
       return if started_at.nil?
@@ -133,7 +140,7 @@ module AutoHCK
 
         break if last_result['status'] == 'InQueue'
         break if last_result['status'] == 'Running'
-        break if test_finished?(last_result)
+        break if test_result_finished?(last_result)
       end
     end
 
@@ -155,8 +162,9 @@ module AutoHCK
       @tools.run_on_machine(client.name, desc, command)
     end
 
+    sig { params(test: Models::HLK::Test, type: Symbol).void }
     def run_test_commands(test, type)
-      select_test_config(test['name'], type).each do |command|
+      select_test_config(test.name, type).each do |command|
         guest_cmd = command.guest_run
         desc = command.desc
         if guest_cmd
@@ -171,31 +179,33 @@ module AutoHCK
       end
     end
 
+    sig { params(test: Models::HLK::Test, wait: T::Boolean).void }
     def queue_test(test, wait: false)
-      @tools.queue_test(test_id: test['id'],
+      @tools.queue_test(test_id: test.id,
                         target_key: @target['key'],
                         machine: @client.name,
                         tag: @tag,
                         support: test_support(test),
-                        parameters: test_parameters(test['name']))
+                        parameters: test_parameters(test.name))
 
-      @tests_extra[test['id']] ||= {}
-      @tests_extra[test['id']]['queued_at'] = DateTime.now
+      @tests_extra[test.id] ||= {}
+      @tests_extra[test.id]['queued_at'] = DateTime.now
 
-      @last_queued_id = test['id']
+      @last_queued_id = test.id
 
       return unless wait
 
-      wait_queued_test(test['id'])
+      wait_queued_test(test.id)
     end
 
+    sig { returns(T.nilable(Models::HLK::Test)) }
     def current_test
-      @tests.find { |test| test['executionstate'] == 'Running' }
+      @tests.find { |test| test.executionstate == Models::HLK::ExecutionState::Running }
     end
 
     def tests_stats
-      cnt_passed = tests_stats_status_count('Passed')
-      cnt_failed = tests_stats_status_count('Failed')
+      cnt_passed = tests_stats_status_count(Models::HLK::TestResultStatus::Passed)
+      cnt_failed = tests_stats_status_count(Models::HLK::TestResultStatus::Failed)
       total = @tests.count
 
       { 'current' => current_test, 'passed' => cnt_passed,
@@ -204,28 +214,30 @@ module AutoHCK
         'currentcount' => cnt_passed + cnt_failed + 1, 'total' => total }
     end
 
-    def test_finished?(test)
-      %w[Passed Failed].include? test['status']
+    def test_result_finished?(result)
+      %w[Passed Failed].include? result['status']
     end
 
+    sig { params(status: Models::HLK::TestResultStatus).returns(Integer) }
     def tests_stats_status_count(status)
       # When test is running more than once HLK reports test['status'] = PASS/FAIL
       # even when test is still running again. So we need to check test['executionstate']
       # to be sure that test is really finished.
       # Otherwise update_tests function can report test as finished multiple times
       # just with different executionstate.
-      @tests.count { |test| test['status'] == status && test['executionstate'] == 'NotRunning' }
+      @tests.count { |test| test.status == status && test.executionstate == Models::HLK::ExecutionState::NotRunning }
     end
 
     def done_test_results
-      @test_results.select { |test_result| test_finished?(test_result) }
+      @test_results.select { |test_result| test_result_finished?(test_result) }
     end
 
+    sig { params(test: Models::HLK::Test).void }
     def on_test_start(test)
-      @logger.info(">>> Currently running: #{test['name']} [#{test['estimatedruntime']}]")
+      @logger.info(">>> Currently running: #{test.name} [#{test.estimatedruntime}]")
 
-      @tests_extra[test['id']]['started_at'] = DateTime.now
-      @tests_extra[test['id']]['status'] = nil
+      @tests_extra[test.id]['started_at'] = DateTime.now
+      @tests_extra[test.id]['status'] = nil
 
       update_summary_results_log
     end
@@ -235,21 +247,23 @@ module AutoHCK
       @logger.info("<<< Passed: #{stats['passed']} | Failed: #{stats['failed']} | InQueue: #{stats['inqueue']}")
     end
 
+    sig { params(test: Models::HLK::Test, test_result: T::Hash[String, T.untyped]).void }
     def print_test_results(test, test_result)
-      @logger.info("#{test_result['status']}: #{test['name']}")
-      @logger.info("Test information page: #{test['url']}")
+      @logger.info("#{test_result['status']}: #{test.name}")
+      @logger.info("Test information page: #{test.url}")
     end
 
+    sig { params(test: Models::HLK::Test, test_result: T::Hash[String, T.untyped]).void }
     def archive_test_results(test, test_result)
       res = @tools.zip_test_result_logs(result_index: test_result['instanceid'],
-                                        test: test['id'],
+                                        test: test.id,
                                         target: @target['key'],
                                         project: @tag,
                                         machine: @client.name,
                                         pool: @tag,
                                         index_instance_id: true)
       @logger.info('Test archive successfully created')
-      update_remote(test['id'], test_result, res['hostlogszippath'], res['status'], res['testname'])
+      update_remote(test.id, test_result, res['hostlogszippath'], res['status'], res['testname'])
       @logger.info('Test archive uploaded via the result uploader')
     rescue Tools::ZipTestResultLogsError
       @logger.info('Skipping archiving test result logs')
@@ -286,23 +300,24 @@ module AutoHCK
 
     def summary_rejected_test_log
       @playlist.rejected_test.reduce('') do |sum, test|
-        sum + "Skipped: #{test['name']} [#{test['estimatedruntime']}]\n"
+        sum + "Skipped: #{test.name} [#{test.estimatedruntime}]\n"
       end
     end
 
     def summary_results_log
       @tests.reduce('') do |sum, test|
-        extra_info = @tests_extra.dig(test['id'], 'dump') ? '(with Minidump)' : ''
-        status = @tests_extra.dig(test['id'], 'status') || test['status']
+        extra_info = @tests_extra.dig(test.id, 'dump') ? '(with Minidump)' : ''
+        status = @tests_extra.dig(test.id, 'status') || test.status
 
-        sum + "#{status}: #{test['name']} [#{test['estimatedruntime']}]#{extra_info}#{format_times(test)}\n"
+        sum + "#{status}: #{test.name} [#{test.estimatedruntime}]#{extra_info}#{format_times(test)}\n"
       end
     end
 
+    sig { params(test: Models::HLK::Test).returns(String) }
     def format_times(test)
-      queued_at = @tests_extra.dig(test['id'], 'queued_at')
+      queued_at = @tests_extra.dig(test.id, 'queued_at')
       queued_at_str = queued_at ? " [Queued time: #{queued_at}]" : ''
-      started_at = @tests_extra.dig(test['id'], 'started_at')
+      started_at = @tests_extra.dig(test.id, 'started_at')
       started_at_str = started_at ? " [Started time: #{started_at}]" : ''
 
       "#{queued_at_str}#{started_at_str}"
@@ -319,6 +334,13 @@ module AutoHCK
       generate_report
     end
 
+    sig do
+      params(test_id: String,
+             test_result: T::Hash[String, T.untyped],
+             test_logs_path: String,
+             status: String,
+             testname: String).void
+    end
     def update_remote(test_id, test_result, test_logs_path, status, testname)
       test_instance_id = test_result['instanceid']
       delete_old_remote(testname, test_instance_id)
@@ -358,7 +380,7 @@ module AutoHCK
       # As a result `@new_done_test_results = []`, because test result `status` is
       # not 'Passed/Failed' yet.
 
-      @tests.none? { _1['status'] == 'InQueue' } &&
+      @tests.none? { _1.status == Models::HLK::TestResultStatus::InQueue } &&
         # TestResult.Status does not return Queued
         # (if a test is scheduled or running it returns Running).
         @test_results.none? { _1['status'] == 'Running' } &&
@@ -399,15 +421,21 @@ module AutoHCK
       FileUtils.rm_rf(l_tmp_path)
     end
 
+    sig { params(test: Models::HLK::Test, test_result: T::Hash[String, T.untyped]).void }
     def handle_finished_test_result(test, test_result)
-      collect_memory_dumps(test['id'])
+      collect_memory_dumps(test.id)
 
       print_test_results(test, test_result)
       archive_test_results(test, test_result)
     end
 
+    sig { params(result: T::Hash[String, T.untyped]).returns(Models::HLK::Test) }
     def test_for_result(result)
-      @tests.find { |test| test['name'] == result['name'] }
+      test = @tests.find { |test| test.name == result['name'] }
+
+      raise "Test not found for result: #{result}" if test.nil?
+
+      test
     end
 
     def handle_finished_test_results(results)
@@ -417,10 +445,10 @@ module AutoHCK
         test = test_for_result(result)
         next if test.nil?
 
-        @tests_extra[test['id']]['status'] = nil
+        @tests_extra[test.id]['status'] = nil
         handle_finished_test_result(test, result)
 
-        @last_queued_id = nil if test['id'] == @last_queued_id
+        @last_queued_id = nil if test.id == @last_queued_id
       end
       print_tests_stats
     end
@@ -444,7 +472,7 @@ module AutoHCK
     end
 
     def handle_test_running
-      running = nil
+      running = T.let(nil, T.nilable(Models::HLK::Test))
 
       until @project.run_terminated
         @project.check_run_termination
@@ -500,15 +528,16 @@ module AutoHCK
       build_system_info(support_sysinfo)
     end
 
+    sig { params(tests: T::Array[Models::HLK::Test]).void }
     def run(tests)
       load_clients_system_info
       update_summary_results_log
       tests.each do |test|
         run_test_commands(test, :pre_test_commands)
-        run_count = test['run_count']
+        run_count = test.run_count
 
         (1..run_count).each do |run_number|
-          test_str = "run #{run_number}/#{run_count} #{test['name']} (#{test['id']})"
+          test_str = "run #{run_number}/#{run_count} #{test.name} (#{test.id})"
           @logger.info("Adding to queue: #{test_str}")
           queue_test(test, wait: true)
           handle_test_running
