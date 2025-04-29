@@ -274,10 +274,11 @@ module AutoHCK
                                         pool: @tag,
                                         index_instance_id: true)
       @logger.info('Test archive successfully created')
-      update_remote(test, test_result, res['hostlogszippath'], res['status'], res['testname'])
-      @logger.info('Test archive uploaded via the result uploader')
     rescue Tools::ZipTestResultLogsError
       @logger.info('Skipping archiving test result logs')
+    ensure
+      update_remote(test, test_result, res&.dig('hostlogszippath'), test_result['status'], test.name)
+      @logger.info('Test results uploaded via the result uploader')
     end
 
     def report_data
@@ -348,7 +349,7 @@ module AutoHCK
     sig do
       params(test: Models::HLK::Test,
              test_result: T::Hash[String, T.untyped],
-             test_logs_path: String,
+             test_logs_path: T.nilable(String),
              status: String,
              testname: String).void
     end
@@ -356,8 +357,10 @@ module AutoHCK
       test_instance_id = test_result['instanceid']
       delete_old_remote(testname, test_instance_id)
 
-      r_name = "#{status}_#{test_instance_id}_#{testname}#{File.extname(test_logs_path)}"
-      @project.result_uploader.upload_file(test_logs_path, r_name)
+      if test_logs_path
+        r_name = "#{status}_#{test_instance_id}_#{testname}#{File.extname(test_logs_path)}"
+        @project.result_uploader.upload_file(test_logs_path, r_name)
+      end
 
       r_name = "Result_#{test_instance_id}_#{testname}.json"
       File.write("#{@project.workspace_path}/#{r_name}", JSON.pretty_generate(test_result))
