@@ -331,8 +331,10 @@ module AutoHCK
       queued_at_str = queued_at ? " [Queued time: #{queued_at}]" : ''
       started_at = test.started_at
       started_at_str = started_at ? " [Started time: #{started_at}]" : ''
+      finished_at = test.finished_at
+      finished_at_str = finished_at ? " [Finished time: #{finished_at}]" : ''
 
-      "#{queued_at_str}#{started_at_str}"
+      "#{queued_at_str}#{started_at_str}#{finished_at_str}"
     end
 
     def update_summary_results_log
@@ -442,6 +444,8 @@ module AutoHCK
 
       print_test_results(test, test_result)
       archive_test_results(test, test_result)
+
+      test.finished_at = DateTime.now
     end
 
     sig { params(result: T::Hash[String, T.untyped]).returns(Models::HLK::Test) }

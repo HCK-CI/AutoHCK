@@ -75,6 +75,7 @@ module AutoHCK
         prop :ex_status, T.nilable(String)
         prop :queued_at, T.nilable(DateTime)
         prop :started_at, T.nilable(DateTime)
+        prop :finished_at, T.nilable(DateTime)
         prop :dump_path, T.nilable(String)
 
         sig { params(hck_test: Test).void }
@@ -96,6 +97,7 @@ module AutoHCK
             'ex_status' => ex_status,
             'queued_at' => queued_at,
             'started_at' => started_at,
+            'finished_at' => finished_at,
             'dump_path' => dump_path
           }
         end
