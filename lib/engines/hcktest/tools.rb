@@ -352,9 +352,11 @@ module AutoHCK
     end
 
     def list_tests(key, machine, tag, playlist)
-      retry_tools_command(__method__) do
+      tests = retry_tools_command(__method__) do
         act_with_tools { _1.list_tests(key, tag, machine, tag, nil, nil, playlist) }
       end
+
+      tests.map { Models::HLK::Test.from_hash(_1) }
     end
 
     def list_test_results(test_id, target_key, machine, tag)
