@@ -27,6 +27,10 @@ module AutoHCK
       validate_paths unless @driver_path.nil?
     end
 
+    def test_steps
+      @tests&.tests || []
+    end
+
     def prepare_extra_sw
       @drivers.each do |driver|
         next if driver.extra_software.nil?

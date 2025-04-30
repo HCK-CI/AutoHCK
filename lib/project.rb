@@ -5,11 +5,12 @@ module AutoHCK
   # project class
   class Project
     include Helper
+    JUNIT_RESULT = 'junit.xml'
 
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :id,
                 :workspace_path, :github, :result_uploader, :engine_tag,
                 :engine_platform, :engine_type, :options, :extra_sw_manager,
-                :run_terminated
+                :run_terminated, :engine_name, :string_log
 
     def initialize(scope, options)
       @scope = scope
@@ -89,6 +90,7 @@ module AutoHCK
       @engine_platform = @engine_type.platform(@logger, @options)
       @setup_manager_type = @engine_platform.nil? ? nil : SetupManager.select(@engine_platform['setupmanager'])
       @run_terminated = false
+      @junit = JUnit.new(self)
     end
 
     def configure_result_uploader
@@ -190,8 +192,19 @@ module AutoHCK
       @github.handle_error if @github&.connected?
     end
 
+    def generate_junit
+      results_file = "#{@workspace_path}/#{JUNIT_RESULT}"
+
+      @junit.generate(results_file)
+
+      @result_uploader.delete_file(JUNIT_RESULT)
+      @result_uploader.upload_file(results_file, JUNIT_RESULT)
+    end
+
     def close
       @logger.debug('Closing AutoHCK project')
+      generate_junit
+
       @result_uploader&.upload_file(@logfile_path, 'AutoHCK.log')
     end
   end
