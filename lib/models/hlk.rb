@@ -103,6 +103,19 @@ module AutoHCK
           }
         end
 
+        sig { returns(Integer) }
+        def execution_time
+          return 0 if finished_at.nil?
+
+          if started_at.nil?
+            return 0 if queued_at.nil?
+
+            return time_diff(queued_at, finished_at)
+          end
+
+          time_diff(started_at, finished_at)
+        end
+
         sig { returns(Float) }
         def duration
           time_to_seconds(estimatedruntime)
