@@ -48,6 +48,11 @@ module AutoHCK
       end
     end
 
+    sig { returns(T::Array[Models::HLK::Test]) }
+    def rejected_tests
+      @playlist.rejected_test
+    end
+
     sig { params(log: T::Boolean).returns(T::Array[Models::HLK::Test]) }
     def update_tests(log: false)
       retries = 0
