@@ -49,8 +49,9 @@ module AutoHCK
       return [] if @project&.engine&.test_steps.nil?
 
       @project.engine.test_steps.select do |step|
-        [AutoHCK::Models::HLK::TestResultStatus::Failed,
-         AutoHCK::Models::HLK::TestResultStatus::Passed].include?(step.status)
+        step.is_skipped ||
+          [AutoHCK::Models::HLK::TestResultStatus::Failed,
+           AutoHCK::Models::HLK::TestResultStatus::Passed].include?(step.status)
       end
     end
 

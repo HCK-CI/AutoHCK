@@ -28,7 +28,7 @@ module AutoHCK
     end
 
     def test_steps
-      @tests&.tests || []
+      (@tests&.tests || []) + (@tests&.rejected_tests || [])
     end
 
     def prepare_extra_sw
