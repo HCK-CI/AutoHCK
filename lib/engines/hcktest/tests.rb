@@ -446,6 +446,7 @@ module AutoHCK
       archive_test_results(test, test_result)
 
       test.finished_at = DateTime.now
+      test.last_result = test_result
     end
 
     sig { params(result: T::Hash[String, T.untyped]).returns(Models::HLK::Test) }

@@ -77,6 +77,7 @@ module AutoHCK
         prop :started_at, T.nilable(DateTime)
         prop :finished_at, T.nilable(DateTime)
         prop :dump_path, T.nilable(String)
+        prop :last_result, T.nilable(T::Hash[String, T.untyped])
 
         sig { params(hck_test: Test).void }
         def update_from_hck(hck_test)
