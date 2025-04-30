@@ -4,7 +4,7 @@
     tests="<%= engine_test_steps.count %>"
     failures="<%= engine_test_steps.count { _1.status == AutoHCK::Models::HLK::TestResultStatus::Failed } %>"
     errors="0"
-    skipped="0"
+    skipped="<%= engine_test_steps.count(&:is_skipped) %>"
     time="<%= engine_test_steps.sum { _1.execution_time } %>"
     timestamp="<%= timestamp %>">
     <testsuite
@@ -12,7 +12,7 @@
         tests="<%= engine_test_steps.count %>"
         failures="<%= engine_test_steps.count { _1.status == AutoHCK::Models::HLK::TestResultStatus::Failed } %>"
         errors="0"
-        skipped="0"
+        skipped="<%= engine_test_steps.count(&:is_skipped) %>"
         time="<%= engine_test_steps.sum { _1.execution_time } %>"
         timestamp="<%= timestamp %>">
         <properties>
@@ -30,6 +30,8 @@
                 <% end %>
                 <% if test_step.status == AutoHCK::Models::HLK::TestResultStatus::Failed %>
                     <failure />
+                <% elsif test_step.is_skipped %>
+                    <skipped />
                 <% end %>
             </testcase>
         <% end %>
