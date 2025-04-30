@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites
+    name="<%= tag %>"
+    tests="<%= engine_test_steps.count %>"
+    failures="<%= engine_test_steps.count { _1.status == AutoHCK::Models::HLK::TestResultStatus::Failed } %>"
+    errors="0"
+    skipped="0"
+    time="<%= engine_test_steps.sum { _1.execution_time } %>"
+    timestamp="<%= timestamp %>">
+    <testsuite
+        name="<%= tag %>"
+        tests="<%= engine_test_steps.count %>"
+        failures="<%= engine_test_steps.count { _1.status == AutoHCK::Models::HLK::TestResultStatus::Failed } %>"
+        errors="0"
+        skipped="0"
+        time="<%= engine_test_steps.sum { _1.execution_time } %>"
+        timestamp="<%= timestamp %>">
+        <properties>
+            <% run_properties.each do |name, value| %>
+                <property name="<%= name %>" value="<%= value %>" />
+            <% end %>
+        </properties>
+
+        <system-err><%= auto_hck_log %></system-err>
+
+        <% engine_test_steps.each do |test_step| %>
+            <testcase name="<%= test_step.name %>" classname="HLKTest" time="<%= test_step.execution_time %>">
+                <% unless test_step.last_result.nil? %>
+                    <system-out><%= JSON.pretty_generate(test_step.last_result) %></system-out>
+                <% end %>
+                <% if test_step.status == AutoHCK::Models::HLK::TestResultStatus::Failed %>
+                    <failure />
+                <% end %>
+            </testcase>
+        <% end %>
+    </testsuite>
+</testsuites>

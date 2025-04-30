@@ -7,6 +7,7 @@ module AutoHCK
   class Tests
     extend T::Sig
     include Helper
+    attr_reader :tests
 
     HANDLE_TESTS_POLLING_INTERVAL = 60
     APPLYING_FILTERS_INTERVAL = 50
@@ -561,6 +562,7 @@ module AutoHCK
           @logger.info("Adding to queue: #{test_str}")
           queue_test(test, wait: true)
           handle_test_running
+          @project.generate_junit
 
           break if @project.run_terminated
         end

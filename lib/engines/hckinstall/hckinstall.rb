@@ -30,6 +30,10 @@ module AutoHCK
       @logger.debug('HCKInstall: initialized')
     end
 
+    def test_steps
+      []
+    end
+
     def self.tag(options)
       options.install.platform
     end

@@ -235,6 +235,7 @@ DEPENDENCIES
   curb
   dotenv
   dropbox_api
+  erubi
   filelock
   httpclient
   mono_logger
