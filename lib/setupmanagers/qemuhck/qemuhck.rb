@@ -83,10 +83,13 @@ module AutoHCK
       options
     end
 
-    def boot_device
-      return {} if @project.options.test.boot_device.nil?
+    def cli_device_override
+      dev = {}
 
-      { 'boot_device' => @project.options.test.boot_device }
+      dev['boot_device'] = @project.options.test.boot_device
+      dev['ctrl_net_device'] = @project.options.common.client_ctrl_net_dev
+
+      dev.compact
     end
 
     def client_vm_common_options
@@ -98,7 +101,7 @@ module AutoHCK
         'iso_path' => @project.config['iso_path'],
         'client_world_net' => @project.options.common.client_world_net,
         'share_on_host_path' => @project.options.common.share_on_host_path
-      }.merge(boot_device)
+      }.merge(cli_device_override)
     end
 
     def initialize_clients_vm

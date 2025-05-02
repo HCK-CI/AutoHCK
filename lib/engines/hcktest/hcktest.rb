@@ -91,6 +91,7 @@ module AutoHCK
       driver_names.filter_map do |short_name|
         driver = read_driver(short_name)
         next if driver.device == @project.options.test.boot_device
+        next if driver.device == @project.options.common.client_ctrl_net_dev
         next if driver.device == @project.engine_platform.dig('clients_options', 'ctrl_net_device')
 
         driver.short = short_name
