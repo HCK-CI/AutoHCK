@@ -21,7 +21,8 @@ module AutoHCK
 
     # class CommonOptions
     class CommonOptions
-      attr_accessor :verbose, :config, :client_world_net, :id, :share_on_host_path, :workspace_path
+      attr_accessor :verbose, :config, :client_world_net, :id, :share_on_host_path, :workspace_path,
+                    :client_ctrl_net_dev
 
       def create_parser(sub_parser)
         OptionParser.new do |parser|
@@ -38,7 +39,7 @@ module AutoHCK
         end
       end
 
-      # rubocop:disable Metrics/MethodLength
+      # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
       def define_options(parser)
         @verbose = false
         @config = nil
@@ -63,6 +64,10 @@ module AutoHCK
                   'Attach world bridge to clients VM',
                   &method(:client_world_net=))
 
+        parser.on('--client-ctrl-net-dev <client-ctrl-net-dev>', String,
+                  'Client VM control network device (make sure that driver is installed)',
+                  &method(:client_ctrl_net_dev=))
+
         parser.on('--id <id>', Integer,
                   'Set ID for AutoHCK run',
                   &method(:id=))
@@ -77,7 +82,7 @@ module AutoHCK
                   'Internal use only',
                   &method(:workspace_path=))
       end
-      # rubocop:enable Metrics/MethodLength
+      # rubocop:enable Metrics/AbcSize,Metrics/MethodLength
     end
 
     # class TestOptions
