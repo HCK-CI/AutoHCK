@@ -121,10 +121,11 @@ module AutoHCK
       platform_name = options.test.platform
       platform = Json.read_json("#{PLATFORMS_JSON_DIR}/#{platform_name}.json", logger)
 
+      platform['clients_options'] ||= {}
+      platform['clients_options']['vbs_state'] ||= options.test.enable_vbs
+
       if options.test.svvp
         svvp_info = Models::SVVPConfig.from_json_file(SVVP_JSON, logger)
-
-        platform['clients_options'] ||= {}
         platform['clients_options'].merge!(svvp_info.clients_options.serialize)
       end
 
@@ -149,14 +150,17 @@ module AutoHCK
                                 this platform is incorrect'
     end
 
-    def run_clients_post_start_host_commands
-      @project.engine.drivers&.each do |driver|
-        driver.post_start_commands&.each do |command|
-          return unless command.host_run
+    def post_start_commands
+      client_name = @clients.first[0]
+      client_post_start_commands = @project.setup_manager.clients_vm[client_name].post_start_commands&.select(&:host_run)
+      driver_post_start_commands = @drivers.flat_map(&:post_start_commands)&.select(&:host_run)
+      driver_post_start_commands + client_post_start_commands
+    end
 
-          @logger.info("Running command (#{command.desc}) on host")
-          run_cmd(command.host_run)
-        end
+    def run_clients_post_start_host_commands
+      post_start_commands.each do |command|
+        @logger.info("Running command (#{command.desc}) on host")
+        run_cmd(command.host_run)
       end
     end
 
