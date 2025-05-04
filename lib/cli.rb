@@ -85,7 +85,7 @@ module AutoHCK
       attr_accessor :platform, :drivers, :driver_path, :commit, :svvp, :dump,
                     :gthb_context_prefix, :gthb_context_suffix, :playlist, :select_test_names,
                     :reject_test_names, :reject_report_sections, :boot_device,
-                    :allow_test_duplication, :manual, :package_with_playlist
+                    :allow_test_duplication, :manual, :package_with_playlist, :enable_vbs
 
       def create_parser
         OptionParser.new do |parser|
@@ -102,6 +102,7 @@ module AutoHCK
       # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       def define_options(parser)
         @reject_report_sections = []
+        @enable_vbs = false
 
         parser.on('-p', '--platform <platform_name>', String,
                   'Platform for run test',
@@ -146,6 +147,10 @@ module AutoHCK
         parser.on('--reject-test-names <reject_test_names>', String,
                   'Use custom CI text ignore list',
                   &method(:reject_test_names=))
+
+        parser.on('--enable-vbs', TrueClass,
+                  'Enable VBS state for clients',
+                  &method(:enable_vbs=))
 
         parser.on('--reject-report-sections <reject_report_sections>', Array,
                   'List of section to reject from HTML results',
