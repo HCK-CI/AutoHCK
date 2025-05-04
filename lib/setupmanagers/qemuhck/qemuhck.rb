@@ -13,7 +13,7 @@ module AutoHCK
 
     QEMUHCK_INFO_LOG_FILE = 'qemuhck.txt'
     OPT_NAMES = %w[viommu_state s3_state s4_state enlightenments_state vhost_state machine_type fw_type cpu
-                   ctrl_net_device].freeze
+                   ctrl_net_device vbs_state].freeze
 
     def initialize(project)
       initialize_project project
@@ -150,6 +150,10 @@ module AutoHCK
             #{@clients_vm[v['name']].dump_config}
         CLIENT_INFO
       end
+    end
+
+    def client_post_start_commands
+      @clients_vm.each_value.first.post_start_commands
     end
 
     def check_studio_image_exist

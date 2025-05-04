@@ -65,5 +65,21 @@
                 "tpm-tis"
             ]
         }
+    },
+    "vbs_state": {
+        "true": {
+            "post_start_commands": [
+                {
+                    "desc": "Enable VBS on the guest (Reboot required)",
+                    "guest_run": "Set-ItemProperty -Path 'HKLM:\\\\SYSTEM\\\\CurrentControlSet\\\\Control\\\\DeviceGuard' -Name 'EnableVirtualizationBasedSecurity' -Value 1",
+                    "guest_reboot": true
+                },
+                {
+                    "desc": "Check Virtualization Based Security Status",
+                    "guest_run": "(Get-CimInstance -ClassName Win32_DeviceGuard -Namespace root\\Microsoft\\Windows\\DeviceGuard).VirtualizationBasedSecurityStatus -eq 2",
+                    "guest_reboot": false
+                }
+            ]
+        }
     }
 }
