@@ -13,6 +13,7 @@ module AutoHCK
       const :desc, String
       const :host_run, T.nilable(String)
       const :guest_run, T.nilable(String)
+      const :guest_reboot, T::Boolean, default: false
     end
   end
 end
