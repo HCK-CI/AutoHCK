@@ -77,6 +77,10 @@ module AutoHCK
       Runner.new(@logger)
     end
 
+    def client_post_start_commands
+      []
+    end
+
     def run_hck_studio(scope, run_opts)
       studio_ip = @setup['st_ip']
       HCKStudio.new(self, scope, run_opts) { studio_ip }
