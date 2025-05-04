@@ -79,6 +79,11 @@ module AutoHCK
 
           @logger.info("Running command (#{command.desc}) on client #{@name}")
           @tools.run_on_machine(@name, command.desc, command.guest_run)
+          next unless command.guest_reboot
+
+          @logger.info("Rebooting client #{@name} after command (#{command.desc})")
+          @tools.restart_machine(@name)
+          reconfigure_machine
         end
       end
     end
