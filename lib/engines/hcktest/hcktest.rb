@@ -128,6 +128,7 @@ module AutoHCK
 
         platform['clients_options'] ||= {}
         platform['clients_options'].merge!(svvp_info.clients_options.serialize)
+        platform['clients_options']['vbs_state'] ||= options.test.enable_vbs
       end
 
       platform
@@ -151,14 +152,15 @@ module AutoHCK
                                 this platform is incorrect'
     end
 
-    def run_clients_post_start_host_commands
-      @project.engine.drivers&.each do |driver|
-        driver.post_start_commands&.each do |command|
-          return unless command.host_run
+    def post_start_commands
+      @project.engine.drivers&.flat_map(&:post_start_commands)&.select(&:host_run).to_a +
+        @setup_manager.clients_vm.first.post_start_commands&.select(&:host_run).to_a
+    end
 
-          @logger.info("Running command (#{command.desc}) on host")
-          run_cmd(command.host_run)
-        end
+    def run_clients_post_start_host_commands
+      post_start_commands.each do |command|
+        @logger.info("Running command (#{command.desc}) on host")
+        run_cmd(command.host_run)
       end
     end
 
