@@ -5,11 +5,12 @@ module AutoHCK
   # project class
   class Project
     include Helper
+    JUNIT_RESULT = 'junit.xml'
 
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :id,
                 :workspace_path, :github, :result_uploader, :engine_tag,
                 :engine_platform, :engine_type, :options, :extra_sw_manager,
-                :run_terminated
+                :run_terminated, :engine_name, :string_log
 
     def initialize(scope, options)
       @scope = scope
@@ -58,21 +59,19 @@ module AutoHCK
     end
 
     def init_multilog(verbose)
-      @temp_pre_logger = StringIO.new
-      @pre_logger = MonoLogger.new(@temp_pre_logger)
-      @stderr_logger = MonoLogger.new($stderr)
-      @logger = MultiLogger.new(@pre_logger, @stderr_logger)
+      @string_log = StringIO.new
+      string_logger = MonoLogger.new(@string_log)
+      stderr_logger = MonoLogger.new($stderr)
+      @logger = MultiLogger.new(string_logger, stderr_logger)
       @logger.level = verbose ? 'DEBUG' : 'INFO'
     end
 
     def append_multilog(logfile_name)
       @logfile_name = logfile_name
       @logfile_path = "#{workspace_path}/#{@logfile_name}"
-      IO.copy_stream @temp_pre_logger, @logfile_path
-      @pre_logger.close
-      @logger.remove_logger(@pre_logger)
-      @pre_logger = MonoLogger.new(@logfile_path)
-      @logger.add_logger(@pre_logger)
+      IO.copy_stream @string_log, @logfile_path
+      file_logger = MonoLogger.new(@logfile_path)
+      @logger.add_logger(file_logger)
     end
 
     def init_timestamp
@@ -92,6 +91,7 @@ module AutoHCK
       @engine_platform = @engine_type.platform(@logger, @options)
       @setup_manager_type = @engine_platform.nil? ? nil : SetupManager.select(@engine_platform['setupmanager'])
       @run_terminated = false
+      @junit = JUnit.new(self)
     end
 
     def configure_result_uploader
@@ -193,8 +193,19 @@ module AutoHCK
       @github.handle_error if @github&.connected?
     end
 
+    def generate_junit
+      results_file = "#{@workspace_path}/#{JUNIT_RESULT}"
+
+      @junit.generate_junit_report(results_file)
+
+      @result_uploader.delete_file(JUNIT_RESULT)
+      @result_uploader.upload_file(results_file, JUNIT_RESULT)
+    end
+
     def close
       @logger.debug('Closing AutoHCK project')
+      generate_junit
+
       @result_uploader&.upload_file(@logfile_path, 'AutoHCK.log')
     end
   end
