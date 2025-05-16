@@ -27,6 +27,10 @@ module AutoHCK
       validate_paths unless @driver_path.nil?
     end
 
+    def test_steps
+      (@tests&.tests || []) + (@tests&.rejected_tests || [])
+    end
+
     def prepare_extra_sw
       @drivers.each do |driver|
         next if driver.extra_software.nil?
@@ -293,7 +297,7 @@ module AutoHCK
       tests_config = @config.tests_config + @drivers.flat_map(&:tests_config)
 
       tests_config.each do |test_group|
-        selected_tests = @test_list.select { |test| test_group.tests.include?(test['name']) }
+        selected_tests = @test_list.select { |test| test_group.tests.include?(test.name) }
         grouped_tests[:secure] += selected_tests if test_group.secure
       end
 
