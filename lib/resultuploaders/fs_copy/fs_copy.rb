@@ -71,5 +71,7 @@ module AutoHCK
         false
       end
     end
+
+    def close; end
   end
 end
