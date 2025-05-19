@@ -283,7 +283,7 @@ module AutoHCK
     rescue Tools::ZipTestResultLogsError
       @logger.info('Skipping archiving test result logs')
     ensure
-      update_remote(test, test_result, res&.dig('hostlogszippath'), test_result['status'], test.name)
+      update_remote(test, test_result, res&.dig('hostlogszippath'), test_result['status'], test.safe_name)
       @logger.info('Test results uploaded via the result uploader')
     end
 

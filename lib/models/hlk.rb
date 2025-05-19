@@ -71,6 +71,11 @@ module AutoHCK
         prop :url, T.nilable(String)
         prop :run_count, Integer, default: 1
 
+        sig { returns(String) }
+        def safe_name
+          name.gsub(/[^\w\-\.]/, '_').gsub(/(^_|_$)/, '')
+        end
+
         # Extra information
         prop :ex_status, T.nilable(String)
         prop :queued_at, T.nilable(DateTime)
