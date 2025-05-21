@@ -4,10 +4,17 @@
   "type": 0,
   "install_method": "no-drv",
   "support": true,
-  "post_start_commands": [
+  "tests_config": [
     {
-      "desc": "Rename igb ethernet adapter to SupportDevice0",
-      "guest_run": "Rename-NetAdapter -Name (Get-NetAdapter -InterfaceDescription 'Intel(R) 82576 Gigabit Dual Port Network Connection').Name -NewName 'SupportDevice0'"
+      "tests": [
+        ".*"
+      ],
+      "pre_test_commands": [
+        {
+          "desc": "Rename igb ethernet adapter to SupportDevice0",
+          "guest_run": "Rename-NetAdapter -Name (Get-NetAdapter -InterfaceDescription 'Intel(R) 82576 Gigabit Dual Port Network Connection').Name -NewName 'SupportDevice0'"
+        }
+      ]
     }
   ],
   "reject_test_names": [

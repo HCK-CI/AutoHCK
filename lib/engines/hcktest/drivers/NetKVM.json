@@ -5,10 +5,17 @@
   "install_method": "PNP",
   "type": 0,
   "support": true,
-  "post_start_commands": [
+  "tests_config": [
     {
-      "desc": "Rename NetKVM ethernet adapter to SupportDevice0",
-      "guest_run": "Rename-NetAdapter -Name (Get-NetAdapter -InterfaceDescription 'Red Hat VirtIO Ethernet Adapter').Name -NewName 'SupportDevice0'"
+      "tests": [
+        ".*"
+      ],
+      "pre_test_commands": [
+        {
+          "desc": "Rename NetKVM ethernet adapter to SupportDevice0",
+          "guest_run": "Rename-NetAdapter -Name (Get-NetAdapter -InterfaceDescription 'Red Hat VirtIO Ethernet Adapter').Name -NewName 'SupportDevice0'"
+        }
+      ]
     }
   ],
   "reject_test_names": [
