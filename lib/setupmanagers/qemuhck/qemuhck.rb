@@ -27,7 +27,7 @@ module AutoHCK
     def initialize_project(project)
       @project = project
 
-      @id = project.id
+      @id = project.options.common.id
       @workspace_path = project.workspace_path
       @logger = project.logger
 

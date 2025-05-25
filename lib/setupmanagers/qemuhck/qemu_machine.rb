@@ -154,7 +154,8 @@ module AutoHCK
       boot_from_snapshot: false,
       attach_iso_list: [],
       dump_only: false,
-      secure: false
+      secure: false,
+      configure: true
     }.freeze
 
     MACHINE_JSON = 'lib/setupmanagers/qemuhck/machine.json'
@@ -187,7 +188,6 @@ module AutoHCK
       @drive_cache_options = []
       @define_variables = {}
       @run_opts = {}
-      @configured = false
     end
 
     def load_options(options)
@@ -684,13 +684,14 @@ module AutoHCK
 
       process_device_commands
       normalize_lists
+      @configure = @run_opts[:configure] if @run_opts.key?(:configure)
 
       if @run_opts[:dump_only]
         dump_commands
       else
-        unless @configured
+        if @configure
           run_config_commands
-          @configured = true
+          @configure = false
         end
 
         scope.transaction do |tmp_scope|
