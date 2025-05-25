@@ -34,6 +34,10 @@ module AutoHCK
       @runner.keep_snapshot
     end
 
+    def search_target
+      @target = Targets.new(self, @project, @tools, pool).search_target
+    end
+
     def add_target_to_project
       @target = Targets.new(self, @project, @tools, pool).add_target_to_project
     end
@@ -157,8 +161,9 @@ module AutoHCK
     def configure(run_only: false)
       @tools = @studio.tools
       @cooldown_thread = Thread.new do
-        unless pool == @project.engine_tag
-          return_when_client_up
+        if @project.restored? || pool != @project.engine_tag
+          return_when_client_up unless @project.restored?
+          search_target
           if run_only
             @logger.info("Preparing client skipped #{@name}...")
 

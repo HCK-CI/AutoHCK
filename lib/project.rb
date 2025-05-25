@@ -7,20 +7,21 @@ module AutoHCK
     include Helper
     JUNIT_RESULT = 'junit.xml'
 
-    attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :id,
+    attr_reader :config, :logger, :timestamp, :setup_manager, :engine,
                 :workspace_path, :github, :result_uploader, :engine_tag,
                 :engine_platform, :engine_type, :options, :extra_sw_manager,
                 :run_terminated, :engine_name, :string_log
 
-    def initialize(scope, options)
+    def initialize(scope, session)
       @scope = scope
-      @options = options
+      @options = session.cli
+      @session = session
+
       init_timestamp
-      Json.update_json_override(options.common.config) unless options.common.config.nil?
-      init_multilog(options.common.verbose)
+      Json.update_json_override(@options.common.config) unless @options.common.config.nil?
+      init_multilog(@options.common.verbose)
       init_class_variables
       init_workspace
-      @id = options.common.id
       # ResultUploader must be initialized before adding project to scope
       # Project uses ResultUploader on close, so ResultUploader must exist
       # when project is closed
@@ -162,7 +163,11 @@ module AutoHCK
         @workspace_path = @options.common.workspace_path
         return
       end
+      restored? ? restore_workspace : create_workspace
+      @setup_manager_type&.enter @workspace_path
+    end
 
+    def create_workspace
       @workspace_path = File.join(@config['workspace_path'],
                                   @engine_name,
                                   @engine_tag,
@@ -181,7 +186,20 @@ module AutoHCK
       end
 
       File.symlink(@workspace_path, "#{@config['workspace_path']}/latest")
-      @setup_manager_type&.enter @workspace_path
+    end
+
+    def restore_workspace
+      @workspace_path = @options.test.session
+
+      @logger.info("Loading workspace from #{@workspace_path}")
+    end
+
+    def save_session
+      @session.save(@workspace_path, @logger)
+    end
+
+    def restored?
+      !!@options.test.session
     end
 
     def handle_cancel
@@ -193,6 +211,8 @@ module AutoHCK
     end
 
     def generate_junit
+      return if restored?
+
       results_file = "#{@workspace_path}/#{JUNIT_RESULT}"
 
       @junit.generate(results_file)
