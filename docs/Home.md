@@ -25,6 +25,8 @@ Usage: auto_hck.rb [common options] <command> [command options]
         --verbose                    Enable verbose logging
         --config <override.json>     Path to custom override.json file
         --client_world_net           Attach world bridge to clients VM
+        --client-ctrl-net-dev <client-ctrl-net-dev>
+                                     Client VM control network device (make sure that driver is installed)
         --id <id>                    Set ID for AutoHCK run
     -v, --version                    Display version information and exit
         --share-on-host-path <path>  For using Transfer Network specify the directory to share on host machine
@@ -56,6 +58,7 @@ Usage: auto_hck.rb test [test options]
                                      Works only with custom user text playlist.
                                      Test results table can be broken. (experimental)
         --manual                     Run AutoHCK in manual mode
+        --package-with-playlist      Load playlist into HLKX project package
     -h, --help                       Show this message
 Usage: auto_hck.rb install [install options]
 
@@ -69,7 +72,7 @@ Usage: auto_hck.rb install [install options]
 ```
 
 ### Dump mode
-
+(make sure that driver is installed)
 In dump mode, AutoHCK generates bash script files for each VM with all preparation steps. You can edit these files, update the QEMU command line, and then run it.
 
 ### Manual mode
