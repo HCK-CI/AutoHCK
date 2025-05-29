@@ -34,7 +34,7 @@ module AutoHCK
       @logger = project.logger
       @platform = project.engine_platform
       @setup = find_setup
-      @id = project.id
+      @id = project.options.common.id
       @kit = @setup['kit']
     end
 
