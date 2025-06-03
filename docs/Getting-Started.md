@@ -47,7 +47,7 @@ To run HLK tests with the latest Microsoft compatibility playlist clone [HLK Pla
 
 ## Images installation
 
-See [ImageInstallation](Image-Installation) for more details
+See [ImageInstallation](Image-Installation.md) for more details
 
 ## Result uploading
 
