@@ -13,7 +13,7 @@ Overall, the WHQL certification process can be helpful in ensuring that hardware
 
 ## Getting Started
 
-See [Getting Started](Getting-Started) for more details
+See [Getting Started](Getting-Started.md) for more details
 
 ## Usage
 
