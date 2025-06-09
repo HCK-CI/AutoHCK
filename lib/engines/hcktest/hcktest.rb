@@ -169,7 +169,7 @@ module AutoHCK
     end
 
     def configure_and_synchronize_clients
-      run_only = @project.options.test.manual && @project.options.test.driver_path.nil?
+      run_only = @project.restored? || (@project.options.test.manual && @project.options.test.driver_path.nil?)
 
       @clients.each_value do |client|
         client.configure(run_only:)
@@ -186,6 +186,7 @@ module AutoHCK
       configure_and_synchronize_clients
       @studio.keep_snapshot
       @clients.each_value(&:keep_snapshot)
+      @project.save_session unless @project.restored?
     end
 
     def run_clients_and_configure_setup(scope, **opts)
@@ -254,9 +255,19 @@ module AutoHCK
       @test_list = @tests.update_tests(log: true)
     end
 
+    def init_vm_options
+      return {} unless @project.restored?
+
+      {
+        boot_from_snapshot: true,
+        create_snapshot: false,
+        configure: false
+      }
+    end
+
     def auto_run
       ResourceScope.open do |scope|
-        run_studio scope
+        run_studio(scope, **init_vm_options)
         sleep 5 until @studio.up?
 
         run_tests_without_config
@@ -268,7 +279,7 @@ module AutoHCK
 
     def run_tests_without_config
       ResourceScope.open do |scope|
-        run_clients_and_configure_setup scope
+        run_clients_and_configure_setup(scope, **init_vm_options)
         prepare_tests
 
         @logger.info('Client ready, running basic tests')
@@ -307,7 +318,7 @@ module AutoHCK
     end
 
     def run
-      upload_driver_package unless @driver_path.nil?
+      upload_driver_package unless @driver_path.nil? || @project.restored?
 
       if @project.options.test.dump
         @project.logger.info('AutoHCK started in dump only mode')
@@ -315,7 +326,6 @@ module AutoHCK
         dump_run
 
         @project.logger.info("Find all scripts in folder: #{@project.workspace_path}")
-        @project.logger.warn('Dump mode is only for basic tests.')
         @project.logger.warn('For specific configurations (e.g., Secure Boot tests), update scripts manually.')
       else
         auto_run
