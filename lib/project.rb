@@ -104,9 +104,9 @@ module AutoHCK
     end
 
     def initialize_github(commit)
-      url = @result_uploader.html_url || @result_uploader.url
+      url_proc = -> { @result_uploader.html_url || @result_uploader.url }
 
-      @github = Github.new(@config['repository'], @logger, url,
+      @github = Github.new(@config['repository'], @logger, url_proc,
                            github_handling_context, commit)
       @github.connect
       raise GithubInitializationError unless @github.connected?

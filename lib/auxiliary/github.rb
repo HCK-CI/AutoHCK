@@ -7,11 +7,11 @@ module AutoHCK
     GITHUB_API_RETRIES = 5
     GITHUB_API_RETRY_SLEEP = 30
 
-    def initialize(repository, logger, url, context, commit)
+    def initialize(repository, logger, url_str_proc, context, commit)
       @api_connected = false
 
       @logger = logger
-      @target_url = url
+      @target_url_str_proc = url_str_proc
       @repo = repository
       @commit = commit
       @context = context
@@ -61,13 +61,15 @@ module AutoHCK
     def create_status(state, description)
       retries ||= 0
 
+      target_url = @target_url_str_proc.respond_to?(:call) ? @target_url_str_proc.call : @target_url_str_proc
+
       options = { 'context' => @context,
                   'description' => description,
-                  'target_url' => @target_url }
+                  'target_url' => target_url }
       begin
         @github.create_status(@repo, @commit, state, options)
       rescue Faraday::ConnectionFailed, Faraday::TimeoutError,
-             Octokit::BadGateway, Octokit::InternalServerError => e
+             Octokit::ServerError => e # Raised on errors in the 500-599 range
         @logger.warn("Github server connection error: #{e.message}")
         # we can continue even if can't get update PR status
         return unless (retries += 1) < GITHUB_API_RETRIES
@@ -129,7 +131,7 @@ module AutoHCK
 
       @github.pulls(@repo, state:).find { _1['head']['sha'] == @commit }
     rescue Faraday::ConnectionFailed, Faraday::TimeoutError,
-           Octokit::BadGateway, Octokit::InternalServerError => e
+           Octokit::ServerError => e # Raised on errors in the 500-599 range
       @logger.warn("Github server connection error: #{e.message}")
       # we should fail if can't get updated PR information
       raise GithubPullRequestLoadError, e unless (retries += 1) < GITHUB_API_RETRIES
