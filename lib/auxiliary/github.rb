@@ -67,7 +67,7 @@ module AutoHCK
       begin
         @github.create_status(@repo, @commit, state, options)
       rescue Faraday::ConnectionFailed, Faraday::TimeoutError,
-             Octokit::BadGateway, Octokit::InternalServerError => e
+             Octokit::ServerError => e
         @logger.warn("Github server connection error: #{e.message}")
         # we can continue even if can't get update PR status
         return unless (retries += 1) < GITHUB_API_RETRIES
@@ -129,7 +129,7 @@ module AutoHCK
 
       @github.pulls(@repo, state:).find { _1['head']['sha'] == @commit }
     rescue Faraday::ConnectionFailed, Faraday::TimeoutError,
-           Octokit::BadGateway, Octokit::InternalServerError => e
+           Octokit::ServerError => e
       @logger.warn("Github server connection error: #{e.message}")
       # we should fail if can't get updated PR information
       raise GithubPullRequestLoadError, e unless (retries += 1) < GITHUB_API_RETRIES
