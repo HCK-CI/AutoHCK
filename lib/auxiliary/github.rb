@@ -58,12 +58,14 @@ module AutoHCK
       @logger.info(pr_object['html_url'])
     end
 
-    def create_status(state, description)
+    def create_status(state, description, url = nil)
       retries ||= 0
+
+      target_url = url || @target_url
 
       options = { 'context' => @context,
                   'description' => description,
-                  'target_url' => @target_url }
+                  'target_url' => target_url }
       begin
         @github.create_status(@repo, @commit, state, options)
       rescue Faraday::ConnectionFailed, Faraday::TimeoutError,
@@ -79,49 +81,49 @@ module AutoHCK
       @logger.info('Github status updated')
     end
 
-    def update(tests_stats)
+    def update(tests_stats, url = nil)
       if tests_stats['current'].nil? && tests_stats['inqueue'].zero?
         if tests_stats['failed'].zero?
-          handle_success
+          handle_success(url)
         else
-          handle_failure(tests_stats['failed'], tests_stats['passed'])
+          handle_failure(tests_stats['failed'], tests_stats['passed'], url)
         end
       else
         handle_pending(tests_stats['currentcount'], tests_stats['total'],
-                       tests_stats['failed'])
+                       tests_stats['failed'], url)
       end
     end
 
-    def handle_success
+    def handle_success(url = nil)
       state = 'success'
       description = 'All tests passed'
-      create_status(state, description)
+      create_status(state, description, url)
     end
 
-    def handle_failure(failed, passed)
+    def handle_failure(failed, passed, url = nil)
       state = 'failure'
       description = "#{failed} tests failed out  of #{failed + passed} tests"
-      create_status(state, description)
+      create_status(state, description, url)
     end
 
-    def handle_pending(current, total, failed)
+    def handle_pending(current, total, failed, url = nil)
       state = 'pending'
       description = "Running tests (#{current}/#{total}): #{failed} tests failed"
-      create_status(state, description)
+      create_status(state, description, url)
     end
 
-    def handle_cancel
+    def handle_cancel(url = nil)
       @logger.info('Updating github status regarding cancel')
       state = 'error'
       description = 'HCK-CI run was canceled'
-      create_status(state, description)
+      create_status(state, description, url)
     end
 
-    def handle_error
+    def handle_error(url = nil)
       @logger.info('Updating github status regarding error')
       state = 'error'
       description = 'An error occurred while running HCK-CI'
-      create_status(state, description)
+      create_status(state, description, url)
     end
 
     def _find_pr(state = nil)
