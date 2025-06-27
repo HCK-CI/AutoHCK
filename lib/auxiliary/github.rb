@@ -7,11 +7,11 @@ module AutoHCK
     GITHUB_API_RETRIES = 5
     GITHUB_API_RETRY_SLEEP = 30
 
-    def initialize(repository, logger, url, context, commit)
+    def initialize(repository, logger, url_str_proc, context, commit)
       @api_connected = false
 
       @logger = logger
-      @target_url = url
+      @target_url_str_proc = url_str_proc
       @repo = repository
       @commit = commit
       @context = context
@@ -61,9 +61,11 @@ module AutoHCK
     def create_status(state, description)
       retries ||= 0
 
+      target_url = @target_url_str_proc.respond_to?(:call) ? @target_url_str_proc.call : @target_url_str_proc
+
       options = { 'context' => @context,
                   'description' => description,
-                  'target_url' => @target_url }
+                  'target_url' => target_url }
       begin
         @github.create_status(@repo, @commit, state, options)
       rescue Faraday::ConnectionFailed, Faraday::TimeoutError,
