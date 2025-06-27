@@ -112,6 +112,13 @@ module AutoHCK
       raise GithubInitializationError unless @github.connected?
     end
 
+    def update_test_stats(tests_stats)
+      return unless @github&.connected?
+
+      url = @result_uploader.html_url || @result_uploader.url
+      @github.update(tests_stats, url)
+    end
+
     def github_handling(commit)
       return true if commit.to_s.empty?
 

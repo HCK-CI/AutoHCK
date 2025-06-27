@@ -465,7 +465,7 @@ module AutoHCK
     end
 
     def handle_finished_test_results(results)
-      @project.github.update(tests_stats) if @project.github&.connected?
+      @project.update_test_stats(tests_stats)
 
       results.each do |result|
         test = test_for_result(result)
