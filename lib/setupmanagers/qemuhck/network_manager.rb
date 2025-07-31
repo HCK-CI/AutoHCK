@@ -22,7 +22,7 @@ module AutoHCK
 
       def read_device(device)
         @logger.info("Loading device: #{device}")
-        Json.read_json("#{DEVICES_JSON_DIR}/#{device}.json", @logger)
+        Models::QemuHCKDevice.from_json_file("#{DEVICES_JSON_DIR}/#{device}.json", @logger)
       end
 
       def find_world_ip(*)
@@ -60,20 +60,19 @@ module AutoHCK
           '@device_id@' => format('%02x', @dev_id)
         }
 
-        qemu_replacement_map.merge(replacement_map, device_info['define_variables'])
+        qemu_replacement_map.merge(replacement_map, device_info.define_variables)
       end
 
-      def device_command_info(type, device_name, command_options, qemu_replacement_map)
+      def device_command_info(type, device, command_options, qemu_replacement_map)
         @dev_id += 1
 
-        device = read_device(device_name)
         type_config = @config['devices'][type]
 
         replacement_map = device_replacement_map(type, device, type_config, qemu_replacement_map)
         replacement_map.merge! command_options
-        device_command = replacement_map.create_cmd(device['command_line'].join(' '))
+        device_command = replacement_map.create_cmd(device.command_line.join(' '))
 
-        @logger.debug("Device #{device_name} used as #{type} device")
+        @logger.debug("Device #{device.name} used as #{type} device")
         @logger.debug("Device command: #{device_command}")
 
         [device_command, replacement_map]
@@ -101,7 +100,7 @@ module AutoHCK
         File.write File.join(path, 'smb.conf'), content
       end
 
-      def control_device_command(device_name, qemu_replacement_map)
+      def control_device_command(device, qemu_replacement_map)
         type = __method__.to_s.split('_').first
 
         netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no,ifname=@net_if_name@'
@@ -112,13 +111,13 @@ module AutoHCK
           '@netdev_options@' => netdev_options
         }
 
-        cmd, replacement_map = device_command_info(type, device_name, options, qemu_replacement_map)
+        cmd, replacement_map = device_command_info(type, device, options, qemu_replacement_map)
         create_net_up_script(replacement_map.merge({ '@bridge_name@' => 'br_ctrl' }))
 
         cmd
       end
 
-      def world_device_command(device_name, qemu_replacement_map)
+      def world_device_command(device, qemu_replacement_map)
         type = __method__.to_s.split('_').first
 
         netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no,ifname=@net_if_name@'
@@ -129,13 +128,13 @@ module AutoHCK
           '@netdev_options@' => netdev_options
         }
 
-        cmd, replacement_map = device_command_info(type, device_name, options, qemu_replacement_map)
+        cmd, replacement_map = device_command_info(type, device, options, qemu_replacement_map)
         create_net_up_script(replacement_map.merge({ '@bridge_name@' => 'br_world' }))
 
         cmd
       end
 
-      def test_device_command(device_name, qemu_replacement_map)
+      def test_device_command(device, qemu_replacement_map)
         type = __method__.to_s.split('_').first
 
         netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no,ifname=@net_if_name@'
@@ -146,13 +145,13 @@ module AutoHCK
           '@netdev_options@' => netdev_options
         }
 
-        cmd, replacement_map = device_command_info(type, device_name, options, qemu_replacement_map)
+        cmd, replacement_map = device_command_info(type, device, options, qemu_replacement_map)
         create_net_up_script(replacement_map.merge({ '@bridge_name@' => 'br_test' }))
 
         cmd
       end
 
-      def transfer_device_command(device_name, transfer_net, share_path, qemu_replacement_map)
+      def transfer_device_command(device, transfer_net, share_path, qemu_replacement_map)
         type = __method__.to_s.split('_').first
 
         path = File.absolute_path(share_path)
@@ -179,7 +178,7 @@ module AutoHCK
           '@net_smb_share@' => path
         }
 
-        cmd, replacement_map = device_command_info(type, device_name, options, qemu_replacement_map)
+        cmd, replacement_map = device_command_info(type, device, options, qemu_replacement_map)
         create_net_smb replacement_map
 
         cmd
