@@ -437,7 +437,7 @@ module AutoHCK
             when 'network'
               @nm.test_device_command(device_info, bus_name, full_replacement_map)
             when 'storage'
-              @sm.test_device_command(device_info.name, full_replacement_map)
+              @sm.test_device_command(device_info, full_replacement_map)
             else
               regular_device_command(device_info, bus_name)
             end
@@ -486,7 +486,8 @@ module AutoHCK
     end
 
     def process_storage_command
-      dev, @image_path = @sm.boot_device_command(option_config('boot_device'), @run_opts, full_replacement_map)
+      device_info = read_device(option_config('boot_device'))
+      dev, @image_path = @sm.boot_device_command(device_info, @run_opts, full_replacement_map)
       @device_commands << dev
 
       devs = @sm.iso_commands(@run_opts, full_replacement_map)

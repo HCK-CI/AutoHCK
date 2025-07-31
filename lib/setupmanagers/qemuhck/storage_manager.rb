@@ -24,18 +24,11 @@ module AutoHCK
         @test_image_path = Pathname.new(@workspace_path).join("client#{@client_id}_test_image.#{IMAGE_FORMAT}")
       end
 
-      def read_device(device)
-        @logger.info("Loading device: #{device}")
-        device_json = "#{DEVICES_JSON_DIR}/#{device}.json"
-        Json.read_json(device_json, @logger)
-      end
-
-      def device_command_info(type, device_name, command_options, qemu_replacement_map)
-        device = read_device(device_name)
+      def device_command_info(type, device, command_options, qemu_replacement_map)
         replacement_map = qemu_replacement_map.merge command_options
-        device_command = replacement_map.create_cmd(device['command_line'].join(' '))
+        device_command = replacement_map.create_cmd(device.command_line.join(' '))
 
-        @logger.debug("Device #{device_name} used as #{type} device")
+        @logger.debug("Device #{device.name} used as #{type} device")
         @logger.debug("Device command: #{device_command}")
 
         device_command
@@ -78,7 +71,7 @@ module AutoHCK
         FileUtils.rm_f(boot_snapshot_path)
       end
 
-      def boot_device_command(device_name, run_opts, qemu_replacement_map)
+      def boot_device_command(device, run_opts, qemu_replacement_map)
         create_boot_snapshot if run_opts[:create_snapshot]
         image_path = boot_device_image_path(run_opts)
 
@@ -88,7 +81,7 @@ module AutoHCK
           '@bootindex@' => ',bootindex=1'
         }
 
-        [device_command_info('boot', device_name, options, qemu_replacement_map), image_path]
+        [device_command_info('boot', device, options, qemu_replacement_map), image_path]
       end
 
       def boot_device_image_path(run_opts)
@@ -109,7 +102,7 @@ module AutoHCK
         end
       end
 
-      def test_device_command(device_name, qemu_replacement_map)
+      def test_device_command(device, qemu_replacement_map)
         create_test_image
 
         options = {
@@ -118,7 +111,7 @@ module AutoHCK
           '@bootindex@' => ''
         }
 
-        device_command_info('test', device_name, options, qemu_replacement_map)
+        device_command_info('test', device, options, qemu_replacement_map)
       end
     end
   end
