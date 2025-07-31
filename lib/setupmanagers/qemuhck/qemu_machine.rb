@@ -522,6 +522,7 @@ module AutoHCK
       process_storage_command
 
       @device_infos.each do |device_info|
+        @logger.debug("Processing device: #{device_info.name}")
         process_device_command(device_info)
       end
     end
