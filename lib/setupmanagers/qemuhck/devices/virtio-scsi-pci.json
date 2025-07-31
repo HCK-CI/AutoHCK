@@ -1,6 +1,7 @@
 {
   "name": "virtio-scsi-pci",
   "type": "storage",
+  "need_pci_bus": true,
   "define_variables": {
     "@scsi_qmp_socket@": "scsi_qmp_@run_id@_@client_id@_sock"
   },

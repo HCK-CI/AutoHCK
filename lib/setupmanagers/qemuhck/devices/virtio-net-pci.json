@@ -1,6 +1,7 @@
 {
   "name": "virtio-net-pci",
   "type": "network",
+  "need_pci_bus": true,
   "command_line": [
     "-netdev @network_backend@,id=@net_if_name@@netdev_options@",
     "-device virtio-net-pci@device_extra_param@@iommu_device_param@,netdev=@net_if_name@,mac=@net_if_mac@@net_addr@,bus=@bus_name@.0,id=@net_if_name@"

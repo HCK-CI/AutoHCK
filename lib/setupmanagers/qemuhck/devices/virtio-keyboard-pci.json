@@ -1,4 +1,5 @@
 {
   "name": "virtio-keyboard-pci",
+  "need_pci_bus": true,
   "command_line": ["-device virtio-keyboard-pci@device_extra_param@@iommu_device_param@,bus=@bus_name@.0"]
 }

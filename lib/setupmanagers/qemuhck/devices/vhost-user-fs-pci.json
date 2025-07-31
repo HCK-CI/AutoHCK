@@ -1,5 +1,6 @@
 {
   "name": "vhost-user-fs-pci",
+  "need_pci_bus": true,
   "command_line": [
     "-chardev socket,id=virtiofsid,path=@fs_daemon_socket@",
     "-object memory-backend-file,id=mem_backend,size=@memory@,mem-path=/dev/shm,share=on",
