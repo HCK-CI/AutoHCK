@@ -413,16 +413,18 @@ module AutoHCK
 
     sig { params(device_info: Models::QemuHCKDevice).void }
     def process_device_command(device_info)
+      bus_name = @machine['bus_name']
+
       case device_info.type
       when 'network'
-        dev = @nm.test_device_command(device_info.name, full_replacement_map)
+        dev = @nm.test_device_command(device_info.name, bus_name, full_replacement_map)
         @device_commands << dev
       when 'storage'
-        dev = @sm.test_device_command(device_info.name, full_replacement_map)
+        dev = @sm.test_device_command(device_info.name, bus_name, full_replacement_map)
         @device_commands << dev
       else
         cmd = device_info.command_line.join(' ')
-        @device_commands << full_replacement_map.create_cmd(cmd)
+        @device_commands << full_replacement_map.merge({ '@bus_name@' => bus_name }).create_cmd(cmd)
       end
     end
 
@@ -434,13 +436,14 @@ module AutoHCK
       dev = @nm.transfer_device_command(device_info,
                                         @config['share_on_host_net'],
                                         path,
+                                        @machine['bus_name'],
                                         full_replacement_map)
       @device_commands << dev
     end
 
     def process_world_hck_network
       device_info = read_device(option_config('world_net_device'))
-      dev = @nm.world_device_command(device_info, full_replacement_map)
+      dev = @nm.world_device_command(device_info, @machine['bus_name'], full_replacement_map)
       @device_commands << dev
     end
 

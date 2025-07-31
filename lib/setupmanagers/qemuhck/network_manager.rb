@@ -36,7 +36,7 @@ module AutoHCK
       def read_world_ip(device_name, qemu_replacement_map)
         device = read_device(device_name)
         type_config = @config['devices']['world']
-        replacement_map = device_replacement_map('world', device, type_config, qemu_replacement_map)
+        replacement_map = device_replacement_map('world', device, type_config, {}, qemu_replacement_map)
         mac = replacement_map.replace(type_config['mac'])
 
         found = File.readlines('/proc/net/arp')[1..].map(&:split).find do |candidate|
@@ -50,25 +50,25 @@ module AutoHCK
         addr.nil? ? '' : ",addr=#{addr}"
       end
 
-      def device_replacement_map(type, device_info, device_config, qemu_replacement_map)
+      def device_replacement_map(type, device_info, device_config, dev_pci, qemu_replacement_map)
         replacement_map = {
           '@net_if_name@' => device_config['ifname'],
           '@net_up_script@' => "@workspace@/#{type}_ifup_@run_id@.sh",
           '@net_if_mac@' => device_config['mac'],
-          '@net_addr@' => net_addr_cmd(device_config['address']),
-          '@bus_name@' => device_config['bus_name'],
+          '@net_addr@' => net_addr_cmd(dev_pci.fetch('address', nil)),
+          '@bus_name@' => dev_pci['bus_name'],
           '@device_id@' => format('%02x', @dev_id)
         }
 
         qemu_replacement_map.merge(replacement_map, device_info.define_variables)
       end
 
-      def device_command_info(type, device, command_options, qemu_replacement_map)
+      def device_command_info(type, device, command_options, dev_pci, qemu_replacement_map)
         @dev_id += 1
 
         type_config = @config['devices'][type]
 
-        replacement_map = device_replacement_map(type, device, type_config, qemu_replacement_map)
+        replacement_map = device_replacement_map(type, device, type_config, dev_pci, qemu_replacement_map)
         replacement_map.merge! command_options
         device_command = replacement_map.create_cmd(device.command_line.join(' '))
 
@@ -111,13 +111,19 @@ module AutoHCK
           '@netdev_options@' => netdev_options
         }
 
-        cmd, replacement_map = device_command_info(type, device, options, qemu_replacement_map)
+        # Don't redefine the bus name, it should be predefined to prevent
+        # Windows device reinstallation.
+        dev_pci = {
+          'bus_name' => @machine['ctrl_dev_bus_name'],
+          'address' => @machine['ctrl_dev_address']
+        }
+        cmd, replacement_map = device_command_info(type, device, options, dev_pci, qemu_replacement_map)
         create_net_up_script(replacement_map.merge({ '@bridge_name@' => 'br_ctrl' }))
 
         cmd
       end
 
-      def world_device_command(device, qemu_replacement_map)
+      def world_device_command(device, bus_name, qemu_replacement_map)
         type = __method__.to_s.split('_').first
 
         netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no,ifname=@net_if_name@'
@@ -128,13 +134,16 @@ module AutoHCK
           '@netdev_options@' => netdev_options
         }
 
-        cmd, replacement_map = device_command_info(type, device, options, qemu_replacement_map)
+        dev_pci = {
+          'bus_name' => bus_name
+        }
+        cmd, replacement_map = device_command_info(type, device, options, dev_pci, qemu_replacement_map)
         create_net_up_script(replacement_map.merge({ '@bridge_name@' => 'br_world' }))
 
         cmd
       end
 
-      def test_device_command(device, qemu_replacement_map)
+      def test_device_command(device, bus_name, qemu_replacement_map)
         type = __method__.to_s.split('_').first
 
         netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no,ifname=@net_if_name@'
@@ -145,13 +154,16 @@ module AutoHCK
           '@netdev_options@' => netdev_options
         }
 
-        cmd, replacement_map = device_command_info(type, device, options, qemu_replacement_map)
+        dev_pci = {
+          'bus_name' => bus_name
+        }
+        cmd, replacement_map = device_command_info(type, device, options, dev_pci, qemu_replacement_map)
         create_net_up_script(replacement_map.merge({ '@bridge_name@' => 'br_test' }))
 
         cmd
       end
 
-      def transfer_device_command(device, transfer_net, share_path, qemu_replacement_map)
+      def transfer_device_command(device, transfer_net, share_path, bus_name, qemu_replacement_map)
         type = __method__.to_s.split('_').first
 
         path = File.absolute_path(share_path)
@@ -178,7 +190,8 @@ module AutoHCK
           '@net_smb_share@' => path
         }
 
-        cmd, replacement_map = device_command_info(type, device, options, qemu_replacement_map)
+        dev_pci = { 'bus_name' => bus_name }
+        cmd, replacement_map = device_command_info(type, device, options, dev_pci, qemu_replacement_map)
         create_net_smb replacement_map
 
         cmd
