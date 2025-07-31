@@ -1,6 +1,7 @@
 {
   "name": "virtio-blk-pci",
   "type": "storage",
+  "need_pci_bus": true,
   "define_variables": {
     "@blk_qmp_socket@": "blk_qmp_@run_id@_@client_id@_sock"
   },

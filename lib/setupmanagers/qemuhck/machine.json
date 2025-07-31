@@ -1,13 +1,14 @@
 {
   "q35": {
-    "bus_name": "root2",
+    "bus_name__comment": "Q35 machine default bus as a fallback",
+    "bus_name": "pcie",
     "ctrl_dev_bus_name": "root1",
     "ctrl_dev_address": "0x0",
     "disable_s3_param": "ICH9-LPC.disable_s3",
     "disable_s4_param": "ICH9-LPC.disable_s4",
     "machine_uuid__comment": "Windows 2012R2 crashes during boot on Q35 machine with UUID set",
     "machine_uuid": "-uuid cdef127c-8795-4e67-95da-8dd0a8@run_id@@client_id@",
-    "pcie_root_port": "-device pcie-root-port,slot=3,chassis=1,addr=0x4,bus=pcie.0,id=root1.0 -device pcie-root-port,slot=4,chassis=2,addr=0x5,bus=pcie.0,id=root2.0"
+    "pcie_root_port": "-device pcie-root-port,slot=3,chassis=1,addr=0x4,bus=pcie.0,id=root1.0"
   },
   "pc": {
     "bus_name": "pci",

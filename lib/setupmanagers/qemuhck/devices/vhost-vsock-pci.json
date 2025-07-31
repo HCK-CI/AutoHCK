@@ -1,5 +1,6 @@
 {
   "name": "vhost-vsock-pci",
+  "need_pci_bus": true,
   "command_line": [
     "-device vhost-vsock-pci@device_extra_param@,id=vhost-vsock-pci0,guest-cid=1@client_id@0@run_id@,bus=@bus_name@.0"
   ]

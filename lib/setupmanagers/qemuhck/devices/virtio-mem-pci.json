@@ -1,6 +1,7 @@
 {
   "name": "virtio-mem-pci",
   "pluggable_memory_gb": 2,
+  "need_pci_bus": true,
   "command_line": [
     "-object memory-backend-ram,id=mem_backend,size=@pluggable_memory@",
     "-device virtio-mem-pci@device_extra_param@@iommu_device_param@,id=mem_@run_id@_@client_id@,memdev=mem_backend,requested-size=1G,bus=@bus_name@.0"

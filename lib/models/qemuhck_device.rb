@@ -15,6 +15,7 @@ module AutoHCK
       const :pre_start_commands, T::Array[String], default: []
       const :post_stop_commands, T::Array[String], default: []
       const :machine_options, T::Array[String], default: []
+      const :need_pci_bus, T::Boolean, default: false
       const :pluggable_memory_gb, Integer, default: 0
       const :iommu_device_param, T.nilable(String)
     end
