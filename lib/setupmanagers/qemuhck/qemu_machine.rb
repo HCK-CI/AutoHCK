@@ -430,7 +430,8 @@ module AutoHCK
       path = @options['share_on_host_path'] || @config['share_on_host_path']
       return unless path
 
-      dev = @nm.transfer_device_command(@config['transfer_net_device'],
+      device_info = read_device(@config['transfer_net_device'])
+      dev = @nm.transfer_device_command(device_info,
                                         @config['share_on_host_net'],
                                         path,
                                         full_replacement_map)
@@ -438,8 +439,8 @@ module AutoHCK
     end
 
     def process_world_hck_network
-      dev = @nm.world_device_command(option_config('world_net_device'),
-                                     full_replacement_map)
+      device_info = read_device(option_config('world_net_device'))
+      dev = @nm.world_device_command(device_info, full_replacement_map)
       @device_commands << dev
     end
 
@@ -452,8 +453,8 @@ module AutoHCK
     end
 
     def process_hck_network_command
-      dev = @nm.control_device_command(option_config('ctrl_net_device'),
-                                       full_replacement_map)
+      device_info = read_device(option_config('ctrl_net_device'))
+      dev = @nm.control_device_command(device_info, full_replacement_map)
       @device_commands << dev
 
       process_optional_hck_network
