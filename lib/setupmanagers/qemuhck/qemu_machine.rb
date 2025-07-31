@@ -417,21 +417,33 @@ module AutoHCK
       end
     end
 
+    sig { params(device_info: Models::QemuHCKDevice, bus_name: T.nilable(String)).returns(String) }
+    def regular_device_command(device_info, bus_name = nil)
+      replacement_map = if bus_name.nil?
+                          full_replacement_map
+                        else
+                          full_replacement_map.merge({ '@bus_name@' => bus_name })
+                        end
+
+      dirty_cmd = device_info.command_line.join(' ')
+      replacement_map.create_cmd(dirty_cmd)
+    end
+
     sig { params(device_info: Models::QemuHCKDevice).void }
     def process_device_command(device_info)
       bus_name = @machine['bus_name']
 
-      case device_info.type
-      when 'network'
-        dev = @nm.test_device_command(device_info.name, bus_name, full_replacement_map)
-        @device_commands << dev
-      when 'storage'
-        dev = @sm.test_device_command(device_info.name, bus_name, full_replacement_map)
-        @device_commands << dev
-      else
-        cmd = device_info.command_line.join(' ')
-        @device_commands << full_replacement_map.merge({ '@bus_name@' => bus_name }).create_cmd(cmd)
-      end
+      dev = case device_info.type
+            when 'network'
+              @nm.test_device_command(device_info, bus_name, full_replacement_map)
+            when 'storage'
+              @sm.test_device_command(device_info.name, full_replacement_map)
+            else
+              regular_device_command(device_info, bus_name)
+            end
+
+      @logger.debug("Device command: #{dev}")
+      @device_commands << dev
     end
 
     def process_optional_hck_network
