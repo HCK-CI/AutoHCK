@@ -61,6 +61,7 @@ module AutoHCK
   autoload_relative :PhysHCK, 'setupmanagers/physhck/physhck'
   autoload_relative :Playlist, 'engines/hcktest/playlist'
   autoload_relative :Project, 'project'
+  autoload_relative :Session, 'session'
   autoload_relative :QemuHCK, 'setupmanagers/qemuhck/qemuhck'
   autoload_relative :QemuHCKError, 'setupmanagers/qemuhck/exceptions'
   autoload_relative :QemuMachine, 'setupmanagers/qemuhck/qemu_machine'
