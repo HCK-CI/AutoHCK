@@ -8,7 +8,7 @@ module AutoHCK
     JUNIT_RESULT = 'junit.xml'
 
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :id,
-                :workspace_path, :github, :result_uploader, :engine_tag,
+                :workspace_path, :result_uploader, :engine_tag,
                 :engine_platform, :engine_type, :options, :extra_sw_manager,
                 :run_terminated, :engine_name, :string_log
 
