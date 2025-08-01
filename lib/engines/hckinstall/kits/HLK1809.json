@@ -1,5 +1,6 @@
 {
   "download_url": "https://go.microsoft.com/fwlink/?linkid=2319329",
+  "sha256": "32f21c5adf58afbe5e6346bd31d8baad920204e2dce1a57ba5b04b2b4b22ba2b",
   "extra_software": [
     "HLK_GRFX_FOD",
     "WDTFNetData_1809",

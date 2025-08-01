@@ -1,5 +1,6 @@
 {
   "download_url": "https://go.microsoft.com/fwlink/?linkid=2320114",
+  "sha256": "b283fe38119248ade6f6b925b90434587c738f5f91d295489cf6bf0c32415ee2",
   "extra_software": [
     "winfsp"
   ],

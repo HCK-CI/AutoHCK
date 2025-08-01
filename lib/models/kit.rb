@@ -12,6 +12,7 @@ module AutoHCK
       const :extra_software, T::Array[String], default: []
 
       const :download_url, T.nilable(String)
+      const :sha256, T.nilable(String)
     end
   end
 end

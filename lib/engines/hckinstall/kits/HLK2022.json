@@ -1,5 +1,6 @@
 {
   "download_url": "https://go.microsoft.com/fwlink/?linkid=2320003",
+  "sha256": "fe6418b76a94b1103a69b5fdd7549871b467c35e00be646677cd0de841609170",
   "extra_software": [
     "FOD_2022",
     "Test-NETHLK",
