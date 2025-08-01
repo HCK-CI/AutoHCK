@@ -10,6 +10,7 @@ module AutoHCK
     autoload_relative :NetworkManager, 'network_manager'
     autoload_relative :QMP, 'qmp'
     autoload_relative :StorageManager, 'storage_manager'
+    autoload_relative :PciManager, 'pci_manager'
 
     # Runner is a class that represents a run.
     class Runner
@@ -170,6 +171,7 @@ module AutoHCK
       init_config
       init_ports
 
+      @pcim = PciManager.new(@logger)
       @nm = NetworkManager.new(@id, @client_id, @machine, @logger)
       @sm = StorageManager.new(@id, @client_id, @config, @options, @logger)
 
@@ -417,35 +419,65 @@ module AutoHCK
       end
     end
 
+    sig { params(device_info: Models::QemuHCKDevice, bus_name: T.nilable(String)).returns(String) }
+    def regular_device_command(device_info, bus_name = nil)
+      replacement_map = if bus_name.nil?
+                          full_replacement_map
+                        else
+                          full_replacement_map.merge({ '@bus_name@' => bus_name })
+                        end
+
+      dirty_cmd = device_info.command_line.join(' ')
+      replacement_map.create_cmd(dirty_cmd)
+    end
+
+    sig { params(device_info: Models::QemuHCKDevice, bus_name: T.nilable(String)).returns(String) }
+    def generate_device_bus(device_info, bus_name)
+      if device_info.need_pci_bus
+        pci_dev, bus_name = @pcim.create_pci_root_port
+        @device_commands << pci_dev
+      end
+
+      bus_name
+    end
+
     sig { params(device_info: Models::QemuHCKDevice).void }
     def process_device_command(device_info)
-      case device_info.type
-      when 'network'
-        dev = @nm.test_device_command(device_info.name, full_replacement_map)
-        @device_commands << dev
-      when 'storage'
-        dev = @sm.test_device_command(device_info.name, full_replacement_map)
-        @device_commands << dev
-      else
-        cmd = device_info.command_line.join(' ')
-        @device_commands << full_replacement_map.create_cmd(cmd)
-      end
+      bus_name = generate_device_bus(device_info, @machine['bus_name'])
+
+      dev = case device_info.type
+            when 'network'
+              @nm.test_device_command(device_info, bus_name, full_replacement_map)
+            when 'storage'
+              @sm.test_device_command(device_info, bus_name, full_replacement_map)
+            else
+              regular_device_command(device_info, bus_name)
+            end
+
+      @logger.debug("Device command: #{dev}")
+      @device_commands << dev
     end
 
     def process_optional_hck_network
       path = @options['share_on_host_path'] || @config['share_on_host_path']
       return unless path
 
-      dev = @nm.transfer_device_command(@config['transfer_net_device'],
+      device_info = read_device(@config['transfer_net_device'])
+      bus_name = generate_device_bus(device_info, @machine['bus_name'])
+
+      dev = @nm.transfer_device_command(device_info,
                                         @config['share_on_host_net'],
                                         path,
+                                        bus_name,
                                         full_replacement_map)
       @device_commands << dev
     end
 
     def process_world_hck_network
-      dev = @nm.world_device_command(option_config('world_net_device'),
-                                     full_replacement_map)
+      device_info = read_device(option_config('world_net_device'))
+      bus_name = generate_device_bus(device_info, @machine['bus_name'])
+
+      dev = @nm.world_device_command(device_info, bus_name, full_replacement_map)
       @device_commands << dev
     end
 
@@ -458,8 +490,8 @@ module AutoHCK
     end
 
     def process_hck_network_command
-      dev = @nm.control_device_command(option_config('ctrl_net_device'),
-                                       full_replacement_map)
+      device_info = read_device(option_config('ctrl_net_device'))
+      dev = @nm.control_device_command(device_info, full_replacement_map)
       @device_commands << dev
 
       process_optional_hck_network
@@ -470,7 +502,10 @@ module AutoHCK
     end
 
     def process_storage_command
-      dev, @image_path = @sm.boot_device_command(option_config('boot_device'), @run_opts, full_replacement_map)
+      device_info = read_device(option_config('boot_device'))
+      bus_name = generate_device_bus(device_info, @machine['bus_name'])
+
+      dev, @image_path = @sm.boot_device_command(device_info, @run_opts, bus_name, full_replacement_map)
       @device_commands << dev
 
       devs = @sm.iso_commands(@run_opts, full_replacement_map)
@@ -493,6 +528,7 @@ module AutoHCK
       process_storage_command
 
       @device_infos.each do |device_info|
+        @logger.debug("Processing device: #{device_info.name}")
         process_device_command(device_info)
       end
     end

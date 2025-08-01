@@ -1,0 +1,9 @@
+{
+  "name": "pcie-root-port",
+  "command_line": [
+    "-device pcie-root-port,slot=@pci_root_slot@,chassis=@pci_root_chassis@,addr=@pci_root_addr@,bus=pcie.0,id=@bus_name@.0"
+  ],
+  "define_variables": {
+    "@bus_name@": "root@pci_root_chassis@"
+  }
+}

@@ -34,6 +34,10 @@ module AutoHCK
       result
     end
 
+    def [](key)
+      @hash[key]
+    end
+
     def create_cmd(str)
       result = str.to_s
       @hash.each do |k, v|
