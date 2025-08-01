@@ -8,7 +8,7 @@ module AutoHCK
     JUNIT_RESULT = 'junit.xml'
 
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :id,
-                :workspace_path, :github, :result_uploader, :engine_tag,
+                :workspace_path, :result_uploader, :engine_tag,
                 :engine_platform, :engine_type, :options, :extra_sw_manager,
                 :run_terminated, :engine_name, :string_log
 
@@ -110,6 +110,13 @@ module AutoHCK
                            github_handling_context, commit)
       @github.connect
       raise GithubInitializationError unless @github.connected?
+    end
+
+    def update_test_stats(tests_stats)
+      return unless @github&.connected?
+
+      url = @result_uploader.html_url || @result_uploader.url
+      @github&.update(tests_stats, url)
     end
 
     def github_handling(commit)
