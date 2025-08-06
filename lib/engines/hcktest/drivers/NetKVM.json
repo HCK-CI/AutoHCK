@@ -5,6 +5,12 @@
   "install_method": "PNP",
   "type": 0,
   "support": true,
+  "post_start_commands": [
+    {
+      "desc": "Write output inf_path post_start_commands",
+      "guest_run": "Write-Output '@NetKVM.inf_path@'"
+    }
+  ],
   "tests_config": [
     {
       "tests": [
@@ -14,6 +20,29 @@
         {
           "desc": "Rename NetKVM ethernet adapter to SupportDevice0",
           "guest_run": "Rename-NetAdapter -Name (Get-NetAdapter -InterfaceDescription 'Red Hat VirtIO Ethernet Adapter').Name -NewName 'SupportDevice0'"
+        },
+        {
+          "desc": "Create directory c:\\SupportDevice2",
+          "guest_run": "New-Item -ItemType Directory -Path 'C:\\SupportDevice2'"
+        },
+        {
+          "desc": "Create File c:\\SupportDevice2\\test.txt with current date and time",
+          "guest_run": "New-Item -ItemType File -Path 'C:\\SupportDevice2\\test.txt' -Value '@NetKVM.inf_path@'",
+          "files_action": [
+            {
+              "remote_path": "C:/SupportDevice2/",
+              "local_path": "@workspace@/@client_name@/@safe_test_name@",
+              "direction": "remote-to-local",
+              "move": true,
+              "allow_missing": false
+            }
+          ]
+        }
+      ],
+      "post_test_commands": [
+        {
+          "desc": "Write output inf_path after test",
+          "guest_run": "Write-Output '@NetKVM.inf_path@'"
         }
       ]
     }
