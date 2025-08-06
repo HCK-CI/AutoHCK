@@ -21,6 +21,9 @@ module AutoHCK
     RESULTS_YAML = 'results.yaml'
     RESULTS_REPORT_SECTIONS = %w[chart guest_info rejected_test url].freeze
 
+    DEFAULT_FILE_ACTION_REMOTE_PATH = 'C:\\'
+    DEFAULT_FILE_ACTION_LOCAL_PATH = '@workspace@'
+
     def initialize(client, support, project, target, tools)
       @client = client
       @project = project
@@ -33,6 +36,7 @@ module AutoHCK
       @tests = T.let([], T::Array[Models::HLK::Test])
       @test_results = []
       @results_template = ERB.new(File.read('lib/templates/report.html.erb'))
+      @replacement_map = ReplacementMap.new({ '@workspace@' => @project.workspace_path })
     end
 
     sig { params(updated_tests: T::Array[Models::HLK::Test]).returns(T::Array[Models::HLK::Test]) }
@@ -181,20 +185,100 @@ module AutoHCK
       @tools.run_on_machine(client.name, desc, command)
     end
 
+    def run_guest_test_command(command)
+      return unless command.guest_run
+
+      run_command_on_client(@client, command.guest_run, command.desc)
+      run_command_on_client(@support, command.guest_run, command.desc) unless @support.nil?
+    end
+
+    def run_host_test_command(command)
+      return unless command.host_run
+
+      @logger.info("Running command (#{command.desc}) on host")
+      run_cmd(command.host_run)
+    end
+
+    def run_remote_to_local_action_on_client(client_name, files_action)
+      remote_path = files_action.remote_path
+
+      unless @tools.exists_on_machine?(client_name, remote_path)
+        if files_action.allow_missing
+          @logger.warn("Remote file #{remote_path} not found on client #{client_name}: skipping download")
+          return
+        end
+
+        raise EngineError, "Remote file not found on client #{client_name}: #{remote_path}"
+      end
+
+      @tools.download_from_machine(client_name, remote_path, files_action.local_path)
+      @tools.delete_on_machine(client_name, remote_path) if files_action.move
+    end
+
+    def run_local_to_remote_action_on_client(client_name, files_action)
+      local_path = files_action.local_path
+      unless File.exist?(local_path)
+        if files_action.allow_missing
+          @logger.warn("Local file #{local_path} not found: skipping upload")
+          return
+        end
+
+        raise EngineError, "Local file not found: #{local_path}"
+      end
+
+      @tools.upload_to_machine(client_name, local_path, files_action.remote_path)
+      FileUtils.rm_rf(local_path) if files_action.move
+    end
+
+    sig { params(client_name: String, files_action: Models::FileActionConfig).void }
+    def run_file_action_on_client(client_name, files_action)
+      @logger.info("Running file action on #{client_name} " \
+                   "#{files_action.direction} from #{files_action.remote_path} to #{files_action.local_path}")
+
+      case files_action.direction
+      when Models::FileActionDirection::RemoteToLocal
+        run_remote_to_local_action_on_client(client_name, files_action)
+      when Models::FileActionDirection::LocalToRemote
+        run_local_to_remote_action_on_client(client_name, files_action)
+      end
+    end
+
+    sig do
+      params(client_name: String, files_action: Models::FileActionConfig, replacement: ReplacementMap).void
+    end
+    def prepare_file_action_for_client(client_name, files_action, replacement)
+      client_replacement = replacement.merge({ '@client_name@' => client_name })
+      updated_action = files_action.dup_and_replace_path(client_replacement, DEFAULT_FILE_ACTION_REMOTE_PATH,
+                                                         DEFAULT_FILE_ACTION_LOCAL_PATH)
+      run_file_action_on_client(client_name, updated_action)
+    end
+
+    sig do
+      params(files_actions: T::Array[Models::FileActionConfig], replacement: ReplacementMap).void
+    end
+    def run_file_actions(files_actions, replacement)
+      files_actions.each do |files_action|
+        if files_action.remote_path.nil? && files_action.local_path.nil?
+          @logger.warn('Both remote and local paths are nil, skipping file action')
+          next
+        end
+
+        prepare_file_action_for_client(@client.name, files_action, replacement)
+
+        next if @support.nil?
+
+        prepare_file_action_for_client(@support.name, files_action, replacement)
+      end
+    end
+
     sig { params(test: Models::HLK::Test, type: Symbol).void }
     def run_test_commands(test, type)
       select_test_config(test.name, type).each do |command|
-        guest_cmd = command.guest_run
-        desc = command.desc
-        if guest_cmd
-          run_command_on_client(@client, guest_cmd, desc)
-          run_command_on_client(@support, guest_cmd, desc) unless @support.nil?
-        end
+        run_guest_test_command(command)
+        run_host_test_command(command)
 
-        next unless command.host_run
-
-        @logger.info("Running command (#{desc}) on host")
-        run_cmd(command.host_run)
+        replacement = @replacement_map.merge({ '@safe_test_name@' => test.safe_name })
+        run_file_actions(command.files_action, replacement)
       end
     end
 
