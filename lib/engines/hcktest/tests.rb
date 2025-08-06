@@ -254,14 +254,14 @@ module AutoHCK
         replacement.merge!({ '@client_name@' => @client.name })
         updated_action = files_action.dup_and_replace_path(replacement, DEFAULT_FILE_ACTION_REMOTE_PATH,
                                                            DEFAULT_FILE_ACTION_LOCAL_PATH)
-        run_file_action_on_client(@client, updated_action)
+        run_file_action_on_client(@client.name, updated_action)
 
         next if @support.nil?
 
         replacement.merge!({ '@client_name@' => @support.name })
         updated_action = files_action.dup_and_replace_path(replacement, DEFAULT_FILE_ACTION_REMOTE_PATH,
                                                            DEFAULT_FILE_ACTION_LOCAL_PATH)
-        run_file_action_on_client(@support, updated_action)
+        run_file_action_on_client(@support.name, updated_action)
       end
     end
 
