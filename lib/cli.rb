@@ -22,7 +22,7 @@ module AutoHCK
     # class CommonOptions
     class CommonOptions
       attr_accessor :verbose, :config, :client_world_net, :id, :share_on_host_path, :workspace_path,
-                    :client_ctrl_net_dev
+                    :client_ctrl_net_dev, :attach_debug_net
 
       def create_parser(sub_parser)
         OptionParser.new do |parser|
@@ -46,6 +46,7 @@ module AutoHCK
         @client_world_net = false
         @id = 2
         @share_on_host_path = nil
+        @attach_debug_net = false
 
         parser.on('--share-on-host-path <path>', String,
                   'For using Transfer Network specify the directory to share on host machine') do |share_on_host_path|
@@ -67,6 +68,10 @@ module AutoHCK
         parser.on('--client-ctrl-net-dev <client-ctrl-net-dev>', String,
                   'Client VM control network device (make sure that driver is installed)',
                   &method(:client_ctrl_net_dev=))
+
+        parser.on('--attach-debug-net', TrueClass,
+                  'Attach debug network to all VMs',
+                  &method(:attach_debug_net=))
 
         parser.on('--id <id>', Integer,
                   'Set ID for AutoHCK run',

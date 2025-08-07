@@ -489,12 +489,22 @@ module AutoHCK
       device_infos << vga_info
     end
 
+    def process_debug_hck_network
+      device_info = read_device(option_config('debug_net_device'))
+      bus_name = generate_device_bus(device_info, @machine['bus_name'])
+
+      dev = @nm.debug_device_command(device_info, bus_name, full_replacement_map)
+      @device_commands << dev
+    end
+
     def process_hck_network_command
       device_info = read_device(option_config('ctrl_net_device'))
       dev = @nm.control_device_command(device_info, full_replacement_map)
       @device_commands << dev
 
       process_optional_hck_network
+
+      process_debug_hck_network if @options['attach_debug_net']
 
       return unless @options['client_id'].zero? || option_config('client_world_net')
 
