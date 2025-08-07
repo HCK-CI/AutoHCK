@@ -163,6 +163,24 @@ module AutoHCK
         cmd
       end
 
+      def debug_device_command(device, bus_name, qemu_replacement_map)
+        type = __method__.to_s.split('_').first
+
+        netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no,ifname=@net_if_name@'
+        network_backend = 'tap'
+
+        options = {
+          '@network_backend@' => network_backend,
+          '@netdev_options@' => netdev_options
+        }
+
+        dev_pci = { 'bus_name' => bus_name }
+        cmd, replacement_map = device_command_info(type, device, options, dev_pci, qemu_replacement_map)
+        create_net_up_script(replacement_map.merge({ '@bridge_name@' => 'br_debug' }))
+
+        cmd
+      end
+
       def transfer_device_command(device, transfer_net, share_path, bus_name, qemu_replacement_map)
         type = __method__.to_s.split('_').first
 
