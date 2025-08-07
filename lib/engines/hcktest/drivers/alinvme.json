@@ -1,0 +1,47 @@
+{
+  "name": "Alibaba NVMe Elastic Block Storage Adapter",
+  "device": "nvme-pci",
+  "inf": "AliNVMe.inf",
+  "install_method": "PNP",
+  "type": 0,
+  "support": false,
+  "post_start_commands": [
+    {
+      "desc": "Set Disk Operational Status to Online",
+      "guest_run": "Set-Disk -Number 1 -IsOffline $False"
+    },
+    {
+      "desc": "Make Disk Writable",
+      "guest_run": "Set-Disk -Number 1 -IsReadonly $False"
+    }
+  ],
+  "tests_config": [
+    {
+      "tests": [
+        ".*"
+      ],
+      "pre_test_commands": [ 
+        {
+          "desc": "Initialize Disk",
+          "guest_run": "Initialize-Disk -Number 1 -PartitionStyle GPT -ErrorAction SilentlyContinue; exit 0"
+        },      
+        {
+          "desc": "Remove Existing Partitions",
+          "guest_run": "Remove-Partition -DiskNumber 1 -PartitionNumber 1 -Confirm:$false"
+        },
+        {
+          "desc": "Create Partition",
+          "guest_run": "New-Partition -DiskNumber 1 -UseMaximumSize -AssignDriveLetter"
+        },
+        {
+          "desc": "Format Partition",
+          "guest_run": "Format-Volume -DriveLetter (Get-Partition -DiskNumber 1).DriveLetter -FileSystem NTFS -Confirm:$false"
+        }
+      ]
+    }
+  ],
+  "reject_test_names": [
+    "Hardware-enforced Stack Protection Compatibility Test"
+  ]
+}
+
