@@ -473,14 +473,6 @@ module AutoHCK
       @device_commands << dev
     end
 
-    def process_world_hck_network
-      device_info = read_device(option_config('world_net_device'))
-      bus_name = generate_device_bus(device_info, @machine['bus_name'])
-
-      dev = @nm.world_device_command(device_info, bus_name, full_replacement_map)
-      @device_commands << dev
-    end
-
     sig { params(device_infos: T::Array[Models::QemuHCKDevice]).void }
     def add_missing_default_devices(device_infos)
       return if device_infos.any? { |d| d.type == 'vga' }
@@ -489,11 +481,12 @@ module AutoHCK
       device_infos << vga_info
     end
 
-    def process_debug_hck_network
-      device_info = read_device(option_config('debug_net_device'))
+    def process_generic_hck_network(device_key, network_command)
+      @logger.debug("Processing generic HCK network command for #{device_key}")
+      device_info = read_device(option_config(device_key))
       bus_name = generate_device_bus(device_info, @machine['bus_name'])
 
-      dev = @nm.debug_device_command(device_info, bus_name, full_replacement_map)
+      dev = @nm.public_send(network_command, device_info, bus_name, full_replacement_map)
       @device_commands << dev
     end
 
@@ -504,11 +497,11 @@ module AutoHCK
 
       process_optional_hck_network
 
-      process_debug_hck_network if @options['attach_debug_net']
+      process_generic_hck_network('debug_net_device', :debug_device_command) if option_config('attach_debug_net')
 
       return unless @options['client_id'].zero? || option_config('client_world_net')
 
-      process_world_hck_network
+      process_generic_hck_network('world_net_device', :world_device_command)
     end
 
     def process_storage_command
