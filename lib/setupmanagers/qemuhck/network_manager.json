@@ -15,6 +15,10 @@
     "transfer": {
       "ifname": "trs_r@run_id@_c@client_id@",
       "mac": "56:@run_id_first@:@run_id_second@:@client_id@:aa:aa"
+    },
+    "debug": {
+      "ifname": "ds_r@run_id@_c@client_id@",
+      "mac": "56:@run_id_first@:@run_id_second@:@client_id@:ee:ee"
     }
   },
   "scripts": {
