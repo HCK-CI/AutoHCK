@@ -125,60 +125,17 @@ module AutoHCK
 
       def world_device_command(device, bus_name, qemu_replacement_map)
         type = __method__.to_s.split('_').first
-
-        netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no,ifname=@net_if_name@'
-        network_backend = 'tap'
-
-        options = {
-          '@network_backend@' => network_backend,
-          '@netdev_options@' => netdev_options
-        }
-
-        dev_pci = {
-          'bus_name' => bus_name
-        }
-        cmd, replacement_map = device_command_info(type, device, options, dev_pci, qemu_replacement_map)
-        create_net_up_script(replacement_map.merge({ '@bridge_name@' => 'br_world' }))
-
-        cmd
+        create_tap_device_command(type, device, bus_name, 'br_world', qemu_replacement_map)
       end
 
       def test_device_command(device, bus_name, qemu_replacement_map)
         type = __method__.to_s.split('_').first
-
-        netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no,ifname=@net_if_name@'
-        network_backend = 'tap'
-
-        options = {
-          '@network_backend@' => network_backend,
-          '@netdev_options@' => netdev_options
-        }
-
-        dev_pci = {
-          'bus_name' => bus_name
-        }
-        cmd, replacement_map = device_command_info(type, device, options, dev_pci, qemu_replacement_map)
-        create_net_up_script(replacement_map.merge({ '@bridge_name@' => 'br_test' }))
-
-        cmd
+        create_tap_device_command(type, device, bus_name, 'br_test', qemu_replacement_map)
       end
 
       def debug_device_command(device, bus_name, qemu_replacement_map)
         type = __method__.to_s.split('_').first
-
-        netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no,ifname=@net_if_name@'
-        network_backend = 'tap'
-
-        options = {
-          '@network_backend@' => network_backend,
-          '@netdev_options@' => netdev_options
-        }
-
-        dev_pci = { 'bus_name' => bus_name }
-        cmd, replacement_map = device_command_info(type, device, options, dev_pci, qemu_replacement_map)
-        create_net_up_script(replacement_map.merge({ '@bridge_name@' => 'br_debug' }))
-
-        cmd
+        create_tap_device_command(type, device, bus_name, 'br_debug', qemu_replacement_map)
       end
 
       def transfer_device_command(device, transfer_net, share_path, bus_name, qemu_replacement_map)
@@ -211,6 +168,24 @@ module AutoHCK
         dev_pci = { 'bus_name' => bus_name }
         cmd, replacement_map = device_command_info(type, device, options, dev_pci, qemu_replacement_map)
         create_net_smb replacement_map
+
+        cmd
+      end
+
+      private
+
+      def create_tap_device_command(type, device, bus_name, bridge_name, qemu_replacement_map)
+        netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no,ifname=@net_if_name@'
+        network_backend = 'tap'
+
+        options = {
+          '@network_backend@' => network_backend,
+          '@netdev_options@' => netdev_options
+        }
+
+        dev_pci = { 'bus_name' => bus_name }
+        cmd, replacement_map = device_command_info(type, device, options, dev_pci, qemu_replacement_map)
+        create_net_up_script(replacement_map.merge({ '@bridge_name@' => bridge_name }))
 
         cmd
       end
