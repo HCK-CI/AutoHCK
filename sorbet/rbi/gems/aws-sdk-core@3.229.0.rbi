@@ -2505,24 +2505,29 @@ module Aws::Endpoints
   class << self
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#30
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#41
     def resolve_auth_scheme(context, endpoint); end
 
     private
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#96
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#120
     def default_api_auth(context); end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#71
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#89
     def default_auth_scheme(context); end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#127
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#54
+    def endpoint_auth_scheme_preference(auth_schemes, preferred_auth); end
+
+    # @api private
+    #
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#151
     def legacy_default_api_authtype(context); end
 
     # Legacy auth resolution - looks for deprecated signatureVersion
@@ -2530,23 +2535,28 @@ module Aws::Endpoints
     #
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#108
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#132
     def legacy_default_auth_scheme(context); end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#45
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#64
     def merge_signing_defaults(auth_scheme, config); end
+
+    # @api private
+    #
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#114
+    def modeled_auth_scheme_preference(modeled_auth, preferred_auth); end
 
     # @api private
     # @return [Boolean]
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#101
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#125
     def s3_or_s3v4_signature_version?(context); end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#66
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#85
     def sigv4_name(config); end
   end
 end
@@ -2600,6 +2610,13 @@ class Aws::Endpoints::Condition
     def from_json(conditions_json); end
   end
 end
+
+# Maps config auth scheme preferences to endpoint auth scheme names.
+#
+# @api private
+#
+# source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#23
+Aws::Endpoints::ENDPOINT_AUTH_PREFERENCE_MAP = T.let(T.unsafe(nil), Hash)
 
 # source://aws-sdk-core//lib/aws-sdk-core/endpoints/endpoint.rb#5
 class Aws::Endpoints::Endpoint
@@ -2765,32 +2782,39 @@ class Aws::Endpoints::Function
   def build_argv(argv_json); end
 end
 
+# Maps configured auth scheme preferences to modeled auth traits.
+#
+# @api private
+#
+# source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#32
+Aws::Endpoints::MODELED_AUTH_PREFERENCE_MAP = T.let(T.unsafe(nil), Hash)
+
 # generic matcher functions for service endpoints
 #
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#9
+# source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#10
 module Aws::Endpoints::Matchers
   class << self
     # getAttr(value: Object | Array, path: string) Document
     #
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#26
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#27
     def attr(value, path); end
 
     # aws.parseArn(value: string) Option<ARN>
     #
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#101
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#102
     def aws_parse_arn(value); end
 
     # aws.partition(value: string) Option<Partition>
     #
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#96
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#97
     def aws_partition(value); end
 
     # aws.isVirtualHostableS3Bucket(value: string, allowSubDomains: bool) bool
@@ -2798,7 +2822,7 @@ module Aws::Endpoints::Matchers
     # @api private
     # @return [Boolean]
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#113
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#114
     def aws_virtual_hostable_s3_bucket?(value, allow_sub_domains = T.unsafe(nil)); end
 
     # booleanEquals(value1: bool, value2: bool) bool
@@ -2806,21 +2830,21 @@ module Aws::Endpoints::Matchers
     # @api private
     # @return [Boolean]
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#65
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#66
     def boolean_equals?(value1, value2); end
 
     # not(value: bool) bool
     #
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#21
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#22
     def not(bool); end
 
     # parseUrl(value: string) Option<URL>
     #
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#75
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#76
     def parse_url(value); end
 
     # isSet(value: Option<T>) bool
@@ -2828,7 +2852,7 @@ module Aws::Endpoints::Matchers
     # @api private
     # @return [Boolean]
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#16
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#17
     def set?(value); end
 
     # stringEquals(value1: string, value2: string) bool
@@ -2836,19 +2860,19 @@ module Aws::Endpoints::Matchers
     # @api private
     # @return [Boolean]
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#60
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#61
     def string_equals?(value1, value2); end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#47
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#48
     def substring(input, start, stop, reverse); end
 
     # uriEncode(value: string) string
     #
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#70
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#71
     def uri_encode(value); end
 
     # isValidHostLabel(value: string, allowSubDomains: bool) bool
@@ -2856,7 +2880,7 @@ module Aws::Endpoints::Matchers
     # @api private
     # @return [Boolean]
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#82
+    # source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#83
     def valid_host_label?(value, allow_sub_domains = T.unsafe(nil)); end
   end
 end
@@ -2865,7 +2889,7 @@ end
 #
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#11
+# source://aws-sdk-core//lib/aws-sdk-core/endpoints/matchers.rb#12
 Aws::Endpoints::Matchers::BRACKET_REGEX = T.let(T.unsafe(nil), Regexp)
 
 # This class is deprecated. It is used by the Runtime endpoint
@@ -2988,8 +3012,13 @@ end
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#22
-Aws::Endpoints::SUPPORTED_AUTH_TRAITS = T.let(T.unsafe(nil), Array)
+# source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#29
+Aws::Endpoints::SUPPORTED_ENDPOINT_AUTH = T.let(T.unsafe(nil), Array)
+
+# @api private
+#
+# source://aws-sdk-core//lib/aws-sdk-core/endpoints.rb#38
+Aws::Endpoints::SUPPORTED_MODELED_AUTH = T.let(T.unsafe(nil), Array)
 
 # This class is deprecated. It is used by the Runtime endpoint
 # resolution approach. It has been replaced by a code generated
@@ -3128,20 +3157,30 @@ class Aws::Endpoints::URL
   def _is_ip(authority); end
 end
 
-# source://aws-sdk-core//lib/aws-sdk-core/error_handler.rb#4
+# @api private
+#
+# source://aws-sdk-core//lib/aws-sdk-core/error_handler.rb#5
 class Aws::ErrorHandler < ::Seahorse::Client::Handler
   private
 
-  # source://aws-sdk-core//lib/aws-sdk-core/error_handler.rb#18
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/error_handler.rb#23
   def build_error(context, code, message, data); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/error_handler.rb#8
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/error_handler.rb#9
   def error(context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/error_handler.rb#23
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/error_handler.rb#28
   def http_status_error(context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/error_handler.rb#27
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/error_handler.rb#32
   def http_status_error_code(context); end
 end
 
@@ -3651,13 +3690,25 @@ class Aws::IniParser
   end
 end
 
-# An auto-refreshing credential provider that loads credentials from
-# EC2 instances.
+# An auto-refreshing credential provider that loads credentials from EC2 instances.
 #
 #     instance_credentials = Aws::InstanceProfileCredentials.new
 #     ec2 = Aws::EC2::Client.new(credentials: instance_credentials)
 #
-# source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#12
+# ## Retries
+# When initialized from the default credential chain, this provider defaults to `0` retries.
+# Breakdown of retries is as follows:
+#
+#  * **Configurable retries** (defaults to `1`): these retries handle errors when communicating
+#     with the IMDS endpoint. There are two separate retry mechanisms within the provider:
+#       * Entire token fetch and credential retrieval process
+#       * Token fetching
+#  * **JSON parsing retries**: Fixed at 3 attempts to handle cases when IMDS returns malformed JSON
+#     responses. These retries are separate from configurable retries.
+#
+# @see https://docs.aws.amazon.com/sdkref/latest/guide/feature-imds-credentials.html IMDS Credential Provider
+#
+# source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#24
 class Aws::InstanceProfileCredentials
   include ::Aws::CredentialProvider
   include ::Aws::RefreshingCredentials
@@ -3677,81 +3728,110 @@ class Aws::InstanceProfileCredentials
   # @param options [Hash]
   # @return [InstanceProfileCredentials] a new instance of InstanceProfileCredentials
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#77
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#79
   def initialize(options = T.unsafe(nil)); end
 
-  # @return [Integer] Number of times to retry when retrieving credentials
-  #   from the instance metadata service. Defaults to 0 when resolving from
-  #   the default credential chain ({Aws::CredentialProviderChain}).
+  # @return [Proc]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#100
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#108
+  def backoff; end
+
+  # @return [Boolean0] Boolean0
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#99
+  def disable_imds_v1; end
+
+  # @return [String]
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#111
+  def endpoint; end
+
+  # @return [IO, nil]
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#123
+  def http_debug_output; end
+
+  # @return [Integer]
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#117
+  def http_open_timeout; end
+
+  # @return [Integer]
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#120
+  def http_read_timeout; end
+
+  # @return [Integer]
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#114
+  def port; end
+
+  # @return [Integer]
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#105
   def retries; end
+
+  # @return [Integer]
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#102
+  def token_ttl; end
 
   private
 
-  # token is optional - if nil, uses v1 (insecure) flow
-  #
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#244
-  def _get_credentials(conn, token); end
-
   # @return [Boolean]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#260
-  def _metadata_disabled?; end
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#324
+  def empty_credentials?(creds_hash); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#142
-  def backoff(backoff); end
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#243
+  def fetch_credentials(conn); end
 
-  # @return [Boolean]
-  #
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#330
-  def empty_credentials?(creds); end
-
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#226
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#233
   def fetch_token(conn); end
-
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#198
-  def get_credentials; end
 
   # GET request fetch profile and credentials
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#275
-  def http_get(connection, path, token = T.unsafe(nil)); end
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#270
+  def http_get(connection, path); end
 
   # PUT request fetch token with ttl
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#291
-  def http_put(connection, path, ttl); end
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#286
+  def http_put(connection); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#264
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#259
   def open_connection; end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#150
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#173
   def refresh; end
 
-  # Compute an offset for refresh with jitter
-  #
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#335
-  def refresh_offset; end
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#165
+  def resolve_backoff(backoff); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#132
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#156
   def resolve_disable_v1(options); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#113
-  def resolve_endpoint(options, endpoint_mode); end
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#134
+  def resolve_endpoint(options); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#104
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#127
   def resolve_endpoint_mode(options); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#310
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#202
+  def retrieve_credentials; end
+
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#305
   def retry_errors(error_classes, options = T.unsafe(nil), &_block); end
 
   # @return [Boolean]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#256
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#255
   def token_set?; end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#324
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#224
+  def update_credentials(creds); end
+
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#319
   def warn_expired_credentials; end
 end
 
@@ -3759,65 +3839,63 @@ end
 #
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#42
+# source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#52
 Aws::InstanceProfileCredentials::METADATA_PATH_BASE = T.let(T.unsafe(nil), String)
 
 # Path for PUT request for token
 #
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#46
+# source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#56
 Aws::InstanceProfileCredentials::METADATA_TOKEN_PATH = T.let(T.unsafe(nil), String)
 
-# These are the errors we trap when attempting to talk to the
-# instance metadata service.  Any of these imply the service
-# is not present, no responding or some other non-recoverable
-# error.
+# These are the errors we trap when attempting to talk to the instance metadata service.
+# Any of these imply the service is not present, no responding or some other non-recoverable error.
 #
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#30
+# source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#40
 Aws::InstanceProfileCredentials::NETWORK_ERRORS = T.let(T.unsafe(nil), Array)
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#17
+# source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#29
 class Aws::InstanceProfileCredentials::Non200Response < ::RuntimeError; end
 
 # Token used to fetch IMDS profile and credentials
 #
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#341
+# source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#330
 class Aws::InstanceProfileCredentials::Token
   # @api private
   # @return [Token] a new instance of Token
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#342
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#331
   def initialize(value, ttl, created_time = T.unsafe(nil)); end
 
   # @api private
   # @return [Boolean]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#351
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#340
   def expired?; end
 
   # [String] token value
   #
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#349
+  # source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#338
   def value; end
 end
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#23
+# source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#35
 class Aws::InstanceProfileCredentials::TokenExpiredError < ::RuntimeError; end
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#20
+# source://aws-sdk-core//lib/aws-sdk-core/instance_profile_credentials.rb#32
 class Aws::InstanceProfileCredentials::TokenRetrivalError < ::RuntimeError; end
 
 # @api private
@@ -3909,34 +3987,56 @@ class Aws::Json::Builder
   def timestamp(ref, value); end
 end
 
-# source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#5
+# @api private
+#
+# source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#6
 class Aws::Json::ErrorHandler < ::Aws::ErrorHandler
-  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#7
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#8
   def call(context); end
 
   private
 
-  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#83
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#93
   def apply_error_headers(rule, context, data); end
 
+  # @api private
   # @return [Boolean]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#44
+  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#48
   def aws_query_error?(context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#26
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#53
+  def aws_query_error_code(context); end
+
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#27
   def error_code(json, context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#57
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#67
   def error_message(code, json); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#16
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#17
   def extract_error(body, context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#65
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#75
   def parse_error_data(context, body, code); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#49
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/json/error_handler.rb#59
   def remove_prefix(error_code, context); end
 end
 
@@ -5498,30 +5598,40 @@ end
 class Aws::Plugins::EndpointPattern < ::Seahorse::Client::Plugin
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/endpoint_pattern.rb#17
-  def add_handlers(handlers, config); end
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/endpoint_pattern.rb#16
+  def add_handlers(handlers, _config); end
+
+  class << self
+    private
+
+    # @api private
+    #
+    # source://aws-sdk-core//lib/aws-sdk-core/plugins/endpoint_pattern.rb#23
+    def resolve_disable_host_prefix_injection(cfg); end
+  end
 end
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/plugins/endpoint_pattern.rb#21
+# source://aws-sdk-core//lib/aws-sdk-core/plugins/endpoint_pattern.rb#39
 class Aws::Plugins::EndpointPattern::Handler < ::Seahorse::Client::Handler
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/endpoint_pattern.rb#23
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/endpoint_pattern.rb#40
   def call(context); end
 
   private
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/endpoint_pattern.rb#35
-  def _apply_endpoint_trait(context, trait); end
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/endpoint_pattern.rb#50
+  def apply_endpoint_trait(context, trait); end
 
   # @api private
+  # @raise [Errors::MissingEndpointHostLabelValue]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/endpoint_pattern.rb#48
-  def _replace_label_value(ori, label, input_ref, params); end
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/endpoint_pattern.rb#61
+  def replace_label_value(label, input_ref, params); end
 end
 
 # @api private
@@ -6675,7 +6785,7 @@ Aws::Plugins::RetryErrors::NO_JITTER = T.let(T.unsafe(nil), Proc)
 class Aws::Plugins::Sign < ::Seahorse::Client::Plugin
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#19
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#16
   def add_handlers(handlers, cfg); end
 
   class << self
@@ -6683,7 +6793,7 @@ class Aws::Plugins::Sign < ::Seahorse::Client::Plugin
     #
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#26
+    # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#23
     def signer_for(auth_scheme, config, sigv4_region_override = T.unsafe(nil), sigv4_credentials_override = T.unsafe(nil)); end
   end
 end
@@ -6696,34 +6806,39 @@ class Aws::Plugins::Sign::Bearer
   # @return [Bearer] a new instance of Bearer
   #
   # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#75
-  def initialize; end
+  def initialize(config); end
 
   # @api private
   # @raise [ArgumentError]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#92
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#90
   def presign_url(*args); end
 
   # @api private
   # @raise [Errors::MissingBearerTokenError]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#78
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#81
   def sign(context); end
 
   # @api private
   # @raise [ArgumentError]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#96
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#94
   def sign_event(*args); end
+
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#79
+  def token_provider; end
 end
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#41
+# source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#38
 class Aws::Plugins::Sign::Handler < ::Seahorse::Client::Handler
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#42
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#39
   def call(context); end
 
   private
@@ -6736,91 +6851,86 @@ class Aws::Plugins::Sign::Handler < ::Seahorse::Client::Handler
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#60
-  def with_metrics(credentials, &block); end
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#55
+  def with_metrics(signer, &block); end
 end
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#214
+# source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#209
 class Aws::Plugins::Sign::NullSigner
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#219
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#214
   def presign_url(*args); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#216
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#211
   def sign(context); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#222
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#217
   def sign_event(*args); end
 end
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#17
-Aws::Plugins::Sign::SUPPORTED_AUTH_TYPES = T.let(T.unsafe(nil), Array)
-
-# @api private
-#
-# source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#102
+# source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#100
 class Aws::Plugins::Sign::SignatureV4
   # @api private
   # @return [SignatureV4] a new instance of SignatureV4
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#105
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#101
   def initialize(auth_scheme, config, sigv4_overrides = T.unsafe(nil)); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#168
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#163
   def credentials; end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#160
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#155
   def presign_url(*args); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#133
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#128
   def sign(context); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#164
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#159
   def sign_event(*args); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#103
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#126
   def signer; end
 
   private
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#174
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#169
   def apply_authtype(context, req); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#197
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#192
   def apply_clock_skew(context, req); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#189
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#184
   def reset_signature(req); end
 
   # @api private
   # @return [Boolean]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#183
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/sign.rb#178
   def unsigned_payload?(context, req); end
 end
 
@@ -6886,44 +6996,44 @@ Aws::Plugins::SignatureV4::V4_AUTH = T.let(T.unsafe(nil), Array)
 class Aws::Plugins::StubResponses < ::Seahorse::Client::Plugin
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#37
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#43
   def add_handlers(handlers, config); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#44
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#50
   def after_initialize(client); end
 end
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#57
+# source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#63
 class Aws::Plugins::StubResponses::ApiRequestsHandler < ::Seahorse::Client::Handler
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#58
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#64
   def call(context); end
 end
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#70
+# source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#76
 class Aws::Plugins::StubResponses::StubbingHandler < ::Seahorse::Client::Handler
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#71
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#77
   def call(context); end
 
   private
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#96
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#102
   def apply_stub(stub, response, async_mode = T.unsafe(nil)); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#105
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#111
   def signal_error(error, http_resp); end
 
   # @api private
@@ -6931,17 +7041,17 @@ class Aws::Plugins::StubResponses::StubbingHandler < ::Seahorse::Client::Handler
   # @param http_resp [Seahorse::Client::Http::Response | Seahorse::Client::Http::AsyncResponse]
   # @param async_mode [Boolean]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#116
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#122
   def signal_http(stub, http_resp, async_mode = T.unsafe(nil)); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#133
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#139
   def span_wrapper(context, &block); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#79
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/stub_responses.rb#85
   def stub_responses(context); end
 end
 
@@ -7036,44 +7146,44 @@ class Aws::Plugins::UserAgent < ::Seahorse::Client::Plugin
     #
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#81
+    # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#82
     def feature(_feature, &block); end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#85
+    # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#86
     def metric(*metrics, &block); end
   end
 end
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#95
+# source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#96
 class Aws::Plugins::UserAgent::Handler < ::Seahorse::Client::Handler
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#96
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#97
   def call(context); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#101
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#102
   def set_user_agent(context); end
 end
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#105
+# source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#106
 class Aws::Plugins::UserAgent::Handler::UserAgent
   # @api private
   # @return [UserAgent] a new instance of UserAgent
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#106
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#107
   def initialize(context); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#110
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#111
   def to_s; end
 
   private
@@ -7082,41 +7192,41 @@ class Aws::Plugins::UserAgent::Handler::UserAgent
   #
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#139
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#140
   def api_metadata; end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#178
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#179
   def app_id_metadata; end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#172
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#173
   def env_metadata; end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#186
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#187
   def framework_metadata; end
 
   # Used to be RUBY_ENGINE/RUBY_VERSION
   #
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#168
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#169
   def language_metadata; end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#203
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#204
   def metric_metadata; end
 
   # Used to be RUBY_PLATFORM
   #
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#149
+  # source://aws-sdk-core//lib/aws-sdk-core/plugins/user_agent.rb#150
   def os_metadata; end
 end
 
@@ -8483,33 +8593,52 @@ class Aws::RpcV2::ContentTypeHandler < ::Seahorse::Client::Handler
   def eventstream_output?(context); end
 end
 
-# source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#5
+# @api private
+#
+# source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#6
 class Aws::RpcV2::ErrorHandler < ::Aws::ErrorHandler
-  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#7
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#8
   def call(context); end
 
   private
 
+  # @api private
   # @return [Boolean]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#71
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#59
   def aws_query_error?(context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#39
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#64
+  def aws_query_error_code(context); end
+
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#40
   def error_code(data, context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#29
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#30
   def extract_error(body, context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#55
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#78
   def parse_error_data(context, body, code); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#76
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#70
   def remove_prefix(error_code, context); end
 
+  # @api private
   # @return [Boolean]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#23
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/error_handler.rb#24
   def valid_response?(context); end
 end
 
@@ -8561,6 +8690,16 @@ class Aws::RpcV2::Parser
   def parse(cbor, target = T.unsafe(nil)); end
 
   private
+
+  # @return [Boolean]
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/parser.rb#89
+  def flattened_list?(shape); end
+
+  # @return [Boolean]
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/parser.rb#93
+  def flattened_map?(shape); end
 
   # source://aws-sdk-core//lib/aws-sdk-core/rpc_v2/parser.rb#60
   def list(ref, values, target = T.unsafe(nil)); end
@@ -8625,13 +8764,13 @@ class Aws::SSO::Client < ::Seahorse::Client::Base
   # @overload initialize
   # @return [Client] a new instance of Client
   #
-  # source://aws-sdk-core//lib/aws-sdk-sso/client.rb#467
+  # source://aws-sdk-core//lib/aws-sdk-sso/client.rb#473
   def initialize(*args); end
 
   # @api private
   # @param params [{}]
   #
-  # source://aws-sdk-core//lib/aws-sdk-sso/client.rb#681
+  # source://aws-sdk-core//lib/aws-sdk-sso/client.rb#687
   def build_request(operation_name, params = T.unsafe(nil)); end
 
   # Returns the STS short-term credentials for a given role name that is
@@ -8660,7 +8799,7 @@ class Aws::SSO::Client < ::Seahorse::Client::Base
   #   * {Types::GetRoleCredentialsResponse#role_credentials #role_credentials} => Types::RoleCredentials
   # @see http://docs.aws.amazon.com/goto/WebAPI/sso-2019-06-10/GetRoleCredentials AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sso/client.rb#514
+  # source://aws-sdk-core//lib/aws-sdk-sso/client.rb#520
   def get_role_credentials(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Lists all roles that are assigned to the user for a given AWS account.
@@ -8693,7 +8832,7 @@ class Aws::SSO::Client < ::Seahorse::Client::Base
   #   * {Types::ListAccountRolesResponse#role_list #role_list} => Array&lt;Types::RoleInfo&gt;
   # @see http://docs.aws.amazon.com/goto/WebAPI/sso-2019-06-10/ListAccountRoles AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sso/client.rb#567
+  # source://aws-sdk-core//lib/aws-sdk-sso/client.rb#573
   def list_account_roles(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Lists all AWS accounts assigned to the user. These AWS accounts are
@@ -8732,7 +8871,7 @@ class Aws::SSO::Client < ::Seahorse::Client::Base
   #   * {Types::ListAccountsResponse#account_list #account_list} => Array&lt;Types::AccountInfo&gt;
   # @see http://docs.aws.amazon.com/goto/WebAPI/sso-2019-06-10/ListAccounts AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sso/client.rb#624
+  # source://aws-sdk-core//lib/aws-sdk-sso/client.rb#630
   def list_accounts(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Removes the locally stored SSO tokens from the client-side cache and
@@ -8768,24 +8907,24 @@ class Aws::SSO::Client < ::Seahorse::Client::Base
   # @return [Struct] Returns an empty {Seahorse::Client::Response response}.
   # @see http://docs.aws.amazon.com/goto/WebAPI/sso-2019-06-10/Logout AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sso/client.rb#672
+  # source://aws-sdk-core//lib/aws-sdk-sso/client.rb#678
   def logout(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # @api private
   # @deprecated
   #
-  # source://aws-sdk-core//lib/aws-sdk-sso/client.rb#701
+  # source://aws-sdk-core//lib/aws-sdk-sso/client.rb#707
   def waiter_names; end
 
   class << self
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-sso/client.rb#711
+    # source://aws-sdk-core//lib/aws-sdk-sso/client.rb#717
     def errors_module; end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-sso/client.rb#708
+    # source://aws-sdk-core//lib/aws-sdk-sso/client.rb#714
     def identifier; end
   end
 end
@@ -9456,13 +9595,13 @@ class Aws::SSOOIDC::Client < ::Seahorse::Client::Base
   # @overload initialize
   # @return [Client] a new instance of Client
   #
-  # source://aws-sdk-core//lib/aws-sdk-ssooidc/client.rb#467
+  # source://aws-sdk-core//lib/aws-sdk-ssooidc/client.rb#473
   def initialize(*args); end
 
   # @api private
   # @param params [{}]
   #
-  # source://aws-sdk-core//lib/aws-sdk-ssooidc/client.rb#1051
+  # source://aws-sdk-core//lib/aws-sdk-ssooidc/client.rb#1057
   def build_request(operation_name, params = T.unsafe(nil)); end
 
   # Creates and returns access and refresh tokens for clients that are
@@ -9545,7 +9684,7 @@ class Aws::SSOOIDC::Client < ::Seahorse::Client::Base
   #   * {Types::CreateTokenResponse#id_token #id_token} => String
   # @see http://docs.aws.amazon.com/goto/WebAPI/sso-oidc-2019-06-10/CreateToken AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-ssooidc/client.rb#607
+  # source://aws-sdk-core//lib/aws-sdk-ssooidc/client.rb#613
   def create_token(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Creates and returns access and refresh tokens for clients and
@@ -9708,7 +9847,7 @@ class Aws::SSOOIDC::Client < ::Seahorse::Client::Base
   #   * {Types::CreateTokenWithIAMResponse#aws_additional_details #aws_additional_details} => Types::AwsAdditionalDetails
   # @see http://docs.aws.amazon.com/goto/WebAPI/sso-oidc-2019-06-10/CreateTokenWithIAM AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-ssooidc/client.rb#853
+  # source://aws-sdk-core//lib/aws-sdk-ssooidc/client.rb#859
   def create_token_with_iam(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Registers a public client with IAM Identity Center. This allows
@@ -9781,7 +9920,7 @@ class Aws::SSOOIDC::Client < ::Seahorse::Client::Base
   #   * {Types::RegisterClientResponse#token_endpoint #token_endpoint} => String
   # @see http://docs.aws.amazon.com/goto/WebAPI/sso-oidc-2019-06-10/RegisterClient AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-ssooidc/client.rb#967
+  # source://aws-sdk-core//lib/aws-sdk-ssooidc/client.rb#973
   def register_client(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Initiates device authorization by requesting a pair of verification
@@ -9834,24 +9973,24 @@ class Aws::SSOOIDC::Client < ::Seahorse::Client::Base
   #   * {Types::StartDeviceAuthorizationResponse#interval #interval} => Integer
   # @see http://docs.aws.amazon.com/goto/WebAPI/sso-oidc-2019-06-10/StartDeviceAuthorization AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-ssooidc/client.rb#1042
+  # source://aws-sdk-core//lib/aws-sdk-ssooidc/client.rb#1048
   def start_device_authorization(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # @api private
   # @deprecated
   #
-  # source://aws-sdk-core//lib/aws-sdk-ssooidc/client.rb#1071
+  # source://aws-sdk-core//lib/aws-sdk-ssooidc/client.rb#1077
   def waiter_names; end
 
   class << self
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-ssooidc/client.rb#1081
+    # source://aws-sdk-core//lib/aws-sdk-ssooidc/client.rb#1087
     def errors_module; end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-ssooidc/client.rb#1078
+    # source://aws-sdk-core//lib/aws-sdk-ssooidc/client.rb#1084
     def identifier; end
   end
 end
@@ -10997,7 +11136,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # @overload initialize
   # @return [Client] a new instance of Client
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#474
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#480
   def initialize(*args); end
 
   # Returns a set of temporary security credentials that you can use to
@@ -11215,7 +11354,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #   * {Types::AssumeRoleResponse#source_identity #source_identity} => String
   # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRole AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#973
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#979
   def assume_role(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns a set of temporary security credentials for users who have
@@ -11448,7 +11587,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #   * {Types::AssumeRoleWithSAMLResponse#source_identity #source_identity} => String
   # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRoleWithSAML AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1328
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1334
   def assume_role_with_saml(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns a set of temporary security credentials for users who have
@@ -11682,7 +11821,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #   * {Types::AssumeRoleWithWebIdentityResponse#source_identity #source_identity} => String
   # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRoleWithWebIdentity AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1729
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1735
   def assume_role_with_web_identity(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns a set of short term credentials you can use to perform
@@ -11759,13 +11898,13 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #   * {Types::AssumeRootResponse#source_identity #source_identity} => String
   # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/AssumeRoot AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1844
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1850
   def assume_root(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # @api private
   # @param params [{}]
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2584
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2590
   def build_request(operation_name, params = T.unsafe(nil)); end
 
   # Decodes additional information about the authorization status of a
@@ -11837,7 +11976,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #   * {Types::DecodeAuthorizationMessageResponse#decoded_message #decoded_message} => String
   # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/DecodeAuthorizationMessage AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1925
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1931
   def decode_authorization_message(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns the account identifier for the specified access key ID.
@@ -11887,7 +12026,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #   * {Types::GetAccessKeyInfoResponse#account #account} => String
   # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetAccessKeyInfo AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1986
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#1992
   def get_access_key_info(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns details about the IAM user or role whose credentials are used
@@ -11963,7 +12102,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #   * {Types::GetCallerIdentityResponse#arn #arn} => String
   # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetCallerIdentity AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2070
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2076
   def get_caller_identity(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns a set of temporary security credentials (consisting of an
@@ -12158,7 +12297,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #   * {Types::GetFederationTokenResponse#packed_policy_size #packed_policy_size} => Integer
   # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetFederationToken AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2418
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2424
   def get_federation_token(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns a set of temporary credentials for an Amazon Web Services
@@ -12276,24 +12415,24 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #   * {Types::GetSessionTokenResponse#credentials #credentials} => Types::Credentials
   # @see http://docs.aws.amazon.com/goto/WebAPI/sts-2011-06-15/GetSessionToken AWS API Documentation
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2575
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2581
   def get_session_token(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # @api private
   # @deprecated
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2604
+  # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2610
   def waiter_names; end
 
   class << self
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2614
+    # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2620
     def errors_module; end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2611
+    # source://aws-sdk-core//lib/aws-sdk-sts/client.rb#2617
     def identifier; end
   end
 end
@@ -12643,153 +12782,152 @@ end
 #
 # Additionally, error classes are dynamically generated for service errors based on the error code
 # if they are not defined above.
-# Some existing error classes may use a different class name than the one documented.
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#47
+# source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#46
 module Aws::STS::Errors
   extend ::Aws::Errors::DynamicErrors
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#51
+# source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#50
 class Aws::STS::Errors::ExpiredTokenException < ::Aws::STS::Errors::ServiceError
   # @param context [Seahorse::Client::RequestContext]
   # @param message [String]
   # @param data [Aws::STS::Types::ExpiredTokenException]
   # @return [ExpiredTokenException] a new instance of ExpiredTokenException
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#56
+  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#55
   def initialize(context, message, data = T.unsafe(nil)); end
 
   # @return [String]
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#61
+  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#60
   def message; end
 end
 
 # @deprecated This error class is not used during parsing.
 #   Please use `IDPCommunicationError` instead.
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#68
+# source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#67
 class Aws::STS::Errors::IDPCommunicationErrorException < ::Aws::STS::Errors::ServiceError
   # @param context [Seahorse::Client::RequestContext]
   # @param message [String]
   # @param data [Aws::STS::Types::IDPCommunicationErrorException]
   # @return [IDPCommunicationErrorException] a new instance of IDPCommunicationErrorException
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#73
+  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#72
   def initialize(context, message, data = T.unsafe(nil)); end
 
   # @return [String]
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#78
+  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#77
   def message; end
 end
 
 # @deprecated This error class is not used during parsing.
 #   Please use `IDPRejectedClaim` instead.
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#85
+# source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#84
 class Aws::STS::Errors::IDPRejectedClaimException < ::Aws::STS::Errors::ServiceError
   # @param context [Seahorse::Client::RequestContext]
   # @param message [String]
   # @param data [Aws::STS::Types::IDPRejectedClaimException]
   # @return [IDPRejectedClaimException] a new instance of IDPRejectedClaimException
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#90
+  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#89
   def initialize(context, message, data = T.unsafe(nil)); end
 
   # @return [String]
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#95
+  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#94
   def message; end
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#100
+# source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#99
 class Aws::STS::Errors::InvalidAuthorizationMessageException < ::Aws::STS::Errors::ServiceError
   # @param context [Seahorse::Client::RequestContext]
   # @param message [String]
   # @param data [Aws::STS::Types::InvalidAuthorizationMessageException]
   # @return [InvalidAuthorizationMessageException] a new instance of InvalidAuthorizationMessageException
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#105
+  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#104
   def initialize(context, message, data = T.unsafe(nil)); end
 
   # @return [String]
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#110
+  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#109
   def message; end
 end
 
 # @deprecated This error class is not used during parsing.
 #   Please use `InvalidIdentityToken` instead.
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#117
+# source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#116
 class Aws::STS::Errors::InvalidIdentityTokenException < ::Aws::STS::Errors::ServiceError
   # @param context [Seahorse::Client::RequestContext]
   # @param message [String]
   # @param data [Aws::STS::Types::InvalidIdentityTokenException]
   # @return [InvalidIdentityTokenException] a new instance of InvalidIdentityTokenException
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#122
+  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#121
   def initialize(context, message, data = T.unsafe(nil)); end
 
   # @return [String]
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#127
+  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#126
   def message; end
 end
 
 # @deprecated This error class is not used during parsing.
 #   Please use `MalformedPolicyDocument` instead.
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#134
+# source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#133
 class Aws::STS::Errors::MalformedPolicyDocumentException < ::Aws::STS::Errors::ServiceError
   # @param context [Seahorse::Client::RequestContext]
   # @param message [String]
   # @param data [Aws::STS::Types::MalformedPolicyDocumentException]
   # @return [MalformedPolicyDocumentException] a new instance of MalformedPolicyDocumentException
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#139
+  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#138
   def initialize(context, message, data = T.unsafe(nil)); end
 
   # @return [String]
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#144
+  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#143
   def message; end
 end
 
 # @deprecated This error class is not used during parsing.
 #   Please use `PackedPolicyTooLarge` instead.
 #
-# source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#151
+# source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#150
 class Aws::STS::Errors::PackedPolicyTooLargeException < ::Aws::STS::Errors::ServiceError
   # @param context [Seahorse::Client::RequestContext]
   # @param message [String]
   # @param data [Aws::STS::Types::PackedPolicyTooLargeException]
   # @return [PackedPolicyTooLargeException] a new instance of PackedPolicyTooLargeException
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#156
+  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#155
   def initialize(context, message, data = T.unsafe(nil)); end
 
   # @return [String]
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#161
+  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#160
   def message; end
 end
 
-# source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#166
+# source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#165
 class Aws::STS::Errors::RegionDisabledException < ::Aws::STS::Errors::ServiceError
   # @param context [Seahorse::Client::RequestContext]
   # @param message [String]
   # @param data [Aws::STS::Types::RegionDisabledException]
   # @return [RegionDisabledException] a new instance of RegionDisabledException
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#171
+  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#170
   def initialize(context, message, data = T.unsafe(nil)); end
 
   # @return [String]
   #
-  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#176
+  # source://aws-sdk-core//lib/aws-sdk-sts/errors.rb#175
   def message; end
 end
 
@@ -13373,6 +13511,9 @@ class Aws::SharedConfig
   def assume_role_web_identity_credentials_from_config(opts = T.unsafe(nil)); end
 
   # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#199
+  def auth_scheme_preference(opts = T.unsafe(nil)); end
+
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#199
   def ca_bundle(opts = T.unsafe(nil)); end
 
   # @api private
@@ -13436,6 +13577,9 @@ class Aws::SharedConfig
 
   # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#199
   def defaults_mode(opts = T.unsafe(nil)); end
+
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#199
+  def disable_host_prefix_injection(opts = T.unsafe(nil)); end
 
   # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#199
   def disable_request_compression(opts = T.unsafe(nil)); end
@@ -13542,57 +13686,57 @@ class Aws::SharedConfig
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#250
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#252
   def assume_role_from_profile(cfg, profile, opts, chain_config); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#375
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#377
   def assume_role_process_credentials_from_config(profile); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#348
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#350
   def assume_role_web_identity_credentials_from_config_with_metrics(opts); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#394
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#396
   def credentials_from_config(profile, _opts); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#461
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#463
   def credentials_from_profile(prof_config); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#388
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#390
   def credentials_from_shared(profile, _opts); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#360
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#362
   def credentials_from_source(credential_source, config); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#490
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#492
   def default_shared_config_path(file); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#486
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#488
   def determine_config_path; end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#482
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#484
   def determine_credentials_path; end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#506
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#508
   def determine_profile(options); end
 
   # Get a config value from from shared credential/config files.
@@ -13601,27 +13745,27 @@ class Aws::SharedConfig
   #
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#242
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#244
   def get_config_value(key, opts); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#478
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#480
   def load_config_file; end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#472
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#474
   def load_credentials_file; end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#323
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#325
   def resolve_source_profile(profile, opts = T.unsafe(nil)); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#354
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#356
   def sso_credentials_from_config_with_metrics(profile); end
 
   # If any of the sso_ profile values are present, attempt to construct
@@ -13629,12 +13773,12 @@ class Aws::SharedConfig
   #
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#402
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#404
   def sso_credentials_from_profile(cfg, profile); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#513
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#515
   def sso_session(cfg, profile, sso_session_name); end
 
   # If the required sso_ profile values are present, attempt to construct
@@ -13642,17 +13786,17 @@ class Aws::SharedConfig
   #
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#446
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#448
   def sso_token_from_profile(cfg, profile); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#497
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#499
   def validate_profile_exists(profile); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#530
+  # source://aws-sdk-core//lib/aws-sdk-core/shared_config.rb#532
   def with_metrics(metrics, &block); end
 
   class << self
@@ -13748,7 +13892,7 @@ class Aws::StaticTokenProvider
   # @param expiration [Time]
   # @return [StaticTokenProvider] a new instance of StaticTokenProvider
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/static_token_provider.rb#10
+  # source://aws-sdk-core//lib/aws-sdk-core/static_token_provider.rb#9
   def initialize(token, expiration = T.unsafe(nil)); end
 end
 
@@ -14802,8 +14946,8 @@ end
 
 # source://aws-sdk-core//lib/aws-sdk-core/token.rb#4
 class Aws::Token
-  # @param token [String]
-  # @param expiration [Time]
+  # @param token [String, nil]
+  # @param expiration [Time, nil]
   # @return [Token] a new instance of Token
   #
   # source://aws-sdk-core//lib/aws-sdk-core/token.rb#8
@@ -14834,9 +14978,23 @@ end
 
 # source://aws-sdk-core//lib/aws-sdk-core/token_provider.rb#4
 module Aws::TokenProvider
+  # Returns UserAgent metrics for tokens.
+  #
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/token_provider.rb#11
+  def metrics; end
+
+  # Returns UserAgent metrics for tokens.
+  #
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/token_provider.rb#11
+  def metrics=(_arg0); end
+
   # @return [Boolean]
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/token_provider.rb#10
+  # source://aws-sdk-core//lib/aws-sdk-core/token_provider.rb#14
   def set?; end
 
   # @return [Token]
@@ -14865,7 +15023,7 @@ class Aws::TokenProviderChain
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/token_provider_chain.rb#46
+  # source://aws-sdk-core//lib/aws-sdk-core/token_provider_chain.rb#42
   def determine_profile_name(options); end
 
   # @api private
@@ -14875,7 +15033,7 @@ class Aws::TokenProviderChain
 
   # @api private
   #
-  # source://aws-sdk-core//lib/aws-sdk-core/token_provider_chain.rb#37
+  # source://aws-sdk-core//lib/aws-sdk-core/token_provider_chain.rb#34
   def sso_token(options); end
 
   # @api private
@@ -14902,58 +15060,58 @@ end
 
 # @api private
 #
-# source://aws-sdk-core//lib/aws-sdk-core/util.rb#7
+# source://aws-sdk-core//lib/aws-sdk-core/util.rb#8
 module Aws::Util
   class << self
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/util.rb#18
+    # source://aws-sdk-core//lib/aws-sdk-core/util.rb#19
     def copy_hash(hash); end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/util.rb#26
+    # source://aws-sdk-core//lib/aws-sdk-core/util.rb#27
     def deep_copy(obj); end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/util.rb#10
+    # source://aws-sdk-core//lib/aws-sdk-core/util.rb#11
     def deep_merge(left, right); end
 
     # @api private
     # @param str [String]
     # @return [Number] The input as a number
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/util.rb#83
+    # source://aws-sdk-core//lib/aws-sdk-core/util.rb#84
     def deserialize_number(str); end
 
     # @api private
     # @param value [String]
     # @return [Time]
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/util.rb#95
+    # source://aws-sdk-core//lib/aws-sdk-core/util.rb#96
     def deserialize_time(value); end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/util.rb#49
+    # source://aws-sdk-core//lib/aws-sdk-core/util.rb#50
     def monotonic_milliseconds; end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/util.rb#57
+    # source://aws-sdk-core//lib/aws-sdk-core/util.rb#58
     def monotonic_seconds; end
 
     # @api private
     # @param input [Number]
     # @return [Number, String] The serialized number
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/util.rb#72
+    # source://aws-sdk-core//lib/aws-sdk-core/util.rb#73
     def serialize_number(input); end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/aws-sdk-core/util.rb#61
+    # source://aws-sdk-core//lib/aws-sdk-core/util.rb#62
     def str_2_bool(str); end
   end
 end
@@ -15413,38 +15571,60 @@ class Aws::Xml::DocBuilder
   def open_el(name, attrs); end
 end
 
-# source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#7
+# @api private
+#
+# source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#9
 class Aws::Xml::ErrorHandler < ::Aws::ErrorHandler
-  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#9
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#11
   def call(context); end
 
   private
 
-  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#59
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#61
   def apply_error_headers(rule, context, data); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#64
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#66
   def error_code(body, context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#28
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#30
   def error_data(context, body, code); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#80
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#82
   def error_message(body); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#18
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#20
   def extract_error(body, context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#48
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#50
   def parse_error_data(rule, body); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#72
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#74
   def remove_prefix(error_code, context); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#88
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#90
   def request_id(body); end
 
-  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#94
+  # @api private
+  #
+  # source://aws-sdk-core//lib/aws-sdk-core/xml/error_handler.rb#96
   def unescape(str); end
 end
 
@@ -15827,7 +16007,7 @@ class Net::HTTPGenericRequest
   include ::Seahorse::Client::NetHttp::Patches::PatchDefaultContentType
 end
 
-# source://aws-sdk-core//lib/seahorse/util.rb#5
+# source://aws-sdk-core//lib/seahorse/util.rb#6
 module Seahorse; end
 
 # source://aws-sdk-core//lib/seahorse/client/block_io.rb#4
@@ -16017,7 +16197,7 @@ class Seahorse::Client::Base
     # @param options [Hash] a customizable set of options
     # @return [Class<Client::Base>]
     #
-    # source://aws-sdk-core//lib/seahorse/client/base.rb#187
+    # source://aws-sdk-core//lib/seahorse/client/base.rb#185
     def define(options = T.unsafe(nil)); end
 
     # @option options
@@ -16025,7 +16205,7 @@ class Seahorse::Client::Base
     # @param options [Hash] a customizable set of options
     # @return [Class<Client::Base>]
     #
-    # source://aws-sdk-core//lib/seahorse/client/base.rb#187
+    # source://aws-sdk-core//lib/seahorse/client/base.rb#185
     def extend(options = T.unsafe(nil)); end
 
     # source://aws-sdk-core//lib/seahorse/client/base.rb#97
@@ -16070,18 +16250,15 @@ class Seahorse::Client::Base
 
     private
 
-    # source://aws-sdk-core//lib/seahorse/client/base.rb#215
+    # source://aws-sdk-core//lib/seahorse/client/base.rb#201
     def before_initialize(plugins, options); end
 
-    # source://aws-sdk-core//lib/seahorse/client/base.rb#211
+    # source://aws-sdk-core//lib/seahorse/client/base.rb#197
     def build_plugins(plugins); end
-
-    # source://aws-sdk-core//lib/seahorse/client/base.rb#199
-    def define_operation_methods; end
 
     # @private
     #
-    # source://aws-sdk-core//lib/seahorse/client/base.rb#231
+    # source://aws-sdk-core//lib/seahorse/client/base.rb#217
     def inherited(subclass); end
   end
 end
@@ -17499,12 +17676,12 @@ module Seahorse::Client::NetHttp; end
 
 # @api private
 #
-# source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#19
+# source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#20
 class Seahorse::Client::NetHttp::ConnectionPool
   # @api private
   # @return [ConnectionPool] a new instance of ConnectionPool
   #
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#43
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#44
   def initialize(options = T.unsafe(nil)); end
 
   # Removes stale http sessions from the pool (that have exceeded
@@ -17513,7 +17690,7 @@ class Seahorse::Client::NetHttp::ConnectionPool
   # @api private
   # @return [nil]
   #
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#131
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#132
   def clean!; end
 
   # Closes and removes all sessions from the pool.
@@ -17524,33 +17701,33 @@ class Seahorse::Client::NetHttp::ConnectionPool
   # @api private
   # @return [nil]
   #
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#141
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#142
   def empty!; end
 
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#53
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#54
   def http_continue_timeout; end
 
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#53
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#54
   def http_idle_timeout; end
 
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#53
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#54
   def http_open_timeout; end
 
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#53
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#54
   def http_proxy; end
 
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#53
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#54
   def http_read_timeout; end
 
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#53
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#54
   def http_wire_trace; end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#53
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#54
   def http_wire_trace?; end
 
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#53
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#54
   def logger; end
 
   # Makes an HTTP request, yielding a Net::HTTPResponse object.
@@ -17570,7 +17747,7 @@ class Seahorse::Client::NetHttp::ConnectionPool
   # @return [nil]
   # @yieldparam net_http_response [Net::HTTPResponse]
   #
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#77
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#78
   def request(endpoint, request, &block); end
 
   # @api private
@@ -17579,40 +17756,40 @@ class Seahorse::Client::NetHttp::ConnectionPool
   # @return [nil]
   # @yieldparam session [Net::HTTPSession]
   #
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#89
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#90
   def session_for(endpoint, &block); end
 
   # @api private
   # @return [Integer] Returns the count of sessions currently in the
   #   pool, not counting those currently in use.
   #
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#122
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#123
   def size; end
 
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#53
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#54
   def ssl_ca_bundle; end
 
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#53
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#54
   def ssl_ca_directory; end
 
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#53
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#54
   def ssl_ca_store; end
 
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#53
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#54
   def ssl_cert; end
 
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#53
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#54
   def ssl_key; end
 
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#53
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#54
   def ssl_timeout; end
 
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#53
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#54
   def ssl_verify_peer; end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#53
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#54
   def ssl_verify_peer?; end
 
   private
@@ -17622,7 +17799,7 @@ class Seahorse::Client::NetHttp::ConnectionPool
   # @api private
   # @note **Must** be called behind a `@pool_mutex` synchronize block.
   #
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#313
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#314
   def _clean; end
 
   # Extract the parts of the http_proxy URI
@@ -17630,12 +17807,12 @@ class Seahorse::Client::NetHttp::ConnectionPool
   # @api private
   # @return [Array(String)]
   #
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#263
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#264
   def http_proxy_parts; end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#151
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#152
   def remove_path_and_query(endpoint); end
 
   # Starts and returns a new HTTP(S) session.
@@ -17644,7 +17821,7 @@ class Seahorse::Client::NetHttp::ConnectionPool
   # @param endpoint [String]
   # @return [Net::HTTPSession]
   #
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#275
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#276
   def start_session(endpoint); end
 
   class << self
@@ -17667,14 +17844,14 @@ class Seahorse::Client::NetHttp::ConnectionPool
     # @param options [Hash] a customizable set of options
     # @return [ConnectionPool]
     #
-    # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#215
+    # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#216
     def for(options = T.unsafe(nil)); end
 
     # @api private
     # @return [Array<ConnectionPool>] Returns a list of the
     #   constructed connection pools.
     #
-    # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#224
+    # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#225
     def pools; end
 
     private
@@ -17684,7 +17861,7 @@ class Seahorse::Client::NetHttp::ConnectionPool
     # @api private
     # @return [Hash]
     #
-    # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#234
+    # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#235
     def pool_options(options); end
   end
 end
@@ -17694,48 +17871,48 @@ end
 #
 # @api private
 #
-# source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#328
+# source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#329
 class Seahorse::Client::NetHttp::ConnectionPool::ExtendedSession
   # @api private
   # @return [ExtendedSession] a new instance of ExtendedSession
   #
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#330
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#331
   def initialize(http); end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#338
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#339
   def __getobj__; end
 
   # @api private
   #
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#344
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#345
   def __setobj__(obj); end
 
   # Attempts to close/finish the session without raising an error.
   #
   # @api private
   #
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#355
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#356
   def finish; end
 
   # @api private
   # @return [Integer, nil]
   #
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#336
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#337
   def last_used; end
 
   # Sends the request and tracks that this session has been used.
   #
   # @api private
   #
-  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#349
+  # source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#350
   def request(*args, &block); end
 end
 
 # @api private
 #
-# source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#25
+# source://aws-sdk-core//lib/seahorse/client/net_http/connection_pool.rb#26
 Seahorse::Client::NetHttp::ConnectionPool::OPTIONS = T.let(T.unsafe(nil), Hash)
 
 # The default HTTP handler for Seahorse::Client.  This is based on
@@ -18463,7 +18640,8 @@ class Seahorse::Client::RequestContext
   # @option options
   # @option options
   # @option options
-  # @param options [Hash] a customizable set of options
+  # @option options
+  # @param options [Hash]
   # @return [RequestContext] a new instance of RequestContext
   #
   # source://aws-sdk-core//lib/seahorse/client/request_context.rb#20
@@ -19469,12 +19647,12 @@ end
 
 # @api private
 #
-# source://aws-sdk-core//lib/seahorse/util.rb#7
+# source://aws-sdk-core//lib/seahorse/util.rb#8
 module Seahorse::Util
   class << self
     # @api private
     #
-    # source://aws-sdk-core//lib/seahorse/util.rb#17
+    # source://aws-sdk-core//lib/seahorse/util.rb#18
     def escape_header_list_string(s); end
 
     # Checks for a valid host label
@@ -19484,17 +19662,17 @@ module Seahorse::Util
     # @see https://tools.ietf.org/html/rfc3986#section-3.2.2
     # @see https://tools.ietf.org/html/rfc1123#page-13
     #
-    # source://aws-sdk-core//lib/seahorse/util.rb#24
+    # source://aws-sdk-core//lib/seahorse/util.rb#25
     def host_label?(str); end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/seahorse/util.rb#9
+    # source://aws-sdk-core//lib/seahorse/util.rb#10
     def uri_escape(string); end
 
     # @api private
     #
-    # source://aws-sdk-core//lib/seahorse/util.rb#13
+    # source://aws-sdk-core//lib/seahorse/util.rb#14
     def uri_path_escape(path); end
   end
 end
