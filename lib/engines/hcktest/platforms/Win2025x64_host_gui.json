@@ -1,0 +1,25 @@
+{
+  "name": "Win2025x64_host_gui",
+  "client_iso": "Win2025x64-gui",
+  "kit": "HLK2025",
+  "setupmanager": "qemuhck",
+  "enlightenments_state": true,
+  "cpu": "host",
+  "st_image": "HLK2025.qcow2",
+  "clients": {
+    "c1": {
+      "name": "CL1",
+      "cpus": 4,
+      "memory_gb": 8,
+      "winrm_port": 4002,
+      "image": "HLK2025-C1-Win2025x64-gui.qcow2"
+    },
+    "c2": {
+      "name": "CL2",
+      "cpus": 4,
+      "memory_gb": 8,
+      "winrm_port": 4003,
+      "image": "HLK2025-C2-Win2025x64-gui.qcow2"
+    }
+  }
+}
