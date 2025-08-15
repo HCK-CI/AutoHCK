@@ -46,7 +46,8 @@ module AutoHCK
         'image_name' => @platform['st_image'],
         'logger' => @logger,
         'iso_path' => @project.config['iso_path'],
-        'share_on_host_path' => @project.options.common.share_on_host_path
+        'share_on_host_path' => @project.options.common.share_on_host_path,
+        'attach_debug_net' => @project.options.common.attach_debug_net
       }.merge(platform_options)
     end
 
@@ -84,16 +85,18 @@ module AutoHCK
     end
 
     def client_vm_common_options
+      common = @project.options.common
       {
         'id' => @id.to_i,
         'workspace_path' => @workspace_path,
         'devices_list' => @devices,
         'logger' => @logger,
         'iso_path' => @project.config['iso_path'],
-        'client_world_net' => @project.options.common.client_world_net,
-        'share_on_host_path' => @project.options.common.share_on_host_path,
+        'client_world_net' => common.client_world_net,
+        'attach_debug_net' => common.attach_debug_net,
+        'share_on_host_path' => common.share_on_host_path,
         'boot_device' => @project.options.test.boot_device,
-        'ctrl_net_device' => @project.options.common.client_ctrl_net_dev
+        'ctrl_net_device' => common.client_ctrl_net_dev
       }.compact
     end
 
