@@ -18,6 +18,10 @@ module AutoHCK
       'helper-config-manager'
     end
 
+    def test_steps
+      []
+    end
+
     def run
       ResourceScope.open do |scope|
         @project.logger.info('Stating result uploader token initialization')
