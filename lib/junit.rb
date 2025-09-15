@@ -23,7 +23,7 @@ module AutoHCK
     def run_properties
       {
         'engine' => @project.engine_name,
-        'platform' => @project.engine_platform['name'],
+        'platform' => @project.engine_platform&.dig('name') || 'unknown',
         'svvp' => @project.options.test.svvp,
         'drivers' => run_property_drivers,
         'hypervisor' => @project.setup_manager&.hypervisor_info,
