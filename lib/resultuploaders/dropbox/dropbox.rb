@@ -125,7 +125,6 @@ module AutoHCK
         rescue DropboxApi::Errors::FolderConflictError
           @logger.warn("Dropbox project folder already exists: #{@path}")
         end
-        @dropbox.share_folder(@path)
         @url = "#{@dropbox.create_shared_link_with_settings(@path).url}&lst="
         @logger.info("Dropbox project folder created: #{@url}")
       end
