@@ -1,0 +1,25 @@
+{
+  "name": "Win11_25H2x64_host",
+  "client_iso": "Win11_25H2x64",
+  "kit": "HLK11_25H2",
+  "setupmanager": "qemuhck",
+  "fw_type": "uefi",
+  "cpu": "host",
+  "st_image": "HLK11_25H2.qcow2",
+  "clients": {
+    "c1": {
+      "name": "CL1",
+      "cpus": 4,
+      "memory_gb": 8,
+      "winrm_port": 4002,
+      "image": "HLK11_25H2-C1-Win11_25H2x64.qcow2"
+    },
+    "c2": {
+      "name": "CL2",
+      "cpus": 4,
+      "memory_gb": 8,
+      "winrm_port": 4003,
+      "image": "HLK11_25H2-C2-Win11_25H2x64.qcow2"
+    }
+  }
+}
