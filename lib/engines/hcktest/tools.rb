@@ -88,11 +88,9 @@ module AutoHCK
       results = @tools.synchronize(&)
 
       if results['result'] == 'Failure'
-        if results['message']
-          failure_message = prep_stream_for_log(results['message'])
-          @logger.warn("Tools action failure#{failure_message}")
-        end
-        nil
+        failure_message = ''
+        failure_message = prep_stream_for_log(results['message']) if results['message']
+        raise ToolsHCKError, "Running HLK tools command failed#{failure_message}"
       else
         results['content'].nil? || results['content']
       end
@@ -168,15 +166,10 @@ module AutoHCK
 
     def run_on_studio(command)
       retries ||= 0
-      ret = act_with_tools { _1.run_on_studio(command) }
-
-      return ret if ret
-
-      e_message = "Running command (#{command}) on studio failed"
-      raise RunOnStudioError, e_message
-    rescue RunOnStudioError => e
+      act_with_tools { _1.run_on_studio(command) }
+    rescue ToolsHCKError => e
       @logger.warn(e.message)
-      raise unless (retries += 1) < ACTION_RETRIES
+      raise RunOnStudioError, "Running command (#{command}) on studio failed" unless (retries += 1) < ACTION_RETRIES
 
       sleep ACTION_RETRY_SLEEP
       @logger.info("Trying again to run command (#{command}) on studio")
@@ -185,15 +178,13 @@ module AutoHCK
 
     def run_on_machine(machine, desc, cmd)
       retries ||= 0
-      ret = act_with_tools { _1.run_on_machine(machine, cmd) }
-
-      return ret if ret
-
-      e_message = "Running command (#{desc}) on machine #{machine} failed"
-      raise RunOnMachineError, e_message
-    rescue RunOnMachineError => e
+      act_with_tools { _1.run_on_machine(machine, cmd) }
+    rescue ToolsHCKError => e
       @logger.warn(e.message)
-      raise unless (retries += 1) < ACTION_RETRIES
+      unless (retries += 1) < ACTION_RETRIES
+        raise RunOnMachineError,
+              "Running command (#{desc}) on machine #{machine} failed"
+      end
 
       sleep ACTION_RETRY_SLEEP
       @logger.info("Trying again to run command (#{desc}) on machine #{machine}")
@@ -202,15 +193,10 @@ module AutoHCK
 
     def upload_to_machine(machine, l_directory, r_directory = nil)
       retries ||= 0
-      ret = act_with_tools { _1.upload_to_machine(machine, l_directory, r_directory) }
-
-      return ret if ret
-
-      e_message = "Upload to machine #{machine} failed"
-      raise UploadToMachineError, e_message
-    rescue UploadToMachineError => e
+      act_with_tools { _1.upload_to_machine(machine, l_directory, r_directory) }
+    rescue ToolsHCKError => e
       @logger.warn(e.message)
-      raise unless (retries += 1) < ACTION_RETRIES
+      raise UploadToMachineError, "Upload to machine #{machine} failed" unless (retries += 1) < ACTION_RETRIES
 
       sleep ACTION_RETRY_SLEEP
       @logger.info("Trying again upload to machine #{machine}")
@@ -219,15 +205,10 @@ module AutoHCK
 
     def download_from_machine(machine, r_path, l_path)
       retries ||= 0
-      ret = act_with_tools { _1.download_from_machine(machine, r_path, l_path) }
-
-      return ret if ret
-
-      e_message = "Download from machine #{machine} failed"
-      raise DownloadFromMachineError, e_message
-    rescue DownloadFromMachineError => e
+      act_with_tools { _1.download_from_machine(machine, r_path, l_path) }
+    rescue ToolsHCKError => e
       @logger.warn(e.message)
-      raise unless (retries += 1) < ACTION_RETRIES
+      raise DownloadFromMachineError, "Download from machine #{machine} failed" unless (retries += 1) < ACTION_RETRIES
 
       sleep ACTION_RETRY_SLEEP
       @logger.info("Trying again download from machine #{machine}")
@@ -236,15 +217,10 @@ module AutoHCK
 
     def exists_on_machine?(machine, r_path)
       retries ||= 0
-      ret = act_with_tools { _1.exists_on_machine?(machine, r_path) }
-
-      return ret unless ret.nil?
-
-      e_message = "Checking exists on machine #{machine} failed"
-      raise ExistsOnMachineError, e_message
-    rescue ExistsOnMachineError => e
+      act_with_tools { _1.exists_on_machine?(machine, r_path) }
+    rescue ToolsHCKError => e
       @logger.warn(e.message)
-      raise unless (retries += 1) < ACTION_RETRIES
+      raise ExistsOnMachineError, "Checking exists on machine #{machine} failed" unless (retries += 1) < ACTION_RETRIES
 
       sleep ACTION_RETRY_SLEEP
       @logger.info("Trying again check exists on machine #{machine}")
@@ -253,15 +229,10 @@ module AutoHCK
 
     def delete_on_machine(machine, r_path)
       retries ||= 0
-      ret = act_with_tools { _1.delete_on_machine(machine, r_path) }
-
-      return ret if ret
-
-      e_message = "delete_on_machine #{machine} failed"
-      raise DeleteOnMachineError, e_message
-    rescue DeleteOnMachineError => e
+      act_with_tools { _1.delete_on_machine(machine, r_path) }
+    rescue ToolsHCKError => e
       @logger.warn(e.message)
-      raise unless (retries += 1) < ACTION_RETRIES
+      raise DeleteOnMachineError, "delete_on_machine #{machine} failed" unless (retries += 1) < ACTION_RETRIES
 
       sleep ACTION_RETRY_SLEEP
       @logger.info("Trying again delete_on_machine #{machine}")
@@ -270,14 +241,10 @@ module AutoHCK
 
     def restart_machine(machine)
       retries ||= 0
-      ret = act_with_tools { _1.machine_shutdown(machine, restart: true) }
-
-      return ret if ret
-
-      raise RestartMachineError, "Restarting machine #{machine} failed"
-    rescue RestartMachineError => e
+      act_with_tools { _1.machine_shutdown(machine, restart: true) }
+    rescue ToolsHCKError => e
       @logger.warn(e.message)
-      raise unless (retries += 1) < ACTION_RETRIES
+      raise RestartMachineError, "Restarting machine #{machine} failed" unless (retries += 1) < ACTION_RETRIES
 
       sleep ACTION_RETRY_SLEEP
       @logger.info("Trying again to restart machine #{machine}")
@@ -286,14 +253,10 @@ module AutoHCK
 
     def shutdown_machine(machine)
       retries ||= 0
-      ret = act_with_tools { _1.machine_shutdown(machine) }
-
-      return ret if ret
-
-      raise ShutdownMachineError, "Shuting down machine #{machine} failed"
-    rescue ShutdownMachineError => e
+      act_with_tools { _1.machine_shutdown(machine) }
+    rescue ToolsHCKError => e
       @logger.warn(e.message)
-      raise unless (retries += 1) < ACTION_RETRIES
+      raise ShutdownMachineError, "Shuting down machine #{machine} failed" unless (retries += 1) < ACTION_RETRIES
 
       sleep ACTION_RETRY_SLEEP
       @logger.info("Trying again to shutdown machine #{machine}")
@@ -302,14 +265,13 @@ module AutoHCK
 
     def get_machine_system_info(machine, output_format = 'CSV')
       retries ||= 0
-      ret = act_with_tools { _1.get_machine_system_info(machine, output_format) }
-
-      return ret if ret
-
-      raise SystemInfoMachineError, "Getting machine #{machine} system info failed"
-    rescue SystemInfoMachineError => e
+      act_with_tools { _1.get_machine_system_info(machine, output_format) }
+    rescue ToolsHCKError => e
       @logger.warn(e.message)
-      raise unless (retries += 1) < ACTION_RETRIES
+      unless (retries += 1) < ACTION_RETRIES
+        raise SystemInfoMachineError,
+              "Getting machine #{machine} system info failed"
+      end
 
       sleep ACTION_RETRY_SLEEP
       @logger.info("Trying again to get machine #{machine} system info")
@@ -339,15 +301,12 @@ module AutoHCK
 
     def install_machine_driver_package(machine, method, driver_path, file, options = {})
       retries ||= 0
-      ret = act_with_tools { _1.install_machine_driver_package(machine, method, driver_path, file, options) }
-
-      return ret if ret
-
-      e_message = "Installing driver package on machine #{machine} failed"
-      raise InstallMachineDriverPackageError, e_message
-    rescue InstallMachineDriverPackageError => e
+      act_with_tools { _1.install_machine_driver_package(machine, method, driver_path, file, options) }
+    rescue ToolsHCKError => e
       @logger.warn(e.message)
-      raise unless (retries += 1) < ACTION_RETRIES
+      unless (retries += 1) < ACTION_RETRIES
+        raise InstallMachineDriverPackageError, "Installing driver package on machine #{machine} failed"
+      end
 
       sleep ACTION_RETRY_SLEEP
       @logger.info("Trying again to install driver package on machine #{machine}")
@@ -400,16 +359,12 @@ module AutoHCK
 
     def zip_test_result_logs(...)
       retries ||= 0
-      ret = act_with_tools { _1.zip_test_result_logs(...) }
-
-      return ret if ret
-
-      raise ZipTestResultLogsError, 'Archiving tests results failed'
-    rescue ZipTestResultLogsError => e
+      act_with_tools { _1.zip_test_result_logs(...) }
+    rescue ToolsHCKError => e
       # Results archiving might fail because they requested before they are done
       # or when the test itself didn't run and there are no results.
       @logger.warn(e.message)
-      raise unless (retries += 1) < ACTION_RETRIES
+      raise ZipTestResultLogsError, 'Archiving tests results failed' unless (retries += 1) < ACTION_RETRIES
 
       sleep ACTION_RETRY_SLEEP
       @logger.info('Trying again to archive tests results')
