@@ -20,38 +20,41 @@ module AutoHCK
               outp_dir: project.workspace_path)
     end
 
+    # A custom ToolsHCK error exception
+    class ToolsHCKError < AutoHCKError; end
+
     # A custom ZipTestResultLogs error exception
-    class ZipTestResultLogsError < AutoHCKError; end
+    class ZipTestResultLogsError < ToolsHCKError; end
 
     # A custom RestartMachine error exception
-    class RestartMachineError < AutoHCKError; end
+    class RestartMachineError < ToolsHCKError; end
 
     # A custom RunOnMachine error exception
-    class RunOnMachineError < AutoHCKError; end
+    class RunOnMachineError < ToolsHCKError; end
 
     # A custom RunOnStudio error exception
-    class RunOnStudioError < AutoHCKError; end
+    class RunOnStudioError < ToolsHCKError; end
 
     # A custom UploadToMachineError error exception
-    class UploadToMachineError < AutoHCKError; end
+    class UploadToMachineError < ToolsHCKError; end
 
     # A custom DownloadFromMachineError error exception
-    class DownloadFromMachineError < AutoHCKError; end
+    class DownloadFromMachineError < ToolsHCKError; end
 
     # A custom ExistsOnMachineError error exception
-    class ExistsOnMachineError < AutoHCKError; end
+    class ExistsOnMachineError < ToolsHCKError; end
 
     # A custom DeleteOnMachineError error exception
-    class DeleteOnMachineError < AutoHCKError; end
+    class DeleteOnMachineError < ToolsHCKError; end
 
     # A custom ShutdownMachine error exception
-    class ShutdownMachineError < AutoHCKError; end
+    class ShutdownMachineError < ToolsHCKError; end
 
     # A custom SystemInfoMachineError error exception
-    class SystemInfoMachineError < AutoHCKError; end
+    class SystemInfoMachineError < ToolsHCKError; end
 
     # A custom InstallMachineDriverPackage error exception
-    class InstallMachineDriverPackageError < AutoHCKError; end
+    class InstallMachineDriverPackageError < ToolsHCKError; end
 
     # A thread safe class that wraps an object instace with critical data
     class ThreadSafe < BasicObject
