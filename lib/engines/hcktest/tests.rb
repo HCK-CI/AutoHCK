@@ -63,7 +63,7 @@ module AutoHCK
         @new_done_test_results = done_test_results - last_done_test_results
 
         merge_tests_update(@playlist.list_tests(log))
-      rescue Playlist::ListTestsError => e
+      rescue Playlist::ListTestsError, Tools::ToolsHCKError => e
         @logger.warn(e.message)
         @logger.info('Reconnecting tools...')
         @tools.reconnect
@@ -85,7 +85,7 @@ module AutoHCK
         @target = target
         @playlist.update_target(target)
         true
-      rescue Targets::SearchTargetError => e
+      rescue Targets::SearchTargetError, Tools::ToolsHCKError => e
         @logger.warn(e.message)
         raise unless (retries += 1) < VERIFY_TARGET_RETRIES
 
