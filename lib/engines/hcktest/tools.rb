@@ -91,7 +91,7 @@ module AutoHCK
         end
         nil
       else
-        results['content'].nil? ? true : results['content']
+        results['content'].nil? || results['content']
       end
     end
 

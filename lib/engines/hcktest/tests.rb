@@ -7,6 +7,7 @@ module AutoHCK
   class Tests
     extend T::Sig
     include Helper
+
     attr_reader :tests
 
     HANDLE_TESTS_POLLING_INTERVAL = 60

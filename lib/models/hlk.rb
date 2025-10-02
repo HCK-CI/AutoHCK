@@ -73,7 +73,7 @@ module AutoHCK
 
         sig { returns(String) }
         def safe_name
-          name.gsub(/[^\w\-\.]/, '_').gsub(/(^_|_$)/, '')
+          name.gsub(/[^\w\-.]/, '_').gsub(/(^_|_$)/, '')
         end
 
         # Extra information
