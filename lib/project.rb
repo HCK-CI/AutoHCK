@@ -5,6 +5,7 @@ module AutoHCK
   # project class
   class Project
     include Helper
+
     JUNIT_RESULT = 'junit.xml'
 
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :id,

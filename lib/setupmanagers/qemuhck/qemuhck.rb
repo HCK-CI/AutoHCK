@@ -5,6 +5,7 @@ module AutoHCK
   # QemuHCK class
   class QemuHCK
     extend AutoloadExtension
+
     autoload_relative :Ns, 'ns'
 
     include Helper

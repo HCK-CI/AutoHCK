@@ -7,6 +7,7 @@ module AutoHCK
   class QemuMachine
     extend T::Sig
     extend AutoHCK::AutoloadExtension
+
     autoload_relative :NetworkManager, 'network_manager'
     autoload_relative :QMP, 'qmp'
     autoload_relative :StorageManager, 'storage_manager'

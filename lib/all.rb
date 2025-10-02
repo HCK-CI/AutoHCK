@@ -22,6 +22,7 @@ module AutoHCK
   require 'zip'
   require_relative 'auxiliary/autoload_extension'
   extend AutoloadExtension
+
   autoload_relative :AutoHCKError, 'exceptions'
   autoload_relative :AutoHCKInterrupt, 'exceptions'
   autoload_relative :CLI, 'cli'
