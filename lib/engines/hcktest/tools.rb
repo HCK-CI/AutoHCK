@@ -97,23 +97,18 @@ module AutoHCK
     end
 
     def retry_tools_command(action)
-      ret = nil
-
-      ACTION_RETRIES.times do
-        ret = yield
-
-        break if ret
-
-        @logger.warn("Running HLK tools command (#{action}) failed")
-        sleep HLK_ACTION_RETRY_SLEEP
-        @logger.info("Trying again to run HLK tools command (#{action})")
+      attempts = 0
+      begin
+        attempts += 1
+        yield
       rescue StandardError => e
         @logger.warn("Running HLK tools command (#{action}) failed with #{e}")
+        raise unless attempts < ACTION_RETRIES
+
         sleep HLK_ACTION_RETRY_SLEEP
         @logger.info("Trying again to run HLK tools command (#{action})")
+        retry
       end
-
-      ret
     end
 
     def create_pool(tag)
