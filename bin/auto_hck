@@ -23,11 +23,16 @@ module AutoHCK
       @project.run if @project.prepare
     rescue StandardError => e
       Signal.trap('TERM') do
-        @project.logger.warn('SIGTERM(*) received, ignoring...')
+        @project&.logger&.warn('SIGTERM(*) received, ignoring...')
       end
       Sentry.capture_exception(e)
-      @project.log_exception(e, 'fatal')
-      @project.handle_error
+      if @project
+        @project.log_exception(e, 'fatal')
+        @project.handle_error
+      else
+        estack = e.backtrace.map { |line| "\n   -- #{line.rstrip}" }.join
+        warn "fatal: (#{e.class}) #{e.message}#{estack}"
+      end
       exit(1)
     end
   end
