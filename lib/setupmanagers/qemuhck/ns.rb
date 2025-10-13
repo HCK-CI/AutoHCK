@@ -4,6 +4,7 @@ module AutoHCK
   class QemuHCK
     module Ns
       extend AutoloadExtension
+
       autoload_relative :Hostfwd, 'ns/hostfwd'
       autoload_relative :Nsd, 'ns/nsd'
       autoload_relative :PidFile, 'ns/pid_file'
@@ -17,19 +18,31 @@ module AutoHCK
             pid = pid_file.acquire
             begin
               Thread.handle_interrupt Object => :immediate do
-                nsenter_argv = %W[nsenter -m -n --preserve-credentials -t #{pid} -w#{chdir}]
-                nsenter_argv << '-U' unless Process.euid.zero?
-                system(*nsenter_argv, '--', *argv)
+                system(*nsenter_argv(pid, chdir), '--', *argv)
                 exit $CHILD_STATUS.exitstatus
               end
             ensure
-              pid_file.release
+              begin
+                pid_file.release
+              rescue Errno::ESRCH
+                # Ignore "No such process" error
+                # This can happened if AutoHCK was interrupted
+                # and "nsenter" already exited
+              end
             end
           ensure
             pid_file.close
           end
         end
       end
+
+      def self.nsenter_argv(pid, chdir)
+        argv = %W[nsenter -m -n --preserve-credentials -t #{pid} -w#{chdir}]
+        argv << '-U' unless Process.euid.zero?
+        argv
+      end
+
+      private_class_method :nsenter_argv
     end
   end
 end
