@@ -7,9 +7,6 @@ runs:
   - name: Update Ubuntu package repository
     shell: bash
     run: sudo apt-get update
-  - name: Setup libcurl-devel
-    shell: bash
-    run: sudo apt-get -y install libcurl4 libcurl3-gnutls libcurl4-openssl-dev
 
   - name: Set up Ruby 3.3.7
     uses: ruby/setup-ruby@v1
