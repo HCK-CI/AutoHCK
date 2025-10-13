@@ -43,15 +43,19 @@ module AutoHCK
 
       @last_percent = 0
 
-      result = Curl::Easy.download(url, path) do |curl|
-        curl.follow_location = true
+      client = HTTPClient.new
 
-        curl.on_progress do |dl_total, dl_now, _ul_total, _ul_now|
-          log_progress(dl_total, dl_now)
-          true
+      head = client.head(url, follow_redirect: true)
+      raise(AutoHCKError, "Download failed with code #{head.status}") unless head.status == 200
+
+      total_size = head.headers['Content-Length'].to_i
+
+      File.open(path, 'wb') do |file|
+        client.get(url, follow_redirect: true) do |chunk|
+          file.write(chunk)
+          log_progress(total_size, file.size)
         end
       end
-      raise(AutoHCKError, "Download failed with code #{result.response_code}") if result.response_code != 200
     end
   end
 end
