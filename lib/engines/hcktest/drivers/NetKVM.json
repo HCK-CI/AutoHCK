@@ -14,6 +14,23 @@
         {
           "desc": "Rename NetKVM ethernet adapter to SupportDevice0",
           "guest_run": "Rename-NetAdapter -Name (Get-NetAdapter -InterfaceDescription 'Red Hat VirtIO Ethernet Adapter').Name -NewName 'SupportDevice0'"
+        },
+        {
+          "desc": "Create directory c:\\SupportDevice2",
+          "guest_run": "New-Item -ItemType Directory -Path 'C:\\SupportDevice2'"
+        },
+        {
+          "desc": "Create File c:\\SupportDevice2\\test.txt with current date and time",
+          "guest_run": "New-Item -ItemType File -Path 'C:\\SupportDevice2\\test.txt' -Value (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')",
+          "files_action": [
+            {
+              "remote_path": "C:/SupportDevice2/",
+              "local_path": "@workspace@/@client_name@/@safe_test_name@",
+              "direction": "remote-to-local",
+              "move": true,
+              "allow_missing": false
+            }
+          ]
         }
       ]
     }
