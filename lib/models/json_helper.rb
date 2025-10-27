@@ -8,9 +8,10 @@ module AutoHCK
     module JsonHelper
       extend T::Sig
       extend T::Generic
+
       abstract!
 
-      has_attached_class!
+      has_attached_class!(:out)
 
       sig { abstract.params(hash: T::Hash[String, T.untyped]).returns(T.attached_class) }
       def from_hash(hash); end
