@@ -55,7 +55,7 @@ module Prism
     #
     # For supported options, see Prism::parse.
     #
-    # source://prism//lib/prism.rb#48
+    # source://prism//lib/prism.rb#69
     sig { params(source: String, options: T::Hash[Symbol, T.untyped]).returns(Prism::LexCompat::Result) }
     def lex_compat(source, **options); end
 
@@ -69,7 +69,7 @@ module Prism
     # returns the same tokens. Raises SyntaxError if the syntax in source is
     # invalid.
     #
-    # source://prism//lib/prism.rb#58
+    # source://prism//lib/prism.rb#79
     sig { params(source: String).returns(T::Array[T.untyped]) }
     def lex_ripper(source); end
 
@@ -78,7 +78,7 @@ module Prism
     #
     # Load the serialized AST using the source as a reference into a tree.
     #
-    # source://prism//lib/prism.rb#66
+    # source://prism//lib/prism.rb#87
     sig { params(source: String, serialized: String, freeze: T.nilable(T::Boolean)).returns(Prism::ParseResult) }
     def load(source, serialized, freeze = T.unsafe(nil)); end
 
@@ -1655,7 +1655,7 @@ end
 
 # The FFI backend is used on other Ruby implementations.
 #
-# source://prism//lib/prism.rb#83
+# source://prism//lib/prism.rb#104
 Prism::BACKEND = T.let(T.unsafe(nil), Symbol)
 
 # Represents reading a reference to a field in the previous match.
@@ -4673,7 +4673,7 @@ class Prism::CaseNode < ::Prism::Node
   # Represents the predicate of the case statement. This can be either `nil` or any [non-void expressions](https://github.com/ruby/prism/blob/main/docs/parsing_rules.md#non-void-expression).
   #
   #     case true; when false; end
-  #     ^^^^
+  #          ^^^^
   #
   # source://prism//lib/prism/node.rb#3736
   sig { returns(T.nilable(Prism::Node)) }
@@ -8495,6 +8495,18 @@ class Prism::ConstantWriteNode < ::Prism::Node
     # source://prism//lib/prism/node.rb#5896
     def type; end
   end
+end
+
+# Raised when requested to parse as the currently running Ruby version but Prism has no support for it.
+#
+# source://prism//lib/prism.rb#41
+class Prism::CurrentVersionError < ::ArgumentError
+  # Initialize a new exception for the given ruby version string.
+  #
+  # @return [CurrentVersionError] a new instance of CurrentVersionError
+  #
+  # source://prism//lib/prism.rb#43
+  def initialize(version); end
 end
 
 # The DSL module provides a set of methods that can be used to create prism
@@ -32270,82 +32282,82 @@ class Prism::Serialize::Loader
   # source://prism//lib/prism/serialize.rb#304
   def load_comments(freeze); end
 
-  # source://prism//lib/prism/serialize.rb#828
+  # source://prism//lib/prism/serialize.rb#829
   def load_constant(constant_pool, encoding); end
 
   # source://prism//lib/prism/serialize.rb#275
   def load_constant_pool(constant_pool); end
 
-  # source://prism//lib/prism/serialize.rb#779
+  # source://prism//lib/prism/serialize.rb#780
   def load_double; end
 
-  # source://prism//lib/prism/serialize.rb#794
+  # source://prism//lib/prism/serialize.rb#795
   def load_embedded_string(encoding); end
 
   # source://prism//lib/prism/serialize.rb#292
   def load_encoding; end
 
-  # source://prism//lib/prism/serialize.rb#664
+  # source://prism//lib/prism/serialize.rb#665
   def load_error_level; end
 
-  # source://prism//lib/prism/serialize.rb#679
+  # source://prism//lib/prism/serialize.rb#680
   def load_errors(encoding, freeze); end
 
   # source://prism//lib/prism/serialize.rb#286
   def load_header; end
 
-  # source://prism//lib/prism/serialize.rb#768
+  # source://prism//lib/prism/serialize.rb#769
   def load_integer; end
 
   # source://prism//lib/prism/serialize.rb#298
   def load_line_offsets(freeze); end
 
-  # source://prism//lib/prism/serialize.rb#815
+  # source://prism//lib/prism/serialize.rb#816
   def load_location(freeze); end
 
-  # source://prism//lib/prism/serialize.rb#809
+  # source://prism//lib/prism/serialize.rb#810
   def load_location_object(freeze); end
 
   # source://prism//lib/prism/serialize.rb#321
   def load_magic_comments(freeze); end
 
-  # source://prism//lib/prism/serialize.rb#839
+  # source://prism//lib/prism/serialize.rb#840
   def load_node(constant_pool, encoding, freeze); end
 
-  # source://prism//lib/prism/serialize.rb#833
+  # source://prism//lib/prism/serialize.rb#834
   def load_optional_constant(constant_pool, encoding); end
 
-  # source://prism//lib/prism/serialize.rb#820
+  # source://prism//lib/prism/serialize.rb#821
   def load_optional_location(freeze); end
 
-  # source://prism//lib/prism/serialize.rb#824
+  # source://prism//lib/prism/serialize.rb#825
   def load_optional_location_object(freeze); end
 
-  # source://prism//lib/prism/serialize.rb#787
+  # source://prism//lib/prism/serialize.rb#788
   def load_optional_node(constant_pool, encoding, freeze); end
 
-  # source://prism//lib/prism/serialize.rb#798
+  # source://prism//lib/prism/serialize.rb#799
   def load_string(encoding); end
 
-  # source://prism//lib/prism/serialize.rb#730
+  # source://prism//lib/prism/serialize.rb#731
   def load_tokens; end
 
-  # source://prism//lib/prism/serialize.rb#783
+  # source://prism//lib/prism/serialize.rb#784
   def load_uint32; end
 
-  # source://prism//lib/prism/serialize.rb#763
+  # source://prism//lib/prism/serialize.rb#764
   def load_varsint; end
 
   # variable-length integer using https://en.wikipedia.org/wiki/LEB128
   # This is also what protobuf uses: https://protobuf.dev/programming-guides/encoding/#varints
   #
-  # source://prism//lib/prism/serialize.rb#749
+  # source://prism//lib/prism/serialize.rb#750
   def load_varuint; end
 
-  # source://prism//lib/prism/serialize.rb#698
+  # source://prism//lib/prism/serialize.rb#699
   def load_warning_level; end
 
-  # source://prism//lib/prism/serialize.rb#711
+  # source://prism//lib/prism/serialize.rb#712
   def load_warnings(encoding, freeze); end
 
   # Returns the value of attribute source.
@@ -32377,7 +32389,7 @@ Prism::Serialize::PATCH_VERSION = T.let(T.unsafe(nil), Integer)
 
 # The token types that can be indexed by their enum values.
 #
-# source://prism//lib/prism/serialize.rb#2224
+# source://prism//lib/prism/serialize.rb#2225
 Prism::Serialize::TOKEN_TYPES = T.let(T.unsafe(nil), Array)
 
 # This node wraps a constant write to indicate that when the value is written, it should have its shareability state modified.
@@ -34196,7 +34208,14 @@ module Prism::Translation; end
 # the parser gem, and overrides the parse* methods to parse with prism and
 # then translate.
 #
-# source://prism//lib/prism/translation/parser.rb#22
+# Note that this version of the parser always parses using the latest
+# version of Ruby syntax supported by Prism. If you want specific version
+# support, use one of the version-specific subclasses, such as
+# `Prism::Translation::Parser34`. If you want to parse using the same
+# version of Ruby syntax as the currently running version of Ruby, use
+# `Prism::Translation::ParserCurrent`.
+#
+# source://prism//lib/prism/translation/parser.rb#29
 class Prism::Translation::Parser < ::Parser::Base
   # The `builder` argument is used to create the parser using our custom builder class by default.
   #
@@ -34225,53 +34244,53 @@ class Prism::Translation::Parser < ::Parser::Base
   #
   # @return [Parser] a new instance of Parser
   #
-  # source://prism//lib/prism/translation/parser.rb#67
+  # source://prism//lib/prism/translation/parser.rb#74
   def initialize(builder = T.unsafe(nil), parser: T.unsafe(nil)); end
 
   # The default encoding for Ruby files is UTF-8.
   #
-  # source://prism//lib/prism/translation/parser.rb#84
+  # source://prism//lib/prism/translation/parser.rb#91
   def default_encoding; end
 
   # Parses a source buffer and returns the AST.
   #
-  # source://prism//lib/prism/translation/parser.rb#92
+  # source://prism//lib/prism/translation/parser.rb#99
   def parse(source_buffer); end
 
   # Parses a source buffer and returns the AST and the source code comments.
   #
-  # source://prism//lib/prism/translation/parser.rb#105
+  # source://prism//lib/prism/translation/parser.rb#112
   def parse_with_comments(source_buffer); end
 
   # Parses a source buffer and returns the AST, the source code comments,
   # and the tokens emitted by the lexer.
   #
-  # source://prism//lib/prism/translation/parser.rb#122
+  # source://prism//lib/prism/translation/parser.rb#129
   def tokenize(source_buffer, recover = T.unsafe(nil)); end
 
   # Since prism resolves num params for us, we don't need to support this
   # kind of logic here.
   #
-  # source://prism//lib/prism/translation/parser.rb#148
+  # source://prism//lib/prism/translation/parser.rb#155
   def try_declare_numparam(node); end
 
-  # source://prism//lib/prism/translation/parser.rb#79
+  # source://prism//lib/prism/translation/parser.rb#86
   sig { overridable.returns(Integer) }
   def version; end
 
-  # source://prism//lib/prism/translation/parser.rb#88
+  # source://prism//lib/prism/translation/parser.rb#95
   def yyerror; end
 
   private
 
   # Build the parser gem AST from the prism AST.
   #
-  # source://prism//lib/prism/translation/parser.rb#306
+  # source://prism//lib/prism/translation/parser.rb#313
   def build_ast(program, offset_cache); end
 
   # Build the parser gem comments from the prism comments.
   #
-  # source://prism//lib/prism/translation/parser.rb#311
+  # source://prism//lib/prism/translation/parser.rb#318
   def build_comments(comments, offset_cache); end
 
   # Prism deals with offsets in bytes, while the parser gem deals with
@@ -34282,38 +34301,38 @@ class Prism::Translation::Parser < ::Parser::Base
   # just use the offset directly. Otherwise, we build an array where the
   # index is the byte offset and the value is the character offset.
   #
-  # source://prism//lib/prism/translation/parser.rb#289
+  # source://prism//lib/prism/translation/parser.rb#296
   def build_offset_cache(source); end
 
   # Build a range from a prism location.
   #
-  # source://prism//lib/prism/translation/parser.rb#323
+  # source://prism//lib/prism/translation/parser.rb#330
   def build_range(location, offset_cache); end
 
   # Build the parser gem tokens from the prism tokens.
   #
-  # source://prism//lib/prism/translation/parser.rb#318
+  # source://prism//lib/prism/translation/parser.rb#325
   def build_tokens(tokens, offset_cache); end
 
   # Converts the version format handled by Parser to the format handled by Prism.
   #
-  # source://prism//lib/prism/translation/parser.rb#346
+  # source://prism//lib/prism/translation/parser.rb#353
   def convert_for_prism(version); end
 
   # Build a diagnostic from the given prism parse error.
   #
-  # source://prism//lib/prism/translation/parser.rb#167
+  # source://prism//lib/prism/translation/parser.rb#174
   def error_diagnostic(error, offset_cache); end
 
   # Options for how prism should parse/lex the source.
   #
-  # source://prism//lib/prism/translation/parser.rb#332
+  # source://prism//lib/prism/translation/parser.rb#339
   def prism_options; end
 
   # If there was a error generated during the parse, then raise an
   # appropriate syntax error. Otherwise return the result.
   #
-  # source://prism//lib/prism/translation/parser.rb#267
+  # source://prism//lib/prism/translation/parser.rb#274
   def unwrap(result, offset_cache); end
 
   # This is a hook to allow consumers to disable some errors if they don't
@@ -34321,7 +34340,7 @@ class Prism::Translation::Parser < ::Parser::Base
   #
   # @return [Boolean]
   #
-  # source://prism//lib/prism/translation/parser.rb#156
+  # source://prism//lib/prism/translation/parser.rb#163
   def valid_error?(error); end
 
   # This is a hook to allow consumers to disable some warnings if they don't
@@ -34329,12 +34348,12 @@ class Prism::Translation::Parser < ::Parser::Base
   #
   # @return [Boolean]
   #
-  # source://prism//lib/prism/translation/parser.rb#162
+  # source://prism//lib/prism/translation/parser.rb#169
   def valid_warning?(warning); end
 
   # Build a diagnostic from the given prism parse warning.
   #
-  # source://prism//lib/prism/translation/parser.rb#240
+  # source://prism//lib/prism/translation/parser.rb#247
   def warning_diagnostic(warning, offset_cache); end
 end
 
@@ -35523,7 +35542,7 @@ class Prism::Translation::Parser::Compiler::CompilationError < ::StandardError; 
 # source://prism//lib/prism/translation/parser/compiler.rb#2003
 Prism::Translation::Parser::Compiler::Range = Parser::Source::Range
 
-# source://prism//lib/prism/translation/parser.rb#23
+# source://prism//lib/prism/translation/parser.rb#30
 Prism::Translation::Parser::Diagnostic = Parser::Diagnostic
 
 # Accepts a list of prism tokens and converts them into the expected
@@ -35757,22 +35776,22 @@ Prism::Translation::Parser::Lexer::TYPES_ALWAYS_SKIP = T.let(T.unsafe(nil), Set)
 # messages. We create our own diagnostic class in order to set our own
 # error messages.
 #
-# source://prism//lib/prism/translation/parser.rb#29
+# source://prism//lib/prism/translation/parser.rb#36
 class Prism::Translation::Parser::PrismDiagnostic < ::Parser::Diagnostic
   # Initialize a new diagnostic with the given message and location.
   #
   # @return [PrismDiagnostic] a new instance of PrismDiagnostic
   #
-  # source://prism//lib/prism/translation/parser.rb#34
+  # source://prism//lib/prism/translation/parser.rb#41
   def initialize(message, level, reason, location); end
 
   # This is the cached message coming from prism.
   #
-  # source://prism//lib/prism/translation/parser.rb#31
+  # source://prism//lib/prism/translation/parser.rb#38
   def message; end
 end
 
-# source://prism//lib/prism/translation/parser.rb#40
+# source://prism//lib/prism/translation/parser.rb#47
 Prism::Translation::Parser::Racc_debug_parser = T.let(T.unsafe(nil), FalseClass)
 
 # source://prism//lib/prism/translation/parser_current.rb#10
