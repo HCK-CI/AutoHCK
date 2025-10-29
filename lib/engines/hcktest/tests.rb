@@ -182,7 +182,12 @@ module AutoHCK
 
     def run_command_on_client(client, command, desc)
       @logger.info("Running command (#{desc}) on client #{client.name}")
-      @tools.run_on_machine(client.name, desc, command)
+      # Don't use create_cmd because it calls shellescape that performs wrong escaping for Windows commands
+      # E.g. it escapes backslashes that are used in Windows paths
+      updated_command = client.replacement_map.merge(@replacement_map).replace(command)
+      @logger.debug("Running command after replacement (#{desc}) on client #{client.name}: #{updated_command}")
+
+      @tools.run_on_machine(client.name, desc, updated_command)
     end
 
     def run_guest_test_command(command)

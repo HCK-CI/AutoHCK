@@ -58,3 +58,10 @@ Local path can use the following replacements:
 - `@workspace@` - Path to current workspace
 - `@safe_test_name@` - Safe name of current test
 - `@client_name@` - Client name
+
+Guest run command can use the following replacements:
+
+- `@workspace@` - Path to current workspace
+- `@safe_test_name@` - Safe name of current test
+- `@client_name@` - Client name
+- `@<driver_short_name>.driver_dir@` - Path to uploaded driver binary
