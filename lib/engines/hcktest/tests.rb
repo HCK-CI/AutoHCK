@@ -12,8 +12,8 @@ module AutoHCK
 
     HANDLE_TESTS_POLLING_INTERVAL = 60
     APPLYING_FILTERS_INTERVAL = 50
-    VERIFY_TARGET_RETRIES = 5
-    VERIFY_TARGET_SLEEP = 5
+    TOOLS_ACTION_RETRIES = 5
+    TOOLS_ACTION_SLEEP = 5
     QUEUE_TEST_TIMEOUT = '00:15:00'
     RUNNING_TEST_TIMEOUT = '00:15:00'
     SUMMARY_LOG_FILE = 'logs.txt'
@@ -87,9 +87,9 @@ module AutoHCK
         true
       rescue Targets::SearchTargetError, Tools::ToolsHCKError => e
         @logger.warn(e.message)
-        raise unless (retries += 1) < VERIFY_TARGET_RETRIES
+        raise unless (retries += 1) < TOOLS_ACTION_RETRIES
 
-        sleep VERIFY_TARGET_SLEEP
+        sleep TOOLS_ACTION_SLEEP
         @logger.info('Trying again to verify target')
         retry
       end
@@ -198,22 +198,37 @@ module AutoHCK
       end
     end
 
-    sig { params(test: Models::HLK::Test, wait: T::Boolean).void }
-    def queue_test(test, wait: false)
+    sig { params(test: Models::HLK::Test).void }
+    def perform_queue_test_commands(test)
       @tools.queue_test(test_id: test.id,
                         target_key: @target['key'],
                         machine: @client.name,
                         tag: @tag,
                         support: test_support(test),
                         parameters: test_parameters(test.name))
+    end
 
-      test.queued_at = DateTime.now
+    sig { params(test: Models::HLK::Test, wait: T::Boolean).void }
+    def queue_test(test, wait: false)
+      retries = 0
+      begin
+        perform_queue_test_commands(test)
 
-      @last_queued_test = test
+        test.queued_at = DateTime.now
 
-      return unless wait
+        @last_queued_test = test
 
-      wait_queued_test(test.id)
+        return unless wait
+
+        wait_queued_test(test.id)
+      rescue Tools::ToolsHCKError => e
+        @logger.warn(e.message)
+        sleep TOOLS_ACTION_SLEEP
+        raise unless (retries += 1) < TOOLS_ACTION_RETRIES
+
+        @logger.info('Trying again to queue test')
+        retry
+      end
     end
 
     sig { returns(T.nilable(Models::HLK::Test)) }
