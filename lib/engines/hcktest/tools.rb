@@ -5,7 +5,7 @@ module AutoHCK
   # Tools class
   class Tools
     ACTION_RETRIES = 5
-    HLK_ACTION_RETRY_SLEEP = 10
+    HLK_ACTION_RETRY_SLEEP = 30
     ACTION_RETRY_SLEEP = 90
     def initialize(project, ip_addr, clients)
       @logger = project.logger
