@@ -181,7 +181,10 @@ module AutoHCK
 
     def run_command_on_client(client, command, desc)
       @logger.info("Running command (#{desc}) on client #{client.name}")
-      @tools.run_on_machine(client.name, desc, command)
+      updated_command = client.replacement_map.merge(@replacement_map).create_cmd(command)
+      @logger.debug("Running command after replacement (#{desc}) on client #{client.name}: #{updated_command}")
+
+      @tools.run_on_machine(client.name, desc, updated_command)
     end
 
     def run_guest_test_command(command)
