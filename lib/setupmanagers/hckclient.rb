@@ -10,7 +10,7 @@ module AutoHCK
     # Client cooldown sleep after thread is joined in seconds
     CLIENT_COOLDOWN_SLEEP = 60
 
-    attr_reader :name, :kit, :target
+    attr_reader :name, :kit, :target, :replacement_map
 
     def initialize(setup_manager, scope, studio, name, run_opts)
       @project = setup_manager.project
@@ -22,6 +22,7 @@ module AutoHCK
       @runner = setup_manager.run_client(scope, @name, run_opts)
       scope << self
       @setup_manager = setup_manager
+      @replacement_map = ReplacementMap.new
     end
 
     def pool
@@ -80,11 +81,15 @@ module AutoHCK
 
     def run_post_start_commands
       post_start_commands&.each do |command|
-        @logger.info("Running command (#{command.desc}) on client #{@name}")
-        @tools.run_on_machine(@name, command.desc, command.guest_run)
+        desc = command.desc
+        @logger.info("Running command (#{desc}) on client #{@name}")
+        updated_command = @replacement_map.create_cmd(command.guest_run)
+        @logger.debug("Running command after replacement (#{desc}) on client #{@name}: #{updated_command}")
+
+        @tools.run_on_machine(@name, desc, updated_command)
         next unless command.guest_reboot
 
-        @logger.info("Rebooting client #{@name} after command (#{command.desc})")
+        @logger.info("Rebooting client #{@name} after command (#{desc})")
         @tools.restart_machine(@name)
         reconfigure_machine
       end
@@ -109,8 +114,12 @@ module AutoHCK
           next
         end
 
-        install_driver(driver)
+        driver_replacement = install_driver(driver)
+        client_replacement = driver_replacement.transform_keys { |k| k.dup.insert(1, "#{driver.short}.") }
+        @replacement_map.merge!(client_replacement)
       end
+
+      @logger.debug("Driver replacement list: #{@replacement_map.dump_string}")
     end
 
     def copy_dvl

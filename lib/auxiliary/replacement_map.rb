@@ -45,5 +45,9 @@ module AutoHCK
       end
       result
     end
+
+    def dump_string
+      @hash.to_s
+    end
   end
 end
