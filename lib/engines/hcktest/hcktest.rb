@@ -7,6 +7,7 @@ module AutoHCK
   class HCKTest
     extend T::Sig
     include Helper
+
     attr_reader :config, :drivers, :platform
 
     PLATFORMS_JSON_DIR = 'lib/engines/hcktest/platforms'

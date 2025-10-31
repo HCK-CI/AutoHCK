@@ -10,6 +10,13 @@ Naming/InclusiveLanguage:
 Style/Documentation:
   Enabled: False
 
+# TODO: Fix all predicate methods
+# We have a lot of methods that returns True/False
+# but name is totally incompatilbe with predicate method name
+# For example: soft_abort - definetly not a predicate method but returns True/False
+Naming/PredicateMethod:
+  Enabled: False
+
 # Excluding spec files
 AllCops:
   NewCops: enable
