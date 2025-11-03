@@ -329,6 +329,8 @@ module AutoHCK
       cnt_failed = tests_stats_status_count(Models::HLK::TestResultStatus::Failed)
       total = @tests.count
 
+      # 'inqueue' means tests that are in AutoHCK queue not in HCK queue
+      # as we run tests one by one, we don't have tests in HCK queue
       { 'current' => current_test, 'passed' => cnt_passed,
         'failed' => cnt_failed, 'inqueue' => total - cnt_passed - cnt_failed,
         'skipped' => @playlist.rejected_test.count,
