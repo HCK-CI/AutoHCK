@@ -180,21 +180,21 @@ module AutoHCK
         .to_h { |parameter| [parameter.name, parameter.value] }
     end
 
-    def run_command_on_client(client, command, desc)
+    def run_command_on_client(client, command, desc, replacement)
       @logger.info("Running command (#{desc}) on client #{client.name}")
       # Don't use create_cmd because it calls shellescape that performs wrong escaping for Windows commands
       # E.g. it escapes backslashes that are used in Windows paths
-      updated_command = client.replacement_map.merge(@replacement_map).replace(command)
+      updated_command = client.replacement_map.merge(@replacement_map).merge(replacement).replace(command)
       @logger.debug("Running command after replacement (#{desc}) on client #{client.name}: #{updated_command}")
 
       @tools.run_on_machine(client.name, desc, updated_command)
     end
 
-    def run_guest_test_command(command)
+    def run_guest_test_command(command, replacement)
       return unless command.guest_run
 
-      run_command_on_client(@client, command.guest_run, command.desc)
-      run_command_on_client(@support, command.guest_run, command.desc) unless @support.nil?
+      run_command_on_client(@client, command.guest_run, command.desc, replacement)
+      run_command_on_client(@support, command.guest_run, command.desc, replacement) unless @support.nil?
     end
 
     def run_host_test_command(command)
@@ -276,13 +276,12 @@ module AutoHCK
       end
     end
 
-    sig { params(test: Models::HLK::Test, type: Symbol).void }
-    def run_test_commands(test, type)
+    sig { params(test: Models::HLK::Test, type: Symbol, replacement: ReplacementMap).void }
+    def run_test_commands(test, type, replacement)
       select_test_config(test.name, type).each do |command|
-        run_guest_test_command(command)
+        run_guest_test_command(command, replacement)
         run_host_test_command(command)
 
-        replacement = @replacement_map.merge({ '@safe_test_name@' => test.safe_name })
         run_file_actions(command.files_action, replacement)
       end
     end
@@ -659,25 +658,36 @@ module AutoHCK
       build_system_info(support_sysinfo)
     end
 
+    sig { params(test: Models::HLK::Test, run_number: Integer, run_count: Integer).void }
+    def one_test_run(test, run_number, run_count)
+      replacement = @replacement_map.merge(
+        '@safe_test_name@' => test.safe_name,
+        '@run_number@' => run_number.to_s
+      )
+
+      run_test_commands(test, :pre_test_commands, replacement)
+
+      test_str = "run #{run_number}/#{run_count} #{test.name} (#{test.id})"
+      @logger.info("Adding to queue: #{test_str}")
+      queue_test(test, wait: true)
+      handle_test_running
+      @project.generate_junit
+
+      run_test_commands(test, :post_test_commands, replacement)
+    end
+
     sig { params(tests: T::Array[Models::HLK::Test]).void }
     def run(tests)
       load_clients_system_info
       update_summary_results_log
       tests.each do |test|
-        run_test_commands(test, :pre_test_commands)
         run_count = test.run_count
 
         (1..run_count).each do |run_number|
-          test_str = "run #{run_number}/#{run_count} #{test.name} (#{test.id})"
-          @logger.info("Adding to queue: #{test_str}")
-          queue_test(test, wait: true)
-          handle_test_running
-          @project.generate_junit
+          one_test_run(test, run_number, run_count)
 
           break if @project.run_terminated
         end
-
-        run_test_commands(test, :post_test_commands)
 
         break if @project.run_terminated
       end
