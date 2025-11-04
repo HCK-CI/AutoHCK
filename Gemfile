@@ -15,7 +15,7 @@ gem 'httpclient'
 gem 'mono_logger'
 gem 'octokit'
 gem 'openssl', require: false
-gem 'rtoolsHCK', git: 'https://github.com/HCK-CI/rtoolsHCK.git', ref: '83e4f3a1de25053ec08f18e3a6149d18e5a642e7'
+gem 'rtoolsHCK', git: 'https://github.com/HCK-CI/rtoolsHCK.git', ref: '7dd80fcee058e6e039c66aba897c6c5d7f8a439c'
 gem 'rubyzip'
 gem 'sentry-ruby'
 gem 'sorbet-runtime'

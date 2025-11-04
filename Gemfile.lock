@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/HCK-CI/rtoolsHCK.git
-  revision: 83e4f3a1de25053ec08f18e3a6149d18e5a642e7
-  ref: 83e4f3a1de25053ec08f18e3a6149d18e5a642e7
+  revision: 7dd80fcee058e6e039c66aba897c6c5d7f8a439c
+  ref: 7dd80fcee058e6e039c66aba897c6c5d7f8a439c
   specs:
     rtoolsHCK (0.6.1)
       bundler
@@ -132,7 +132,7 @@ GEM
       sorbet-runtime (>= 0.5.9204)
     rbs (3.9.2)
       logger
-    rdoc (6.15.0)
+    rdoc (6.15.1)
       erb
       psych (>= 4.0.0)
       tsort
