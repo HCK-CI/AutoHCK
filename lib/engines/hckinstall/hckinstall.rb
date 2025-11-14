@@ -338,7 +338,8 @@ module AutoHCK
         '@WINDOWS_IMAGE_NAME@' => @studio_iso_info['studio']['windows_image_names'],
         '@PRODUCT_KEY@' => product_key,
         '@PRODUCT_KEY_XML@' => product_key_xml(product_key),
-        '@HOST_TYPE@' => 'studio'
+        '@HOST_TYPE@' => 'studio',
+        '@DEFAULT_PASSWORD@' => @project.config['studio_password']
       }
       @answer_files.each do |file|
         file_gsub(build_studio_answer_file_path(file),
@@ -364,7 +365,8 @@ module AutoHCK
         '@WINDOWS_IMAGE_NAME@' => @client_iso_info['client']['windows_image_names'],
         '@PRODUCT_KEY@' => product_key,
         '@PRODUCT_KEY_XML@' => product_key_xml(product_key),
-        '@HOST_TYPE@' => 'client'
+        '@HOST_TYPE@' => 'client',
+        '@DEFAULT_PASSWORD@' => @project.config['studio_password']
       }
       @answer_files.each do |file|
         file_gsub(build_client_answer_file_path(file),
