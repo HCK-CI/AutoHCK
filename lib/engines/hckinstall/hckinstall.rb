@@ -241,6 +241,35 @@ module AutoHCK
       end
     end
 
+    def read_password_from_args
+      args_file = "#{@hck_setup_scripts_path}/args.ps1.example"
+      default_password = @project.config['studio_password']
+
+      # Read file content
+      content = File.read(args_file)
+
+      # Look for $DEFAULTPASSWORD = "value" pattern
+      match = content.match(/\$DEFAULTPASSWORD\s*=\s*"([^"]*)"/)
+
+      if match
+        password = match[1]
+        # Validate password is not empty
+        if password.strip.empty?
+          @logger.warn("Empty password found in args.ps1.example, using default") if @logger
+          return default_password
+        end
+        @logger.info("Using custom password from args.ps1.example") if @logger
+        return password
+      else
+        @logger.debug("DEFAULTPASSWORD not found in args.ps1.example, using default") if @logger
+        return default_password
+      end
+    rescue => e
+      # Return default if any error occurs
+      @logger.warn("Failed to read password from args.ps1.example: #{e.message}") if @logger
+      default_password
+    end
+
     def prepare_setup_scripts_config
       kit_type, kit_version = parse_kit_info
 
@@ -338,7 +367,8 @@ module AutoHCK
         '@WINDOWS_IMAGE_NAME@' => @studio_iso_info['studio']['windows_image_names'],
         '@PRODUCT_KEY@' => product_key,
         '@PRODUCT_KEY_XML@' => product_key_xml(product_key),
-        '@HOST_TYPE@' => 'studio'
+        '@HOST_TYPE@' => 'studio',
+        '@DEFAULT_PASSWORD@' => read_password_from_args
       }
       @answer_files.each do |file|
         file_gsub(build_studio_answer_file_path(file),
@@ -364,7 +394,8 @@ module AutoHCK
         '@WINDOWS_IMAGE_NAME@' => @client_iso_info['client']['windows_image_names'],
         '@PRODUCT_KEY@' => product_key,
         '@PRODUCT_KEY_XML@' => product_key_xml(product_key),
-        '@HOST_TYPE@' => 'client'
+        '@HOST_TYPE@' => 'client',
+        '@DEFAULT_PASSWORD@' => read_password_from_args
       }
       @answer_files.each do |file|
         file_gsub(build_client_answer_file_path(file),
