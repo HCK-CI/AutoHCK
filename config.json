@@ -5,7 +5,7 @@
     "winrm_port": 5985,
     "repository": "virtio-win/kvm-guest-drivers-windows",
     "studio_username": "Administrator",
-    "studio_password": "Qum5net.",
+    "studio_password": "Assentor01",
     "result_uploaders": [ ],
     "test_engine": "hcktest",
     "install_engine": "hckinstall",
