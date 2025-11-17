@@ -154,14 +154,14 @@ class RToolsHCK
   #
   # Closes the instance.
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1483
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1487
   def close; end
 
   # == Description
   #
   # Closes the instance and shuts down the studio.
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1468
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1472
   def close_and_shutdown; end
 
   # == Description
@@ -170,14 +170,14 @@ class RToolsHCK
   #
   # @return [Boolean]
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1496
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1500
   def closed?; end
 
   # == Description
   #
   # Checks if connection is still alive.
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1451
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1455
   def connection_check; end
 
   # == Description
@@ -398,7 +398,7 @@ class RToolsHCK
   #                         method (optional)
   # +sys_file+::            The .sys file name for export certificate (optional)
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1377
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1381
   def install_machine_driver_package(machine, install_method, l_directory, inf_file, options = T.unsafe(nil)); end
 
   # Returns the value of attribute json.
@@ -529,7 +529,7 @@ class RToolsHCK
   # Tries to regain the connection to the guest machine using the given
   # credentials and addresses on initialization.
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1400
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1404
   def reconnect; end
 
   # == Description
@@ -644,7 +644,7 @@ class RToolsHCK
   # source://rtoolsHCK//lib/rtoolsHCK.rb#375
   def action_exception_handler(exception); end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1434
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1438
   def check_connection; end
 
   # @raise [WinrmPSRunError.new(where)]
@@ -666,7 +666,7 @@ class RToolsHCK
   # source://rtoolsHCK//lib/rtoolsHCK.rb#218
   def do_initialize(init_opts); end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1342
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1344
   def do_install_machine_driver_package(machine, install_method, l_directory, inf_file, options); end
 
   # source://rtoolsHCK//lib/rtoolsHCK.rb#623
@@ -690,7 +690,7 @@ class RToolsHCK
   # source://rtoolsHCK//lib/rtoolsHCK.rb#668
   def file_to_outp_dir(r_file_path); end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1304
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1311
   def get_custom_command(r_directory, windows_path, custom_cmd); end
 
   # source://rtoolsHCK//lib/rtoolsHCK.rb#81
@@ -734,14 +734,17 @@ class RToolsHCK
   # source://rtoolsHCK//lib/rtoolsHCK.rb#687
   def handle_test_results_normal(test_results, stream); end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1325
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1327
   def install_certificate(machine, windows_path, sys_file = T.unsafe(nil)); end
 
   # source://rtoolsHCK//lib/rtoolsHCK.rb#1283
   def install_certificate_script(cer_path); end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1313
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1315
   def install_driver_command(r_directory, windows_path, install_method, custom_cmd = T.unsafe(nil)); end
+
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1304
+  def install_driver_list(r_directory, windows_path); end
 
   # source://rtoolsHCK//lib/rtoolsHCK.rb#241
   def load_instance_variables(init_opts); end
@@ -791,7 +794,7 @@ class RToolsHCK
   # source://rtoolsHCK//lib/rtoolsHCK.rb#937
   def parse_project_package_guest_path(stream); end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1411
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1415
   def priv_close; end
 
   # source://rtoolsHCK//lib/rtoolsHCK.rb#1290
@@ -812,13 +815,13 @@ class RToolsHCK
   # source://rtoolsHCK//lib/rtoolsHCK.rb#325
   def toolshck_ether_init_opts; end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1424
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1428
   def unload_ether; end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1430
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1434
   def unload_toolshck; end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1416
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1420
   def unload_winrm_ps; end
 
   # source://rtoolsHCK//lib/rtoolsHCK.rb#169
