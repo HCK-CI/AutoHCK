@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/HCK-CI/rtoolsHCK.git
-  revision: 4768d3019924df5000adb88abccd59203d6a1711
-  ref: v0.6.0
+  revision: c59b7e6f7366d630313111fd0ad380a235b8b2ef
+  ref: v0.6.1
   specs:
-    rtoolsHCK (0.6.0)
+    rtoolsHCK (0.6.1)
       bundler
       rdoc
       winrm (= 2.3.9)
@@ -56,13 +56,14 @@ GEM
     concurrent-ruby (1.3.5)
     connection_pool (2.5.4)
     csv (3.3.5)
-    date (3.4.1)
+    date (3.5.0)
     diff-lcs (1.6.2)
     dotenv (3.1.8)
     drb (2.2.3)
     dropbox_api (0.1.21)
       faraday (< 3.0)
       oauth2 (~> 1.1)
+    erb (6.0.0)
     erubi (1.13.1)
     faraday (2.13.0)
       faraday-net_http (>= 2.0, < 3.5)
@@ -94,7 +95,7 @@ GEM
       multi_json (~> 1.14)
     minitest (5.26.0)
     mono_logger (1.1.2)
-    multi_json (1.15.0)
+    multi_json (1.17.0)
     multi_xml (0.7.1)
       bigdecimal (~> 3.1)
     mutex_m (0.3.0)
@@ -118,7 +119,7 @@ GEM
       ast (~> 2.4.1)
       racc
     prism (1.6.0)
-    psych (5.2.3)
+    psych (5.2.6)
       date
       stringio
     public_suffix (6.0.1)
@@ -131,10 +132,12 @@ GEM
       sorbet-runtime (>= 0.5.9204)
     rbs (3.9.2)
       logger
-    rdoc (6.13.1)
+    rdoc (6.15.1)
+      erb
       psych (>= 4.0.0)
+      tsort
     regexp_parser (2.11.3)
-    rexml (3.4.2)
+    rexml (3.4.4)
     rspec (3.13.2)
       rspec-core (~> 3.13.0)
       rspec-expectations (~> 3.13.0)
@@ -186,7 +189,7 @@ GEM
       rbi (>= 0.2.3)
       sorbet-static-and-runtime (>= 0.5.10187)
       thor (>= 0.19.2)
-    stringio (3.1.6)
+    stringio (3.1.8)
     tapioca (0.16.11)
       benchmark
       bundler (>= 2.2.25)
@@ -198,6 +201,7 @@ GEM
       thor (>= 1.2.0)
       yard-sorbet
     thor (1.4.0)
+    tsort (0.2.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (3.2.0)
