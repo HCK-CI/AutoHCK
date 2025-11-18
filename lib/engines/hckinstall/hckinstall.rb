@@ -339,7 +339,7 @@ module AutoHCK
         '@PRODUCT_KEY@' => product_key,
         '@PRODUCT_KEY_XML@' => product_key_xml(product_key),
         '@HOST_TYPE@' => 'studio',
-        '@DEFAULT_PASSWORD@' => @project.config['studio_password']
+        '@DEFAULT_PASSWORD@' => @project.config['windows_password']
       }
       @answer_files.each do |file|
         file_gsub(build_studio_answer_file_path(file),
@@ -366,7 +366,7 @@ module AutoHCK
         '@PRODUCT_KEY@' => product_key,
         '@PRODUCT_KEY_XML@' => product_key_xml(product_key),
         '@HOST_TYPE@' => 'client',
-        '@DEFAULT_PASSWORD@' => @project.config['studio_password']
+        '@DEFAULT_PASSWORD@' => @project.config['windows_password']
       }
       @answer_files.each do |file|
         file_gsub(build_client_answer_file_path(file),

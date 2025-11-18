@@ -12,8 +12,8 @@ module AutoHCK
       @config = project.config
       @clients = clients
       connect(addr: ip_addr,
-              user: @config['studio_username'],
-              pass: @config['studio_password'],
+              user: @config['windows_username'],
+              pass: @config['windows_password'],
               winrm_ports: config_winrm_ports,
               timeout: 120,
               logger: @logger,
