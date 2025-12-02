@@ -247,7 +247,8 @@ module AutoHCK
       config = {
         kit_type:,
         hlk_kit_ver: kit_version,
-        debug: @project.options.install.debug
+        debug: @project.options.install.debug,
+        no_reboot_after_bugcheck: @project.options.install.no_reboot_after_bugcheck
       }
 
       @kit_path = find_kit(kit_type, kit_version)

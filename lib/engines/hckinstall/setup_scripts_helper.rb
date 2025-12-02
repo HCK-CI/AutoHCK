@@ -8,7 +8,8 @@ module AutoHCK
       kit_type: '',
       hlk_kit_ver: '',
       remove_gui: '',
-      debug: ''
+      debug: '',
+      no_reboot_after_bugcheck: ''
     }.freeze
 
     def validate_setup_scripts_config(config)

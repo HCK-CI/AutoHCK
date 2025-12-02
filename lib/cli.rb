@@ -201,7 +201,7 @@ module AutoHCK
 
     # class InstallOptions
     class InstallOptions
-      attr_accessor :platform, :force, :skip_client, :drivers, :driver_path, :debug
+      attr_accessor :platform, :force, :skip_client, :drivers, :driver_path, :debug, :no_reboot_after_bugcheck
 
       def create_parser
         OptionParser.new do |parser|
@@ -221,6 +221,7 @@ module AutoHCK
         @skip_client = false
         @drivers = []
         @debug = false
+        @no_reboot_after_bugcheck = false
 
         parser.on('--debug', TrueClass, 'Enable debug mode',
                   &method(:debug=))
@@ -244,6 +245,10 @@ module AutoHCK
         parser.on('--driver-path <driver_path>', String,
                   'Path to the location of the driver wanted to be installed',
                   &method(:driver_path=))
+
+        parser.on('--no-reboot-after-bugcheck', TrueClass,
+                  'Keep system in crashed state after crash for debugging (disables automatic reboot)',
+                  &method(:no_reboot_after_bugcheck=))
       end
       # rubocop:enable Metrics/MethodLength
     end
