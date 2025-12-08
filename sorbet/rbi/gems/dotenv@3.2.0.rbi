@@ -40,7 +40,7 @@ module Dotenv
   #
   # @param env [Hash] Hash of keys and values to set in `ENV`
   #
-  # source://dotenv//lib/dotenv.rb#116
+  # source://dotenv//lib/dotenv.rb#124
   def modify(env = T.unsafe(nil), &block); end
 
   # same as `#load`, but will overwrite existing values in `ENV`
@@ -76,7 +76,7 @@ module Dotenv
 
   # @raise [MissingKeys]
   #
-  # source://dotenv//lib/dotenv.rb#126
+  # source://dotenv//lib/dotenv.rb#134
   def require_keys(*keys); end
 
   # Restore `ENV` to a given state
@@ -95,14 +95,14 @@ module Dotenv
   # Update `ENV` with the given hash of keys and values
   #
   # @param env [Hash] Hash of keys and values to set in `ENV`
-  # @param overwrite [Boolean] Overwrite existing `ENV` values
+  # @param overwrite [Boolean|:warn] Overwrite existing `ENV` values
   #
   # source://dotenv//lib/dotenv.rb#98
   def update(env = T.unsafe(nil), overwrite: T.unsafe(nil)); end
 
   private
 
-  # source://dotenv//lib/dotenv.rb#134
+  # source://dotenv//lib/dotenv.rb#142
   def instrument(name, payload = T.unsafe(nil), &block); end
 end
 
@@ -274,7 +274,7 @@ module Dotenv::Substitutions; end
 module Dotenv::Substitutions::Command
   class << self
     # source://dotenv//lib/dotenv/substitutions/command.rb#23
-    def call(value, _env); end
+    def call(value, env); end
   end
 end
 
