@@ -95,7 +95,7 @@ module AutoHCK
       attr_accessor :platform, :drivers, :driver_path, :commit, :svvp, :dump,
                     :gthb_context_prefix, :gthb_context_suffix, :playlist, :select_test_names,
                     :reject_test_names, :reject_report_sections, :boot_device,
-                    :allow_test_duplication, :manual, :package_with_playlist, :enable_vbs
+                    :allow_test_duplication, :manual, :package_with_playlist, :enable_vbs, :tag_suffix
 
       def create_parser
         OptionParser.new do |parser|
@@ -195,6 +195,10 @@ module AutoHCK
         parser.on('--package-with-playlist', TrueClass,
                   'Load playlist into HLKX project package',
                   &method(:package_with_playlist=))
+
+        parser.on('--tag-suffix <tag_suffix>', String,
+                  'Add custom suffix to HCK-CI tag to prevent name conflicts when using shared controller',
+                  &method(:tag_suffix=))
       end
       # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
     end

@@ -216,10 +216,18 @@ module AutoHCK
     end
 
     def self.tag(options)
-      if options.test.svvp
-        "svvp-#{options.test.platform}"
+      base_tag = if options.test.svvp
+                   "svvp-#{options.test.platform}"
+                 else
+                   "#{options.test.drivers.sort.join('-')}-#{options.test.platform}"
+                 end
+
+      # Append tag_suffix if provided to prevent name conflicts when using shared controller
+      suffix = options.test.tag_suffix&.strip
+      if suffix && !suffix.empty?
+        "#{base_tag}-#{suffix}"
       else
-        "#{options.test.drivers.sort.join('-')}-#{options.test.platform}"
+        base_tag
       end
     end
 
