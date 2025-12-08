@@ -58,7 +58,7 @@ GEM
     csv (3.3.5)
     date (3.5.0)
     diff-lcs (1.6.2)
-    dotenv (3.1.8)
+    dotenv (3.2.0)
     drb (2.2.3)
     dropbox_api (0.1.21)
       faraday (< 3.0)
