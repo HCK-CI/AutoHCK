@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/HCK-CI/rtoolsHCK.git
-  revision: c59b7e6f7366d630313111fd0ad380a235b8b2ef
-  ref: v0.6.1
+  revision: f59ae987141d8d7192ede862802dbf3d9d0d9105
+  ref: VIRTWINKVM-1865
   specs:
     rtoolsHCK (0.6.1)
       bundler
@@ -132,7 +132,7 @@ GEM
       sorbet-runtime (>= 0.5.9204)
     rbs (3.9.2)
       logger
-    rdoc (6.15.1)
+    rdoc (6.17.0)
       erb
       psych (>= 4.0.0)
       tsort
@@ -189,7 +189,7 @@ GEM
       rbi (>= 0.2.3)
       sorbet-static-and-runtime (>= 0.5.10187)
       thor (>= 0.19.2)
-    stringio (3.1.8)
+    stringio (3.1.9)
     tapioca (0.16.11)
       benchmark
       bundler (>= 2.2.25)

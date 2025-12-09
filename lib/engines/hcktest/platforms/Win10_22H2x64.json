@@ -9,14 +9,14 @@
       "name": "CL1",
       "cpus": 4,
       "memory_gb": 4,
-      "winrm_port": 4002,
+      "winrm_addr":  "192.168.100.2",
       "image": "HLK2004-C1-Win10_22H2x64.qcow2"
     },
     "c2": {
       "name": "CL2",
       "cpus": 4,
       "memory_gb": 4,
-      "winrm_port": 4003,
+      "winrm_addr":  "192.168.100.3",
       "image": "HLK2004-C2-Win10_22H2x64.qcow2"
     }
   }

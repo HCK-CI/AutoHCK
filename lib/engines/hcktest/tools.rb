@@ -14,7 +14,7 @@ module AutoHCK
       connect(addr: ip_addr,
               user: @config['windows_username'],
               pass: @config['windows_password'],
-              winrm_ports: config_winrm_ports,
+              clients_addrs: config_clients_addrs,
               timeout: 120,
               logger: @logger,
               outp_dir: project.workspace_path)
@@ -72,12 +72,15 @@ module AutoHCK
       @tools = ThreadSafe.new(RToolsHCK.new(conn), Mutex.new)
     end
 
-    def config_winrm_ports
-      winrm_ports = {}
+    def config_clients_addrs
+      clients_addrs = {}
       @clients.each_value do |client|
-        winrm_ports[client['name']] = client['winrm_port']
+        clients_addrs[client['name']] = {
+          addr: client['winrm_addr'],
+          port: client['winrm_port']
+        }
       end
-      winrm_ports
+      clients_addrs
     end
 
     def prep_stream_for_log(stream)
