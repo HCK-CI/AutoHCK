@@ -33,8 +33,11 @@ module AutoHCK
     argv << File.join(__dir__, 'ns_unshared')
 
     e_read, e_write = IO.pipe
+    $stderr.write "[nsd] Running (e pipe): #{e_read.fileno} => #{e_write.fileno}\n"
     r_read, r_write = IO.pipe
+    $stderr.write "[nsd] Running (r pipe): #{r_read.fileno} => #{r_write.fileno}\n"
     parent = Process.pid.to_s
+    $stderr.write "[nsd] Parent PID: #{parent}\n"
 
     fork do
       e_write.close
@@ -60,19 +63,24 @@ module AutoHCK
         # Call newgidmap so that virtiofsd can use setgroups() to drop subgroups.
         # unshare command in util-linux 2.38 can call newgidmap by its own, but
         # unfortunately it is not available on some supported systems.
-        system 'newgidmap', parent, '0', Process.gid.to_s, '1',
-               subid_start, subid_start, subid_count, exception: true, out: :err
+        command = ['newgidmap', parent, '0', Process.gid.to_s, '1', subid_start, subid_start, subid_count]
+        $stderr.write "[nsd child] Running (system): #{command.join(' ')}\n"
+        system(*command, exception: true, out: :err)
       end
 
       e_read.close_on_exec = false
       r_write.close_on_exec = false
-      exec 'slirp4netns', '-e', e_read.fileno.to_s, '-r', r_write.fileno.to_s,
-           '-a', 'slirp.sock', parent, 'tap_host', out: :err
+
+      command = ['slirp4netns', '-e', e_read.fileno.to_s, '-r', r_write.fileno.to_s,
+                 '-a', 'slirp.sock', parent, 'tap_host']
+      $stderr.write "[nsd child] Running (exec): #{command.join(' ')}\n"
+      exec(*command, out: :err)
     end
 
     e_read.close
     r_write.close
 
+    $stderr.write "[nsd] Running (exec, 3 => #{e_write.fileno}, 4 => #{r_read.fileno}): #{argv.join(' ')}\n"
     exec(*argv, 3 => e_write, 4 => r_read)
   end
 end

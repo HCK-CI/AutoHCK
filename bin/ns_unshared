@@ -16,6 +16,7 @@ module AutoHCK
       '/proc/sys/net/bridge/bridge-nf-call-ip6tables',
       '/proc/sys/net/bridge/bridge-nf-call-iptables'
     ].each do |file|
+      $stderr.write "[ns_unshared] Writing '0' to #{file}\n"
       File.write file, '0'
     rescue Errno::ENOENT
       # br_netfilter is not loaded
@@ -50,6 +51,7 @@ module AutoHCK
       %w[ip link add br_debug type bridge],
       %w[ip link set br_debug up]
     ].each do |cmd|
+      $stderr.write "[ns_unshared] Running (wait spawn): #{cmd.join(' ')}\n"
       Process.wait spawn(*cmd, out: :err)
       raise $CHILD_STATUS.to_s unless $CHILD_STATUS.success?
     rescue StandardError

@@ -18,8 +18,7 @@ module AutoHCK
             pid = pid_file.acquire
             begin
               Thread.handle_interrupt Object => :immediate do
-                system(*nsenter_argv(pid, chdir), '--', *argv)
-                exit $CHILD_STATUS.exitstatus
+                nsenter(pid, chdir, *argv)
               end
             ensure
               begin
@@ -42,7 +41,14 @@ module AutoHCK
         argv
       end
 
-      private_class_method :nsenter_argv
+      def self.nsenter(pid, chdir, *argv)
+        command = [*nsenter_argv(pid, chdir), '--', *argv]
+        $stderr.write "[ns.rb] Running (system): #{command.join(' ')}\n"
+        system(*command)
+        exit $CHILD_STATUS.exitstatus
+      end
+
+      private_class_method :nsenter_argv, :nsenter
     end
   end
 end
