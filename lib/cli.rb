@@ -95,7 +95,8 @@ module AutoHCK
       attr_accessor :platform, :drivers, :driver_path, :commit, :svvp, :dump,
                     :gthb_context_prefix, :gthb_context_suffix, :playlist, :select_test_names,
                     :reject_test_names, :reject_report_sections, :boot_device,
-                    :allow_test_duplication, :manual, :package_with_playlist, :enable_vbs, :tag_suffix
+                    :allow_test_duplication, :manual, :package_with_playlist, :enable_vbs, :tag_suffix,
+                    :fs_test_image_format
 
       def create_parser
         OptionParser.new do |parser|
@@ -199,6 +200,11 @@ module AutoHCK
         parser.on('--tag-suffix <tag_suffix>', String,
                   'Add custom suffix to HCK-CI tag to prevent name conflicts when using shared controller',
                   &method(:tag_suffix=))
+
+        parser.on('--fs-test-image-format <fs_test_image_format>', String,
+                  'Filesystem test image format (qcow2/raw). Default is qcow2.',
+                  'Has effect only when testing storage drivers.',
+                  &method(:fs_test_image_format=))
       end
       # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
     end
