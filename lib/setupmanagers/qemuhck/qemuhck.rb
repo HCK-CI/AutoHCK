@@ -97,6 +97,7 @@ module AutoHCK
         'attach_debug_net' => common.attach_debug_net,
         'share_on_host_path' => common.share_on_host_path,
         'boot_device' => @project.options.test.boot_device,
+        'fs_test_image_format' => @project.options.test.fs_test_image_format,
         'ctrl_net_device' => common.client_ctrl_net_dev
       }.compact
     end

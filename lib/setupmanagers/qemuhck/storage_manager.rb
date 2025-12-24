@@ -18,10 +18,11 @@ module AutoHCK
         @workspace_path = qemu_options['workspace_path']
         @qemu_img_bin = qemu_config['qemu_img_bin']
         @fs_test_image = qemu_config['fs_test_image']
+        @fs_test_image_format = qemu_options['fs_test_image_format'] || IMAGE_FORMAT
         @iso_path = qemu_options['iso_path']
 
         @boot_image_path = Pathname.new(qemu_config['images_path']).join(qemu_options['image_name'])
-        @test_image_path = Pathname.new(@workspace_path).join("client#{@client_id}_test_image.#{IMAGE_FORMAT}")
+        @test_image_path = Pathname.new(@workspace_path).join("client#{@client_id}_test_image.#{@fs_test_image_format}")
       end
 
       def device_command_info(type, device, command_options, bus_name, qemu_replacement_map)
@@ -43,12 +44,12 @@ module AutoHCK
         File.exist?(@boot_image_path)
       end
 
-      def create_image(path, size_gb)
-        run_cmd(*%W[#{@qemu_img_bin} create -f #{IMAGE_FORMAT} #{path} #{size_gb}G])
+      def create_image(path, size_gb, image_format)
+        run_cmd(*%W[#{@qemu_img_bin} create -f #{image_format} #{path} #{size_gb}G])
       end
 
       def create_boot_image
-        create_image(@boot_image_path, 150)
+        create_image(@boot_image_path, 150, IMAGE_FORMAT)
       end
 
       def create_test_image
@@ -57,7 +58,7 @@ module AutoHCK
           FileUtils.cp(@fs_test_image, @test_image_path)
         else
           @logger.info("Creating CL#{@client_id} test image")
-          create_image(@test_image_path, 30)
+          create_image(@test_image_path, 30, @fs_test_image_format)
         end
       end
 
@@ -106,7 +107,7 @@ module AutoHCK
         create_test_image
 
         options = {
-          '@image_format@' => IMAGE_FORMAT,
+          '@image_format@' => @fs_test_image_format,
           '@image_path@' => @test_image_path,
           '@bootindex@' => ''
         }
