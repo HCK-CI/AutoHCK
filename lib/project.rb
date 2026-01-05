@@ -189,7 +189,7 @@ module AutoHCK
       end
 
       File.symlink(@workspace_path, "#{@config['workspace_path']}/latest")
-      @setup_manager_type&.enter @workspace_path
+      @setup_manager_type&.enter @workspace_path, @options
     end
 
     def handle_cancel
