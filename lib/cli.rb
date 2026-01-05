@@ -92,9 +92,9 @@ module AutoHCK
 
     # class TestOptions
     class TestOptions
-      attr_accessor :platform, :drivers, :driver_path, :commit, :svvp, :dump,
-                    :gthb_context_prefix, :gthb_context_suffix, :playlist, :select_test_names,
-                    :reject_test_names, :reject_report_sections, :boot_device,
+      attr_accessor :platform, :drivers, :driver_path, :supplemental_path, :package_with_driver,
+                    :commit, :svvp, :dump, :gthb_context_prefix, :gthb_context_suffix, :playlist,
+                    :select_test_names, :reject_test_names, :reject_report_sections, :boot_device,
                     :allow_test_duplication, :manual, :package_with_playlist, :enable_vbs, :tag_suffix,
                     :fs_test_image_format
 
@@ -127,6 +127,14 @@ module AutoHCK
         parser.on('--driver-path <driver_path>', String,
                   'Path to the location of the driver wanted to be tested',
                   &method(:driver_path=))
+
+        parser.on('--supplemental-path <supplemental_path>', String,
+                  'Path to the supplemental content folder (e.g. for README)',
+                  &method(:supplemental_path=))
+
+        parser.on('--package-with-driver', TrueClass,
+                  'Include driver files in HLKX package (requires --driver-path)',
+                  &method(:package_with_driver=))
 
         parser.on('-c', '--commit <commit_hash>', String,
                   'Commit hash for CI status update',

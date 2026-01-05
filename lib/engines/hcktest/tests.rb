@@ -20,6 +20,7 @@ module AutoHCK
     RESULTS_FILE = 'results.html'
     RESULTS_YAML = 'results.yaml'
     RESULTS_REPORT_SECTIONS = %w[chart guest_info rejected_test url].freeze
+    STUDIO_PACKAGE_ASSETS_PATH = 'C:\\AutoHCK\\PackageAssets'
 
     DEFAULT_FILE_ACTION_REMOTE_PATH = 'C:\\'
     DEFAULT_FILE_ACTION_LOCAL_PATH = '@workspace@'
@@ -627,7 +628,26 @@ module AutoHCK
     def create_project_package
       package_playlist = @playlist.playlist if @project.options.test.package_with_playlist
 
-      res = @tools.create_project_package(@tag, package_playlist)
+      driver_path = @project.options.test.driver_path
+      supplemental_path = @project.options.test.supplemental_path
+      package_with_driver = @project.options.test.package_with_driver
+
+      remote_driver_path = nil
+      remote_supplemental_path = nil
+
+      if package_with_driver && driver_path && File.exist?(driver_path)
+        remote_driver_path = "#{STUDIO_PACKAGE_ASSETS_PATH}\\Driver"
+        @logger.info("Uploading driver from '#{driver_path}' to '#{remote_driver_path}'")
+        @tools.upload_to_studio(driver_path, remote_driver_path)
+      end
+
+      if supplemental_path && File.exist?(supplemental_path)
+        remote_supplemental_path = "#{STUDIO_PACKAGE_ASSETS_PATH}\\Supplemental"
+        @logger.info("Uploading supplemental from '#{supplemental_path}' to '#{remote_supplemental_path}'")
+        @tools.upload_to_studio(supplemental_path, remote_supplemental_path)
+      end
+
+      res = @tools.create_project_package(@tag, package_playlist, nil, remote_driver_path, remote_supplemental_path)
       @logger.info('Results package successfully created')
       r_name = @tag + File.extname(res['hostprojectpackagepath'])
       @project.result_uploader.upload_file(res['hostprojectpackagepath'], r_name)

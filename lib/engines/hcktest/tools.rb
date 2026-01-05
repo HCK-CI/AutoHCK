@@ -198,6 +198,18 @@ module AutoHCK
       retry
     end
 
+    def upload_to_studio(l_path, r_path)
+      retries ||= 0
+      act_with_tools { _1.upload_to_studio(l_path, r_path) }
+    rescue ToolsHCKError => e
+      @logger.warn(e.message)
+      raise UploadToMachineError, 'Upload to studio failed' unless (retries += 1) < ACTION_RETRIES
+
+      sleep ACTION_RETRY_SLEEP
+      @logger.info('Trying again upload to studio')
+      retry
+    end
+
     def download_from_machine(machine, r_path, l_path)
       retries ||= 0
       act_with_tools { _1.download_from_machine(machine, r_path, l_path) }
@@ -366,9 +378,9 @@ module AutoHCK
       retry
     end
 
-    def create_project_package(project, playlist = nil, handler = nil)
+    def create_project_package(project, playlist = nil, handler = nil, driver_path = nil, supplemental_path = nil) # rubocop:disable Metrics/ParameterLists
       retry_tools_command(__method__) do
-        act_with_tools { _1.create_project_package(project, playlist, handler) }
+        act_with_tools { _1.create_project_package(project, playlist, handler, driver_path, supplemental_path) }
       end
     end
 
