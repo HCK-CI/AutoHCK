@@ -1,0 +1,39 @@
+{
+  "extra_software": [
+    "hcktrace"
+  ],
+  "post_start_commands": [
+    {
+      "desc": "Configure HCKTrace service for driver tracing",
+      "guest_run": "Start-Process -Wait -FilePath hcktrace.exe -ArgumentList driver,@driver_short_name@,@driver_dir@,4"
+    }
+  ],
+  "tests_config": [
+    {
+      "tests": [
+        ".*"
+      ],
+      "pre_test_commands": [
+        {
+          "desc": "Start HCKTrace recording",
+          "guest_run": "Start-Process -Wait -FilePath hcktrace.exe -ArgumentList test,@safe_test_name@"
+        }
+      ],
+      "post_test_commands": [
+        {
+          "desc": "Stop HCKTrace recording",
+          "guest_run": "Start-Process -Wait -FilePath hcktrace.exe -ArgumentList test,end",
+          "files_action": [
+            {
+              "remote_path": "C:/hcktrace/zip",
+              "local_path": "@workspace@/trace-@safe_test_name@-@client_name@-@run_number@",
+              "direction": "remote-to-local",
+              "move": true,
+              "allow_missing": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
