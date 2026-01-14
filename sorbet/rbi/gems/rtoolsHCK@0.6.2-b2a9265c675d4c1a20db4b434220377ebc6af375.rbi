@@ -154,14 +154,14 @@ class RToolsHCK
   #
   # Closes the instance.
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1487
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1507
   def close; end
 
   # == Description
   #
   # Closes the instance and shuts down the studio.
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1472
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1492
   def close_and_shutdown; end
 
   # == Description
@@ -170,14 +170,14 @@ class RToolsHCK
   #
   # @return [Boolean]
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1500
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1520
   def closed?; end
 
   # == Description
   #
   # Checks if connection is still alive.
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1455
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1475
   def connection_check; end
 
   # == Description
@@ -225,8 +225,11 @@ class RToolsHCK
   #                     i. 'maximum': maximum progress counter value
   #                     i. 'message': progress info message
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1040
-  def create_project_package(project, playlist = T.unsafe(nil), handler = T.unsafe(nil)); end
+  # +driver_path+::  Provide a driver path to include, (can be nil)
+  # +supplemental_path+:: Provide a supplemental path to include, (can be nil)
+  #
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1042
+  def create_project_package(project, playlist = T.unsafe(nil), handler = T.unsafe(nil), driver_path = T.unsafe(nil), supplemental_path = T.unsafe(nil)); end
 
   # == Description
   #
@@ -265,7 +268,7 @@ class RToolsHCK
   #                  controller
   # +r_directory+::  The remote file/directory which should be deleted
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1224
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1244
   def delete_on_machine(machine, r_path); end
 
   # == Description
@@ -317,7 +320,7 @@ class RToolsHCK
   # +r_directory+::  The remote file/directory which should be downloaded
   # +l_directory+::  The local file/directory path
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1192
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1212
   def download_from_machine(machine, r_path, l_path); end
 
   # == Description
@@ -332,7 +335,7 @@ class RToolsHCK
   #
   # @return [Boolean]
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1208
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1228
   def exists_on_machine?(machine, r_path); end
 
   # == Description
@@ -345,7 +348,7 @@ class RToolsHCK
   #                  controller
   # +ipv6+::         Get IPv6 address, :ipv6 to enable, disabled by default
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1064
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1069
   def get_machine_ip(machine, ipv6: T.unsafe(nil)); end
 
   # == Description
@@ -360,7 +363,7 @@ class RToolsHCK
   #                  is to be displayed.
   #                  Valid values: "TABLE", "LIST", "CSV".
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1085
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1090
   def get_machine_system_info(machine, output_format = T.unsafe(nil)); end
 
   # == Description
@@ -398,7 +401,7 @@ class RToolsHCK
   #                         method (optional)
   # +sys_file+::            The .sys file name for export certificate (optional)
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1381
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1401
   def install_machine_driver_package(machine, install_method, l_directory, inf_file, options = T.unsafe(nil)); end
 
   # Returns the value of attribute json.
@@ -486,7 +489,7 @@ class RToolsHCK
   # +restart+::      Restarts the machine, :restart to enable, disabled by
   #                  default
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1120
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1125
   def machine_shutdown(machine, restart: T.unsafe(nil)); end
 
   # == Description
@@ -529,7 +532,7 @@ class RToolsHCK
   # Tries to regain the connection to the guest machine using the given
   # credentials and addresses on initialization.
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1404
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1424
   def reconnect; end
 
   # == Description
@@ -542,7 +545,7 @@ class RToolsHCK
   #                  controller
   # +cmd+::          The command to run as a string
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1139
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1144
   def run_on_machine(machine, cmd); end
 
   # == Description
@@ -553,7 +556,7 @@ class RToolsHCK
   #
   # +command+::          The command to run as a string
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1155
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1160
   def run_on_studio(command); end
 
   # == Description
@@ -579,7 +582,7 @@ class RToolsHCK
   # +restart+::      Restarts the machine, :restart to enable, disabled by
   #                  default
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1100
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1105
   def shutdown(restart: T.unsafe(nil)); end
 
   # == Description
@@ -615,8 +618,20 @@ class RToolsHCK
   # +l_directory+::  The local file/directory which should be uploaded
   # +r_directory+::  The remote file/directory
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1174
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1179
   def upload_to_machine(machine, l_directory, r_directory = T.unsafe(nil)); end
+
+  # == Description
+  #
+  # Upload file/directory to the studio machine.
+  #
+  # == Params:
+  #
+  # +l_path+::       The local file/directory path
+  # +r_path+::       The remote destination path
+  #
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1194
+  def upload_to_studio(l_path, r_path); end
 
   # == Description
   #
@@ -644,7 +659,7 @@ class RToolsHCK
   # source://rtoolsHCK//lib/rtoolsHCK.rb#375
   def action_exception_handler(exception); end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1438
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1458
   def check_connection; end
 
   # @raise [WinrmPSRunError.new(where)]
@@ -652,21 +667,21 @@ class RToolsHCK
   # source://rtoolsHCK//lib/rtoolsHCK.rb#273
   def check_run_output(run_output, where, cmd); end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1264
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1284
   def do_delete_on_machine(machine, r_path); end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1245
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1265
   def do_download_from_machine(machine, r_path, l_path); end
 
   # @return [Boolean]
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1256
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1276
   def do_exists_on_machine?(machine, r_path); end
 
   # source://rtoolsHCK//lib/rtoolsHCK.rb#218
   def do_initialize(init_opts); end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1344
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1364
   def do_install_machine_driver_package(machine, install_method, l_directory, inf_file, options); end
 
   # source://rtoolsHCK//lib/rtoolsHCK.rb#623
@@ -678,19 +693,19 @@ class RToolsHCK
   # source://rtoolsHCK//lib/rtoolsHCK.rb#610
   def do_upload_playlist_file(l_playlist); end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1233
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1253
   def do_upload_to_machine(machine, l_directory, r_directory = T.unsafe(nil)); end
 
   # source://rtoolsHCK//lib/rtoolsHCK.rb#985
   def dummy_package_progress_info_handler; end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1272
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1292
   def export_certificate_script(sys_path, cer_path); end
 
   # source://rtoolsHCK//lib/rtoolsHCK.rb#668
   def file_to_outp_dir(r_file_path); end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1311
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1331
   def get_custom_command(r_directory, windows_path, custom_cmd); end
 
   # source://rtoolsHCK//lib/rtoolsHCK.rb#81
@@ -734,16 +749,16 @@ class RToolsHCK
   # source://rtoolsHCK//lib/rtoolsHCK.rb#687
   def handle_test_results_normal(test_results, stream); end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1327
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1347
   def install_certificate(machine, windows_path, sys_file = T.unsafe(nil)); end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1283
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1303
   def install_certificate_script(cer_path); end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1315
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1335
   def install_driver_command(r_directory, windows_path, install_method, custom_cmd = T.unsafe(nil)); end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1304
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1324
   def install_driver_list(r_directory, windows_path); end
 
   # source://rtoolsHCK//lib/rtoolsHCK.rb#241
@@ -794,10 +809,10 @@ class RToolsHCK
   # source://rtoolsHCK//lib/rtoolsHCK.rb#937
   def parse_project_package_guest_path(stream); end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1415
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1435
   def priv_close; end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1290
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1310
   def replace_command(cmd, replacement_list); end
 
   # source://rtoolsHCK//lib/rtoolsHCK.rb#282
@@ -815,13 +830,13 @@ class RToolsHCK
   # source://rtoolsHCK//lib/rtoolsHCK.rb#325
   def toolshck_ether_init_opts; end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1428
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1448
   def unload_ether; end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1434
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1454
   def unload_toolshck; end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1420
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1440
   def unload_winrm_ps; end
 
   # source://rtoolsHCK//lib/rtoolsHCK.rb#169
