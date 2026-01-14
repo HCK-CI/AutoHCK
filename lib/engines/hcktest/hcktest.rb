@@ -33,18 +33,12 @@ module AutoHCK
     end
 
     def prepare_extra_sw
-      @drivers.each do |driver|
-        next if driver.extra_software.nil?
-
-        @project.extra_sw_manager.prepare_software_packages(
-          driver.extra_software, @project.engine_platform['kit'], ENGINE_MODE
-        )
-      end
-
-      return if @project.engine_platform['extra_software'].nil?
+      extra_softwares = []
+      extra_softwares += @drivers.flat_map(&:extra_software)
+      extra_softwares += @project.engine_platform['extra_software'] || []
 
       @project.extra_sw_manager.prepare_software_packages(
-        @platform['extra_software'], @platform['kit'], ENGINE_MODE
+        extra_softwares, @project.engine_platform['kit'], ENGINE_MODE
       )
     end
 
