@@ -241,16 +241,7 @@ module AutoHCK
       end
     end
 
-    def prepare_setup_scripts_config
-      kit_type, kit_version = parse_kit_info
-
-      config = {
-        kit_type:,
-        hlk_kit_ver: kit_version,
-        debug: @project.options.install.debug,
-        no_reboot_after_bugcheck: @project.options.install.no_reboot_after_bugcheck
-      }
-
+    def prepare_kit_installer(kit_type, kit_version)
       @kit_path = find_kit(kit_type, kit_version)
 
       if @kit_path.nil?
@@ -267,7 +258,20 @@ module AutoHCK
       @kit_is_iso = @kit_path.end_with?('.iso')
 
       @logger.info("HLK installer #{kit_type}#{kit_version} was found at #{@kit_path}")
+    end
 
+    def prepare_setup_scripts_config
+      kit_type, kit_version = parse_kit_info
+
+      options_install = @project.options.install
+      config = {
+        kit_type:,
+        hlk_kit_ver: kit_version,
+        debug: options_install.debug,
+        no_reboot_after_bugcheck: options_install.no_reboot_after_bugcheck
+      }
+
+      prepare_kit_installer(kit_type, kit_version)
       create_setup_scripts_config(@hck_setup_scripts_path, config)
     end
 
