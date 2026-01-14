@@ -7,6 +7,7 @@ module AutoHCK
     autoload_relative :CommandInfo, 'models/command_info'
     autoload_relative :DriverInstallMethods, 'models/driver_install_methods'
     autoload_relative :Driver, 'models/driver'
+    autoload_relative :Extension, 'models/extension'
     autoload_relative :Kit, 'models/kit'
     autoload_relative :TestConfig, 'models/test_config'
     autoload_relative :HCKTestConfig, 'models/hcktest_config'
