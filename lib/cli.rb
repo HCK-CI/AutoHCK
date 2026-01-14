@@ -96,7 +96,7 @@ module AutoHCK
                     :commit, :svvp, :dump, :gthb_context_prefix, :gthb_context_suffix, :playlist,
                     :select_test_names, :reject_test_names, :reject_report_sections, :boot_device,
                     :allow_test_duplication, :manual, :package_with_playlist, :enable_vbs, :tag_suffix,
-                    :fs_test_image_format
+                    :fs_test_image_format, :extensions
 
       def create_parser
         OptionParser.new do |parser|
@@ -113,6 +113,7 @@ module AutoHCK
       # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       def define_options(parser)
         @reject_report_sections = []
+        @extensions = []
         @svvp = false
         @enable_vbs = false
 
@@ -213,6 +214,10 @@ module AutoHCK
                   'Filesystem test image format (qcow2/raw). Default is qcow2.',
                   'Has effect only when testing storage drivers.',
                   &method(:fs_test_image_format=))
+
+        parser.on('--extensions <extensions_list>', Array,
+                  'List of extensions for run test',
+                  &method(:extensions=))
       end
       # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
     end

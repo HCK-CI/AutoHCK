@@ -76,6 +76,7 @@ module AutoHCK
 
     def post_start_commands
       (@project.engine.drivers.flat_map(&:post_start_commands) +
+       @project.engine.extensions.flat_map(&:post_start_commands) +
         @setup_manager.client_post_start_commands).select(&:guest_run)
     end
 

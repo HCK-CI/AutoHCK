@@ -8,11 +8,12 @@ module AutoHCK
     extend T::Sig
     include Helper
 
-    attr_reader :config, :drivers, :platform
+    attr_reader :config, :drivers, :platform, :extensions
 
     PLATFORMS_JSON_DIR = 'lib/engines/hcktest/platforms'
     CONFIG_JSON = 'lib/engines/hcktest/hcktest.json'
     DRIVERS_JSON_DIR = 'lib/engines/hcktest/drivers'
+    EXTENSIONS_JSON_DIR = 'lib/engines/hcktest/extensions'
     SVVP_JSON = 'svvp.json'
     ENGINE_MODE = 'test'
     AUTOHCK_RETRIES = 5
@@ -24,6 +25,7 @@ module AutoHCK
       @config = Models::HCKTestConfig.from_json_file(CONFIG_JSON, @logger)
       @driver_path = @project.options.test.driver_path
       @drivers = find_drivers
+      @extensions = find_extensions
       prepare_extra_sw
       validate_paths unless @driver_path.nil?
     end
@@ -35,6 +37,7 @@ module AutoHCK
     def prepare_extra_sw
       extra_softwares = []
       extra_softwares += @drivers.flat_map(&:extra_software)
+      extra_softwares += @extensions.flat_map(&:extra_software)
       extra_softwares += @project.engine_platform['extra_software'] || []
 
       @project.extra_sw_manager.prepare_software_packages(
@@ -99,6 +102,14 @@ module AutoHCK
       end
     end
 
+    sig { returns(T::Array[Models::Extension]) }
+    def find_extensions
+      @project.options.test.extensions.map do |ext_name|
+        @logger.info("Loading extension: #{ext_name}")
+        Models::Extension.from_json_file("#{EXTENSIONS_JSON_DIR}/#{ext_name}.json", @logger)
+      end
+    end
+
     def target
       if @project.options.test.svvp
         {
@@ -153,6 +164,7 @@ module AutoHCK
 
     def post_start_commands
       (@drivers.flat_map(&:post_start_commands) +
+       @extensions.flat_map(&:post_start_commands) +
         @project.setup_manager.client_post_start_commands).select(&:host_run)
     end
 
@@ -299,7 +311,9 @@ module AutoHCK
     def group_tests_by_config
       grouped_tests = { secure: [] }
 
-      tests_config = @config.tests_config + @drivers.flat_map(&:tests_config)
+      tests_config = @config.tests_config +
+                     @drivers.flat_map(&:tests_config) +
+                     @extensions.flat_map(&:tests_config)
 
       tests_config.each do |test_group|
         selected_tests = @test_list.select { |test| test_group.tests.include?(test.name) }

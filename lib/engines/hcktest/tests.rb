@@ -168,10 +168,14 @@ module AutoHCK
       end
     end
 
-    def select_test_config(test_name, config)
-      tests_config = @project.engine.config.tests_config + @project.engine.drivers.flat_map(&:tests_config)
+    def all_tests_configs
+      @project.engine.config.tests_config +
+        @project.engine.drivers.flat_map(&:tests_config) +
+        @project.engine.extensions.flat_map(&:tests_config)
+    end
 
-      tests_config
+    def select_test_config(test_name, config)
+      all_tests_configs
         .select { |test_config| Regexp.union(test_config.tests.map { Regexp.new(_1) }).match?(test_name) }
         .flat_map(&config)
     end
