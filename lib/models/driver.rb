@@ -27,7 +27,7 @@ module AutoHCK
       const :enlightenments_state, T.nilable(T::Boolean)
 
       const :post_start_commands, T::Array[CommandInfo], default: []
-      const :extra_software, T.nilable(T::Array[String])
+      const :extra_software, T::Array[String], default: []
       const :reject_test_names, T.nilable(T::Array[String])
       const :select_test_names, T.nilable(T::Array[String])
       const :tests_config, T::Array[TestConfig], default: []
