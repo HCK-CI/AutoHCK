@@ -107,7 +107,20 @@ module AutoHCK
                                             force_install_cert: driver.install_cert)
     end
 
+    def insert_driver_replacement(driver, one_driver, replacement)
+      client_replacement = replacement.transform_keys { |k| k.dup.insert(1, "#{driver.short}.") }
+      @replacement_map.merge!(client_replacement)
+
+      # If there is only one driver, we can use generic keys without driver short name.
+      return unless one_driver
+
+      @replacement_map.merge!({ '@driver_short_name@' => driver.short })
+      @replacement_map.merge!(replacement)
+    end
+
     def install_drivers
+      one_driver = @project.engine.drivers.one?
+
       @project.engine.drivers&.each do |driver|
         if driver.install_method == AutoHCK::Models::DriverInstallMethods::NoDrviver
           @project.logger.info("Driver installation skipped for #{driver.name} in #{@name}")
@@ -115,8 +128,7 @@ module AutoHCK
         end
 
         driver_replacement = install_driver(driver)
-        client_replacement = driver_replacement.transform_keys { |k| k.dup.insert(1, "#{driver.short}.") }
-        @replacement_map.merge!(client_replacement)
+        insert_driver_replacement(driver, one_driver, driver_replacement)
       end
 
       @logger.debug("Driver replacement list: #{@replacement_map.dump_string}")

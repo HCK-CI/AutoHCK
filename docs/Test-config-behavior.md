@@ -67,3 +67,5 @@ Guest run command can use the following replacements:
 - `@client_name@` - Client name
 - `@run_number@` - The current run number of a test that is executed multiple times
 - `@<driver_short_name>.driver_dir@` - Path to uploaded driver binary
+- `@driver_short_name@` - Short name of driver (defined only in case of one driver is in test)
+- `@driver_dir@` - Path to uploaded driver binary (defined only in case of one driver is in test)
