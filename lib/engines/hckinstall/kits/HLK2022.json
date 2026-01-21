@@ -4,7 +4,8 @@
   "extra_software": [
     "FOD_2022",
     "Test-NETHLK",
-    "winfsp"
+    "winfsp",
+    "NDIS_Driver_Fix"
   ],
   "studio_platform": "Win2019x64",
   "name": "HLK2022"
