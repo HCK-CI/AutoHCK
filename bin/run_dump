@@ -8,6 +8,6 @@ module AutoHCK
     workspace = File.dirname(ARGV[0])
     chdir = File.dirname(__dir__)
     program = File.join(__dir__, 'run_dump_unshared')
-    QemuHCK::Ns.enter workspace, chdir, program, *ARGV
+    QemuHCK::Ns.enter workspace, chdir, {}, program, *ARGV
   end
 end

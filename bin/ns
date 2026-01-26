@@ -28,6 +28,6 @@ module AutoHCK
       workspace_path = File.absolute_path(workspace_path, chdir)
     end
 
-    QemuHCK::Ns.enter workspace_path, chdir, *argv
+    QemuHCK::Ns.enter workspace_path, chdir, {}, *argv
   end
 end

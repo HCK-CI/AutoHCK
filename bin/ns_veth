@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative '../lib/auto_hck'
+
+module AutoHCK
+  run do
+    require 'English'
+    require 'fileutils'
+
+    side = ARGV[0]
+    case side
+    when 'host'
+      pid = ARGV[1]
+      run_id = ARGV[2]
+      veth_bridge = ARGV[3]
+
+      command = [
+        # *veth* pair for *control* *external* communication bridge
+        # one end (vce_#{run_id}) in host connected to veth_bridge
+        # other in namespace (ctrl_ext_ns) connected to br_ctrl_ext
+        %W[ip link add vce_#{run_id} type veth peer ctrl_ext_ns netns #{pid}],
+        %W[ip link set vce_#{run_id} master #{veth_bridge}],
+        %W[ip link set vce_#{run_id} up]
+      ]
+    when 'ns'
+      command = [
+        # External control bridge for communication with Controller / Studio PCs in lab
+        %w[ip link set ctrl_ext_ns up],
+        %w[ip link add br_ctrl_ext type bridge],
+        %w[ip link set ctrl_ext_ns master br_ctrl_ext],
+        %w[ip link set br_ctrl_ext up]
+      ]
+    else
+      raise "Unknown side: #{side}"
+    end
+
+    command.each do |cmd|
+      $stderr.write "[ns_veth #{side}] Running (wait spawn): #{cmd.join(' ')}\n"
+      Process.wait spawn(*cmd, out: :err)
+      raise $CHILD_STATUS.to_s unless $CHILD_STATUS.success?
+    rescue StandardError
+      raise "#{cmd}: command failed"
+    end
+  end
+end

@@ -22,7 +22,7 @@ module AutoHCK
     # class CommonOptions
     class CommonOptions
       attr_accessor :verbose, :config, :client_world_net, :id, :share_on_host_path, :workspace_path,
-                    :client_ctrl_net_dev, :attach_debug_net
+                    :client_ctrl_net_dev, :attach_debug_net, :control_bridge_external
 
       def create_parser(sub_parser)
         OptionParser.new do |parser|
@@ -47,6 +47,7 @@ module AutoHCK
         @id = 2
         @share_on_host_path = nil
         @attach_debug_net = false
+        @control_bridge_external = nil
 
         parser.on('--share-on-host-path <path>', String,
                   'For using Transfer Network specify the directory to share on host machine') do |share_on_host_path|
@@ -82,6 +83,13 @@ module AutoHCK
           puts "AutoHCK Version: #{AutoHCK::VERSION}"
           exit
         end
+
+        parser.on('--control-bridge-external <control-bridge-external>', String,
+                  'External control bridge name.',
+                  'This bridge will be used to connect clients VM to ',
+                  'external Controller / Studio PC network.',
+                  'This is part of dedicated studio feature. (experimental)',
+                  &method(:control_bridge_external=))
 
         parser.on('-w <path>', String,
                   'Internal use only',

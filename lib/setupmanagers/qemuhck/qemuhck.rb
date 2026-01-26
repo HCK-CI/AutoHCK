@@ -200,9 +200,13 @@ module AutoHCK
       HCKClient.new(self, scope, studio, name, run_opts)
     end
 
-    def self.enter(workspace_path, _options)
+    def self.enter(workspace_path, options)
       $stderr.write "[qemuhck.rb] Entering namespace: #{workspace_path}\n"
-      Ns.enter workspace_path, Dir.pwd, 'bin/auto_hck', '-w',
+      config = {
+        'control_bridge_external' => options.common.control_bridge_external,
+        'run_id' => options.common.id
+      }
+      Ns.enter workspace_path, Dir.pwd, config, 'bin/auto_hck', '-w',
                workspace_path, *ARGV
     end
   end
