@@ -87,6 +87,7 @@ module AutoHCK
 
     def client_vm_common_options
       common = @project.options.common
+      test_opt = @project.options.test
       {
         'id' => @id.to_i,
         'workspace_path' => @workspace_path,
@@ -96,8 +97,9 @@ module AutoHCK
         'client_world_net' => common.client_world_net,
         'attach_debug_net' => common.attach_debug_net,
         'share_on_host_path' => common.share_on_host_path,
-        'boot_device' => @project.options.test.boot_device,
-        'fs_test_image_format' => @project.options.test.fs_test_image_format,
+        'boot_device' => test_opt.boot_device,
+        'fs_test_image_format' => test_opt.fs_test_image_format,
+        'net_test_speed' => test_opt.net_test_speed,
         'ctrl_net_device' => common.client_ctrl_net_dev
       }.compact
     end
