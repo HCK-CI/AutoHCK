@@ -96,7 +96,7 @@ module AutoHCK
                     :commit, :svvp, :dump, :gthb_context_prefix, :gthb_context_suffix, :playlist,
                     :select_test_names, :reject_test_names, :reject_report_sections, :boot_device,
                     :allow_test_duplication, :manual, :package_with_playlist, :enable_vbs, :tag_suffix,
-                    :fs_test_image_format, :extensions
+                    :fs_test_image_format, :extensions, :net_test_speed
 
       def create_parser
         OptionParser.new do |parser|
@@ -218,6 +218,11 @@ module AutoHCK
         parser.on('--extensions <extensions_list>', Array,
                   'List of extensions for run test',
                   &method(:extensions=))
+
+        parser.on('--net-test-speed <net_test_speed>', Integer,
+                  'Network test speed (in Mbps). Default is 10000.',
+                  'Has effect only when testing virtio-net-pci network device.',
+                  &method(:net_test_speed=))
       end
       # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
     end

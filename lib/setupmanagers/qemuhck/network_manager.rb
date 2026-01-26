@@ -9,13 +9,16 @@ module AutoHCK
       include Helper
 
       CONFIG_JSON = 'lib/setupmanagers/qemuhck/network_manager.json'
+      DEFAULT_NET_SPEED = 10_000 # 10G
 
-      def initialize(id, client_id, machine, logger)
+      def initialize(id, client_id, machine, qemu_options, logger)
         @id = id
         @client_id = client_id
         @machine = machine
         @logger = logger
         @dev_id = 0
+
+        @net_test_speed = qemu_options['net_test_speed'] || DEFAULT_NET_SPEED
 
         @config = Json.read_json(CONFIG_JSON, @logger)
       end
@@ -67,6 +70,11 @@ module AutoHCK
         @dev_id += 1
 
         type_config = @config['devices'][type]
+        command_options['@speed@'] = if type == 'test'
+                                       @net_test_speed
+                                     else
+                                       DEFAULT_NET_SPEED
+                                     end
 
         replacement_map = device_replacement_map(type, device, type_config, dev_pci, qemu_replacement_map)
         replacement_map.merge! command_options
