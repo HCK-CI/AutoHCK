@@ -173,7 +173,7 @@ module AutoHCK
       init_ports
 
       @pcim = PciManager.new(@logger)
-      @nm = NetworkManager.new(@id, @client_id, @machine, @logger)
+      @nm = NetworkManager.new(@id, @client_id, @machine, @options, @logger)
       @sm = StorageManager.new(@id, @client_id, @config, @options, @logger)
 
       @devices_list.flatten!
