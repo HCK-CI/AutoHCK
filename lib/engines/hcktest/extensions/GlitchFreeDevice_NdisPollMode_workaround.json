@@ -1,0 +1,24 @@
+{
+  "comments": [
+    "Workaround for NDISTest 6.5 GlitchFreeDevice test incompatibility with NDIS Poll Mode"
+  ],
+  "tests_config": [
+    {
+      "tests": [
+        "NDISTest 6.5 - \\[2 Machine\\] - GlitchFreeDevice"
+      ],
+      "pre_test_commands": [
+        {
+          "desc": "Disable Poll Mode for NetKVM driver to work around GlitchFreeDevice test issues",
+          "guest_run": "Set-NetAdapterAdvancedProperty -Name SupportDevice0 -DisplayName 'Ndis Poll Mode' -RegistryValue 0"
+        }
+      ],
+      "post_test_commands": [
+        {
+          "desc": "Re-enable Poll Mode for NetKVM driver after test completion",
+          "guest_run": "Set-NetAdapterAdvancedProperty -Name SupportDevice0 -DisplayName 'Ndis Poll Mode' -RegistryValue 1"
+        }
+      ]
+    }
+  ]
+}
