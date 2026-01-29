@@ -144,7 +144,7 @@ module Concurrent
     # @return [Float] The current monotonic time since some unspecified
     #   starting point
     #
-    # source://concurrent-ruby//lib/concurrent-ruby/concurrent/utility/monotonic_time.rb#15
+    # source://concurrent-ruby//lib/concurrent-ruby/concurrent/utility/monotonic_time.rb#18
     def monotonic_time(unit = T.unsafe(nil)); end
 
     # source://concurrent-ruby//lib/concurrent-ruby/concurrent/configuration.rb#87
@@ -164,10 +164,10 @@ module Concurrent
     # work or an exception is raised the function will simply return 1.
     #
     # @return [Integer] number physical processor cores on the current system
-    # @see https://github.com/grosser/parallel/blob/4fc8b89d08c7091fe0419ca8fba1ec3ce5a8d185/lib/parallel.rb
+    # @see http://linux.die.net/man/8/sysctl
     # @see http://msdn.microsoft.com/en-us/library/aa394373(v=vs.85).aspx
     # @see http://www.unix.com/man-page/osx/1/HWPREFS/
-    # @see http://linux.die.net/man/8/sysctl
+    # @see https://github.com/grosser/parallel/blob/4fc8b89d08c7091fe0419ca8fba1ec3ce5a8d185/lib/parallel.rb
     #
     # source://concurrent-ruby//lib/concurrent-ruby/concurrent/utility/processor_counter.rb#181
     def physical_processor_count; end
@@ -334,8 +334,8 @@ module Concurrent::AtomicNumericCompareAndSetWrapper
   #
   # that the actual value was not equal to the expected value.
   #
-  # @param old_value [Object] the expected value
   # @param new_value [Object] the new value
+  # @param old_value [Object] the expected value
   # @return [Boolean] `true` if successful. A `false` return indicates
   #
   # source://concurrent-ruby//lib/concurrent-ruby/concurrent/atomic_reference/numeric_cas_wrapper.rb#10
@@ -385,7 +385,7 @@ end
 class Concurrent::AtomicReference < ::Concurrent::MutexAtomicReference
   # @return [String] Short string representation.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/atomic/atomic_reference.rb#129
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/atomic/atomic_reference.rb#133
   def inspect; end
 
   # @return [String] Short string representation.
@@ -448,7 +448,7 @@ end
 # source://concurrent-ruby//lib/concurrent-ruby/concurrent/errors.rb#9
 class Concurrent::CancelledOperationError < ::Concurrent::Error; end
 
-# source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/copy_on_write_observer_set.rb#4
+# source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#7
 module Concurrent::Collection; end
 
 # A thread safe observer set implemented using copy-on-read approach:
@@ -613,6 +613,132 @@ class Concurrent::Collection::CopyOnWriteObserverSet < ::Concurrent::Synchroniza
   def observers=(new_set); end
 end
 
+# source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#10
+Concurrent::Collection::MapImplementation = Concurrent::Collection::MriMapBackend
+
+# source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/mri_map_backend.rb#10
+class Concurrent::Collection::MriMapBackend < ::Concurrent::Collection::NonConcurrentMapBackend
+  # @return [MriMapBackend] a new instance of MriMapBackend
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/mri_map_backend.rb#12
+  def initialize(options = T.unsafe(nil), &default_proc); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/mri_map_backend.rb#17
+  def []=(key, value); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/mri_map_backend.rb#61
+  def clear; end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/mri_map_backend.rb#33
+  def compute(key); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/mri_map_backend.rb#21
+  def compute_if_absent(key); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/mri_map_backend.rb#29
+  def compute_if_present(key); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/mri_map_backend.rb#53
+  def delete(key); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/mri_map_backend.rb#57
+  def delete_pair(key, value); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/mri_map_backend.rb#49
+  def get_and_set(key, value); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/mri_map_backend.rb#37
+  def merge_pair(key, value); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/mri_map_backend.rb#45
+  def replace_if_exists(key, new_value); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/mri_map_backend.rb#41
+  def replace_pair(key, old_value, new_value); end
+end
+
+# source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#9
+class Concurrent::Collection::NonConcurrentMapBackend
+  # WARNING: all public methods of the class must operate on the @backend
+  # directly without calling each other. This is important because of the
+  # SynchronizedMapBackend which uses a non-reentrant mutex for performance
+  # reasons.
+  #
+  # @return [NonConcurrentMapBackend] a new instance of NonConcurrentMapBackend
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#15
+  def initialize(options = T.unsafe(nil), &default_proc); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#21
+  def [](key); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#25
+  def []=(key, value); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#94
+  def clear; end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#59
+  def compute(key); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#29
+  def compute_if_absent(key); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#53
+  def compute_if_present(key); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#81
+  def delete(key); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#85
+  def delete_pair(key, value); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#99
+  def each_pair; end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#71
+  def get_and_set(key, value); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#110
+  def get_or_default(key, default_value); end
+
+  # @return [Boolean]
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#77
+  def key?(key); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#63
+  def merge_pair(key, value); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#46
+  def replace_if_exists(key, new_value); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#37
+  def replace_pair(key, old_value, new_value); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#106
+  def size; end
+
+  private
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#130
+  def dupped_backend; end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#124
+  def initialize_copy(other); end
+
+  # @return [Boolean]
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#134
+  def pair?(key, expected_value); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#116
+  def set_backend(default_proc); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/map/non_concurrent_map_backend.rb#138
+  def store_computed_value(key, new_value); end
+end
+
 # A queue collection in which the elements are sorted based on their
 # comparison (spaceship) operator `<=>`. Items are added to the queue
 # at a position relative to their priority. On removal the element
@@ -633,30 +759,30 @@ end
 # When running under all other interpreters it extends `RubyNonConcurrentPriorityQueue`.
 #
 # @note This implementation is *not* thread safe.
+# @see http://algs4.cs.princeton.edu/24pq/MaxPQ.java.html
+# @see http://algs4.cs.princeton.edu/24pq/index.php#2.6
+# @see http://docs.oracle.com/javase/7/docs/api/java/util/PriorityQueue.html
 # @see http://en.wikipedia.org/wiki/Priority_queue
 # @see http://ruby-doc.org/stdlib-2.0.0/libdoc/thread/rdoc/Queue.html
-# @see http://algs4.cs.princeton.edu/24pq/index.php#2.6
-# @see http://algs4.cs.princeton.edu/24pq/MaxPQ.java.html
-# @see http://docs.oracle.com/javase/7/docs/api/java/util/PriorityQueue.html
 #
 # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/non_concurrent_priority_queue.rb#50
 class Concurrent::Collection::NonConcurrentPriorityQueue < ::Concurrent::Collection::RubyNonConcurrentPriorityQueue
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/ruby_non_concurrent_priority_queue.rb#78
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/non_concurrent_priority_queue.rb#59
   def <<(item); end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/ruby_non_concurrent_priority_queue.rb#65
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/non_concurrent_priority_queue.rb#56
   def deq; end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/ruby_non_concurrent_priority_queue.rb#78
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/non_concurrent_priority_queue.rb#60
   def enq(item); end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/ruby_non_concurrent_priority_queue.rb#48
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/non_concurrent_priority_queue.rb#52
   def has_priority?(item); end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/ruby_non_concurrent_priority_queue.rb#65
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/non_concurrent_priority_queue.rb#57
   def shift; end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/ruby_non_concurrent_priority_queue.rb#54
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/non_concurrent_priority_queue.rb#54
   def size; end
 end
 
@@ -683,11 +809,11 @@ Concurrent::Collection::NonConcurrentPriorityQueueImplementation = Concurrent::C
 # When running under all other interpreters it extends `RubyNonConcurrentPriorityQueue`.
 #
 # @note This implementation is *not* thread safe.
+# @see http://algs4.cs.princeton.edu/24pq/MaxPQ.java.html
+# @see http://algs4.cs.princeton.edu/24pq/index.php#2.6
+# @see http://docs.oracle.com/javase/7/docs/api/java/util/PriorityQueue.html
 # @see http://en.wikipedia.org/wiki/Priority_queue
 # @see http://ruby-doc.org/stdlib-2.0.0/libdoc/thread/rdoc/Queue.html
-# @see http://algs4.cs.princeton.edu/24pq/index.php#2.6
-# @see http://algs4.cs.princeton.edu/24pq/MaxPQ.java.html
-# @see http://docs.oracle.com/javase/7/docs/api/java/util/PriorityQueue.html
 #
 # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/ruby_non_concurrent_priority_queue.rb#8
 class Concurrent::Collection::RubyNonConcurrentPriorityQueue
@@ -705,7 +831,7 @@ class Concurrent::Collection::RubyNonConcurrentPriorityQueue
   # @param item [Object] the item to insert onto the queue
   # @raise [ArgumentError]
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/ruby_non_concurrent_priority_queue.rb#78
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/ruby_non_concurrent_priority_queue.rb#85
   def <<(item); end
 
   # Removes all of the elements from this priority queue.
@@ -726,7 +852,7 @@ class Concurrent::Collection::RubyNonConcurrentPriorityQueue
   #
   # @return [Object] the head of the queue or `nil` when empty
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/ruby_non_concurrent_priority_queue.rb#65
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/ruby_non_concurrent_priority_queue.rb#74
   def deq; end
 
   # Returns `true` if `self` contains no elements.
@@ -741,7 +867,7 @@ class Concurrent::Collection::RubyNonConcurrentPriorityQueue
   # @param item [Object] the item to insert onto the queue
   # @raise [ArgumentError]
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/ruby_non_concurrent_priority_queue.rb#78
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/ruby_non_concurrent_priority_queue.rb#86
   def enq(item); end
 
   # Returns `true` if the given item is present in `self` (that is, if any
@@ -750,7 +876,7 @@ class Concurrent::Collection::RubyNonConcurrentPriorityQueue
   # @param item [Object] the item to search for
   # @return [Boolean] true if the item is found else false
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/ruby_non_concurrent_priority_queue.rb#48
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/ruby_non_concurrent_priority_queue.rb#51
   def has_priority?(item); end
 
   # Returns `true` if the given item is present in `self` (that is, if any
@@ -798,14 +924,14 @@ class Concurrent::Collection::RubyNonConcurrentPriorityQueue
   #
   # @return [Object] the head of the queue or `nil` when empty
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/ruby_non_concurrent_priority_queue.rb#65
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/ruby_non_concurrent_priority_queue.rb#75
   def shift; end
 
   # The current length of the queue.
   #
   # @return [Fixnum] the number of items in the queue
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/ruby_non_concurrent_priority_queue.rb#54
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/ruby_non_concurrent_priority_queue.rb#57
   def size; end
 
   private
@@ -851,6 +977,12 @@ class Concurrent::Collection::RubyNonConcurrentPriorityQueue
   end
 end
 
+# source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/timeout_queue.rb#15
+class Concurrent::Collection::TimeoutQueue < ::Thread::Queue; end
+
+# source://concurrent-ruby//lib/concurrent-ruby/concurrent/collection/timeout_queue.rb#5
+Concurrent::Collection::TimeoutQueueImplementation = Thread::Queue
+
 # source://concurrent-ruby//lib/concurrent-ruby/concurrent/concern/dereferenceable.rb#2
 module Concurrent::Concern; end
 
@@ -880,7 +1012,7 @@ module Concurrent::Concern::Dereferenceable
   #
   # @return [Object] the current value of the object
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/concern/dereferenceable.rb#21
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/concern/dereferenceable.rb#24
   def deref; end
 
   # Return the value this object represents after applying the options specified
@@ -939,8 +1071,8 @@ module Concurrent::Concern::Logging
   # Logs through {Concurrent.global_logger}, it can be overridden by setting @logger
   #
   # @param level [Integer] one of Concurrent::Concern::Logging constants
-  # @param progname [String] e.g. a path of an Actor
   # @param message [String, nil] when nil block is used to generate the message
+  # @param progname [String] e.g. a path of an Actor
   # @yieldreturn [String] a message
   #
   # source://concurrent-ruby//lib/concurrent-ruby/concurrent/concern/logging.rb#19
@@ -1008,7 +1140,7 @@ module Concurrent::Concern::Obligation
   # @raise [Exception] raises the reason when rejected
   # @return [Obligation] self
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/concern/obligation.rb#86
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/concern/obligation.rb#89
   def no_error!(timeout = T.unsafe(nil)); end
 
   # Is obligation completion still pending?
@@ -1022,7 +1154,7 @@ module Concurrent::Concern::Obligation
   #
   # @return [Boolean]
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/concern/obligation.rb#20
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/concern/obligation.rb#23
   def realized?; end
 
   # If an exception was raised during processing this will return the
@@ -1099,8 +1231,8 @@ module Concurrent::Concern::Obligation
   # Atomic compare and set operation
   # State is set to `next_state` only if `current state == expected_current`.
   #
-  # @param next_state [Symbol]
   # @param expected_current [Symbol]
+  # @param next_state [Symbol]
   # @return [Boolean] true is state is changed, false otherwise
   #
   # source://concurrent-ruby//lib/concurrent-ruby/concurrent/concern/obligation.rb#174
@@ -1189,9 +1321,9 @@ module Concurrent::Concern::Observable
   # Adds an observer to this set. If a block is passed, the observer will be
   # created by this method and no other params should be passed.
   #
-  # @param observer [Object] the observer to add
   # @param func [Symbol] the function to call on the observer during notification.
   #   Default is :update
+  # @param observer [Object] the observer to add
   # @return [Object] the added observer
   #
   # source://concurrent-ruby//lib/concurrent-ruby/concurrent/concern/observable.rb#61
@@ -1222,8 +1354,8 @@ module Concurrent::Concern::Observable
 
   # As `#add_observer` but can be used for chaining.
   #
-  # @param observer [Object] the observer to add
   # @param func [Symbol] the function to call on the observer during notification.
+  # @param observer [Object] the observer to add
   # @return [Observable] self
   #
   # source://concurrent-ruby//lib/concurrent-ruby/concurrent/concern/observable.rb#70
@@ -1557,12 +1689,12 @@ end
 #
 # @note Failure to properly shutdown a thread pool can lead to unpredictable results.
 #   Please read *Shutting Down Thread Pools* for more information.
-# @see http://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html Java Tutorials: Thread Pools
 # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html Java Executors class
 # @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html Java ExecutorService interface
+# @see http://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html Java Tutorials: Thread Pools
 # @see https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html#setDaemon-boolean-
 #
-# source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/fixed_thread_pool.rb#201
+# source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/fixed_thread_pool.rb#199
 class Concurrent::FixedThreadPool < ::Concurrent::ThreadPoolExecutor
   # Create a new thread pool.
   #
@@ -1574,7 +1706,7 @@ class Concurrent::FixedThreadPool < ::Concurrent::ThreadPoolExecutor
   # @return [FixedThreadPool] a new instance of FixedThreadPool
   # @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Executors.html#newFixedThreadPool-int-
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/fixed_thread_pool.rb#215
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/fixed_thread_pool.rb#213
   def initialize(num_threads, opts = T.unsafe(nil)); end
 end
 
@@ -1642,8 +1774,8 @@ class Concurrent::IVar < ::Concurrent::Synchronization::LockableObject
   # @option opts
   # @option opts
   # @option opts
-  # @param value [Object] the initial value
   # @param opts [Hash] the options to create a message with
+  # @param value [Object] the initial value
   # @return [IVar] a new instance of IVar
   #
   # source://concurrent-ruby//lib/concurrent-ruby/concurrent/ivar.rb#62
@@ -1657,9 +1789,9 @@ class Concurrent::IVar < ::Concurrent::Synchronization::LockableObject
   # final `value` (or `nil` on rejection), and the final `reason` (or `nil` on
   # fulfillment).
   #
-  # @param observer [Object] the object that will be notified of changes
   # @param func [Symbol] symbol naming the method to call when this
   #   `Observable` has changes`
+  # @param observer [Object] the object that will be notified of changes
   # @raise [ArgumentError]
   #
   # source://concurrent-ruby//lib/concurrent-ruby/concurrent/ivar.rb#81
@@ -1766,7 +1898,7 @@ class Concurrent::ImmediateExecutor < ::Concurrent::AbstractExecutorService
   # but no new tasks will be accepted. Has no additional effect if the
   # thread pool is not running.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/immediate_executor.rb#55
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/immediate_executor.rb#59
   def kill; end
 
   # Submit a task to the executor for asynchronous processing.
@@ -1837,6 +1969,193 @@ class Concurrent::InitializationError < ::Concurrent::Error; end
 # source://concurrent-ruby//lib/concurrent-ruby/concurrent/errors.rb#13
 class Concurrent::LifecycleError < ::Concurrent::Error; end
 
+# `Concurrent::Map` is a hash-like object and should have much better performance
+# characteristics, especially under high concurrency, than `Concurrent::Hash`.
+# However, `Concurrent::Map `is not strictly semantically equivalent to a ruby `Hash`
+# -- for instance, it does not necessarily retain ordering by insertion time as `Hash`
+# does. For most uses it should do fine though, and we recommend you consider
+# `Concurrent::Map` instead of `Concurrent::Hash` for your concurrency-safe hash needs.
+#
+# source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#39
+class Concurrent::Map < ::Concurrent::Collection::MriMapBackend
+  # Iterates over each key value pair.
+  # This method is atomic.
+  #
+  # @note Atomic methods taking a block do not allow the `self` instance
+  #   to be used within the block. Doing so will cause a deadlock.
+  # @return [self]
+  # @yield for each key value pair in the map
+  # @yieldparam key [Object]
+  # @yieldparam value [Object]
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#279
+  def each; end
+
+  # Iterates over each key.
+  # This method is atomic.
+  #
+  # @note Atomic methods taking a block do not allow the `self` instance
+  #   to be used within the block. Doing so will cause a deadlock.
+  # @return [self]
+  # @yield for each key in the map
+  # @yieldparam key [Object]
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#255
+  def each_key; end
+
+  # Iterates over each key value pair.
+  # This method is atomic.
+  #
+  # @note Atomic methods taking a block do not allow the `self` instance
+  #   to be used within the block. Doing so will cause a deadlock.
+  # @return [self]
+  # @yield for each key value pair in the map
+  # @yieldparam key [Object]
+  # @yieldparam value [Object]
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#274
+  def each_pair; end
+
+  # Iterates over each value.
+  # This method is atomic.
+  #
+  # @note Atomic methods taking a block do not allow the `self` instance
+  #   to be used within the block. Doing so will cause a deadlock.
+  # @return [self]
+  # @yield for each value in the map
+  # @yieldparam value [Object]
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#264
+  def each_value; end
+
+  # Is map empty?
+  #
+  # @return [true, false]
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#291
+  def empty?; end
+
+  # Get a value with key, or default_value when key is absent,
+  # or fail when no default_value is given.
+  #
+  # @note The "fetch-then-act" methods of `Map` are not atomic. `Map` is intended
+  #   to be use as a concurrency primitive with strong happens-before
+  #   guarantees. It is not intended to be used as a high-level abstraction
+  #   supporting complex operations. All read and write operations are
+  #   thread safe, but no guarantees are made regarding race conditions
+  #   between the fetch operation and yielding to the block. Additionally,
+  #   this method does not support recursion. This is due to internal
+  #   constraints that are very unlikely to change in the near future.
+  # @param default_value [Object]
+  # @param key [Object]
+  # @raise [KeyError] when key is missing and no default_value is provided
+  # @return [Object] the value or default value
+  # @yield default value for a key
+  # @yieldparam key [Object]
+  # @yieldreturn [Object] default value
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#183
+  def fetch(key, default_value = T.unsafe(nil)); end
+
+  # Fetch value with key, or store default value when key is absent,
+  # or fail when no default_value is given. This is a two step operation,
+  # therefore not atomic. The store can overwrite other concurrently
+  # stored value.
+  #
+  # @param default_value [Object]
+  # @param key [Object]
+  # @return [Object] the value or default value
+  # @yield default value for a key
+  # @yieldparam key [Object]
+  # @yieldreturn [Object] default value
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#205
+  def fetch_or_store(key, default_value = T.unsafe(nil)); end
+
+  # Get a value with key
+  #
+  # @param key [Object]
+  # @return [Object] the value
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#162
+  def get(key); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#321
+  def inspect; end
+
+  # Find key of a value.
+  #
+  # @param value [Object]
+  # @return [Object, nil] key or nil when not found
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#284
+  def key(value); end
+
+  # All keys
+  #
+  # @return [::Array<Object>] keys
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#236
+  def keys; end
+
+  # @raise [TypeError]
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#305
+  def marshal_dump; end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#313
+  def marshal_load(hash); end
+
+  # Set a value with key
+  #
+  # @param key [Object]
+  # @param value [Object]
+  # @return [Object] the new value
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#163
+  def put(key, value); end
+
+  # Insert value into map with key if key is absent in one atomic step.
+  #
+  # @param key [Object]
+  # @param value [Object]
+  # @return [Object, nil] the previous value when key was present or nil when there was no key
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#215
+  def put_if_absent(key, value); end
+
+  # Is the value stored in the map. Iterates over all values.
+  #
+  # @param value [Object]
+  # @return [true, false]
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#227
+  def value?(value); end
+
+  # All values
+  #
+  # @return [::Array<Object>] values
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#244
+  def values; end
+
+  private
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#331
+  def initialize_copy(other); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#336
+  def populate_from(hash); end
+
+  # @raise [KeyError]
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#327
+  def raise_fetch_no_key; end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/map.rb#341
+  def validate_options_hash!(options); end
+end
+
 # Raised when an object with a start/stop lifecycle has been started an
 # excessive number of times. Often used in conjunction with a restart
 # policy or strategy.
@@ -1895,14 +2214,14 @@ class Concurrent::MutexAtomicReference
   #
   # that the actual value was not equal to the expected value.
   #
-  # @param old_value [Object] the expected value
   # @param new_value [Object] the new value
+  # @param old_value [Object] the expected value
   # @return [Boolean] `true` if successful. A `false` return indicates
   #
   # source://concurrent-ruby//lib/concurrent-ruby/concurrent/atomic_reference/mutex_atomic.rb#45
   def _compare_and_set(old_value, new_value); end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/atomic_reference/numeric_cas_wrapper.rb#10
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/atomic_reference/mutex_atomic.rb#13
   def compare_and_swap(old_value, new_value); end
 
   # Gets the current value.
@@ -1933,14 +2252,14 @@ class Concurrent::MutexAtomicReference
   # @param new_value [Object] the new value
   # @return [Object] the old value
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/atomic_reference/mutex_atomic.rb#35
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/atomic_reference/mutex_atomic.rb#42
   def swap(new_value); end
 
   # Gets the current value.
   #
   # @return [Object] the current value
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/atomic_reference/mutex_atomic.rb#23
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/atomic_reference/mutex_atomic.rb#26
   def value; end
 
   # Sets to the given value.
@@ -1948,7 +2267,7 @@ class Concurrent::MutexAtomicReference
   # @param new_value [Object] the new value
   # @return [Object] the new value
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/atomic_reference/mutex_atomic.rb#29
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/atomic_reference/mutex_atomic.rb#32
   def value=(new_value); end
 
   protected
@@ -2068,11 +2387,13 @@ class Concurrent::RubyExecutorService < ::Concurrent::AbstractExecutorService
   def stopped_event; end
 end
 
-# source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_single_thread_executor.rb#8
+# source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_single_thread_executor.rb#9
 class Concurrent::RubySingleThreadExecutor < ::Concurrent::RubyThreadPoolExecutor
+  include ::Concurrent::SerialExecutorService
+
   # @return [RubySingleThreadExecutor] a new instance of RubySingleThreadExecutor
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_single_thread_executor.rb#11
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_single_thread_executor.rb#13
   def initialize(opts = T.unsafe(nil)); end
 end
 
@@ -2122,65 +2443,65 @@ end
 #
 # @note Failure to properly shutdown a thread pool can lead to unpredictable results.
 #   Please read *Shutting Down Thread Pools* for more information.
-# @see http://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html Java Tutorials: Thread Pools
 # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html Java Executors class
 # @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html Java ExecutorService interface
+# @see http://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html Java Tutorials: Thread Pools
 # @see https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html#setDaemon-boolean-
 #
-# source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#12
+# source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#13
 class Concurrent::RubyThreadPoolExecutor < ::Concurrent::RubyExecutorService
   # @return [RubyThreadPoolExecutor] a new instance of RubyThreadPoolExecutor
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#45
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#47
   def initialize(opts = T.unsafe(nil)); end
 
   # The number of threads that are actively executing tasks.
   #
   # @return [Integer] The number of threads that are actively executing tasks.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#65
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#67
   def active_count; end
 
   # Does the task queue have a maximum size?
   #
   # @return [Boolean] True if the task queue has a maximum size else false.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#72
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#74
   def can_overflow?; end
 
   # The number of tasks that have been completed by the pool since construction.
   #
   # @return [Integer] The number of tasks that have been completed by the pool since construction.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#60
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#62
   def completed_task_count; end
 
   # The number of seconds that a thread may be idle before being reclaimed.
   #
   # @return [Integer] The number of seconds that a thread may be idle before being reclaimed.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#36
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#38
   def idletime; end
 
   # The largest number of threads that have been created in the pool since construction.
   #
   # @return [Integer] The largest number of threads that have been created in the pool since construction.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#50
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#52
   def largest_length; end
 
   # The number of threads currently in the pool.
   #
   # @return [Integer] The number of threads currently in the pool.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#77
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#79
   def length; end
 
   # The maximum number of threads that may be created in the pool.
   #
   # @return [Integer] The maximum number of threads that may be created in the pool.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#30
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#32
   def max_length; end
 
   # The maximum number of tasks that may be waiting in the work queue at any one time.
@@ -2191,14 +2512,14 @@ class Concurrent::RubyThreadPoolExecutor < ::Concurrent::RubyExecutorService
   #   When the queue size reaches `max_queue` subsequent tasks will be rejected in
   #   accordance with the configured `fallback_policy`.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#39
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#41
   def max_queue; end
 
   # The minimum number of threads that may be retained in the pool.
   #
   # @return [Integer] The minimum number of threads that may be retained in the pool.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#33
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#35
   def min_length; end
 
   # Prune the thread pool of unneeded threads
@@ -2206,22 +2527,27 @@ class Concurrent::RubyThreadPoolExecutor < ::Concurrent::RubyExecutorService
   # What is being pruned is controlled by the min_threads and idletime
   # parameters passed at pool creation time
   #
-  # This is a no-op on some pool implementation (e.g. the Java one).  The Ruby
-  # pool will auto-prune each time a new job is posted. You will need to call
-  # this method explicitly in case your application post jobs in bursts (a
-  # lot of jobs and then nothing for long periods)
+  # This is a no-op on all pool implementations as they prune themselves
+  # automatically, and has been deprecated.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#118
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#139
   def prune_pool; end
+
+  # removes the worker if it can be pruned
+  #
+  # @return [true, false] if the worker was pruned
+  #
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#104
+  def prune_worker(worker); end
 
   # The number of tasks in the queue awaiting execution.
   #
   # @return [Integer] The number of tasks in the queue awaiting execution.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#82
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#84
   def queue_length; end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#103
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#124
   def ready_worker(worker, last_message); end
 
   # Number of tasks that may be enqueued before reaching `max_queue` and rejecting
@@ -2230,30 +2556,30 @@ class Concurrent::RubyThreadPoolExecutor < ::Concurrent::RubyExecutorService
   # @return [Integer] Number of tasks that may be enqueued before reaching `max_queue` and rejecting
   #   new tasks. A value of -1 indicates that the queue may grow without bound.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#87
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#89
   def remaining_capacity; end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#98
-  def remove_busy_worker(worker); end
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#116
+  def remove_worker(worker); end
 
   # The number of tasks that have been scheduled for execution on the pool since construction.
   #
   # @return [Integer] The number of tasks that have been scheduled for execution on the pool since construction.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#55
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#57
   def scheduled_task_count; end
 
   # Whether or not a value of 0 for :max_queue option means the queue must perform direct hand-off or rather unbounded queue.
   #
   # @return [true, false]
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#42
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#44
   def synchronous; end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#108
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#129
   def worker_died(worker); end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#113
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#134
   def worker_task_completed; end
 
   private
@@ -2262,114 +2588,118 @@ class Concurrent::RubyThreadPoolExecutor < ::Concurrent::RubyExecutorService
   #
   # @return [nil, Worker] nil of max capacity is reached
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#241
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#257
   def ns_add_busy_worker; end
 
   # tries to assign task to a worker, tries to get one from @ready or to create new one
   #
   # @return [true, false] if task is assigned to a worker
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#201
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#217
   def ns_assign_worker(*args, &task); end
 
   # tries to enqueue task
   #
   # @return [true, false] if enqueued
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#219
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#235
   def ns_enqueue(*args, &task); end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#160
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#178
   def ns_execute(*args, &task); end
 
   # @raise [ArgumentError]
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#125
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#146
   def ns_initialize(opts); end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#189
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#205
   def ns_kill_execution; end
 
   # @return [Boolean]
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#155
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#173
   def ns_limited_queue?; end
 
-  # try oldest worker if it is idle for enough time, it's returned back at the start
+  # @return [Integer] number of excess idle workers which can be removed without
+  #   going below min_length, or all workers if not running
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#280
-  def ns_prune_pool; end
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#305
+  def ns_prunable_capacity; end
 
   # handle ready worker, giving it new job or assigning back to @ready
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#253
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#269
   def ns_ready_worker(worker, last_message, success = T.unsafe(nil)); end
 
-  # removes a worker which is not in not tracked in @ready
+  # removes a worker which is not tracked in @ready
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#271
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#287
   def ns_remove_busy_worker(worker); end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#296
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#294
+  def ns_remove_ready_worker(worker); end
+
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#314
   def ns_reset_if_forked; end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#174
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#190
   def ns_shutdown_execution; end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#231
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#247
   def ns_worker_died(worker); end
 end
 
 # Default maximum number of threads that will be created in the pool.
 #
-# source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#15
+# source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#17
 Concurrent::RubyThreadPoolExecutor::DEFAULT_MAX_POOL_SIZE = T.let(T.unsafe(nil), Integer)
 
 # Default maximum number of tasks that may be added to the task queue.
 #
-# source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#21
+# source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#23
 Concurrent::RubyThreadPoolExecutor::DEFAULT_MAX_QUEUE_SIZE = T.let(T.unsafe(nil), Integer)
 
 # Default minimum number of threads that will be retained in the pool.
 #
-# source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#18
+# source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#20
 Concurrent::RubyThreadPoolExecutor::DEFAULT_MIN_POOL_SIZE = T.let(T.unsafe(nil), Integer)
 
 # Default value of the :synchronous option.
 #
-# source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#27
+# source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#29
 Concurrent::RubyThreadPoolExecutor::DEFAULT_SYNCHRONOUS = T.let(T.unsafe(nil), FalseClass)
 
 # Default maximum number of seconds a thread in the pool may remain idle
 # before being reclaimed.
 #
-# source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#24
+# source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#26
 Concurrent::RubyThreadPoolExecutor::DEFAULT_THREAD_IDLETIMEOUT = T.let(T.unsafe(nil), Integer)
 
-# source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#310
+# source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#328
 class Concurrent::RubyThreadPoolExecutor::Worker
   include ::Concurrent::Concern::Logging
 
   # @return [Worker] a new instance of Worker
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#313
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#331
   def initialize(pool, id); end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#324
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#342
   def <<(message); end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#332
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#350
   def kill; end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#328
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#346
   def stop; end
 
   private
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#338
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#356
   def create_worker(queue, pool, idletime); end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#358
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/ruby_thread_pool_executor.rb#381
   def run_task(pool, task, args); end
 end
 
@@ -2474,6 +2804,27 @@ end
 #   price.state #=> :fulfilled
 #   price.fulfilled? #=> true
 #   price.value #=> 63.65
+# @example Failed task execution
+#
+#   task = Concurrent::ScheduledTask.execute(2){ raise StandardError.new('Call me maybe?') }
+#   task.pending?      #=> true
+#
+#   # wait for it...
+#   sleep(3)
+#
+#   task.unscheduled? #=> false
+#   task.pending?     #=> false
+#   task.fulfilled?   #=> false
+#   task.rejected?    #=> true
+#   task.value        #=> nil
+#   task.reason       #=> #<StandardError: Call me maybe?>
+# @example One line creation and execution
+#
+#   task = Concurrent::ScheduledTask.new(2){ 'What does the fox say?' }.execute
+#   task.state         #=> pending
+#
+#   task = Concurrent::ScheduledTask.execute(2){ 'What do you get when you multiply 6 by 9?' }
+#   task.state         #=> pending
 # @example Successful task execution
 #
 #   task = Concurrent::ScheduledTask.new(2){ 'What does the fox say?' }
@@ -2489,27 +2840,6 @@ end
 #   task.fulfilled?   #=> true
 #   task.rejected?    #=> false
 #   task.value        #=> 'What does the fox say?'
-# @example One line creation and execution
-#
-#   task = Concurrent::ScheduledTask.new(2){ 'What does the fox say?' }.execute
-#   task.state         #=> pending
-#
-#   task = Concurrent::ScheduledTask.execute(2){ 'What do you get when you multiply 6 by 9?' }
-#   task.state         #=> pending
-# @example Failed task execution
-#
-#   task = Concurrent::ScheduledTask.execute(2){ raise StandardError.new('Call me maybe?') }
-#   task.pending?      #=> true
-#
-#   # wait for it...
-#   sleep(3)
-#
-#   task.unscheduled? #=> false
-#   task.pending?     #=> false
-#   task.fulfilled?   #=> false
-#   task.rejected?    #=> true
-#   task.value        #=> nil
-#   task.reason       #=> #<StandardError: Call me maybe?>
 # @example Task execution with observation
 #
 #   observer = Class.new{
@@ -2626,7 +2956,7 @@ class Concurrent::ScheduledTask < ::Concurrent::IVar
 
   protected
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/ivar.rb#135
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/scheduled_task.rb#301
   def fail(reason = T.unsafe(nil)); end
 
   # Reschedule the task using the given delay and the current time.
@@ -2646,10 +2976,10 @@ class Concurrent::ScheduledTask < ::Concurrent::IVar
   # source://concurrent-ruby//lib/concurrent-ruby/concurrent/scheduled_task.rb#312
   def ns_schedule(delay); end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/ivar.rb#113
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/scheduled_task.rb#301
   def set(value = T.unsafe(nil)); end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/ivar.rb#145
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/scheduled_task.rb#301
   def try_set(value = T.unsafe(nil), &block); end
 
   class << self
@@ -3136,9 +3466,9 @@ end
 #
 # @note Failure to properly shutdown a thread pool can lead to unpredictable results.
 #   Please read *Shutting Down Thread Pools* for more information.
-# @see http://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html Java Tutorials: Thread Pools
 # @see http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html Java Executors class
 # @see http://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ExecutorService.html Java ExecutorService interface
+# @see http://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html Java Tutorials: Thread Pools
 # @see https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html#setDaemon-boolean-
 #
 # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/thread_pool_executor.rb#56
@@ -3182,8 +3512,8 @@ class Concurrent::TimerSet < ::Concurrent::RubyExecutorService
   # delay is less than 1/100th of a second the task will be immediately post
   # to the executor.
   #
-  # @param delay [Float] the number of seconds to wait for before executing the task.
   # @param args [Array<Object>] the arguments passed to the task on execution.
+  # @param delay [Float] the number of seconds to wait for before executing the task.
   # @raise [ArgumentError] if the intended execution time is not in the future.
   # @raise [ArgumentError] if no block is given.
   # @return [Concurrent::ScheduledTask, false] IVar representing the task if the post
@@ -3195,25 +3525,25 @@ class Concurrent::TimerSet < ::Concurrent::RubyExecutorService
 
   private
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/executor_service.rb#166
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/timer_set.rb#67
   def <<(task); end
 
   # Initialize the object.
   #
   # @param opts [Hash] the options to create the object with.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/timer_set.rb#74
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/timer_set.rb#75
   def ns_initialize(opts); end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/timer_set.rb#94
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/timer_set.rb#95
   def ns_post_task(task); end
 
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/timer_set.rb#129
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/timer_set.rb#132
   def ns_reset_if_forked; end
 
   # `ExecutorService` callback called during shutdown.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/timer_set.rb#122
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/timer_set.rb#123
   def ns_shutdown_execution; end
 
   # Post the task to the internal queue.
@@ -3222,7 +3552,7 @@ class Concurrent::TimerSet < ::Concurrent::RubyExecutorService
   #   only. It is not intended to be used directly. Post a task
   #   by using the `SchedulesTask#execute` method.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/timer_set.rb#89
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/timer_set.rb#90
   def post_task(task); end
 
   # Run a loop and execute tasks in the scheduled order and at the approximate
@@ -3230,7 +3560,7 @@ class Concurrent::TimerSet < ::Concurrent::RubyExecutorService
   # garbage collection can occur. If there are no ready tasks it will sleep
   # for up to 60 seconds waiting for the next scheduled task.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/timer_set.rb#143
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/timer_set.rb#146
   def process_tasks; end
 
   # Remove the given task from the queue.
@@ -3239,7 +3569,7 @@ class Concurrent::TimerSet < ::Concurrent::RubyExecutorService
   #   only. It is not intended to be used directly. Cancel a task
   #   by using the `ScheduledTask#cancel` method.
   #
-  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/timer_set.rb#115
+  # source://concurrent-ruby//lib/concurrent-ruby/concurrent/executor/timer_set.rb#116
   def remove_task(task); end
 end
 
