@@ -5,7 +5,8 @@ JSON_TYPES_MAP = {
   './lib/engines/hckinstall/kits/*.json' => AutoHCK::Models::Kit,
   './lib/engines/hcktest/hcktest.json' => AutoHCK::Models::HCKTestConfig,
   './svvp.json' => AutoHCK::Models::SVVPConfig,
-  './lib/setupmanagers/qemuhck/devices/*.json' => AutoHCK::Models::QemuHCKDevice
+  './lib/setupmanagers/qemuhck/devices/*.json' => AutoHCK::Models::QemuHCKDevice,
+  './lib/engines/hcktest/extensions/*.json' => AutoHCK::Models::Extension
 }.freeze
 
 describe 'srb_json_load' do
