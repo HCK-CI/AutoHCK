@@ -2,7 +2,8 @@
   "download_url": "https://go.microsoft.com/fwlink/?linkid=2335804",
   "sha256": "b970b8f8dd2af850e951a9dae6278bb16b6e63ad25caa8525be9441567248809",
   "extra_software": [
-    "winfsp"
+    "winfsp",
+    "NDIS65_ndprot683_fix"
   ],
   "studio_platform": "Win2022x64",
   "name": "HLK11_25H2"

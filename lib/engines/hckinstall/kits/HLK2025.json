@@ -4,7 +4,8 @@
   "extra_software": [
     "Test-NETHLK",
     "winfsp",
-    "RoMetadataDll"
+    "RoMetadataDll",
+    "NDIS65_ndprot683_fix"
   ],
   "studio_platform": "Win2022x64",
   "name": "HLK2025"
