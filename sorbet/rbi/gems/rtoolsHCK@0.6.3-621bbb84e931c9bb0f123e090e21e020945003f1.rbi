@@ -154,14 +154,14 @@ class RToolsHCK
   #
   # Closes the instance.
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1507
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1508
   def close; end
 
   # == Description
   #
   # Closes the instance and shuts down the studio.
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1492
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1493
   def close_and_shutdown; end
 
   # == Description
@@ -170,14 +170,14 @@ class RToolsHCK
   #
   # @return [Boolean]
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1520
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1521
   def closed?; end
 
   # == Description
   #
   # Checks if connection is still alive.
   #
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1475
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1476
   def connection_check; end
 
   # == Description
@@ -659,7 +659,7 @@ class RToolsHCK
   # source://rtoolsHCK//lib/rtoolsHCK.rb#375
   def action_exception_handler(exception); end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1458
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1459
   def check_connection; end
 
   # @raise [WinrmPSRunError.new(where)]
@@ -833,7 +833,7 @@ class RToolsHCK
   # source://rtoolsHCK//lib/rtoolsHCK.rb#1448
   def unload_ether; end
 
-  # source://rtoolsHCK//lib/rtoolsHCK.rb#1454
+  # source://rtoolsHCK//lib/rtoolsHCK.rb#1455
   def unload_toolshck; end
 
   # source://rtoolsHCK//lib/rtoolsHCK.rb#1440
@@ -906,7 +906,7 @@ class Server
   # source://rtoolsHCK//lib/server.rb#9
   def initialize(init_opts); end
 
-  # source://rtoolsHCK//lib/server.rb#93
+  # source://rtoolsHCK//lib/server.rb#106
   def close; end
 
   # source://rtoolsHCK//lib/server.rb#17
@@ -920,20 +920,23 @@ class Server
   # source://rtoolsHCK//lib/server.rb#54
   def deploy_script_file; end
 
-  # source://rtoolsHCK//lib/server.rb#87
+  # source://rtoolsHCK//lib/server.rb#100
   def guest_basename(path); end
 
   # source://rtoolsHCK//lib/server.rb#36
   def load_instance_variables(init_opts); end
 
-  # source://rtoolsHCK//lib/server.rb#62
+  # source://rtoolsHCK//lib/server.rb#75
   def load_toolshck_server; end
 
   # source://rtoolsHCK//lib/server.rb#31
   def logger(level, progname = T.unsafe(nil), &_arg2); end
 
-  # source://rtoolsHCK//lib/server.rb#81
+  # source://rtoolsHCK//lib/server.rb#94
   def process_script; end
+
+  # source://rtoolsHCK//lib/server.rb#62
+  def start_server_with_log_fetcher; end
 end
 
 # A custom Server error exception

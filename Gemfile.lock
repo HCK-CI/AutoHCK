@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/HCK-CI/rtoolsHCK.git
-  revision: b2a9265c675d4c1a20db4b434220377ebc6af375
-  ref: v0.6.2
+  revision: 621bbb84e931c9bb0f123e090e21e020945003f1
+  ref: v0.6.3
   specs:
-    rtoolsHCK (0.6.2)
+    rtoolsHCK (0.6.3)
       bundler
       rdoc
       winrm (= 2.3.9)
@@ -134,7 +134,7 @@ GEM
       logger
       prism (>= 1.3.0)
       tsort
-    rdoc (7.1.0)
+    rdoc (7.2.0)
       erb
       psych (>= 4.0.0)
       tsort
