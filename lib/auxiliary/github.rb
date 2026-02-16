@@ -126,7 +126,12 @@ module AutoHCK
 
       yield
     rescue Faraday::ConnectionFailed, Faraday::TimeoutError,
-           Octokit::ServerError => e
+           Octokit::ServerError, Octokit::ClientError => e
+
+      # There is no specific exception for "429 - This endpoint is temporarily being throttled"
+      # in Octokit, so we need to check the status code of ClientError to avoid retrying on other client errors
+      raise if e.is_a?(Octokit::ClientError) && e.response_status != 429
+
       @logger.warn("Github server connection error: #{e.message}")
 
       if (retries += 1) >= GITHUB_API_RETRIES
