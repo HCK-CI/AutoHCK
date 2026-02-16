@@ -59,26 +59,15 @@ module AutoHCK
     end
 
     def create_status(state, description, url = nil)
-      retries ||= 0
-
       target_url = url || @target_url
 
       options = { 'context' => @context,
                   'description' => description,
                   'target_url' => target_url }
-      begin
+      _gh_retry_wrapper(raise_on_failure: false, operation_name: 'github.create_status') do
         @github.create_status(@repo, @commit, state, options)
-      rescue Faraday::ConnectionFailed, Faraday::TimeoutError,
-             Octokit::ServerError => e
-        @logger.warn("Github server connection error: #{e.message}")
-        # we can continue even if can't get update PR status
-        return unless (retries += 1) < GITHUB_API_RETRIES
-
-        sleep GITHUB_API_RETRY_SLEEP
-        @logger.info('Trying again execute github.create_status')
-        retry
+        @logger.info('Github status updated')
       end
-      @logger.info('Github status updated')
     end
 
     def update(tests_stats, url = nil)
@@ -127,20 +116,30 @@ module AutoHCK
     end
 
     def _find_pr(state = nil)
+      _gh_retry_wrapper(operation_name: 'github.pulls') do
+        @github.pulls(@repo, state:).find { _1['head']['sha'] == @commit }
+      end
+    end
+
+    def _gh_retry_wrapper(raise_on_failure: true, operation_name: 'github operation')
       retries ||= 0
 
-      @github.pulls(@repo, state:).find { _1['head']['sha'] == @commit }
+      yield
     rescue Faraday::ConnectionFailed, Faraday::TimeoutError,
            Octokit::ServerError => e
       @logger.warn("Github server connection error: #{e.message}")
-      # we should fail if can't get updated PR information
-      raise GithubPullRequestLoadError, e unless (retries += 1) < GITHUB_API_RETRIES
+
+      if (retries += 1) >= GITHUB_API_RETRIES
+        raise GithubPullRequestLoadError, e if raise_on_failure
+
+        return
+      end
 
       sleep GITHUB_API_RETRY_SLEEP
-      @logger.info('Trying again execute github.pulls')
+      @logger.info("Trying again to execute #{operation_name}")
       retry
     end
 
-    private :_find_pr
+    private :_find_pr, :_gh_retry_wrapper
   end
 end
