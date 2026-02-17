@@ -125,7 +125,7 @@ GEM
       stringio
     public_suffix (7.0.2)
     racc (1.8.1)
-    rack (3.1.18)
+    rack (3.1.20)
     rainbow (3.1.1)
     rbi (0.3.9)
       prism (~> 1.0)
