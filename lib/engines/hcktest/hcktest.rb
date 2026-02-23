@@ -269,15 +269,31 @@ module AutoHCK
       @test_list = @tests.update_tests(log: true)
     end
 
+    def rescue2return
+      yield
+      nil
+    rescue StandardError => e
+      @project.logger.error("HCKTest encountered an error: (#{e.class}) #{e.message}")
+      e
+    end
+
     def auto_run
       ResourceScope.open do |scope|
         run_studio scope
         sleep 5 until @studio.up?
+        # Try to export the project package even if some of the steps fail, it can be
+        # used to simplify the HLK process by reusing the created package and just fixing
+        # the root cause of the failure without the need to run all other tests
+        ex1 = rescue2return { run_tests_without_config }
+        ex2 = rescue2return { run_tests_with_config }
 
-        run_tests_without_config
-        run_tests_with_config
+        ex3 = rescue2return { @tests.create_project_package }
 
-        @tests.create_project_package
+        # Propagate the first exception if any occurred; the most likely other exceptions are just
+        # consequences of the first one and will be resolved after fixing the first root cause
+        raise ex1 if ex1
+        raise ex2 if ex2
+        raise ex3 if ex3
       end
     end
 
