@@ -629,27 +629,38 @@ module AutoHCK
       end
     end
 
+    sig { params(type: String, path: T.nilable(String)).returns(T.nilable(String)) }
+    def upload_package_asset(type, path)
+      return nil unless path
+
+      unless File.exist?(path)
+        @logger.warn("#{type} path '#{path}' specified, but does not exist, skipping including")
+        return nil
+      end
+
+      remote_path = "#{STUDIO_PACKAGE_ASSETS_PATH}\\#{type}"
+      @logger.info("Uploading #{type.downcase} from '#{path}' to '#{remote_path}'")
+      @tools.upload_to_studio(path, remote_path)
+      remote_path
+    end
+
+    sig { returns(T.nilable(String)) }
+    def prepare_package_driver_content
+      return unless @project.options.test.package_with_driver
+
+      upload_package_asset('Driver', @project.options.test.driver_path)
+    end
+
+    sig { returns(T.nilable(String)) }
+    def prepare_package_supplemental_content
+      upload_package_asset('Supplemental', @project.options.test.supplemental_path)
+    end
+
     def create_project_package
       package_playlist = @playlist.playlist if @project.options.test.package_with_playlist
 
-      driver_path = @project.options.test.driver_path
-      supplemental_path = @project.options.test.supplemental_path
-      package_with_driver = @project.options.test.package_with_driver
-
-      remote_driver_path = nil
-      remote_supplemental_path = nil
-
-      if package_with_driver && driver_path && File.exist?(driver_path)
-        remote_driver_path = "#{STUDIO_PACKAGE_ASSETS_PATH}\\Driver"
-        @logger.info("Uploading driver from '#{driver_path}' to '#{remote_driver_path}'")
-        @tools.upload_to_studio(driver_path, remote_driver_path)
-      end
-
-      if supplemental_path && File.exist?(supplemental_path)
-        remote_supplemental_path = "#{STUDIO_PACKAGE_ASSETS_PATH}\\Supplemental"
-        @logger.info("Uploading supplemental from '#{supplemental_path}' to '#{remote_supplemental_path}'")
-        @tools.upload_to_studio(supplemental_path, remote_supplemental_path)
-      end
+      remote_driver_path = prepare_package_driver_content
+      remote_supplemental_path = prepare_package_supplemental_content
 
       res = @tools.create_project_package(@tag, package_playlist, nil, remote_driver_path, remote_supplemental_path)
       @logger.info('Results package successfully created')
