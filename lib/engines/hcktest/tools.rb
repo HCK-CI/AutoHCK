@@ -378,9 +378,13 @@ module AutoHCK
       retry
     end
 
-    def create_project_package(project, playlist = nil, handler = nil, driver_path = nil, supplemental_path = nil) # rubocop:disable Metrics/ParameterLists
+    def create_project_package(project, playlist = nil, handler = nil, driver_path = nil, supplemental_path = nil, # rubocop:disable Metrics/ParameterLists
+                               remove_driver_signatures: false)
       retry_tools_command(__method__) do
-        act_with_tools { _1.create_project_package(project, playlist, handler, driver_path, supplemental_path) }
+        act_with_tools do |tools|
+          tools.create_project_package(project, playlist, handler, driver_path, supplemental_path,
+                                       remove_driver_signatures:)
+        end
       end
     end
 

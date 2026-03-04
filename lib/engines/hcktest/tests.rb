@@ -646,7 +646,7 @@ module AutoHCK
 
     sig { returns(T.nilable(String)) }
     def prepare_package_driver_content
-      return unless @project.options.test.package_with_driver
+      return if @project.options.test.package_with_driver == :none
 
       upload_package_asset('Driver', @project.options.test.driver_path)
     end
@@ -656,14 +656,28 @@ module AutoHCK
       upload_package_asset('Supplemental', @project.options.test.supplemental_path)
     end
 
+    def print_project_package_results(res)
+      messages = (res['messages'] || []).map { "    -- #{_1}\n" }.join
+      if res['iserror'] == false
+        @logger.info('Project package successfully created')
+        @logger.debug("Project package creation result:\n#{messages}")
+      else
+        @logger.warn('Project package creation got an error. Check the logs for details.')
+        @logger.warn("Project package creation result:\n#{messages}")
+      end
+    end
+
     def create_project_package
-      package_playlist = @playlist.playlist if @project.options.test.package_with_playlist
+      test_options = @project.options.test
+      package_playlist = @playlist.playlist if test_options.package_with_playlist
 
       remote_driver_path = prepare_package_driver_content
       remote_supplemental_path = prepare_package_supplemental_content
 
-      res = @tools.create_project_package(@tag, package_playlist, nil, remote_driver_path, remote_supplemental_path)
-      @logger.info('Results package successfully created')
+      res = @tools.create_project_package(@tag, package_playlist, nil, remote_driver_path, remote_supplemental_path,
+                                          remove_driver_signatures: test_options.package_with_driver == :unsigned)
+      print_project_package_results(res)
+
       r_name = @tag + File.extname(res['hostprojectpackagepath'])
       @project.result_uploader.upload_file(res['hostprojectpackagepath'], r_name)
     end

@@ -79,7 +79,7 @@ module AutoHCK
     prop :drivers, T::Array[String], default: []
     prop :driver_path, T.nilable(String)
     prop :supplemental_path, T.nilable(String)
-    prop :package_with_driver, T::Boolean, default: false
+    prop :package_with_driver, Symbol, default: :none
     prop :commit, T.nilable(String)
     prop :svvp, T::Boolean, default: false
     prop :dump, T::Boolean, default: false
@@ -129,9 +129,12 @@ module AutoHCK
                 'Path to the supplemental content folder (e.g. for README)',
                 &method(:supplemental_path=))
 
-      parser.on('--package-with-driver', TrueClass,
+      parser.on('--package-with-driver [package_action]', %i[keep unsigned],
                 'Include driver files in HLKX package (requires --driver-path)',
-                &method(:package_with_driver=))
+                'Use --package-with-driver or --package-with-driver=keep to include driver with original signature',
+                'Use --package-with-driver=unsigned to remove signature from the driver before including') do |pa|
+        self.package_with_driver = pa || :keep
+      end
 
       parser.on('-c', '--commit <commit_hash>', String,
                 'Commit hash for CI status update',
