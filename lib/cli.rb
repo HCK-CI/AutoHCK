@@ -98,6 +98,7 @@ module AutoHCK
     prop :fs_test_image_format, String, default: 'qcow2'
     prop :extensions, T::Array[String], default: []
     prop :net_test_speed, Integer, default: 10_000
+    prop :auto_retry_failed_tests, Integer, default: 0
 
     def create_parser
       OptionParser.new do |parser|
@@ -222,6 +223,19 @@ module AutoHCK
                 'Network test speed (in Mbps). Default is 10000.',
                 'Has effect only when testing virtio-net-pci network device.',
                 &method(:net_test_speed=))
+
+      parser.on('--auto-retry-failed-tests <auto_retry_failed_tests>', Integer,
+                'Automatically retry failed tests specified number of times to mitigate transient failures.',
+                'Use with caution, it can hide real issues if used excessively.',
+                'Results files (like HLKX, results.html, results.xml) contain information about test objects,',
+                'so if a failed test is retried and passed on retry, it will be marked as passed in results files,',
+                'without any indication that it was failed at the beginning. It is recommended to check logs for',
+                'failed tests if this option is used.',
+                'Possible values:',
+                '  -1 - retry indefinitely until all tests pass;',
+                '  0 - do not retry failed tests;',
+                '  N - retry failed tests up to N times.',
+                &method(:auto_retry_failed_tests=))
     end
     # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
   end

@@ -742,6 +742,46 @@ module AutoHCK
       run_test_commands(test, :post_test_commands, replacement)
     end
 
+    sig { params(current_run_tests: T::Array[Models::HLK::Test]).returns(T::Array[Models::HLK::Test]) }
+    def select_tests_for_retry(current_run_tests)
+      # HLK Failed tests
+      failed_tests = @tests.select { |test| test.status == Models::HLK::TestResultStatus::Failed }
+
+      max_retries = @project.options.test.auto_retry_failed_tests
+      # Bisect failed tests and tests for current environment configuration
+      # we need this because some tests require specific environment state
+      # and will be run independently in the next run
+      failed_tests.select do |test|
+        test_name = test.name
+
+        next unless current_run_tests.any? { _1.name == test_name }
+
+        @logger.debug("[AutoRetrySelect] test: '#{test_name}', retried: #{test.retried_times}")
+
+        max_retries == -1 || test.retried_times < max_retries
+      end
+    end
+
+    sig { params(current_run_tests: T::Array[Models::HLK::Test]).void }
+    def retry_tests(current_run_tests)
+      loop do
+        tests_to_retry = select_tests_for_retry(current_run_tests)
+        break if tests_to_retry.empty?
+
+        @logger.info("Found #{tests_to_retry.size} failed tests to auto retry")
+
+        tests_to_retry.each do |test|
+          run_id = test.run_count + test.retried_times + 1
+          one_test_run(test, run_id, run_id)
+          test.retried_times += 1
+
+          break if @project.run_terminated
+        end
+
+        break if @project.run_terminated
+      end
+    end
+
     sig { params(tests: T::Array[Models::HLK::Test]).void }
     def run(tests)
       load_clients_system_info
@@ -757,6 +797,10 @@ module AutoHCK
 
         break if @project.run_terminated
       end
+
+      return if @project.run_terminated
+
+      retry_tests(tests) unless @project.options.test.auto_retry_failed_tests.zero?
     end
   end
 end
