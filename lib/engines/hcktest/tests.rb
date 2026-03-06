@@ -177,6 +177,7 @@ module AutoHCK
     def select_test_config(test_name, config)
       all_tests_configs
         .select { |test_config| Regexp.union(test_config.tests.map { Regexp.new(_1) }).match?(test_name) }
+        .select { |test_config| test_config.kits.empty? || test_config.kits.include?(@client.kit) }
         .flat_map(&config)
     end
 
