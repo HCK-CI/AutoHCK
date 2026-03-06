@@ -84,6 +84,7 @@ module AutoHCK
         prop :dump_path, T.nilable(String)
         prop :last_result, T.nilable(T::Hash[String, T.untyped])
         prop :is_skipped, T::Boolean, default: false
+        prop :retried_times, Integer, default: 0
 
         sig { params(hck_test: Test).void }
         def update_from_hck(hck_test)
