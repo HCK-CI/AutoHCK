@@ -20,6 +20,7 @@ module AutoHCK
       initialize_project project
 
       @clients_vm = {}
+      @package_manager = PackageManager.new(@logger)
       initialize_studio_vm
       initialize_clients_vm
       create_qemuhck_log_file
@@ -134,6 +135,18 @@ module AutoHCK
       `#{@studio_vm.config['qemu_bin']} --version`.lines.first.strip
     end
 
+    def hypervisor_package_info
+      binary_path = @studio_vm.config['qemu_bin']
+      @package_manager.query_package(binary_path) || "Unknown package for #{binary_path}"
+    end
+
+    def hypervisor_dependencies_package_info
+      binary_path = `which #{@studio_vm.config['swtpm_bin']} 2>/dev/null`.strip
+      return 'swtpm binary not found' if binary_path.empty?
+
+      @package_manager.query_package(binary_path) || "Unknown package for #{binary_path}"
+    end
+
     def host_info
       `uname -a`.strip
     end
@@ -141,6 +154,8 @@ module AutoHCK
     def append_host_info(logs)
       logs << <<~HOST_INFO
         QEMU version: #{hypervisor_info}
+        QEMU package: #{hypervisor_package_info}
+        swtpm package: #{hypervisor_dependencies_package_info}
         System information: #{host_info}
 
       HOST_INFO

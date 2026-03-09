@@ -58,6 +58,7 @@ module AutoHCK
   autoload_relative :MultiLogger, 'auxiliary/multi_logger'
   autoload_relative :NotImplementedError, 'exceptions'
   autoload_relative :OpenJsonError, 'exceptions'
+  autoload_relative :PackageManager, 'auxiliary/package_manager'
   autoload_relative :Pgroup, 'auxiliary/pgroup'
   autoload_relative :PhysHCK, 'setupmanagers/physhck/physhck'
   autoload_relative :Playlist, 'engines/hcktest/playlist'
