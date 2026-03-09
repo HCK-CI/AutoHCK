@@ -186,6 +186,10 @@ module AutoHCK
         .to_h { |parameter| [parameter.name, parameter.value] }
     end
 
+    def test_skip_retry?(test_name)
+      select_test_config(test_name, :skip_retry).any? { _1 == true }
+    end
+
     def run_command_on_client(client, command, desc, replacement)
       @logger.info("Running command (#{desc}) on client #{client.name}")
       # Don't use create_cmd because it calls shellescape that performs wrong escaping for Windows commands
@@ -742,7 +746,11 @@ module AutoHCK
 
         next unless current_run_tests.any? { _1.name == test_name }
 
-        @logger.debug("[AutoRetrySelect] test: '#{test_name}', retried: #{test.retried_times}")
+        skip_retry = test_skip_retry?(test_name)
+
+        @logger.debug("[AutoRetrySelect] test: '#{test_name}', retried: #{test.retried_times}, cfg_skip: #{skip_retry}")
+
+        next if skip_retry
 
         max_retries == -1 || test.retried_times < max_retries
       end
