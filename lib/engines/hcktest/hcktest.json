@@ -35,6 +35,17 @@
           "value": "161"
         }
       ]
+    },
+    {
+      "tests": [
+        "Storage HBA Firmware Update"
+      ],
+      "parameters": [
+        {
+          "name": "FirmwareImageFile",
+          "value": "C:\\Windows\\mib.bin"
+        }
+      ]
     }
   ]
 }

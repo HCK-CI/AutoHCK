@@ -43,7 +43,6 @@
   "reject_test_names": [
     "DF - Embedded Signature Verification Test (Certification)",
     "DF - Embedded Signature Verification Test (Tuning and Validation)",
-    "Storage HBA Firmware Update",
     "DF - Reboot Restart with IO During (Reliability)",
     "Hardware-enforced Stack Protection Compatibility Test"
   ]
