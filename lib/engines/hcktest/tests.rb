@@ -398,6 +398,23 @@ module AutoHCK
       @logger.info('Test results uploaded via the result uploader')
     end
 
+    def build_system_info_data
+      data = { 'guest' => @clients_system_info }
+
+      if @project.setup_manager
+        host_info = {}
+        qemu_version = @project.setup_manager.hypervisor_package_info
+        swtpm_version = @project.setup_manager.hypervisor_dependencies_package_info
+
+        host_info['QEMU package version'] = qemu_version unless qemu_version.nil? || qemu_version.empty?
+        host_info['swtpm package version'] = swtpm_version unless swtpm_version.nil? || swtpm_version.empty?
+
+        data['host'] = host_info unless host_info.empty?
+      end
+
+      data
+    end
+
     def report_data
       {
         'tag' => @tag,
@@ -405,9 +422,7 @@ module AutoHCK
         'rejected_test' => @playlist.rejected_test,
         'tests' => @tests,
         'url' => @project.result_uploader.url,
-        'system_info' => {
-          'guest' => @clients_system_info
-        },
+        'system_info' => build_system_info_data,
         'sections' => RESULTS_REPORT_SECTIONS - @project.options.test.reject_report_sections
       }
     end

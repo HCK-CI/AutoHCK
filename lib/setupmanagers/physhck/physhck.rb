@@ -49,6 +49,14 @@ module AutoHCK
       @logger.info('Hypervisor info is currently not supported for physical machines')
     end
 
+    def hypervisor_package_info
+      @logger.info('Hypervisor package info is currently not supported for physical machines')
+    end
+
+    def hypervisor_dependencies_package_info
+      @logger.info('swtpm package info is currently not supported for physical machines')
+    end
+
     def host_info
       @logger.info('Host info is currently not supported for physical machines')
     end

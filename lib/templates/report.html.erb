@@ -21,12 +21,20 @@
             </div>
             <% end %>
             <% if sections.include? 'guest_info' %>
-            <div class="col col-8">
+            <div class="col col-4">
                 <p class="text-center">Guest system information</p>
                 <% system_info['guest'].each do |_, guest_info| %>
                     <% guest_info.each do |k, v| %>
                         <p><%= k %>: <%= v %></p>
                     <% end %>
+                <% end %>
+            </div>
+            <% end %>
+            <% if system_info['host'] %>
+            <div class="col col-4">
+                <p class="text-center">Host system information</p>
+                <% system_info['host'].each do |k, v| %>
+                    <p><%= k %>: <%= v %></p>
                 <% end %>
             </div>
             <% end %>
