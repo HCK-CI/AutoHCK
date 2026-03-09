@@ -49,7 +49,7 @@ module OpenSSL
     #   OpenSSL::Digest("Foo")
     #   # => NameError: wrong constant name Foo
     #
-    # source://openssl//lib/openssl/digest.rb#63
+    # source://openssl//lib/openssl/digest.rb#67
     def Digest(name); end
 
     # :call-seq:
@@ -127,7 +127,7 @@ module OpenSSL::Buffering
   #
   # See also #gets
   #
-  # source://openssl//lib/openssl/buffering.rb#262
+  # source://openssl//lib/openssl/buffering.rb#267
   def each_line(eol = T.unsafe(nil)); end
 
   # Returns true if the stream is at file which means there is no more data to
@@ -135,7 +135,7 @@ module OpenSSL::Buffering
   #
   # @return [Boolean]
   #
-  # source://openssl//lib/openssl/buffering.rb#334
+  # source://openssl//lib/openssl/buffering.rb#338
   def eof; end
 
   # Returns true if the stream is at file which means there is no more data to
@@ -374,12 +374,7 @@ end
 # A buffer which will retain binary encoding.
 #
 # source://openssl//lib/openssl/buffering.rb#26
-class OpenSSL::Buffering::Buffer < ::String
-  def _append(_arg0); end
-
-  # source://openssl//lib/openssl/buffering.rb#29
-  def append_as_bytes(string); end
-end
+class OpenSSL::Buffering::Buffer < ::String; end
 
 # source://openssl//lib/openssl/cipher.rb#16
 class OpenSSL::Cipher
@@ -1154,13 +1149,13 @@ module OpenSSL::SSL
   def verify_wildcard(domain_component, san_component); end
 
   class << self
-    # source://openssl//lib/openssl/ssl.rb#249
+    # source://openssl//lib/openssl/ssl.rb#280
     def verify_certificate_identity(cert, hostname); end
 
-    # source://openssl//lib/openssl/ssl.rb#282
+    # source://openssl//lib/openssl/ssl.rb#313
     def verify_hostname(hostname, san); end
 
-    # source://openssl//lib/openssl/ssl.rb#315
+    # source://openssl//lib/openssl/ssl.rb#331
     def verify_wildcard(domain_component, san_component); end
   end
 end
@@ -1414,7 +1409,7 @@ class OpenSSL::SSL::SSLSocket
 
   # The underlying IO object.
   #
-  # source://openssl//lib/openssl/ssl.rb#340
+  # source://openssl//lib/openssl/ssl.rb#341
   def to_io; end
 
   private
@@ -1777,7 +1772,7 @@ class OpenSSL::X509::Name
     # Use of this method is discouraged in new applications. See
     # Name.parse_rfc2253 and #to_utf8 for the alternative.
     #
-    # source://openssl//lib/openssl/x509.rb#305
+    # source://openssl//lib/openssl/x509.rb#316
     def parse(str, template = T.unsafe(nil)); end
 
     # Parses the string representation of a distinguished name. Two
