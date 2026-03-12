@@ -27,6 +27,8 @@ module AutoHCK
         'svvp' => @project.options.test.svvp,
         'drivers' => run_property_drivers,
         'hypervisor' => @project.setup_manager&.hypervisor_info,
+        'hypervisor_package' => @project.setup_manager&.hypervisor_package_info,
+        'hypervisor_dependencies_package' => @project.setup_manager&.hypervisor_dependencies_package_info,
         'host' => @project.setup_manager&.host_info,
         'results_url' => @project.result_uploader&.url,
         'results_html' => @project.result_uploader&.html_url
