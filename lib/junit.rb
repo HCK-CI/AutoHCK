@@ -21,15 +21,17 @@ module AutoHCK
     end
 
     def run_properties
+      sm = @project.setup_manager
+
       {
         'engine' => @project.engine_name,
         'platform' => @project.engine_platform&.dig('name') || 'unknown',
         'svvp' => @project.options.test.svvp,
         'drivers' => run_property_drivers,
-        'hypervisor' => @project.setup_manager&.hypervisor_info,
-        'hypervisor_package' => @project.setup_manager&.hypervisor_package_info,
-        'hypervisor_dependencies_package' => @project.setup_manager&.hypervisor_dependencies_package_info,
-        'host' => @project.setup_manager&.host_info,
+        'hypervisor' => sm&.hypervisor_info,
+        'hypervisor_package' => sm&.hypervisor_package_info,
+        'hypervisor_dependencies_package' => sm&.hypervisor_dependencies_package_info,
+        'host' => sm&.host_info,
         'results_url' => @project.result_uploader&.url,
         'results_html' => @project.result_uploader&.html_url
       }
