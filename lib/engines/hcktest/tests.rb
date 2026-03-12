@@ -19,7 +19,7 @@ module AutoHCK
     SUMMARY_LOG_FILE = 'logs.txt'
     RESULTS_FILE = 'results.html'
     RESULTS_YAML = 'results.yaml'
-    RESULTS_REPORT_SECTIONS = %w[chart guest_info rejected_test url].freeze
+    RESULTS_REPORT_SECTIONS = %w[chart guest_info host_info rejected_test url].freeze
     STUDIO_PACKAGE_ASSETS_PATH = 'C:\\AutoHCK\\PackageAssets'
 
     DEFAULT_FILE_ACTION_REMOTE_PATH = 'C:\\'

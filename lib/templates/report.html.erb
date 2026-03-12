@@ -30,12 +30,14 @@
                 <% end %>
             </div>
             <% end %>
+            <% if sections.include? 'host_info' %>
             <div class="col col-4">
                 <p class="text-center">Host system information</p>
                 <% system_info['host'].each do |k, v| %>
                     <p><%= k %>: <%= v %></p>
                 <% end %>
             </div>
+            <% end %>
         </div>
         <div class="row pb-3">
             <p>Report generation time: <%= Time.now %></p>
