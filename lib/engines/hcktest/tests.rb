@@ -404,20 +404,14 @@ module AutoHCK
     end
 
     def build_system_info_data
-      data = { 'guest' => @clients_system_info }
+      host_info = {}
+      qemu_version = @project.setup_manager.hypervisor_package_info
+      swtpm_version = @project.setup_manager.hypervisor_dependencies_package_info
 
-      if @project.setup_manager
-        host_info = {}
-        qemu_version = @project.setup_manager.hypervisor_package_info
-        swtpm_version = @project.setup_manager.hypervisor_dependencies_package_info
+      host_info['QEMU package version'] = qemu_version unless qemu_version.nil? || qemu_version.empty?
+      host_info['swtpm package version'] = swtpm_version unless swtpm_version.nil? || swtpm_version.empty?
 
-        host_info['QEMU package version'] = qemu_version unless qemu_version.nil? || qemu_version.empty?
-        host_info['swtpm package version'] = swtpm_version unless swtpm_version.nil? || swtpm_version.empty?
-
-        data['host'] = host_info unless host_info.empty?
-      end
-
-      data
+      { 'guest' => @clients_system_info, 'host' => host_info }
     end
 
     def report_data
