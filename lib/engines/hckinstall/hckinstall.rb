@@ -79,8 +79,13 @@ module AutoHCK
     end
 
     def init_iso_info
-      @studio_iso_info = read_iso(studio_iso_name(@project.engine_platform['kit']))
-      @client_iso_info = read_iso(@project.engine_platform['client_iso'])
+      studio_iso = studio_iso_name(@project.engine_platform['kit'])
+      @logger.info("Studio ISO name is #{studio_iso}")
+      @studio_iso_info = read_iso(studio_iso)
+
+      client_iso = @project.engine_platform['client_iso']
+      @logger.info("Client ISO name is #{client_iso}")
+      @client_iso_info = read_iso(client_iso)
 
       @setup_studio_iso = "#{@project.workspace_path}/setup-studio.iso"
       @setup_client_iso = "#{@project.workspace_path}/setup-client.iso"
