@@ -336,11 +336,16 @@ module AutoHCK
       build_answer_file_path(file, disk_config)
     end
 
-    def prepare_studio_drives
-      product_key = @studio_iso_info.dig('studio', 'product_key')
+    def create_studio_answer_files
+      studio = @studio_iso_info['studio']
+      if studio.nil?
+        @logger.fatal('Studio ISO config is invalid, missing "studio" section')
+        raise(InvalidConfigFile, 'Studio ISO config is invalid, missing "studio" section')
+      end
 
+      product_key = studio['product_key']
       replacement_list = {
-        '@WINDOWS_IMAGE_NAME@' => @studio_iso_info['studio']['windows_image_names'],
+        '@WINDOWS_IMAGE_NAME@' => studio['windows_image_names'],
         '@PRODUCT_KEY@' => product_key,
         '@PRODUCT_KEY_XML@' => product_key_xml(product_key),
         '@HOST_TYPE@' => 'studio',
@@ -350,7 +355,10 @@ module AutoHCK
         file_gsub(build_studio_answer_file_path(file),
                   @hck_setup_scripts_path + "/#{file}", replacement_list)
       end
+    end
 
+    def prepare_studio_drives
+      create_studio_answer_files
       create_iso(@setup_studio_iso, [@hck_setup_scripts_path], @kit_is_iso ? ['Kits'] : [])
 
       @project.setup_manager.create_studio_image
@@ -363,11 +371,17 @@ module AutoHCK
                            "#{@hck_setup_scripts_path}/drivers")
     end
 
-    def prepare_client_drives
-      product_key = @client_iso_info.dig('client', 'product_key')
+    def create_client_answer_files
+      client = @client_iso_info['client']
+      if client.nil?
+        @logger.fatal('Client ISO config is invalid, missing "client" section')
+        raise(InvalidConfigFile, 'Client ISO config is invalid, missing "client" section')
+      end
+
+      product_key = client['product_key']
 
       replacement_list = {
-        '@WINDOWS_IMAGE_NAME@' => @client_iso_info['client']['windows_image_names'],
+        '@WINDOWS_IMAGE_NAME@' => client['windows_image_names'],
         '@PRODUCT_KEY@' => product_key,
         '@PRODUCT_KEY_XML@' => product_key_xml(product_key),
         '@HOST_TYPE@' => 'client',
@@ -377,6 +391,10 @@ module AutoHCK
         file_gsub(build_client_answer_file_path(file),
                   @hck_setup_scripts_path + "/#{file}", replacement_list)
       end
+    end
+
+    def prepare_client_drives
+      create_client_answer_files
 
       copy_drivers if @need_copy_drivers
 
