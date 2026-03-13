@@ -35,7 +35,10 @@ module AutoHCK
         Pathname.new(@ext_path).join(name).join('config.json')
       ]
       paths.each do |path|
-        return Json.read_json(path.to_s, @logger) if File.exist?(path)
+        if File.exist?(path)
+          @logger.info("Loading extra software by name '#{name}' for kit '#{kit}' from #{path}")
+          return Json.read_json(path.to_s, @logger)
+        end
       end
 
       raise(ExtraSoftwareMissingConfig,
