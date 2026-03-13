@@ -349,6 +349,7 @@ module AutoHCK
         @logger.fatal('Studio ISO config is invalid, missing "studio" section')
         raise(InvalidConfigFile, 'Studio ISO config is invalid, missing "studio" section')
       end
+      @logger.debug('Creating studio answer files')
 
       product_key = studio['product_key']
       replacement_list = {
@@ -365,6 +366,8 @@ module AutoHCK
     end
 
     def prepare_studio_drives
+      @logger.info('HCKInstall: Prepare studio drives')
+
       create_studio_answer_files
       create_iso(@setup_studio_iso, [@hck_setup_scripts_path], @kit_is_iso ? ['Kits'] : [])
 
@@ -384,6 +387,7 @@ module AutoHCK
         @logger.fatal('Client ISO config is invalid, missing "client" section')
         raise(InvalidConfigFile, 'Client ISO config is invalid, missing "client" section')
       end
+      @logger.debug('Creating client answer files')
 
       product_key = client['product_key']
 
@@ -401,6 +405,8 @@ module AutoHCK
     end
 
     def prepare_client_drives
+      @logger.info('HCKInstall: Prepare client drives')
+
       create_client_answer_files
 
       copy_drivers if @need_copy_drivers
