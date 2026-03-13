@@ -219,6 +219,7 @@ module AutoHCK
     end
 
     def self.enter(workspace_path)
+      $stderr.write "[qemuhck.rb] Entering namespace: #{workspace_path}\n" if ENV['AUTOHCK_NS_VERBOSE']
       Ns.enter workspace_path, Dir.pwd, 'bin/auto_hck', '-w',
                workspace_path, *ARGV
     end
