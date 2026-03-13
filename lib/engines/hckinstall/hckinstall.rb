@@ -79,8 +79,13 @@ module AutoHCK
     end
 
     def init_iso_info
-      @studio_iso_info = read_iso(studio_iso_name(@project.engine_platform['kit']))
-      @client_iso_info = read_iso(@project.engine_platform['client_iso'])
+      studio_iso = studio_iso_name(@project.engine_platform['kit'])
+      @logger.info("Studio ISO name is #{studio_iso}")
+      @studio_iso_info = read_iso(studio_iso)
+
+      client_iso = @project.engine_platform['client_iso']
+      @logger.info("Client ISO name is #{client_iso}")
+      @client_iso_info = read_iso(client_iso)
 
       @setup_studio_iso = "#{@project.workspace_path}/setup-studio.iso"
       @setup_client_iso = "#{@project.workspace_path}/setup-client.iso"
@@ -104,15 +109,17 @@ module AutoHCK
 
     def validate_paths
       normalize_paths
-      unless File.exist?("#{@iso_path}/#{@studio_iso_info['path']}")
-        @logger.fatal('Studio ISO path is not valid')
-        raise(InvalidPathError, 'Studio ISO path is not valid')
+      studio_iso_full_path = Pathname.new(@iso_path).join(@studio_iso_info['path'])
+      unless File.exist?(studio_iso_full_path)
+        @logger.fatal("Studio ISO path #{studio_iso_full_path} is not valid")
+        raise(InvalidPathError, "Studio ISO path #{studio_iso_full_path} is not valid")
       end
 
-      return if File.exist?("#{@iso_path}/#{@client_iso_info['path']}")
+      client_iso_full_path = Pathname.new(@iso_path).join(@client_iso_info['path'])
+      return if File.exist?(client_iso_full_path)
 
-      @logger.fatal('Client ISO path is not valid')
-      raise(InvalidPathError, 'Client ISO path is not valid')
+      @logger.fatal("Client ISO path #{client_iso_full_path} is not valid")
+      raise(InvalidPathError, "Client ISO path #{client_iso_full_path} is not valid")
     end
 
     def normalize_paths
@@ -336,11 +343,17 @@ module AutoHCK
       build_answer_file_path(file, disk_config)
     end
 
-    def prepare_studio_drives
-      product_key = @studio_iso_info.dig('studio', 'product_key')
+    def create_studio_answer_files
+      studio = @studio_iso_info['studio']
+      if studio.nil?
+        @logger.fatal('Studio ISO config is invalid, missing "studio" section')
+        raise(InvalidConfigFile, 'Studio ISO config is invalid, missing "studio" section')
+      end
+      @logger.debug('Creating studio answer files')
 
+      product_key = studio['product_key']
       replacement_list = {
-        '@WINDOWS_IMAGE_NAME@' => @studio_iso_info['studio']['windows_image_names'],
+        '@WINDOWS_IMAGE_NAME@' => studio['windows_image_names'],
         '@PRODUCT_KEY@' => product_key,
         '@PRODUCT_KEY_XML@' => product_key_xml(product_key),
         '@HOST_TYPE@' => 'studio',
@@ -350,7 +363,12 @@ module AutoHCK
         file_gsub(build_studio_answer_file_path(file),
                   @hck_setup_scripts_path + "/#{file}", replacement_list)
       end
+    end
 
+    def prepare_studio_drives
+      @logger.info('HCKInstall: Prepare studio drives')
+
+      create_studio_answer_files
       create_iso(@setup_studio_iso, [@hck_setup_scripts_path], @kit_is_iso ? ['Kits'] : [])
 
       @project.setup_manager.create_studio_image
@@ -363,11 +381,18 @@ module AutoHCK
                            "#{@hck_setup_scripts_path}/drivers")
     end
 
-    def prepare_client_drives
-      product_key = @client_iso_info.dig('client', 'product_key')
+    def create_client_answer_files
+      client = @client_iso_info['client']
+      if client.nil?
+        @logger.fatal('Client ISO config is invalid, missing "client" section')
+        raise(InvalidConfigFile, 'Client ISO config is invalid, missing "client" section')
+      end
+      @logger.debug('Creating client answer files')
+
+      product_key = client['product_key']
 
       replacement_list = {
-        '@WINDOWS_IMAGE_NAME@' => @client_iso_info['client']['windows_image_names'],
+        '@WINDOWS_IMAGE_NAME@' => client['windows_image_names'],
         '@PRODUCT_KEY@' => product_key,
         '@PRODUCT_KEY_XML@' => product_key_xml(product_key),
         '@HOST_TYPE@' => 'client',
@@ -377,6 +402,12 @@ module AutoHCK
         file_gsub(build_client_answer_file_path(file),
                   @hck_setup_scripts_path + "/#{file}", replacement_list)
       end
+    end
+
+    def prepare_client_drives
+      @logger.info('HCKInstall: Prepare client drives')
+
+      create_client_answer_files
 
       copy_drivers if @need_copy_drivers
 

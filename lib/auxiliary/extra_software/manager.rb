@@ -17,16 +17,22 @@ module AutoHCK
     end
 
     def download_software(name, config)
-      path = Pathname.new(@ext_path).join(name).join(config['file_name'])
+      file_name = config['file_name']
+      path = Pathname.new(@ext_path).join(name).join(file_name)
 
       if File.exist?(path)
-        @logger.info("#{config['file_name']} already exist, download skipped")
+        @logger.info("#{file_name} already exists, download skipped")
         return
       end
 
+      if config['download_url'].nil? || config['download_url'].empty?
+        msg = "#{name}: download URL and expected file '#{path}' are missing, cannot download/use software package"
+        @logger.error(msg)
+        raise(ExtraSoftwareBrokenConfig, msg)
+      end
+
       dw = Downloader.new(@logger)
-      dw.download(config['download_url'],
-                  Pathname.new(@ext_path).join(name).join(config['file_name']))
+      dw.download(config['download_url'], path)
     end
 
     def read_config(name, kit)
@@ -35,7 +41,10 @@ module AutoHCK
         Pathname.new(@ext_path).join(name).join('config.json')
       ]
       paths.each do |path|
-        return Json.read_json(path.to_s, @logger) if File.exist?(path)
+        if File.exist?(path)
+          @logger.info("Loading extra software by name '#{name}' for kit '#{kit}' from #{path}")
+          return Json.read_json(path.to_s, @logger)
+        end
       end
 
       raise(ExtraSoftwareMissingConfig,
