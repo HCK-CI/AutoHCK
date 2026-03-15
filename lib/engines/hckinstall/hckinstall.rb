@@ -293,7 +293,8 @@ module AutoHCK
       installers = [
         "#{@hck_setup_scripts_path}/Kits/#{kit_type}#{kit_version}Setup.exe",
         "#{@hck_setup_scripts_path}/Kits/#{kit_type}#{kit_version}/#{kit_type}Setup.exe",
-        "#{@hck_setup_scripts_path}/Kits/#{kit_type}#{kit_version}Setup.iso"
+        "#{@hck_setup_scripts_path}/Kits/#{kit_type}#{kit_version}Setup.iso",
+        "#{@iso_path}/#{kit_type}#{kit_version}Setup.iso"
       ]
 
       installers.find { File.exist? _1 }
