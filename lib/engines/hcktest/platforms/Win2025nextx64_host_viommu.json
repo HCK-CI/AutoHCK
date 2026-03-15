@@ -1,28 +1,28 @@
 {
-  "name": "Win2022nextx64_host_viommu",
-  "client_iso": "Win2022nextx64",
-  "kit": "HLK2022_next",
+  "name": "Win2025nextx64_host_viommu",
+  "client_iso": "Win2025nextx64",
+  "kit": "HLK2025_next",
   "setupmanager": "qemuhck",
   "clients_options": {
     "viommu_state": true,
     "enlightenments_state": true
   },
   "cpu": "host",
-  "st_image": "HLK2022_next.qcow2",
+  "st_image": "HLK2025_next.qcow2",
   "clients": {
     "c1": {
       "name": "CL1",
       "cpus": 4,
       "memory_gb": 8,
       "winrm_port": 4002,
-      "image": "HLK2022_next-C1-Win2022nextx64-host-viommu.qcow2"
+      "image": "HLK2025_next-C1-Win2025nextx64-host-viommu.qcow2"
     },
     "c2": {
       "name": "CL2",
       "cpus": 4,
       "memory_gb": 8,
       "winrm_port": 4003,
-      "image": "HLK2022_next-C2-Win2022nextx64-host-viommu.qcow2"
+      "image": "HLK2025_next-C2-Win2025nextx64-host-viommu.qcow2"
     }
   }
 }
