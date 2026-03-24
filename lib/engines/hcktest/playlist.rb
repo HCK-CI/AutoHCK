@@ -65,7 +65,15 @@ module AutoHCK
       file = kit[0..2] == 'HLK' ? "#{playlists_path}/#{kit[3..]}.xml" : nil
       workspace_file = "#{@project.workspace_path}/playlist_#{kit[3..]}.xml"
 
-      return nil if file.nil? || !File.exist?(file)
+      if file.nil?
+        @logger.warn("Microsoft's playlist is not applied, because the kit #{kit} is not recognized.")
+        return nil
+      end
+
+      unless File.exist?(file)
+        @logger.warn("Microsoft's playlist is not applied, because the playlist file #{file} does not exist.")
+        return nil
+      end
 
       FileUtils.cp(file, workspace_file)
 
