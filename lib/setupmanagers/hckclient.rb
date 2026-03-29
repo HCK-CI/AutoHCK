@@ -77,17 +77,33 @@ module AutoHCK
     def post_start_commands
       (@project.engine.drivers.flat_map(&:post_start_commands) +
        @project.engine.extensions.flat_map(&:post_start_commands) +
-        @setup_manager.client_post_start_commands).select(&:guest_run)
+        @setup_manager.client_post_start_commands).select { |cmd| cmd.guest_run || cmd.guest_ui_run }
     end
 
     def run_post_start_commands
+      @ui_executor = nil
       post_start_commands&.each do |command|
         desc = command.desc
-        @logger.info("Running command (#{desc}) on client #{@name}")
-        updated_command = @replacement_map.create_cmd(command.guest_run)
-        @logger.debug("Running command after replacement (#{desc}) on client #{@name}: #{updated_command}")
 
-        @tools.run_on_machine(@name, desc, updated_command)
+        if command.guest_run
+          @logger.info("Running command (#{desc}) on client #{@name}")
+          updated_command = @replacement_map.create_cmd(command.guest_run)
+          @logger.debug("Running command after replacement (#{desc}) on client #{@name}: #{updated_command}")
+          @tools.run_on_machine(@name, desc, updated_command)
+        end
+
+        if command.guest_ui_run
+          @logger.info("Running UI command (#{desc}) on client #{@name}")
+          updated_command = @replacement_map.replace(command.guest_ui_run)
+          @logger.debug("Running UI command after replacement (#{desc}) on client #{@name}: #{updated_command}")
+          @ui_executor ||= UIExecutor.new(@tools, @name, @logger)
+          result = @ui_executor.run(updated_command)
+          unless result['exit_code'].zero?
+            raise ClientRunError,
+                  "UI command (#{desc}) on #{@name} failed (exit_code=#{result['exit_code']}): #{result['stderr']}"
+          end
+        end
+
         next unless command.guest_reboot
 
         @logger.info("Rebooting client #{@name} after command (#{desc})")
