@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/HCK-CI/rtoolsHCK.git
-  revision: 39309cfbb5c1deeebae34c4019427803418ccd04
-  ref: v0.6.4
+  revision: a57c620b9138abdf45bd9c953d20f7bd2701161e
+  ref: v0.7.0
   specs:
-    rtoolsHCK (0.6.4)
+    rtoolsHCK (0.7.0)
       bundler
       rdoc
       winrm (= 2.3.9)
@@ -63,7 +63,7 @@ GEM
     dropbox_api (0.1.21)
       faraday (< 3.0)
       oauth2 (~> 1.1)
-    erb (6.0.1)
+    erb (6.0.2)
     erubi (1.13.1)
     faraday (2.14.1)
       faraday-net_http (>= 2.0, < 3.5)
@@ -71,8 +71,8 @@ GEM
       logger
     faraday-net_http (3.4.2)
       net-http (~> 0.5)
-    ffi (1.17.3-arm64-darwin)
-    ffi (1.17.3-x86_64-linux-gnu)
+    ffi (1.17.4-arm64-darwin)
+    ffi (1.17.4-x86_64-linux-gnu)
     filelock (1.1.1)
     gssapi (1.3.1)
       ffi (>= 1.0.1)
@@ -97,7 +97,7 @@ GEM
     minitest (6.0.1)
       prism (~> 1.5)
     mono_logger (1.1.2)
-    multi_json (1.15.0)
+    multi_json (1.19.1)
     multi_xml (0.7.1)
       bigdecimal (~> 3.1)
     mutex_m (0.3.0)
