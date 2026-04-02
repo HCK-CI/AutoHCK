@@ -26,6 +26,7 @@ module AutoHCK
       init_class_variables
       init_iso_info
       validate_paths
+      prepare_setup_scripts
       prepare_extra_sw
       @logger.debug('HCKInstall: initialized')
     end
@@ -65,10 +66,17 @@ module AutoHCK
     def init_config
       @config = Json.read_json(CONFIG_JSON, @logger)
 
-      @hck_setup_scripts_path = @config['hck_setup_scripts_path']
+      @hck_setup_scripts_path_template = Pathname.new(File.expand_path('./setup-scripts', __dir__))
+      @answer_files_path_template = Pathname.new(File.expand_path('./answer-files', __dir__))
+      @workspace_hlk_setup_scripts_path = Pathname.new(@project.workspace_path).join('hck-setup-scripts')
 
       @answer_files = @config['answer_files']
       @install_timeout = @config['install_timeout']
+    end
+
+    def prepare_setup_scripts
+      @logger.info("Copying HLK setup scripts template from #{@hck_setup_scripts_path_template} to workspace")
+      copy_setup_scripts_template(@workspace_hlk_setup_scripts_path, @hck_setup_scripts_path_template)
     end
 
     def studio_iso_name(kit)
@@ -87,12 +95,12 @@ module AutoHCK
       @logger.info("Client ISO name is #{client_iso}")
       @client_iso_info = read_iso(client_iso)
 
-      @setup_studio_iso = "#{@project.workspace_path}/setup-studio.iso"
-      @setup_client_iso = "#{@project.workspace_path}/setup-client.iso"
+      @setup_studio_iso = Pathname.new(@project.workspace_path).join('setup-studio.iso')
+      @setup_client_iso = Pathname.new(@project.workspace_path).join('setup-client.iso')
     end
 
     def init_class_variables
-      @iso_path = @project.config['iso_path']
+      @iso_path = Pathname.new(@project.config['iso_path'])
       @kit_info = read_kit(@project.engine_platform['kit'])
       @clients_name = @project.engine_platform['clients'].map { |_k, v| v['name'] }
     end
@@ -104,18 +112,18 @@ module AutoHCK
         extra_software, @project.engine_platform['kit'], ENGINE_MODE
       )
 
-      @project.extra_sw_manager.copy_to_setup_scripts(@hck_setup_scripts_path)
+      @project.extra_sw_manager.copy_to_setup_scripts(@workspace_hlk_setup_scripts_path)
     end
 
     def validate_paths
       normalize_paths
-      studio_iso_full_path = Pathname.new(@iso_path).join(@studio_iso_info['path'])
+      studio_iso_full_path = @iso_path.join(@studio_iso_info['path'])
       unless File.exist?(studio_iso_full_path)
         @logger.fatal("Studio ISO path #{studio_iso_full_path} is not valid")
         raise(InvalidPathError, "Studio ISO path #{studio_iso_full_path} is not valid")
       end
 
-      client_iso_full_path = Pathname.new(@iso_path).join(@client_iso_info['path'])
+      client_iso_full_path = @iso_path.join(@client_iso_info['path'])
       return if File.exist?(client_iso_full_path)
 
       @logger.fatal("Client ISO path #{client_iso_full_path} is not valid")
@@ -248,6 +256,17 @@ module AutoHCK
       end
     end
 
+    def move_downloaded_kit
+      if @kit_path.end_with?('.iso')
+        new_path = @iso_path.join(File.basename(@kit_path))
+        @logger.info("Moving downloaded ISO from #{@kit_path} to #{new_path}")
+        FileUtils.mv(@kit_path, new_path)
+        @kit_path = new_path.to_s
+      elsif @kit_path.end_with?('.exe')
+        @logger.info('Downloaded kit is an executable, no need to move')
+      end
+    end
+
     def prepare_kit_installer(kit_type, kit_version)
       @kit_path = find_kit(kit_type, kit_version)
 
@@ -256,8 +275,9 @@ module AutoHCK
           raise(EngineError, 'HLK installer download URL is not provided and installer is not found')
         end
 
-        @kit_path = download_kit_installer(@kit_info.download_url,
-                                           "#{kit_type}#{kit_version}", @hck_setup_scripts_path)
+        @kit_path = download_kit_installer(@kit_info.download_url, "#{kit_type}#{kit_version}",
+                                           @workspace_hlk_setup_scripts_path)
+        move_downloaded_kit
       else
         @logger.info("HLK installer #{kit_type}#{kit_version} already exists")
       end
@@ -279,7 +299,7 @@ module AutoHCK
       }
 
       prepare_kit_installer(kit_type, kit_version)
-      create_setup_scripts_config(@hck_setup_scripts_path, config)
+      create_setup_scripts_config(@workspace_hlk_setup_scripts_path, config)
     end
 
     def parse_kit_info
@@ -291,9 +311,12 @@ module AutoHCK
 
     def find_kit(kit_type, kit_version)
       installers = [
-        "#{@hck_setup_scripts_path}/Kits/#{kit_type}#{kit_version}Setup.exe",
-        "#{@hck_setup_scripts_path}/Kits/#{kit_type}#{kit_version}/#{kit_type}Setup.exe",
-        "#{@hck_setup_scripts_path}/Kits/#{kit_type}#{kit_version}Setup.iso",
+        # Disable for now because EXE installer are small and we can just redownload them
+        # Also, without dedicated HLK-Setup-Scripts folder, it's unknown where exactly the installer
+        # should be placed, so it's better to just redownload it if it's not an ISO
+        # "#{@hck_setup_scripts_path}/Kits/#{kit_type}#{kit_version}Setup.exe",
+        # "#{@hck_setup_scripts_path}/Kits/#{kit_type}#{kit_version}/#{kit_type}Setup.exe",
+        # "#{@hck_setup_scripts_path}/Kits/#{kit_type}#{kit_version}Setup.iso",
         "#{@iso_path}/#{kit_type}#{kit_version}Setup.iso"
       ]
 
@@ -306,13 +329,16 @@ module AutoHCK
 
     def build_answer_file_path(file, disk_config)
       paths = [
-        @hck_setup_scripts_path + "/answer-files/#{file}.#{disk_config}.in",
-        @hck_setup_scripts_path + "/answer-files/#{file}.in"
+        @answer_files_path_template.join("#{file}.#{disk_config}.in"),
+        @answer_files_path_template.join("#{file}.in")
       ]
 
       paths.each do |path|
+        @logger.debug("Looking for answer file at #{path}")
         return path if File.exist?(path)
       end
+
+      raise(InvalidConfigFile, "Answer file for #{file} with disk config #{disk_config} does not exist")
     end
 
     def load_fw_disk_config(fw_type)
@@ -362,7 +388,8 @@ module AutoHCK
       }
       @answer_files.each do |file|
         file_gsub(build_studio_answer_file_path(file),
-                  @hck_setup_scripts_path + "/#{file}", replacement_list)
+                  @workspace_hlk_setup_scripts_path.join(file),
+                  replacement_list)
       end
     end
 
@@ -370,16 +397,15 @@ module AutoHCK
       @logger.info('HCKInstall: Prepare studio drives')
 
       create_studio_answer_files
-      create_iso(@setup_studio_iso, [@hck_setup_scripts_path], @kit_is_iso ? ['Kits'] : [])
+      create_iso(@setup_studio_iso, [@workspace_hlk_setup_scripts_path], @kit_is_iso ? ['Kits'] : [])
 
       @project.setup_manager.create_studio_image
     end
 
     def copy_drivers
       @logger.info('HCKInstall: Copy all drivers')
-      FileUtils.rm_rf("#{@hck_setup_scripts_path}/drivers")
       FileUtils.copy_entry(@project.options.install.driver_path,
-                           "#{@hck_setup_scripts_path}/drivers")
+                           @workspace_hlk_setup_scripts_path.join('drivers'))
     end
 
     def create_client_answer_files
@@ -401,7 +427,8 @@ module AutoHCK
       }
       @answer_files.each do |file|
         file_gsub(build_client_answer_file_path(file),
-                  @hck_setup_scripts_path + "/#{file}", replacement_list)
+                  @workspace_hlk_setup_scripts_path.join(file),
+                  replacement_list)
       end
     end
 
@@ -412,7 +439,7 @@ module AutoHCK
 
       copy_drivers if @need_copy_drivers
 
-      create_iso(@setup_client_iso, [@hck_setup_scripts_path], ['Kits'])
+      create_iso(@setup_client_iso, [@workspace_hlk_setup_scripts_path], ['Kits'])
 
       @clients_name.each { @project.setup_manager.create_client_image(_1) }
     end
