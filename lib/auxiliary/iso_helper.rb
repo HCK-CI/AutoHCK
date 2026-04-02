@@ -1,4 +1,4 @@
-# type: true
+# typed: true
 # frozen_string_literal: true
 
 # AutoHCK module
@@ -14,8 +14,9 @@ module AutoHCK
       dir_paths_strs = dir_paths.map(&:to_s)
       @logger.info("Creating ISO image at #{iso_path} from #{dir_paths_strs} with excludes: #{exclude_list}")
 
-      run_cmd(*%w[xorriso -as mkisofs -iso-level 4 -J -l -D -N -joliet-long -relaxed-filenames -V INSTALLER],
-              *exclude_args, '-o', iso_path.to_s, *dir_paths_strs)
+      argv = %w[xorriso -as mkisofs -iso-level 4 -J -l -D -N -joliet-long -relaxed-filenames -V INSTALLER] +
+             exclude_args + ['-o', iso_path.to_s] + dir_paths_strs
+      run_cmd(*T.unsafe(argv))
     end
   end
 end
