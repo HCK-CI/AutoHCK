@@ -256,6 +256,7 @@ module AutoHCK
       end
     end
 
+    sig { void }
     def move_downloaded_kit
       if @kit_path.end_with?('.iso')
         new_path = @iso_path.join(File.basename(@kit_path))
@@ -267,6 +268,7 @@ module AutoHCK
       end
     end
 
+    sig { params(kit_type: String, kit_version: String).void }
     def prepare_kit_installer(kit_type, kit_version)
       @kit_path = find_kit(kit_type, kit_version)
 
@@ -302,13 +304,15 @@ module AutoHCK
       create_setup_scripts_config(@workspace_hlk_setup_scripts_path, config)
     end
 
+    sig { returns([String, String]) }
     def parse_kit_info
       kit_string = @project.engine_platform['kit']
-      kit_type = kit_string[0..2]
-      kit_version = kit_type == 'HCK' ? '' : kit_string[3..]
+      kit_type = kit_string[0..2] || ''
+      kit_version = kit_type == 'HCK' ? '' : (kit_string[3..] || '')
       [kit_type, kit_version]
     end
 
+    sig { params(kit_type: String, kit_version: String).returns(T.nilable(String)) }
     def find_kit(kit_type, kit_version)
       installers = [
         # Disable for now because EXE installer are small and we can just redownload them
@@ -323,10 +327,12 @@ module AutoHCK
       installers.find { File.exist? _1 }
     end
 
+    sig { params(product_key: T.nilable(String)).returns(String) }
     def product_key_xml(product_key)
       product_key == '' || product_key.nil? ? '' : "<Key>#{product_key}</Key>"
     end
 
+    sig { params(file: String, disk_config: String).returns(Pathname) }
     def build_answer_file_path(file, disk_config)
       paths = [
         @answer_files_path_template.join("#{file}.#{disk_config}.in"),

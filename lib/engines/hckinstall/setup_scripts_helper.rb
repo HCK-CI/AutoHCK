@@ -1,9 +1,12 @@
+# typed: true
 # frozen_string_literal: true
 
 # AutoHCK module
 module AutoHCK
   # Helper module
   module Helper
+    extend T::Sig
+
     SUPPORTED_CONFIG = {
       kit_type: '',
       hlk_kit_ver: '',
@@ -12,17 +15,20 @@ module AutoHCK
       no_reboot_after_bugcheck: ''
     }.freeze
 
+    sig { params(workspace_hlk_setup_scripts_path: Pathname, hck_setup_scripts_template_path: Pathname).void }
     def copy_setup_scripts_template(workspace_hlk_setup_scripts_path, hck_setup_scripts_template_path)
       FileUtils.copy_entry(hck_setup_scripts_template_path, workspace_hlk_setup_scripts_path)
     end
 
+    sig { params(config: T::Hash[Symbol, T.untyped]).void }
     def validate_setup_scripts_config(config)
       extra_keys = (config.keys - SUPPORTED_CONFIG.keys)
       return if extra_keys.empty?
 
-      raise(AutoHCKError, "Undefined HLK setup scripts configs: #{extra_keys.join(', ')}.")
+      Kernel.raise(AutoHCKError, "Undefined HLK setup scripts configs: #{extra_keys.join(', ')}.")
     end
 
+    sig { params(url: String, kit: String, workspace_hlk_setup_scripts_path: Pathname).returns(String) }
     def download_kit_installer(url, kit, workspace_hlk_setup_scripts_path)
       dw = Downloader.new(@logger)
 
@@ -40,6 +46,7 @@ module AutoHCK
       kit_path
     end
 
+    sig { params(workspace_hlk_setup_scripts_path: Pathname, extra_software_path: String, sw_names: T::Array[String]).void }
     def copy_extra_software(workspace_hlk_setup_scripts_path, extra_software_path, sw_names)
       workspace_extra_software_path = workspace_hlk_setup_scripts_path.join('extra-software')
       FileUtils.mkdir_p(workspace_extra_software_path)
@@ -50,6 +57,7 @@ module AutoHCK
       end
     end
 
+    sig { params(workspace_hlk_setup_scripts_path: Pathname, config: T::Hash[Symbol, T.untyped]).void }
     def create_setup_scripts_config(workspace_hlk_setup_scripts_path, config)
       validate_setup_scripts_config(config)
 
@@ -64,8 +72,8 @@ module AutoHCK
           when Integer
             value = v
           else
-            @logger.fatal("Unexpected value #{x} for config")
-            raise(AutoHCKError, "Unexpected value #{x} for config")
+            @logger.fatal("Unexpected value #{v} for config")
+            Kernel.raise(AutoHCKError, "Unexpected value #{v} for config")
           end
 
           args_file.write("$#{key} = #{value}\n")
