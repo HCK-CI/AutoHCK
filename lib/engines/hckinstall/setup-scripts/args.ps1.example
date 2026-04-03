@@ -1,0 +1,4 @@
+$KITTYPE = "HLK"
+$HLKKITVER = 2004
+$REMOVEGUI = $false
+$DEBUG = $false

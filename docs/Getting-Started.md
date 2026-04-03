@@ -9,7 +9,6 @@ See [AutoHCK Installer](https://github.com/HCK-CI/AutoHCK-Installer/wiki) for mo
 ## Manual installation
 
   1. Build QEMU from [source](https://github.com/qemu/qemu) or install using your package manager.
-  1. `git clone https://github.com/HCK-CI/HLK-Setup-Scripts` - AutoHCK will use it as a dependency for image creation.
   1. `git clone https://github.com/HCK-CI/extra-software` - AutoHCK will use it as a dependency for image creation.
   1. `git clone https://github.com/HCK-CI/toolsHCK` - AutoHCK will use it as a dependency for HLK automation in Guest OS.
   1. Install Ruby version 3.1.0 or 3.3.0. Using [RVM](https://rvm.io/) or your package manager.

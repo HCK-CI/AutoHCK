@@ -4,7 +4,10 @@ AutoHCK is a tool for automating HCK/HLK testing, doing all the boilerplate step
 
 ## Manual installation
 
-Detailed instructions available at [HLK-Setup-Scripts](https://github.com/HCK-CI/HLK-Setup-Scripts).
+The install engine ships PowerShell setup scripts under `lib/engines/hckinstall/setup-scripts/`. At run time it copies that tree into the workspace (for example as `hck-setup-scripts`) and builds setup ISOs from there. Unattend templates and optional local kit/driver layouts are described in [Bundled install engine directories](#bundled-install-engine-directories) below.
+
+For more context on the original upstream workflow, see [HLK-Setup-Scripts](https://github.com/HCK-CI/HLK-Setup-Scripts).
+
 Images should be copied to the images directory as configured in the `config.json` file.
 
 ## Automatic installation preparation
@@ -16,9 +19,31 @@ Images should be copied to the images directory as configured in the `config.jso
 3. Download ISO which is needed for a specific platform installation and copy it into the created directory.
 4. Add information about this iso into `lib/engines/hckinstall/iso.json` (see AutoHCK configuration section).
 
+### Bundled install engine directories
+
+These paths live next to the install engine under `lib/engines/hckinstall/`:
+
+#### Answer files (`answer-files/`)
+
+Templates for unattended Windows setup. AutoHCK selects and processes them when building images; see `hckinstall.json` → `answer_files`.
+
+- **autounattend** — drives Windows setup. Placeholders:
+  - `@WINDOWS_IMAGE_NAME@` — image name from `install.wim` (e.g. `wimlib-imagex info install.wim` on Linux, or `dism /get-wiminfo` on Windows).
+  - `@PRODUCT_KEY_XML@` — product key content for that image, substituted into the `<ProductKey>` element.
+  - Two template variants: `autounattend.xml.uefi.in` (UEFI, GPT) and `autounattend.xml.bios.in` (BIOS, MBR).
+
+- **unattend** — OOBE / post-setup. Placeholder:
+  - `@HOST_TYPE@` — `studio` or `client`.
+
+Base names in `hckinstall.json` are `autounattend.xml` and `unattend.xml`; the engine resolves the correct `.uefi` / `.bios` / `.in` files from `answer-files/`.
+
+#### Kit installers
+
+Kit ISOs can also be placed on the ISO path configured in `config.json` (see `kit.json` / platform kit definitions and download URLs).
+
 ### Windows ISO preparation for installation in UEFI mode
 
-In case when UEFI firmware, not BIOS is booted, the Windows installer always asks to press any key to boot from CD/DVD. AutoHCK can't do this in the proper way. 
+In case when UEFI firmware, not BIOS is booted, the Windows installer always asks to press any key to boot from CD/DVD. AutoHCK can't do this in the proper way.
 
 So you should patch ISO and replace UEFI boot loader code. By default, ISO uses the EFI boot code from efisys.bin. There is also an efisys_noprompt.bin boot code that skips the prompt step.
 
@@ -82,10 +107,10 @@ Configure AutoHCK to have all information for building VM images. Edit the next 
    - **product_key** - contains a valid key for the corresponding Windows image. Generic keys from MSDN can be used [KMS Client Activation Keys](https://learn.microsoft.com/en-us/windows-server/get-started/kms-client-activation-keys).
 
 2. `lib/engines/hckinstall/hckinstall.json` - contains the specific configuration for the install engine. The following fields should be configured:
-   - **hck_setup_scripts_path** - path to HLK-Setup-Scripts repository.
-   - **answer_files** (_advanced_) -  list of the unattended answer file for automatic Windows installation. These files are part of the HLK-Setup-Scripts repository.
-   - **studio_install_timeout** (_advanced_) - timeout before the installation of the Studio VM is considered a failure.
-   - **client_install_timeout** (_advanced_) - timeout before the installation of the Client VMs is considered a failure.
+   - **answer_files** (_advanced_) - list of answer file *base names* (without `.in` / disk-layout suffixes) for automatic Windows installation. Templates live under `lib/engines/hckinstall/answer-files/`; see the Answer files subsection under [Bundled install engine directories](#bundled-install-engine-directories).
+   - **install_timeout** (_advanced_) - timeout (seconds) before an install is treated as failed (covers studio and client flow as configured by the engine).
+
+During `install`, AutoHCK copies bundled scripts, merges extra software and generated `args.ps1`, builds `setup-studio.iso` / `setup-client.iso` from that tree, and attaches them to the VMs. HLK kit **ISO** installers are stored under `iso_path` (for example `HLK11_24H2Setup.iso`) when downloaded so later runs can reuse them; **EXE** installers are downloaded into the workspace copy for each run.
 
 3. `config.json` - contains the general AutoHCK configuration. The following fields should be configured:
    - **iso_path** - absolute path to the directory where ISO stored.
@@ -129,7 +154,7 @@ bin/ns bin/auto_hck install -p Win2019x64 --force
 
 ## Related information
 
-Automatic installation is performed by using answer files. This is Windows's ability to install and configure the system from the scratch. See the MDSN article for more details:
+Automatic installation is performed by using answer files. This is Windows's ability to install and configure the system from scratch. See the MSDN articles for more details:
 
    - [Automating Windows setup](https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/automate-windows-setup)
    - [Automate Windows configuration](https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/update-windows-settings-and-scripts-create-your-own-answer-file-sxs)
