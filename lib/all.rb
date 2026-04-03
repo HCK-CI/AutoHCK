@@ -56,6 +56,8 @@ module AutoHCK
   autoload_relative :MachineRunError, 'setupmanagers/exceptions'
   autoload_relative :Models, 'models'
   autoload_relative :MultiLogger, 'auxiliary/multi_logger'
+  autoload_relative :NotificationManager, 'notificationmanagers/notification_manager'
+  autoload_relative :NotificationProviderInterface, 'notificationmanagers/notification_provider_interface'
   autoload_relative :NotImplementedError, 'exceptions'
   autoload_relative :OpenJsonError, 'exceptions'
   autoload_relative :PackageManager, 'auxiliary/package_manager'
