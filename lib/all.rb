@@ -36,6 +36,7 @@ module AutoHCK
   autoload_relative :Downloader, 'auxiliary/downloader'
   autoload_relative :Engine, 'engines/engine'
   autoload_relative :EngineError, 'engines/exceptions'
+  autoload_relative :ExternalScript, 'notificationmanagers/external_script/external_script'
   autoload_relative :ExtraSoftwareBrokenConfig, 'auxiliary/extra_software/exceptions'
   autoload_relative :ExtraSoftwareManager, 'auxiliary/extra_software/manager'
   autoload_relative :ExtraSoftwareMissingConfig, 'auxiliary/extra_software/exceptions'
