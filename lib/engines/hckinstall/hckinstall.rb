@@ -28,6 +28,7 @@ module AutoHCK
       validate_paths
       prepare_extra_sw
       @logger.debug('HCKInstall: initialized')
+      @project.notification_manager.post_engine_init(self)
     end
 
     def test_steps
@@ -438,6 +439,7 @@ module AutoHCK
     end
 
     def run
+      @project.notification_manager.pre_engine_run(self)
       @logger.debug('HCKInstall: run')
 
       prepare_setup_scripts_config
@@ -449,6 +451,8 @@ module AutoHCK
         run_first(studio:, client:)
         run_second(client:)
       end
+    ensure
+      @project.notification_manager.post_engine_run(self)
     end
   end
 end

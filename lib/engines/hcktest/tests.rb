@@ -308,6 +308,7 @@ module AutoHCK
 
     sig { params(test: Models::HLK::Test, wait: T::Boolean).void }
     def queue_test(test, wait: false)
+      @project.notification_manager.pre_tests_queue_test(test, wait)
       retries = 0
       begin
         perform_queue_test_commands(test)
@@ -367,6 +368,7 @@ module AutoHCK
 
     sig { params(test: Models::HLK::Test).void }
     def on_test_start(test)
+      @project.notification_manager.pre_tests_on_test_start(test)
       @logger.info(">>> Currently running: #{test.name} [#{test.estimatedruntime}]")
 
       test.started_at = DateTime.now
@@ -571,6 +573,7 @@ module AutoHCK
 
     sig { params(test: Models::HLK::Test, test_result: T::Hash[String, T.untyped]).void }
     def handle_finished_test_result(test, test_result)
+      @project.notification_manager.pre_tests_handle_finished_test_result(test, test_result)
       collect_memory_dumps(test)
 
       print_test_results(test, test_result)
@@ -590,6 +593,7 @@ module AutoHCK
     end
 
     def handle_finished_test_results(results)
+      @project.notification_manager.pre_tests_handle_finished_test_results(results, tests_stats)
       @project.update_test_stats(tests_stats)
 
       results.each do |result|
@@ -787,6 +791,7 @@ module AutoHCK
 
     sig { params(tests: T::Array[Models::HLK::Test]).void }
     def run(tests)
+      @project.notification_manager.pre_tests_run(tests)
       load_clients_system_info
       update_summary_results_log
       tests.each do |test|
@@ -804,6 +809,8 @@ module AutoHCK
       return if @project.run_terminated
 
       retry_tests(tests) unless @project.options.test.auto_retry_failed_tests.zero?
+    ensure
+      @project.notification_manager.post_tests_run(tests)
     end
   end
 end

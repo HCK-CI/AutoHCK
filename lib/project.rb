@@ -9,7 +9,7 @@ module AutoHCK
     JUNIT_RESULT = 'junit.xml'
 
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :id,
-                :workspace_path, :result_uploader, :engine_tag,
+                :workspace_path, :result_uploader, :notification_manager, :engine_tag,
                 :engine_platform, :engine_type, :options, :extra_sw_manager,
                 :run_terminated, :engine_name, :string_log
 
@@ -26,26 +26,36 @@ module AutoHCK
       # Project uses ResultUploader on close, so ResultUploader must exist
       # when project is closed
       @result_uploader = ResultUploader.new(@scope, self)
+      @notification_manager = NotificationManager.new(@scope, self)
 
       scope << self
+      @notification_manager.post_project_init(self)
     end
 
     def prepare
-      @extra_sw_manager = ExtraSoftwareManager.new(self)
+      @notification_manager.pre_project_prepare(self)
+      begin
+        @extra_sw_manager = ExtraSoftwareManager.new(self)
 
-      @engine = @engine_type.new(self)
-      Sentry.set_tags('autohck.tag': @engine_tag)
+        @engine = @engine_type.new(self)
+        Sentry.set_tags('autohck.tag': @engine_tag)
 
-      configure_result_uploader if @engine.result_uploader_needed?
-      return false unless github_handling(@options.test.commit)
+        configure_result_uploader if @engine.result_uploader_needed?
+        return false unless github_handling(@options.test.commit)
 
-      @setup_manager = @setup_manager_type&.new(self)
+        @setup_manager = @setup_manager_type&.new(self)
 
-      true
+        true
+      ensure
+        @notification_manager.post_project_prepare(self)
+      end
     end
 
     def run
+      @notification_manager.pre_project_run(self)
       @engine.run
+    ensure
+      @notification_manager.post_project_run(self)
     end
 
     def prep_stream_for_log(stream)
