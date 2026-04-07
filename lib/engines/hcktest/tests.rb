@@ -38,6 +38,7 @@ module AutoHCK
       @test_results = []
       @results_template = ERB.new(File.read('lib/templates/report.html.erb'))
       @replacement_map = ReplacementMap.new({ '@workspace@' => @project.workspace_path })
+      @ui_executors = {}
     end
 
     sig { params(updated_tests: T::Array[Models::HLK::Test]).returns(T::Array[Models::HLK::Test]) }
@@ -207,6 +208,29 @@ module AutoHCK
       run_command_on_client(@support, command.guest_run, command.desc, replacement) unless @support.nil?
     end
 
+    def client_ui_executor(client)
+      @ui_executors[client.name] ||= UIExecutor.new(@tools, client.name, @logger)
+    end
+
+    def run_ui_command_on_client(client, command, desc, replacement)
+      @logger.info("Running UI command (#{desc}) on client #{client.name}")
+      updated_command = client.replacement_map.merge(@replacement_map).merge(replacement).replace(command)
+      @logger.debug("Running UI command after replacement (#{desc}) on client #{client.name}: #{updated_command}")
+
+      result = client_ui_executor(client).run(updated_command)
+      return if result['exit_code'].zero?
+
+      raise UIExecutor::CommandError,
+            "UI command (#{desc}) on #{client.name} failed (exit_code=#{result['exit_code']}): #{result['stderr']}"
+    end
+
+    def run_guest_ui_test_command(command, replacement)
+      return unless command.guest_ui_run
+
+      run_ui_command_on_client(@client, command.guest_ui_run, command.desc, replacement)
+      run_ui_command_on_client(@support, command.guest_ui_run, command.desc, replacement) unless @support.nil?
+    end
+
     def run_host_test_command(command)
       return unless command.host_run
 
@@ -290,6 +314,7 @@ module AutoHCK
     def run_test_commands(test, type, replacement)
       select_test_config(test.name, type).each do |command|
         run_guest_test_command(command, replacement)
+        run_guest_ui_test_command(command, replacement)
         run_host_test_command(command)
 
         run_file_actions(command.files_action, replacement)
