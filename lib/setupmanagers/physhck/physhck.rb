@@ -36,6 +36,7 @@ module AutoHCK
       @setup = find_setup
       @id = project.id
       @kit = @setup['kit']
+      @project.notification_manager.post_setup_manager_init(self)
     end
 
     def find_setup
@@ -77,12 +78,18 @@ module AutoHCK
       @logger.info('Image creating is currently not supported for physical machines')
     end
 
-    def run_studio(*)
+    def run_studio(_scope, run_opts = nil)
+      @project.notification_manager.pre_setup_manager_run_studio(self, run_opts)
       Runner.new(@logger)
+    ensure
+      @project.notification_manager.post_setup_manager_run_studio(self, run_opts)
     end
 
-    def run_client(*)
+    def run_client(_scope, name, run_opts = nil)
+      @project.notification_manager.pre_setup_manager_run_client(self, name, run_opts)
       Runner.new(@logger)
+    ensure
+      @project.notification_manager.post_setup_manager_run_client(self, name, run_opts)
     end
 
     def client_post_start_commands
@@ -90,12 +97,18 @@ module AutoHCK
     end
 
     def run_hck_studio(scope, run_opts)
+      @project.notification_manager.pre_setup_manager_run_hck_studio(self, run_opts)
       studio_ip = @setup['st_ip']
       HCKStudio.new(self, scope, run_opts) { studio_ip }
+    ensure
+      @project.notification_manager.post_setup_manager_run_hck_studio(self, run_opts)
     end
 
     def run_hck_client(scope, studio, name, run_opts)
+      @project.notification_manager.pre_setup_manager_run_hck_client(self, studio, name, run_opts)
       HCKClient.new(self, scope, studio, name, run_opts)
+    ensure
+      @project.notification_manager.post_setup_manager_run_hck_client(self, studio, name, run_opts)
     end
 
     def self.enter(*); end
