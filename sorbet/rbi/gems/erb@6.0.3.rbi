@@ -104,7 +104,7 @@ class ERB
   # </html>
   # ```
   #
-  # source://erb//lib/erb.rb#1170
+  # source://erb//lib/erb.rb#1171
   def def_class(superklass = T.unsafe(nil), methodname = T.unsafe(nil)); end
 
   # :markup: markdown
@@ -132,7 +132,7 @@ class ERB
   # MyClass.new.render('foo', 123)                      # => "foo 123"
   # ```
   #
-  # source://erb//lib/erb.rb#1088
+  # source://erb//lib/erb.rb#1089
   def def_method(mod, methodname, fname = T.unsafe(nil)); end
 
   # :markup: markdown
@@ -153,7 +153,7 @@ class ERB
   # # => "foo 123"
   # ```
   #
-  # source://erb//lib/erb.rb#1113
+  # source://erb//lib/erb.rb#1114
   def def_module(methodname = T.unsafe(nil)); end
 
   # :markup: markdown
@@ -163,7 +163,7 @@ class ERB
   #
   # [encodings]: rdoc-ref:ERB@Encodings
   #
-  # source://erb//lib/erb.rb#909
+  # source://erb//lib/erb.rb#910
   def encoding; end
 
   # :markup: markdown
@@ -173,7 +173,7 @@ class ERB
   #
   # [error reporting]: rdoc-ref:ERB@Error+Reporting
   #
-  # source://erb//lib/erb.rb#917
+  # source://erb//lib/erb.rb#918
   def filename; end
 
   # :markup: markdown
@@ -183,7 +183,7 @@ class ERB
   #
   # [error reporting]: rdoc-ref:ERB@Error+Reporting
   #
-  # source://erb//lib/erb.rb#917
+  # source://erb//lib/erb.rb#918
   def filename=(_arg0); end
 
   # :markup: markdown
@@ -193,7 +193,7 @@ class ERB
   #
   # [error reporting]: rdoc-ref:ERB@Error+Reporting
   #
-  # source://erb//lib/erb.rb#925
+  # source://erb//lib/erb.rb#926
   def lineno; end
 
   # :markup: markdown
@@ -203,7 +203,7 @@ class ERB
   #
   # [error reporting]: rdoc-ref:ERB@Error+Reporting
   #
-  # source://erb//lib/erb.rb#925
+  # source://erb//lib/erb.rb#926
   def lineno=(_arg0); end
 
   # :markup: markdown
@@ -217,7 +217,7 @@ class ERB
   #
   # [error reporting]: rdoc-ref:ERB@Error+Reporting
   #
-  # source://erb//lib/erb.rb#937
+  # source://erb//lib/erb.rb#938
   def location=(_arg0); end
 
   # :markup: markdown
@@ -233,7 +233,7 @@ class ERB
   # # => #<ERB::Compiler:0x000001cff9467678 @insert_cmd="print", @percent=false, @post_cmd=[], @pre_cmd=[], @put_cmd="print", @trim_mode=nil>
   # ```
   #
-  # source://erb//lib/erb.rb#854
+  # source://erb//lib/erb.rb#855
   def make_compiler(trim_mode); end
 
   # :markup: markdown
@@ -254,7 +254,7 @@ class ERB
   # [default binding]: rdoc-ref:ERB@Default+Binding
   # [local binding]: rdoc-ref:ERB@Local+Binding
   #
-  # source://erb//lib/erb.rb#1008
+  # source://erb//lib/erb.rb#1009
   def result(b = T.unsafe(nil)); end
 
   # :markup: markdown
@@ -269,7 +269,7 @@ class ERB
   #
   # [augmented binding]: rdoc-ref:ERB@Augmented+Binding
   #
-  # source://erb//lib/erb.rb#1027
+  # source://erb//lib/erb.rb#1028
   def result_with_hash(hash); end
 
   # :markup: markdown
@@ -280,7 +280,7 @@ class ERB
   # Like #result, but prints the result string (instead of returning it);
   # returns `nil`.
   #
-  # source://erb//lib/erb.rb#986
+  # source://erb//lib/erb.rb#987
   def run(b = T.unsafe(nil)); end
 
   # :markup: markdown
@@ -313,7 +313,7 @@ class ERB
   #  @trim_mode=nil>
   # ```
   #
-  # source://erb//lib/erb.rb#972
+  # source://erb//lib/erb.rb#973
   def set_eoutvar(compiler, eoutvar = T.unsafe(nil)); end
 
   # :markup: markdown
@@ -358,7 +358,7 @@ class ERB
   # _foo
   # ```
   #
-  # source://erb//lib/erb.rb#900
+  # source://erb//lib/erb.rb#901
   def src; end
 
   private
@@ -380,7 +380,7 @@ class ERB
   #
   # [default binding]: rdoc-ref:ERB@Default+Binding
   #
-  # source://erb//lib/erb.rb#1051
+  # source://erb//lib/erb.rb#1052
   def new_toplevel(vars = T.unsafe(nil)); end
 
   class << self
@@ -613,7 +613,7 @@ class ERB::Compiler::PercentLine
 
   # Returns the value of attribute value.
   #
-  # source://erb//lib/erb/compiler.rb#78
+  # source://erb//lib/erb/compiler.rb#79
   def to_s; end
 
   # Returns the value of attribute value.
@@ -661,7 +661,7 @@ class ERB::Compiler::Scanner
     # source://erb//lib/erb/compiler.rb#101
     def make_scanner(src, trim_mode, percent); end
 
-    # source://erb//lib/erb/compiler.rb#86
+    # source://erb//lib/erb/compiler.rb#94
     def regist_scanner(klass, trim_mode, percent); end
 
     # source://erb//lib/erb/compiler.rb#86
@@ -761,7 +761,7 @@ module ERB::DefMethod
     # define _methodname_ as instance method of current module, using ERB
     # object or eRuby file
     #
-    # source://erb//lib/erb/def_method.rb#36
+    # source://erb//lib/erb/def_method.rb#46
     def def_erb_method(methodname, erb_or_fname); end
   end
 end
@@ -786,9 +786,12 @@ module ERB::Util
 
   private
 
+  # source://erb//lib/erb/util.rb#48
+  def h(_arg0); end
+
   # cgi.gem <= v0.3.2
   #
-  # source://erb//lib/erb/util.rb#64
+  # source://erb//lib/erb/util.rb#74
   def u(s); end
 
   # cgi.gem <= v0.3.2
@@ -797,14 +800,20 @@ module ERB::Util
   def url_encode(s); end
 
   class << self
+    # source://erb//lib/erb/util.rb#49
+    def h(_arg0); end
+
+    # source://erb//lib/erb/util.rb#47
+    def html_escape(_arg0); end
+
     # cgi.gem <= v0.3.2
     #
-    # source://erb//lib/erb/util.rb#64
+    # source://erb//lib/erb/util.rb#75
     def u(s); end
 
     # cgi.gem <= v0.3.2
     #
-    # source://erb//lib/erb/util.rb#64
+    # source://erb//lib/erb/util.rb#76
     def url_encode(s); end
   end
 end
