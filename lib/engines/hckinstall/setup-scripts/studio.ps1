@@ -50,10 +50,6 @@ function Stage-One {
         }
     }
 
-    Write-Output "Adding clients Powershell remoting port proxy..."
-    Execute-Command -Path "netsh.exe" -Arguments "interface portproxy add v4tov4 listenport=4002 connectaddress=${CONTROLNET}.2 connectport=5985"
-    Execute-Command -Path "netsh.exe" -Arguments "interface portproxy add v4tov4 listenport=4003 connectaddress=${CONTROLNET}.3 connectport=5985"
-
     Enable-PowerShellRemoting
     Enable-NtpServer
 
