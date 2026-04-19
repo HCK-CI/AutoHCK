@@ -17,6 +17,7 @@ Test configuration has the following options:
 - **desc** - String description of the command
 - **host_run** - Optional string command to run on the host
 - **guest_run** - Optional string command to run on each client VM
+- **guest_run_interactive** - Optional boolean (default: `false`). When `true`, `guest_run` is executed in the interactive desktop session (Session 1) via a UI agent instead of WinRM (Session 0). Useful for commands that need UI access. The command is synchronous with a default timeout of 120 seconds.
 - **guest_reboot** - This option is only applicable to post-start commands and is ignored for pre and post test commands. It controls whether the guest VM should be rebooted after certain operations, but has no effect in this context.
 - **files_action** - Array of file operations to perform
 
@@ -33,12 +34,12 @@ Test configuration has the following options:
 Test configuration is executed in the following order:
 
 1. **Pre test commands**
-   1. Guest command is executed on each client VM
+   1. Guest command is executed on each client VM (via WinRM or interactive session depending on `guest_run_interactive`)
    2. Host command is executed on the host
    3. Files action is executed
 2. **Test execution**
 3. **Post test commands**
-   1. Guest command is executed on each client VM
+   1. Guest command is executed on each client VM (via WinRM or interactive session depending on `guest_run_interactive`)
    2. Host command is executed on the host
    3. Files action is executed
 

@@ -38,6 +38,7 @@ module AutoHCK
       @test_results = []
       @results_template = ERB.new(File.read('lib/templates/report.html.erb'))
       @replacement_map = ReplacementMap.new({ '@workspace@' => @project.workspace_path })
+      @ui_executors = {}
     end
 
     sig { params(updated_tests: T::Array[Models::HLK::Test]).returns(T::Array[Models::HLK::Test]) }
@@ -203,8 +204,31 @@ module AutoHCK
     def run_guest_test_command(command, replacement)
       return unless command.guest_run
 
-      run_command_on_client(@client, command.guest_run, command.desc, replacement)
-      run_command_on_client(@support, command.guest_run, command.desc, replacement) unless @support.nil?
+      if command.guest_run_interactive
+        run_interactive_command_on_client(@client, command.guest_run, command.desc, replacement)
+        run_interactive_command_on_client(@support, command.guest_run, command.desc, replacement) unless @support.nil?
+      else
+        run_command_on_client(@client, command.guest_run, command.desc, replacement)
+        run_command_on_client(@support, command.guest_run, command.desc, replacement) unless @support.nil?
+      end
+    end
+
+    def client_ui_executor(client)
+      @ui_executors[client.name] ||= UIExecutor.new(@tools, client.name, @logger, @project.config['windows_username'])
+    end
+
+    def run_interactive_command_on_client(client, command, desc, replacement)
+      @logger.info("Running command in an interactive session (#{desc}) on client #{client.name}")
+      updated_command = client.replacement_map.merge(@replacement_map).merge(replacement).replace(command)
+      @logger.debug("Running interactive session command after replacement (#{desc}) " \
+                    "on client #{client.name}: #{updated_command}")
+
+      result = client_ui_executor(client).run(updated_command)
+      return if result['exit_code'].zero?
+
+      raise UIExecutor::CommandError,
+            "Interactive session command (#{desc}) on #{client.name} failed " \
+            "(exit_code=#{result['exit_code']}): #{result['stderr']}"
     end
 
     def run_host_test_command(command)
