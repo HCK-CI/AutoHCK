@@ -51,6 +51,7 @@ module AutoHCK
       const :desc, String
       const :host_run, T.nilable(String)
       const :guest_run, T.nilable(String)
+      const :guest_run_interactive, T::Boolean, default: false
       const :guest_reboot, T::Boolean, default: false
       const :files_action, T::Array[FileActionConfig], default: []
     end

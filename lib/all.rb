@@ -78,4 +78,5 @@ module AutoHCK
   autoload_relative :Tests, 'engines/hcktest/tests'
   autoload_relative :Tools, 'engines/hcktest/tools'
   autoload_relative :Trap, 'trap'
+  autoload_relative :UIExecutor, 'auxiliary/ui_agent/ui_executor'
 end

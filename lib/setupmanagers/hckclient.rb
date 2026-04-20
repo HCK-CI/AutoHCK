@@ -81,13 +81,29 @@ module AutoHCK
     end
 
     def run_post_start_commands
+      @ui_executor = nil
       post_start_commands&.each do |command|
         desc = command.desc
-        @logger.info("Running command (#{desc}) on client #{@name}")
-        updated_command = @replacement_map.create_cmd(command.guest_run)
-        @logger.debug("Running command after replacement (#{desc}) on client #{@name}: #{updated_command}")
 
-        @tools.run_on_machine(@name, desc, updated_command)
+        if command.guest_run_interactive
+          @logger.info("Running command in an interactive session (#{desc}) on client #{@name}")
+          updated_command = @replacement_map.replace(command.guest_run)
+          @logger.debug("Running interactive session command after replacement (#{desc}) " \
+                        "on client #{@name}: #{updated_command}")
+          @ui_executor ||= UIExecutor.new(@tools, @name, @logger, @project.config['windows_username'])
+          result = @ui_executor.run(updated_command)
+          unless result['exit_code'].zero?
+            raise ClientRunError,
+                  "Interactive session command (#{desc}) on #{@name} failed " \
+                  "(exit_code=#{result['exit_code']}): #{result['stderr']}"
+          end
+        else
+          @logger.info("Running command (#{desc}) on client #{@name}")
+          updated_command = @replacement_map.create_cmd(command.guest_run)
+          @logger.debug("Running command after replacement (#{desc}) on client #{@name}: #{updated_command}")
+          @tools.run_on_machine(@name, desc, updated_command)
+        end
+
         next unless command.guest_reboot
 
         @logger.info("Rebooting client #{@name} after command (#{desc})")
