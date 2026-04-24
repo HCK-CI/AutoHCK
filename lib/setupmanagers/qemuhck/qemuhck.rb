@@ -24,6 +24,7 @@ module AutoHCK
       initialize_studio_vm
       initialize_clients_vm
       create_qemuhck_log_file
+      @project.notification_manager.post_setup_manager_init(self)
     end
 
     def initialize_project(project)
@@ -203,19 +204,31 @@ module AutoHCK
     end
 
     def run_studio(scope, run_opts = nil)
+      @project.notification_manager.pre_setup_manager_run_studio(self, run_opts)
       @studio_vm.run(scope, run_opts)
+    ensure
+      @project.notification_manager.post_setup_manager_run_studio(self, run_opts)
     end
 
     def run_client(scope, name, run_opts = nil)
+      @project.notification_manager.pre_setup_manager_run_client(self, name, run_opts)
       @clients_vm[name].run(scope, run_opts)
+    ensure
+      @project.notification_manager.post_setup_manager_run_client(self, name, run_opts)
     end
 
     def run_hck_studio(scope, run_opts)
+      @project.notification_manager.pre_setup_manager_run_hck_studio(self, run_opts)
       HCKStudio.new(self, scope, run_opts) { @studio_vm.find_world_ip }
+    ensure
+      @project.notification_manager.post_setup_manager_run_hck_studio(self, run_opts)
     end
 
     def run_hck_client(scope, studio, name, run_opts)
+      @project.notification_manager.pre_setup_manager_run_hck_client(self, studio, name, run_opts)
       HCKClient.new(self, scope, studio, name, run_opts)
+    ensure
+      @project.notification_manager.post_setup_manager_run_hck_client(self, studio, name, run_opts)
     end
 
     def self.enter(workspace_path)

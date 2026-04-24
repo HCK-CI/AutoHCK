@@ -1,0 +1,27 @@
+{
+  "_readme": "Optional 'hooks' object maps Ruby notification method names to executable scripts. Paths are relative to this file's directory unless absolute. Omit hooks you do not need.",
+  "hooks": {
+    "post_project_init": "example_hook.sh",
+    "pre_project_run": "example_hook.sh",
+    "post_project_run": "example_hook.sh",
+    "post_engine_init": "example_hook.sh",
+    "pre_engine_run": "example_hook.sh",
+    "post_engine_run": "example_hook.sh",
+    "post_setup_manager_init": "example_hook.sh",
+    "pre_setup_manager_run_hck_studio": "example_hook.sh",
+    "post_setup_manager_run_hck_studio": "example_hook.sh",
+    "pre_setup_manager_run_studio": "example_hook.sh",
+    "post_setup_manager_run_studio": "example_hook.sh",
+    "pre_setup_manager_run_hck_client": "example_hook.sh",
+    "post_setup_manager_run_hck_client": "example_hook.sh",
+    "pre_setup_manager_run_client": "example_hook.sh",
+    "post_setup_manager_run_client": "example_hook.sh",
+    "pre_tests_run": "example_hook.sh",
+    "post_tests_run": "example_hook.sh",
+    "pre_tests_queue_test": "example_hook.sh",
+    "pre_tests_on_test_start": "example_hook.sh",
+    "pre_tests_handle_finished_test_results": "example_hook.sh",
+    "pre_tests_handle_finished_test_result": "example_hook.sh",
+    "close": "example_hook.sh"
+  }
+}

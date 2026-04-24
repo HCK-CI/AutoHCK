@@ -28,6 +28,7 @@ module AutoHCK
       @extensions = find_extensions
       prepare_extra_sw
       validate_paths unless @driver_path.nil?
+      @project.notification_manager.post_engine_init(self)
     end
 
     def test_steps
@@ -345,6 +346,7 @@ module AutoHCK
     end
 
     def run
+      @project.notification_manager.pre_engine_run(self)
       upload_driver_package unless @driver_path.nil?
 
       if @project.options.test.dump
@@ -358,6 +360,8 @@ module AutoHCK
       else
         auto_run
       end
+    ensure
+      @project.notification_manager.post_engine_run(self)
     end
 
     def result_uploader_needed?
