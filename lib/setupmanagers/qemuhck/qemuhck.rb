@@ -142,9 +142,26 @@ module AutoHCK
 
     def hypervisor_dependencies_package_info
       binary_path = `which #{@studio_vm.config['swtpm_bin']} 2>/dev/null`.strip
-      return 'swtpm binary not found' if binary_path.empty?
 
-      @package_manager.query_package(binary_path) || "Unknown package for #{binary_path}"
+      swtpm = if binary_path.empty?
+                'swtpm binary not found'
+              else
+                @package_manager.query_package(binary_path) || "Unknown package for #{binary_path}"
+              end
+      data = [
+        { name: 'swtpm package', value: swtpm }
+      ]
+
+      fw_binaries = @studio_vm.fw['binary']
+      if fw_binaries&.any?
+        binary_path = fw_binaries.values.first
+        data << {
+          name: 'OVMF package',
+          value: @package_manager.query_package(binary_path) || "Unknown package for #{binary_path}"
+        }
+      end
+
+      data
     end
 
     def host_info
@@ -153,12 +170,15 @@ module AutoHCK
 
     def append_host_info(logs)
       logs << <<~HOST_INFO
+        System information: #{host_info}
         QEMU version: #{hypervisor_info}
         QEMU package: #{hypervisor_package_info}
-        swtpm package: #{hypervisor_dependencies_package_info}
-        System information: #{host_info}
-
       HOST_INFO
+
+      hypervisor_dependencies_package_info.each do |info|
+        logs << "#{info[:name]}: #{info[:value]}\n"
+      end
+      logs << "\n"
     end
 
     def append_vms_info(logs)

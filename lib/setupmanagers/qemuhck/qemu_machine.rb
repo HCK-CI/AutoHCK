@@ -142,7 +142,7 @@ module AutoHCK
 
     include Helper
 
-    attr_reader :config
+    attr_reader :config, :fw
 
     MONITOR_BASE_PORT = 10_000
     VNC_BASE_PORT = 5900

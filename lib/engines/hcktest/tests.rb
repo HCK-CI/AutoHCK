@@ -410,11 +410,15 @@ module AutoHCK
 
     def build_system_info_data
       host_info = {}
-      qemu_version = @project.setup_manager.hypervisor_package_info
-      swtpm_version = @project.setup_manager.hypervisor_dependencies_package_info
+      sm = @project.setup_manager
+      host_info['Host info'] = sm.host_info
 
+      qemu_version = sm.hypervisor_package_info
       host_info['QEMU package version'] = qemu_version unless qemu_version.nil? || qemu_version.empty?
-      host_info['swtpm package version'] = swtpm_version unless swtpm_version.nil? || swtpm_version.empty?
+      sm.hypervisor_dependencies_package_info.each do |info|
+        info_value = info[:value]
+        host_info[info[:name]] = info_value unless info_value.nil? || info_value.empty?
+      end
 
       { 'guest' => @clients_system_info, 'host' => host_info }
     end
