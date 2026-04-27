@@ -46,10 +46,7 @@ module AutoHCK
       client = HTTPClient.new
       client.ssl_config.set_default_paths
 
-      head = client.head(url, follow_redirect: true)
-      raise(AutoHCKError, "Download failed with code #{head.status}") unless head.status == 200
-
-      total_size = head.headers['Content-Length'].to_i
+      total_size = load_total_size(client, url)
 
       File.open(path, 'wb') do |file|
         client.get(url, follow_redirect: true) do |chunk|
@@ -57,6 +54,13 @@ module AutoHCK
           log_progress(total_size, file.size)
         end
       end
+    end
+
+    def load_total_size(client, url)
+      head = client.head(url, follow_redirect: true)
+      raise(AutoHCKError, "Failed to retrieve content length for #{url}") unless head.status == 200
+
+      head.headers['Content-Length'].to_i
     end
   end
 end

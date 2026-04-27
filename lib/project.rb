@@ -208,10 +208,8 @@ module AutoHCK
         return
       end
 
-      @workspace_path = File.join(@config['workspace_path'],
-                                  @engine_name,
-                                  @engine_tag,
-                                  @timestamp)
+      @workspace_path = File.join(@config['workspace_path'], @engine_name,
+                                  @engine_tag, @timestamp)
       begin
         FileUtils.mkdir_p(@workspace_path)
       rescue Errno::EEXIST
