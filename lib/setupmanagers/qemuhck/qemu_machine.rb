@@ -187,7 +187,7 @@ module AutoHCK
       @device_commands = []
       @machine_options = %w[@machine_name@]
       @device_extra_param = []
-      @cpu_options = %w[@cpu@ +x2apic +fsgsbase model=@cpu_model@]
+      @cpu_options = %w[@cpu@]
       @drive_cache_options = []
       @define_variables = {}
       @run_opts = {}
@@ -375,8 +375,8 @@ module AutoHCK
                            '@source@' => Dir.pwd,
                            '@workspace@' => @workspace_path,
                            '@cpu@' => option_config('cpu'),
+                           '@cpu_options@' => option_config('cpu_options'),
                            '@cpu_count@' => option_config('cpu_count'),
-                           '@cpu_model@' => option_config('cpu_model'),
                            '@vnc_id@' => @vnc_id,
                            '@vnc_port@' => @vnc_port,
                            '@qemu_monitor_port@' => @monitor_port

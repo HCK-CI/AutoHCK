@@ -13,9 +13,9 @@
   "share_on_host_net": "192.168.101",
   "platforms_defaults": {
     "cpu": "qemu64",
+    "cpu_options": "+x2apic,+fsgsbase,model=13",
     "cpu_count": 2,
     "memory_gb": 4,
-    "cpu_model": 13,
     "world_net_device": "e1000e",
     "ctrl_net_device": "e1000e",
     "debug_net_device": "e1000e",
