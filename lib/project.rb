@@ -31,8 +31,6 @@ module AutoHCK
     end
 
     def images_names_query_output
-      raise(AutoHCKError, "Platform #{@options.test.platform} not found") if @engine_platform.nil?
-
       lines = ["Studio image: #{@engine_platform['st_image']}"]
       @engine_platform['clients'].each_value do |client|
         lines << "Client #{client['name']}: #{client['image']}"
