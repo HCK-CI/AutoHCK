@@ -18,7 +18,14 @@ describe 'JSON override mechanism (Helper::Json + Config)', :integration do
         base_path = File.join(dir, 'data.json')
         override_path = File.join(dir, 'custom_override.json')
 
-        File.write(base_path, JSON.dump('top' => { 'a' => 1, 'keep' => true }, 'leaf' => 0))
+        File.write(
+          base_path,
+          JSON.dump(
+            'top' => { 'a' => 1, 'keep' => true },
+            'leaf' => 0,
+            'only_in_base' => 'preserved'
+          )
+        )
         File.write(
           override_path,
           JSON.dump(base_path => { 'top' => { 'b' => 2 }, 'leaf' => 99 })
@@ -29,6 +36,7 @@ describe 'JSON override mechanism (Helper::Json + Config)', :integration do
 
         expect(data['top']).to eq('a' => 1, 'b' => 2, 'keep' => true)
         expect(data['leaf']).to eq(99)
+        expect(data['only_in_base']).to eq('preserved')
       end
     end
 
@@ -64,7 +72,14 @@ describe 'JSON override mechanism (Helper::Json + Config)', :integration do
     it 'applies overrides when keys use config.json like production' do
       Dir.mktmpdir('config_override') do |dir|
         Dir.chdir(dir) do
-          File.write('config.json', JSON.dump('workspace_path' => '/original', 'nested' => { 'k' => 1 }))
+          File.write(
+            'config.json',
+            JSON.dump(
+              'workspace_path' => '/original',
+              'nested' => { 'k' => 1, 'untouched' => true },
+              'only_in_config' => 'still_here'
+            )
+          )
           File.write(
             'my_override.json',
             JSON.dump('config.json' => { 'workspace_path' => '/overridden', 'nested' => { 'k' => 2, 'extra' => 3 } })
@@ -74,7 +89,8 @@ describe 'JSON override mechanism (Helper::Json + Config)', :integration do
           cfg = AutoHCK::Config.read
 
           expect(cfg['workspace_path']).to eq('/overridden')
-          expect(cfg['nested']).to eq('k' => 2, 'extra' => 3)
+          expect(cfg['nested']).to eq('k' => 2, 'extra' => 3, 'untouched' => true)
+          expect(cfg['only_in_config']).to eq('still_here')
         end
       end
     end
