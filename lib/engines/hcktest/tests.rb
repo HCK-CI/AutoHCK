@@ -190,7 +190,7 @@ module AutoHCK
       select_test_config(test_name, :skip_retry).any? { _1 == true }
     end
 
-    def run_command_on_client(client, command, desc, replacement)
+    def run_command_on_client(client, command, desc, guest_reboot, replacement)
       @logger.info("Running command (#{desc}) on client #{client.name}")
       # Don't use create_cmd because it calls shellescape that performs wrong escaping for Windows commands
       # E.g. it escapes backslashes that are used in Windows paths
@@ -198,18 +198,20 @@ module AutoHCK
       @logger.debug("Running command after replacement (#{desc}) on client #{client.name}: #{updated_command}")
 
       @tools.run_on_machine(client.name, desc, updated_command)
+
+      return unless guest_reboot
+
+      @logger.info("Rebooting client #{client.name} after command (#{desc})")
+      @tools.restart_machine(client.name)
     end
 
     def run_guest_test_command(command, replacement)
       return unless command.guest_run
 
-      run_command_on_client(@client, command.guest_run, command.desc, replacement)
-      run_command_on_client(@support, command.guest_run, command.desc, replacement) unless @support.nil?
+      run_command_on_client(@client, command.guest_run, command.desc, command.guest_reboot, replacement)
+      return if @support.nil?
 
-      return unless command.guest_reboot
-
-      @logger.info("Rebooting client #{@client.name} after command (#{command.desc})")
-      @tools.restart_machine(@client.name)
+      run_command_on_client(@support, command.guest_run, command.desc, command.guest_reboot, replacement)
     end
 
     def run_host_test_command(command)
