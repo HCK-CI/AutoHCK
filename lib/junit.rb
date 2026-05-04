@@ -20,21 +20,29 @@ module AutoHCK
       @project.engine.drivers.map(&:short).join(',')
     end
 
-    def run_properties
-      sm = @project.setup_manager
-
+    def project_properties
       {
         'engine' => @project.engine_name,
         'platform' => @project.engine_platform&.dig('name') || 'unknown',
         'svvp' => @project.options.test.svvp,
         'drivers' => run_property_drivers,
-        'hypervisor' => sm&.hypervisor_info,
-        'hypervisor_package' => sm&.hypervisor_package_info,
-        'hypervisor_dependencies_package' => sm&.hypervisor_dependencies_package_info,
-        'host' => sm&.host_info,
         'results_url' => @project.result_uploader&.url,
         'results_html' => @project.result_uploader&.html_url
       }
+    end
+
+    def setup_manager_properties
+      sm = @project.setup_manager
+      {
+        'hypervisor' => sm&.hypervisor_info,
+        'hypervisor_package' => sm&.hypervisor_package_info,
+        'hypervisor_dependencies_package' => sm&.hypervisor_dependencies_package_info,
+        'host' => sm&.host_info
+      }
+    end
+
+    def run_properties
+      project_properties.merge(setup_manager_properties)
     end
 
     def tag
