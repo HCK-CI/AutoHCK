@@ -91,7 +91,8 @@ module AutoHCK
         next unless command.guest_reboot
 
         @logger.info("Rebooting client #{@name} after command (#{desc})")
-        @tools.restart_machine(@name)
+        # Reconfigure machine calls reboot, so no need to call reboot separately here.
+        # No extra wait needed, reconfigure_machine waits until machine is ready in HCK Controller.
         reconfigure_machine
       end
     end
