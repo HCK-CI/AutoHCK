@@ -44,6 +44,11 @@ RSpec.configure do |config|
   # triggering implicit auto-inclusion in groups with matching metadata.
   config.shared_context_metadata_behavior = :apply_to_host_groups
 
+  # Examples tagged :linux_process spawn real subprocesses (coreutils, optional QEMU).
+  # Disable: SKIP_LINUX_PROCESS=1 bundle exec rspec
+  # Or exclude by tag: bundle exec rspec --tag ~linux_process
+  config.filter_run_excluding linux_process: true if ENV['SKIP_LINUX_PROCESS'] == '1'
+
 # The settings below are suggested to provide a good initial experience
 # with RSpec, but feel free to customize to your heart's content.
 =begin
