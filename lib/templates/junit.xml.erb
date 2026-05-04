@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites
     name="<%= tag %>"
-    tests="<%= engine_test_steps.count %>"
-    failures="<%= engine_test_steps.count { _1.status == Models::HLK::TestResultStatus::Failed } %>"
-    errors="0"
-    skipped="<%= engine_test_steps.count(&:is_skipped) %>"
+    tests="<%= junit_suite_tests_count %>"
+    failures="<%= junit_suite_failures_count %>"
+    errors="<%= junit_suite_errors_count %>"
+    skipped="<%= junit_suite_skipped_count %>"
     time="<%= engine_test_steps.sum { _1.execution_time } %>"
     timestamp="<%= timestamp %>">
     <testsuite
         name="<%= tag %>"
-        tests="<%= engine_test_steps.count %>"
-        failures="<%= engine_test_steps.count { _1.status == Models::HLK::TestResultStatus::Failed } %>"
-        errors="0"
-        skipped="<%= engine_test_steps.count(&:is_skipped) %>"
+        tests="<%= junit_suite_tests_count %>"
+        failures="<%= junit_suite_failures_count %>"
+        errors="<%= junit_suite_errors_count %>"
+        skipped="<%= junit_suite_skipped_count %>"
         time="<%= engine_test_steps.sum { _1.execution_time } %>"
         timestamp="<%= timestamp %>">
         <properties>
@@ -35,5 +35,17 @@
                 <% end %>
             </testcase>
         <% end %>
+
+        <testcase name="AutoHCK session" classname="AutoHCK" time="0">
+            <% if autohck_project_status == :error %>
+                <error message="AutoHCK framework error" />
+            <% elsif autohck_project_status == :failed %>
+                <failure message="One or more tests failed" />
+            <% elsif autohck_project_status == :canceled %>
+                <skipped message="Session canceled" />
+            <% elsif autohck_project_status == :running %>
+                <skipped message="Use skipped status to show that the project did not complete, but the test steps that ran should still be considered valid results." />
+            <% end %>
+        </testcase>
     </testsuite>
 </testsuites>

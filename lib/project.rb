@@ -13,7 +13,7 @@ module AutoHCK
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :id,
                 :workspace_path, :result_uploader, :engine_tag,
                 :engine_platform, :engine_type, :options, :extra_sw_manager,
-                :run_terminated, :engine_name, :string_log
+                :run_terminated, :engine_name, :string_log, :status
 
     def initialize(scope, options)
       @scope = scope
@@ -78,6 +78,8 @@ module AutoHCK
     end
 
     def run
+      generate_result_report
+      generate_junit
       @engine.run
     end
 
@@ -124,6 +126,7 @@ module AutoHCK
       @engine_platform = @engine_type.platform(@logger, @options)
       @setup_manager_type = @engine_platform.nil? ? nil : SetupManager.select(@engine_platform['setupmanager'])
       @run_terminated = false
+      @status = :running
       @junit = JUnit.new(self)
       @result_report = ResultReport.new(self)
     end
@@ -195,6 +198,7 @@ module AutoHCK
 
       return unless @run_terminated
 
+      @status = :canceled
       @logger.warn('Pull request changed, terminating CI')
       @github.handle_cancel
     end
@@ -231,11 +235,17 @@ module AutoHCK
     end
 
     def handle_cancel
+      @logger.warn('Project was canceled')
+
       @github.handle_cancel if @github&.connected?
+      @status = :canceled
     end
 
     def handle_error
+      @logger.error('Project error occurred')
+
       @github.handle_error if @github&.connected?
+      @status = :error
     end
 
     def generate_junit
@@ -264,10 +274,26 @@ module AutoHCK
       return if query_mode?
 
       @logger.debug('Closing AutoHCK project')
+      # If the session is still :running, derive outcome from completed test steps (vs framework :error / :canceled).
+      @status = completion_status_from_test_steps if @status == :running
       generate_result_report
       generate_junit
 
       @result_uploader&.upload_file(@logfile_path, 'AutoHCK.log')
+    end
+
+    private
+
+    def completion_status_from_test_steps
+      return :passed unless engine.respond_to?(:test_steps)
+
+      failed = engine.test_steps.any? do |step|
+        !step.is_skipped &&
+          step.status == Models::HLK::TestResultStatus::Failed &&
+          step.executionstate == Models::HLK::ExecutionState::NotRunning
+      end
+
+      failed ? :failed : :passed
     end
   end
 end

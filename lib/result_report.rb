@@ -26,6 +26,7 @@ module AutoHCK
     def report_data(test_steps)
       {
         'tag' => @project.engine_tag,
+        'status' => @project.status.to_s,
         'test_stats' => test_stats(test_steps),
         'test_steps' => test_steps,
         'url' => @project.result_uploader.url,

@@ -27,7 +27,8 @@ module AutoHCK
         'svvp' => @project.options.test.svvp,
         'drivers' => run_property_drivers,
         'results_url' => @project.result_uploader&.url,
-        'results_html' => @project.result_uploader&.html_url
+        'results_html' => @project.result_uploader&.html_url,
+        'status' => @project.status.to_s
       }
     end
 
@@ -65,6 +66,31 @@ module AutoHCK
           [Models::HLK::TestResultStatus::Failed,
            Models::HLK::TestResultStatus::Passed].include?(step.status)
       end
+    end
+
+    def autohck_project_status
+      @project.status
+    end
+
+    def junit_failed_test_steps_count
+      engine_test_steps.count { _1.status == Models::HLK::TestResultStatus::Failed }
+    end
+
+    def junit_suite_tests_count
+      engine_test_steps.count + 1
+    end
+
+    def junit_suite_failures_count
+      junit_failed_test_steps_count + (autohck_project_status == :failed ? 1 : 0)
+    end
+
+    def junit_suite_errors_count
+      autohck_project_status == :error ? 1 : 0
+    end
+
+    def junit_suite_skipped_count
+      engine_test_steps.count(&:is_skipped) +
+        (%i[canceled running].include?(autohck_project_status) ? 1 : 0)
     end
 
     def generate(file_path)
