@@ -54,8 +54,8 @@ module AutoHCK
 
       @project.engine.test_steps.select do |step|
         step.is_skipped ||
-          [AutoHCK::Models::HLK::TestResultStatus::Failed,
-           AutoHCK::Models::HLK::TestResultStatus::Passed].include?(step.status)
+          [Models::HLK::TestResultStatus::Failed,
+           Models::HLK::TestResultStatus::Passed].include?(step.status)
       end
     end
 
