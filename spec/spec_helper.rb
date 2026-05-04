@@ -49,6 +49,11 @@ RSpec.configure do |config|
   # Or exclude by tag: bundle exec rspec --tag ~linux_process
   config.filter_run_excluding linux_process: true if ENV['SKIP_LINUX_PROCESS'] == '1'
 
+  # Examples tagged :integration (filesystem + full stack slices).
+  # Disable: SKIP_INTEGRATION=1 bundle exec rspec
+  # Or: bundle exec rspec --tag ~integration
+  config.filter_run_excluding integration: true if ENV['SKIP_INTEGRATION'] == '1'
+
 # The settings below are suggested to provide a good initial experience
 # with RSpec, but feel free to customize to your heart's content.
 =begin
