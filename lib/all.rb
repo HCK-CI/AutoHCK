@@ -52,6 +52,7 @@ module AutoHCK
   autoload_relative :InvalidEngineTypeError, 'engines/exceptions'
   autoload_relative :InvalidPathError, 'exceptions'
   autoload_relative :JUnit, 'junit'
+  autoload_relative :ResultReport, 'result_report'
   autoload_relative :MachineError, 'setupmanagers/exceptions'
   autoload_relative :MachinePidNil, 'setupmanagers/exceptions'
   autoload_relative :MachineRunError, 'setupmanagers/exceptions'

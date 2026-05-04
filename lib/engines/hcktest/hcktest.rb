@@ -34,6 +34,11 @@ module AutoHCK
       (@tests&.tests || []) + (@tests&.rejected_tests || [])
     end
 
+    sig { returns(T::Hash[String, T.untyped]) }
+    def clients_system_info
+      @tests&.clients_system_info || {}
+    end
+
     def prepare_extra_sw
       extra_softwares = []
       extra_softwares += @drivers.flat_map(&:extra_software)

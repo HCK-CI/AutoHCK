@@ -22,6 +22,10 @@ module AutoHCK
       []
     end
 
+    def clients_system_info
+      {}
+    end
+
     def run
       ResourceScope.open do |scope|
         @project.logger.info('Stating result uploader token initialization')

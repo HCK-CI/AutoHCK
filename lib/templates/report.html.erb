@@ -58,37 +58,28 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <% tests.each_with_index do |test, idx| %>
-                        <% if test.status == AutoHCK::Models::HLK::TestResultStatus::Passed %>
+                    <% row = 0 %>
+                    <% test_steps.each do |test| %>
+                        <% next if test.is_skipped && !sections.include?('rejected_test') %>
+                        <% row += 1 %>
+                        <% if test.is_skipped %>
+                        <tr class="table-warning">
+                        <% elsif test.status == AutoHCK::Models::HLK::TestResultStatus::Passed %>
                         <tr class="table-success">
                         <% elsif test.status == AutoHCK::Models::HLK::TestResultStatus::Failed %>
                         <tr class="table-danger">
                         <% else %>
                         <tr class="table-secondary">
                         <% end %>
-                            <th scope="row"><%= idx + 1 %></th>
+                            <th scope="row"><%= row %></th>
                             <td>
                                 <% unless test.url.nil? %><a href="<%= test.url %>"><% end %>
                                 <%= test.name %>
                                 <% unless test.url.nil? %></a><% end %>
                             </td>
                             <td><%= test.estimatedruntime %></td>
-                            <td><%= test.status.to_s %></td>
+                            <td><%= test.is_skipped ? 'Skipped' : test.status.to_s %></td>
                         </tr>
-                    <% end %>
-                    <% if sections.include? 'rejected_test' %>
-                    <% rejected_test.each_with_index do |test, idx| %>
-                        <tr class="table-warning">
-                            <th scope="row"><%= tests.length + idx + 1 %></th>
-                            <td>
-                                <% unless test.url.nil? %><a href="<%= test.url %>"><% end %>
-                                <%= test.name %>
-                                <% unless test.url.nil? %></a><% end %>
-                            </td>
-                            <td><%= test.estimatedruntime %></td>
-                            <td>Skipped</td>
-                        </tr>
-                    <% end %>
                     <% end %>
                 </tbody>
             </table>

@@ -179,11 +179,11 @@ module AutoHCK
                 'List of section to reject from HTML results',
                 '(use "--reject-report-sections=help" to list sections)') do |reject_report_sections|
         if reject_report_sections.first == 'help'
-          puts Tests::RESULTS_REPORT_SECTIONS.join("\n")
+          puts ResultReport::DEFAULT_SECTIONS.join("\n")
           exit
         end
 
-        extra_keys = reject_report_sections - Tests::RESULTS_REPORT_SECTIONS
+        extra_keys = reject_report_sections - ResultReport::DEFAULT_SECTIONS
 
         raise(AutoHCKError, "Unknown report sections: #{extra_keys.join(', ')}.") unless extra_keys.empty?
 

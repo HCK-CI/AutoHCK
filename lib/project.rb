@@ -7,6 +7,8 @@ module AutoHCK
     include Helper
 
     JUNIT_RESULT = 'junit.xml'
+    RESULT_REPORT_HTML = 'results.html'
+    RESULT_REPORT_YAML = 'results.yaml'
 
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :id,
                 :workspace_path, :result_uploader, :engine_tag,
@@ -123,6 +125,7 @@ module AutoHCK
       @setup_manager_type = @engine_platform.nil? ? nil : SetupManager.select(@engine_platform['setupmanager'])
       @run_terminated = false
       @junit = JUnit.new(self)
+      @result_report = ResultReport.new(self)
     end
 
     def configure_result_uploader
@@ -244,10 +247,24 @@ module AutoHCK
       @result_uploader.upload_file(results_file, JUNIT_RESULT)
     end
 
+    def generate_result_report
+      html_file = "#{@workspace_path}/#{RESULT_REPORT_HTML}"
+      yaml_file = "#{@workspace_path}/#{RESULT_REPORT_YAML}"
+
+      @result_report.generate(html_file, yaml_file)
+
+      @result_uploader.delete_file(RESULT_REPORT_HTML)
+      @result_uploader.upload_file(html_file, RESULT_REPORT_HTML)
+
+      @result_uploader.delete_file(RESULT_REPORT_YAML)
+      @result_uploader.upload_file(yaml_file, RESULT_REPORT_YAML)
+    end
+
     def close
       return if query_mode?
 
       @logger.debug('Closing AutoHCK project')
+      generate_result_report
       generate_junit
 
       @result_uploader&.upload_file(@logfile_path, 'AutoHCK.log')

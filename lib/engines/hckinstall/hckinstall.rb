@@ -35,6 +35,11 @@ module AutoHCK
       []
     end
 
+    sig { returns(T::Hash[String, T.untyped]) }
+    def clients_system_info
+      {}
+    end
+
     def self.tag(options)
       options.install.platform
     end

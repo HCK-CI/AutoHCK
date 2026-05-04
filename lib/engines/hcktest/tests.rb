@@ -8,7 +8,7 @@ module AutoHCK
     extend T::Sig
     include Helper
 
-    attr_reader :tests
+    attr_reader :tests, :clients_system_info
 
     HANDLE_TESTS_POLLING_INTERVAL = 60
     APPLYING_FILTERS_INTERVAL = 50
@@ -17,9 +17,6 @@ module AutoHCK
     QUEUE_TEST_TIMEOUT = '00:15:00'
     RUNNING_TEST_TIMEOUT = '00:15:00'
     SUMMARY_LOG_FILE = 'logs.txt'
-    RESULTS_FILE = 'results.html'
-    RESULTS_YAML = 'results.yaml'
-    RESULTS_REPORT_SECTIONS = %w[chart guest_info host_info rejected_test url].freeze
     STUDIO_PACKAGE_ASSETS_PATH = 'C:\\AutoHCK\\PackageAssets'
 
     DEFAULT_FILE_ACTION_REMOTE_PATH = 'C:\\'
@@ -36,7 +33,6 @@ module AutoHCK
       @playlist = Playlist.new(client, project, target, tools, @client.kit)
       @tests = T.let([], T::Array[Models::HLK::Test])
       @test_results = []
-      @results_template = ERB.new(File.read('lib/templates/report.html.erb'))
       @replacement_map = ReplacementMap.new({ '@workspace@' => @project.workspace_path })
     end
 
@@ -408,48 +404,6 @@ module AutoHCK
       @logger.info('Test results uploaded via the result uploader')
     end
 
-    def build_system_info_data
-      host_info = {}
-      sm = @project.setup_manager
-      host_info['Host info'] = sm.host_info
-
-      qemu_version = sm.hypervisor_package_info
-      host_info['QEMU package version'] = qemu_version unless qemu_version.nil? || qemu_version.empty?
-      sm.hypervisor_dependencies_package_info.each do |info|
-        info_value = info[:value]
-        host_info[info[:name]] = info_value unless info_value.nil? || info_value.empty?
-      end
-
-      { 'guest' => @clients_system_info, 'host' => host_info }
-    end
-
-    def report_data
-      {
-        'tag' => @tag,
-        'test_stats' => tests_stats,
-        'rejected_test' => @playlist.rejected_test,
-        'tests' => @tests,
-        'url' => @project.result_uploader.url,
-        'system_info' => build_system_info_data,
-        'sections' => RESULTS_REPORT_SECTIONS - @project.options.test.reject_report_sections
-      }
-    end
-
-    def generate_report
-      data = report_data
-
-      results_file = "#{@project.workspace_path}/#{RESULTS_FILE}"
-      results_yaml = "#{@project.workspace_path}/#{RESULTS_YAML}"
-
-      File.write(results_file, @results_template.result_with_hash(data))
-      @project.result_uploader.delete_file(RESULTS_FILE)
-      @project.result_uploader.upload_file(results_file, RESULTS_FILE)
-
-      File.write(results_yaml, data.to_yaml)
-      @project.result_uploader.delete_file(RESULTS_YAML)
-      @project.result_uploader.upload_file(results_yaml, RESULTS_YAML)
-    end
-
     def summary_rejected_test_log
       @playlist.rejected_test.reduce('') do |sum, test|
         sum + "Skipped: #{test.name} [#{test.estimatedruntime}]\n"
@@ -484,8 +438,6 @@ module AutoHCK
       @logger.info('Tests results logs updated via the result uploader')
       @project.result_uploader.update_file_content(logs, SUMMARY_LOG_FILE)
       File.write("#{@project.workspace_path}/#{SUMMARY_LOG_FILE}", logs)
-
-      generate_report
     end
 
     sig do
@@ -611,6 +563,9 @@ module AutoHCK
         @last_queued_test = nil if test.id == @last_queued_test&.id
       end
       print_tests_stats
+
+      @project.generate_result_report
+      @project.generate_junit
     end
 
     def reset_clients_to_ready_state
@@ -745,7 +700,6 @@ module AutoHCK
       @logger.info("Adding to queue: #{test_str}")
       queue_test(test, wait: true)
       handle_test_running
-      @project.generate_junit
 
       run_test_commands(test, :post_test_commands, replacement)
     end
