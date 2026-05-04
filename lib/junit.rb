@@ -28,7 +28,8 @@ module AutoHCK
         'drivers' => run_property_drivers,
         'results_url' => @project.result_uploader&.url,
         'results_html' => @project.result_uploader&.html_url,
-        'status' => @project.status.to_s
+        'status' => @project.status.to_s,
+        'engine_test_steps_count' => @project.engine.test_steps.count
       }
     end
 
