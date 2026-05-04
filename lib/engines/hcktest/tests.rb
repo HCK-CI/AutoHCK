@@ -12,6 +12,7 @@ module AutoHCK
 
     HANDLE_TESTS_POLLING_INTERVAL = 60
     APPLYING_FILTERS_INTERVAL = 50
+    SLEEP_AFTER_REBOOT = 60
     TOOLS_ACTION_RETRIES = 5
     TOOLS_ACTION_SLEEP = 5
     QUEUE_TEST_TIMEOUT = '00:15:00'
@@ -191,18 +192,23 @@ module AutoHCK
     end
 
     def run_command_on_client(client, command, desc, guest_reboot, replacement)
-      @logger.info("Running command (#{desc}) on client #{client.name}")
+      cl_name = client.name
+      @logger.info("Running command (#{desc}) on client #{cl_name}")
       # Don't use create_cmd because it calls shellescape that performs wrong escaping for Windows commands
       # E.g. it escapes backslashes that are used in Windows paths
       updated_command = client.replacement_map.merge(@replacement_map).merge(replacement).replace(command)
-      @logger.debug("Running command after replacement (#{desc}) on client #{client.name}: #{updated_command}")
+      @logger.debug("Running command after replacement (#{desc}) on client #{cl_name}: #{updated_command}")
 
-      @tools.run_on_machine(client.name, desc, updated_command)
+      @tools.run_on_machine(cl_name, desc, updated_command)
 
       return unless guest_reboot
 
-      @logger.info("Rebooting client #{client.name} after command (#{desc})")
-      @tools.restart_machine(client.name)
+      @logger.info("Rebooting client #{cl_name} after command (#{desc}) and sleeping for #{SLEEP_AFTER_REBOOT} seconds")
+      @tools.restart_machine(cl_name)
+      # Reboot takes some time, so we need to wait until machine is ready otherwise next commands can fail
+      # with strange WinRMAuthorizationError error because Windows prevents connections to the machine during reboot
+      # There is no good way to check if machine is ready, so just wait some time after reboot
+      sleep SLEEP_AFTER_REBOOT
     end
 
     def run_guest_test_command(command, replacement)
