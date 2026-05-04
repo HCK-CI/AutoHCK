@@ -76,6 +76,14 @@ describe AutoHCK::QemuMachine::Runner do
       out = `#{Shellwords.shelljoin([qemu, '--version'])} 2>&1`
       expect(out).to match(/qemu/i)
     end
+
+    it 'runs qemu-kvm --version when the binary is on PATH' do
+      qemu = `command -v qemu-kvm 2>/dev/null`.strip
+      skip 'qemu-kvm not in PATH' if qemu.empty?
+
+      out = `#{Shellwords.shelljoin([qemu, '--version'])} 2>&1`
+      expect(out).to match(/qemu/i)
+    end
   end
 end
 # rubocop:enable Metrics/BlockLength
