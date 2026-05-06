@@ -1,0 +1,24 @@
+{
+  "name": "Win2016x64_host",
+  "client_iso": "Win2016x64",
+  "kit": "HLK1607",
+  "setupmanager": "qemuhck",
+  "st_image": "HLK1607.qcow2",
+  "cpu": "host",
+  "clients": {
+    "c1": {
+      "name": "CL1",
+      "cpus": 4,
+      "memory_gb": 8,
+      "winrm_addr": "192.168.100.2",
+      "image": "HLK1607-C1-Win2016x64.qcow2"
+    },
+    "c2": {
+      "name": "CL2",
+      "cpus": 4,
+      "memory_gb": 8,
+      "winrm_addr": "192.168.100.3",
+      "image": "HLK1607-C2-Win2016x64.qcow2"
+    }
+  }
+}
