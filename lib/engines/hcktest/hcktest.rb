@@ -257,7 +257,7 @@ module AutoHCK
 
     def pause_run
       @project.logger.info('AutoHCK switched in manual mode. Waiting for manual exit.')
-      @project.logger.info("Type 'exit' and press ENTER to exit manul mode")
+      @project.logger.info("Type 'exit' and press ENTER to exit manual mode")
 
       # rubocop:disable Lint/Debugger
       binding.irb
