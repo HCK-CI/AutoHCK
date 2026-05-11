@@ -92,6 +92,7 @@ module AutoHCK
     prop :boot_device, T.nilable(String)
     prop :allow_test_duplication, T::Boolean, default: false
     prop :manual, T::Boolean, default: false
+    prop :auto_manual, T::Boolean, default: false
     prop :package_with_playlist, T::Boolean, default: false
     prop :enable_vbs, T::Boolean, default: false
     prop :tag_suffix, T.nilable(String)
@@ -203,6 +204,10 @@ module AutoHCK
       parser.on('--manual', TrueClass,
                 'Run AutoHCK in manual mode',
                 &method(:manual=))
+
+      parser.on('--auto-manual', TrueClass,
+                'Run AutoHCK in normal mode and switch to manual mode only when failure is detected',
+                &method(:auto_manual=))
 
       parser.on('--package-with-playlist', TrueClass,
                 'Load playlist into HLKX project package',

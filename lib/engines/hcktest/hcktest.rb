@@ -249,8 +249,23 @@ module AutoHCK
       end
     end
 
-    def pause_run_if_needed
-      return unless @project.options.test.manual
+    def pause_run_if_needed_and_raise(exception)
+      pause_run_if_needed(exception)
+
+      # Propagate the exception after pausing, the pause can help to investigate the failure cause
+      # Propagating the exception is important to make sure the failure is reflected in the final
+      # result and not hidden by the pause
+      raise exception
+    end
+
+    def pause_run_if_needed(exception = nil)
+      test_options = @project.options.test
+
+      auto_manual_need = test_options.auto_manual &&
+                         (!exception.nil? || @tests&.tests&.any? { _1.status == Models::HLK::TestResultStatus::Failed })
+
+      @logger.debug("Switch to manual mode check: manual=#{test_options.manual} auto_manual_need=#{auto_manual_need}")
+      return unless test_options.manual || auto_manual_need
 
       pause_run
     end
@@ -317,6 +332,8 @@ module AutoHCK
         @tests.run(@test_list - group_tests_by_config.values.flatten)
 
         pause_run_if_needed
+      rescue StandardError => e
+        pause_run_if_needed_and_raise(e)
       end
     end
 
@@ -331,6 +348,8 @@ module AutoHCK
           @tests.run(tests)
 
           pause_run_if_needed
+        rescue StandardError => e
+          pause_run_if_needed_and_raise(e)
         end
       end
     end
