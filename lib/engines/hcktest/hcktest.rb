@@ -249,6 +249,12 @@ module AutoHCK
       end
     end
 
+    def pause_run_if_needed
+      return unless @project.options.test.manual
+
+      pause_run
+    end
+
     def pause_run
       @project.logger.info('AutoHCK switched in manual mode. Waiting for manual exit.')
       @project.logger.info("Type 'exit' and press ENTER to exit manul mode")
@@ -310,7 +316,7 @@ module AutoHCK
         @logger.info('Client ready, running basic tests')
         @tests.run(@test_list - group_tests_by_config.values.flatten)
 
-        pause_run if @project.options.test.manual
+        pause_run_if_needed
       end
     end
 
@@ -324,7 +330,7 @@ module AutoHCK
           @logger.info("Clients ready, running #{group} tests")
           @tests.run(tests)
 
-          pause_run if @project.options.test.manual
+          pause_run_if_needed
         end
       end
     end
