@@ -22,6 +22,11 @@
       ],
       "pre_test_commands": [
         {
+          "desc": "Clear Disk",
+          "comment": "On Server 2019, disk contains 2 partitions after the Flush Test. We need to clear the disk to avoid the next command failure.",
+          "guest_run": "Clear-Disk -Number 1 -Confirm:$false -RemoveData -ErrorAction SilentlyContinue; exit 0"
+        },
+        {
           "desc": "Initialize Disk",
           "guest_run": "Initialize-Disk -Number 1 -PartitionStyle GPT -ErrorAction SilentlyContinue; exit 0"
         },
