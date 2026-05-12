@@ -608,6 +608,7 @@ module AutoHCK
 
     def handle_test_running
       running = T.let(nil, T.nilable(Models::HLK::Test))
+      @project.generate_result_report
 
       until @project.run_terminated
         @project.check_run_termination
