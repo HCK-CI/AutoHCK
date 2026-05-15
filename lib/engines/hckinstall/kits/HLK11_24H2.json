@@ -1,5 +1,6 @@
 {
-  "download_url": "https://go.microsoft.com/fwlink/?linkid=2335862",
+  "download_url": "https://go.microsoft.com/fwlink/?linkid=2364011",
+  "sha256": "f09bf1bde8b4bec37e6525d42e4bf62165386c6de55a2b09bf590a869395267f",
   "extra_software": [
     "winfsp",
     "NDIS65_ndprot683_fix",
