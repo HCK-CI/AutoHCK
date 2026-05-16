@@ -9,6 +9,7 @@ module AutoHCK
     JUNIT_RESULT = 'junit.xml'
     RESULT_REPORT_HTML = 'results.html'
     RESULT_REPORT_YAML = 'results.yaml'
+    DEFAULT_ARCH = 'amd64'
 
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :id,
                 :workspace_path, :result_uploader, :engine_tag,
