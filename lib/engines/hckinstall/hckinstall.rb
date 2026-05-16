@@ -394,6 +394,11 @@ module AutoHCK
       build_answer_file_path(file, disk_config)
     end
 
+    def client_platform_arch(client_name)
+      client = @project.engine_platform['clients'].values.find { |c| c['name'] == client_name }
+      client&.dig('arch') || @project.engine_platform['client_arch'] || Project::DEFAULT_ARCH
+    end
+
     def create_studio_answer_files
       studio = @studio_iso_info['studio']
       if studio.nil?
@@ -408,7 +413,8 @@ module AutoHCK
         '@PRODUCT_KEY@' => product_key,
         '@PRODUCT_KEY_XML@' => product_key_xml(product_key),
         '@HOST_TYPE@' => 'studio',
-        '@DEFAULT_PASSWORD@' => @project.config['windows_password']
+        '@DEFAULT_PASSWORD@' => @project.config['windows_password'],
+        '@PROCESSOR_ARCHITECTURE@' => Project::DEFAULT_ARCH
       }
       @answer_files.each do |file|
         file_gsub(build_studio_answer_file_path(file),
@@ -447,7 +453,8 @@ module AutoHCK
         '@PRODUCT_KEY@' => product_key,
         '@PRODUCT_KEY_XML@' => product_key_xml(product_key),
         '@HOST_TYPE@' => 'client',
-        '@DEFAULT_PASSWORD@' => @project.config['windows_password']
+        '@DEFAULT_PASSWORD@' => @project.config['windows_password'],
+        '@PROCESSOR_ARCHITECTURE@' => client_platform_arch(client_name)
       }
       @answer_files.each do |file|
         file_gsub(build_client_answer_file_path(file, client_name),
