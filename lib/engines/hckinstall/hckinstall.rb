@@ -91,17 +91,28 @@ module AutoHCK
       res || raise(InvalidConfigFile, "Kit studio platform for kit #{kit} does not exist")
     end
 
+    def init_clients_iso_info
+      @client_iso_infos = {}
+      @setup_client_isos = {}
+      fallback_iso = @project.engine_platform['client_iso']
+
+      @project.engine_platform['clients'].each_value do |client|
+        iso_name = client['client_iso'] || fallback_iso
+        client_name = client['name']
+
+        @logger.info("Client ISO name for #{client_name} is #{iso_name}")
+        @client_iso_infos[client_name] = read_iso(iso_name)
+        @setup_client_isos[client_name] = Pathname.new(@project.workspace_path).join("setup-client-#{client_name}.iso")
+      end
+    end
+
     def init_iso_info
       studio_iso = studio_iso_name(@project.engine_platform['kit'])
       @logger.info("Studio ISO name is #{studio_iso}")
       @studio_iso_info = read_iso(studio_iso)
-
-      client_iso = @project.engine_platform['client_iso']
-      @logger.info("Client ISO name is #{client_iso}")
-      @client_iso_info = read_iso(client_iso)
-
       @setup_studio_iso = Pathname.new(@project.workspace_path).join('setup-studio.iso')
-      @setup_client_iso = Pathname.new(@project.workspace_path).join('setup-client.iso')
+
+      init_clients_iso_info
     end
 
     def init_class_variables
@@ -128,16 +139,18 @@ module AutoHCK
         raise(InvalidPathError, "Studio ISO path #{studio_iso_full_path} is not valid")
       end
 
-      client_iso_full_path = @iso_path.join(@client_iso_info['path'])
-      return if File.exist?(client_iso_full_path)
+      @client_iso_infos.each do |iso_name, iso_info|
+        client_iso_full_path = @iso_path.join(iso_info['path'])
+        next if File.exist?(client_iso_full_path)
 
-      @logger.fatal("Client ISO path #{client_iso_full_path} is not valid")
-      raise(InvalidPathError, "Client ISO path #{client_iso_full_path} is not valid")
+        @logger.fatal("Client ISO path #{client_iso_full_path} for #{iso_name} is not valid")
+        raise(InvalidPathError, "Client ISO path #{client_iso_full_path} for #{iso_name} is not valid")
+      end
     end
 
     def normalize_paths
       @studio_iso_info['path'].chomp!('/')
-      @client_iso_info['path'].chomp!('/')
+      @client_iso_infos.each_value { |info| info['path'].chomp!('/') }
     end
 
     sig { params(driver: String).returns(Models::Driver) }
@@ -204,8 +217,8 @@ module AutoHCK
       cl_opts = {
         create_snapshot: snapshot,
         attach_iso_list: [
-          @setup_client_iso,
-          @client_iso_info['path']
+          @setup_client_isos[name],
+          @client_iso_infos[name]['path']
         ],
         secure:
       }
@@ -373,8 +386,8 @@ module AutoHCK
       build_answer_file_path(file, disk_config)
     end
 
-    def build_client_answer_file_path(file)
-      fw_type = @project.setup_manager.client_option_config(@clients_name.first, 'fw_type')
+    def build_client_answer_file_path(file, client_name)
+      fw_type = @project.setup_manager.client_option_config(client_name, 'fw_type')
 
       disk_config = load_fw_disk_config(fw_type)
 
@@ -419,13 +432,13 @@ module AutoHCK
                            @workspace_hlk_setup_scripts_path.join('drivers'))
     end
 
-    def create_client_answer_files
-      client = @client_iso_info['client']
+    def create_client_answer_files_for_client(client_name)
+      client = @client_iso_infos[client_name]['client']
       if client.nil?
         @logger.fatal('Client ISO config is invalid, missing "client" section')
         raise(InvalidConfigFile, 'Client ISO config is invalid, missing "client" section')
       end
-      @logger.debug('Creating client answer files')
+      @logger.debug("Creating client answer files for #{client_name}")
 
       product_key = client['product_key']
 
@@ -437,7 +450,7 @@ module AutoHCK
         '@DEFAULT_PASSWORD@' => @project.config['windows_password']
       }
       @answer_files.each do |file|
-        file_gsub(build_client_answer_file_path(file),
+        file_gsub(build_client_answer_file_path(file, client_name),
                   @workspace_hlk_setup_scripts_path.join(file),
                   replacement_list)
       end
@@ -446,13 +459,13 @@ module AutoHCK
     def prepare_client_drives
       @logger.info('HCKInstall: Prepare client drives')
 
-      create_client_answer_files
-
       copy_drivers if @need_copy_drivers
 
-      create_iso(@setup_client_iso, [@workspace_hlk_setup_scripts_path], ['Kits'])
-
-      @clients_name.each { @project.setup_manager.create_client_image(_1) }
+      @clients_name.each do |client_name|
+        create_client_answer_files_for_client(client_name)
+        create_iso(@setup_client_isos[client_name], [@workspace_hlk_setup_scripts_path], ['Kits'])
+        @project.setup_manager.create_client_image(client_name)
+      end
     end
 
     def tag
@@ -488,7 +501,7 @@ module AutoHCK
     def generate_client_image_metadata(client_name)
       @logger.debug("Generating metadata for client image: #{client_name}")
 
-      metadata = image_metadata(@client_iso_info, 'client')
+      metadata = image_metadata(@client_iso_infos[client_name], 'client')
 
       @project.setup_manager.save_client_image_metadata(client_name, metadata)
     end
