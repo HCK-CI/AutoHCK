@@ -311,6 +311,14 @@ module AutoHCK
       extra = option_config('cpu_options')
       return if extra.nil? || extra.empty?
 
+      if extra.is_a?(Hash)
+        raise(
+          QemuHCKError,
+          'cpu_options must resolve to a comma-separated String; ' \
+          "hash configuration requires a matching arch key (#{@options['arch']}) or 'default'"
+        )
+      end
+
       extra.split(',').each { |opt| @cpu_options << opt unless opt.empty? }
     end
 
