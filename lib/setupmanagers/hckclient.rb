@@ -149,7 +149,7 @@ module AutoHCK
 
     def machine_info
       @studio.list_pools.flat_map { |pool| pool['machines'] }
-             .detect { |machine| machine['name'].eql?(@name) }
+                        .detect { |machine| machine['name'].eql?(@name) }
     end
 
     def recognize_client_wait
