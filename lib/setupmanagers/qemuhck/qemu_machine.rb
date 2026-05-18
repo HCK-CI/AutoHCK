@@ -254,9 +254,21 @@ module AutoHCK
     end
 
     def option_config(option)
-      return @options[option] if @options.keys.include? option
+      config_data = if @options.keys.include? option
+                      @options[option]
+                    else
+                      @config['platforms_defaults'][option]
+                    end
 
-      @config['platforms_defaults'][option]
+      # If config_data is not a hash, return it as is.
+      # Otherwise, try to return the value for the architecture or the default one or the hash itself.
+      # This allows using the hash itself as a default value or overriding the value for a specific architecture.
+      return config_data unless config_data.is_a?(Hash)
+
+      return config_data[@options['arch']] if config_data.key?(@options['arch'])
+      return config_data['default'] if config_data.key?('default')
+
+      config_data
     end
 
     def apply_state(name, state)
