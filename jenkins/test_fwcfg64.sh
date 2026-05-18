@@ -7,9 +7,9 @@ test_name="$(basename "${0}" '.sh')"
 cd "${WORKSPACE}"
 
 bin/auto_hck --verbose test \
-    --platform Win2022x64 \
+    --platform Win2025x64_host \
     --drivers fwcfg64 \
-    --driver-path "${VIRTIO_WIN_PATH}/amd64/2k22/" \
+    --driver-path "${VIRTIO_WIN_PATH}/amd64/2k25/" \
     --select-test-names "${WORKSPACE}/jenkins/sanity_tests" \
     --gthb_context_prefix "${test_name}: " \
     --package-with-playlist \
