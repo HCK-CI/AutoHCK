@@ -13,7 +13,10 @@
   "share_on_host_net": "192.168.101",
   "platforms_defaults": {
     "cpu": "host",
-    "cpu_options": "",
+    "cpu_options": {
+      "default": "",
+      "x86": "lm=off,pae=on"
+    },
     "cpu_count": 2,
     "memory_gb": 4,
     "world_net_device": "e1000e",
