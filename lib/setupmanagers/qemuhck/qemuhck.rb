@@ -105,15 +105,21 @@ module AutoHCK
       }.compact
     end
 
-    def initialize_clients_vm
+    def client_vm_options(client_info, index)
       options = drivers_options.merge(platform_client_options)
+      options.merge({
+        'client_id' => index + 1,
+        'image_name' => client_info['image'],
+        'cpu_count' => client_info['cpus'],
+        'memory_gb' => client_info['memory_gb'],
+        'arch' => client_info['arch'] || @platform['client_arch'] || Project::DEFAULT_ARCH
+      }.merge(client_vm_common_options))
+    end
+
+    def initialize_clients_vm
       @platform['clients'].each_with_index do |(_k, v), i|
-        vm_options = options.merge({
-          'client_id' => i + 1,
-          'image_name' => v['image'],
-          'cpu_count' => v['cpus'],
-          'memory_gb' => v['memory_gb']
-        }.merge(client_vm_common_options))
+        vm_options = client_vm_options(v, i)
+        @logger.debug("Creating client VM #{v['name']} with options: #{vm_options}")
         @clients_vm[v['name']] = QemuMachine.new(vm_options)
       end
     end
