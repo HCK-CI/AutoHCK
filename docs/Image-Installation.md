@@ -98,13 +98,51 @@ umount /mnt
 
 Configure AutoHCK to have all information for building VM images. Edit the next files according to templates present in each file.
 
-1. `lib/engines/hckinstall/iso.json` - contains information about Windows ISO for each HCK/HLK platform. The following fields should be configured:
-   - **platform_name** - The platform name should be the same as in the `platforms.json` file.
-   - **path** - contains the path relative to `iso_path` option in the config file to the corresponding ISO image.
-   - **windows_image_names** - contains image name from `install.wim` file in ISO. To get a list of available images use the next commands:
-      * `dism /get-wiminfo /wimfile:D:\sources\install.wim` on Windows.
-      * `wiminfo /mnt/sources/install.wim` on Linux (wimlib is required).
-   - **product_key** - contains a valid key for the corresponding Windows image. Generic keys from MSDN can be used [KMS Client Activation Keys](https://learn.microsoft.com/en-us/windows-server/get-started/kms-client-activation-keys).
+1. `lib/engines/hckinstall/iso.json` - contains information about Windows ISO for each HCK/HLK platform. Each platform entry should be configured as follows:
+   - **platform_name** (top-level key) - The platform name should be the same as referenced in platform configuration files via `client_iso` field, or in kit JSON files via `studio_platform` field.
+   - **path** - Path relative to `iso_path` option in the config file to the corresponding ISO image.
+   - **studio** section (required for platforms used as studio VMs) - Contains studio-specific configuration:
+      * **windows_image_names** - Image name from `install.wim` file in ISO for the studio VM.
+      * **product_key** - Valid product key for the studio Windows image.
+   - **client** section (required for platforms used as client VMs) - Contains client-specific configuration:
+      * **windows_image_names** - Image name from `install.wim` file in ISO for the client VM.
+      * **product_key** - Valid product key for the client Windows image.
+
+   **Note:** Server platforms (e.g., Win2022x64, Win2019x64) typically require **both** `studio` and `client` sections because they can be used in either role. Client-only platforms (e.g., Win10_22H2x86) only require the `client` section since they are never used as studio VMs.
+
+   To get a list of available Windows image names from an ISO:
+   * On Windows: `dism /get-wiminfo /wimfile:D:\sources\install.wim`
+   * On Linux: `wiminfo /mnt/sources/install.wim` (requires wimlib)
+
+   Generic product keys can be found at [KMS Client Activation Keys](https://learn.microsoft.com/en-us/windows-server/get-started/kms-client-activation-keys).
+
+   **Example configurations:**
+
+   Server platform with both studio and client sections:
+   ```json
+   "Win2022x64": {
+     "path": "en-us_windows_server_2022_x64_dvd_620d7eac_uefi.iso",
+     "studio": {
+       "windows_image_names": "Windows Server 2022 SERVERSTANDARD",
+       "product_key": "AAAAA-AAAAA-AAAAA-AAAAA-AAAAA"
+     },
+     "client": {
+       "windows_image_names": "Windows Server 2022 SERVERDATACENTER",
+       "product_key": "AAAAA-AAAAA-AAAAA-AAAAA-AAAAA"
+     }
+   }
+   ```
+
+   Client-only platform with just client section:
+   ```json
+   "Win10_22H2x86": {
+     "path": "en-us_windows_10_business_editions_version_22h2_updated_march_2025_x86_dvd_a4d0e05b.iso",
+     "client": {
+       "windows_image_names": "Windows 10 Enterprise",
+       "product_key": "BBBBB-BBBBB-BBBBB-BBBBB-BBBBB"
+     }
+   }
+   ```
 
 2. `lib/engines/hckinstall/hckinstall.json` - contains the specific configuration for the install engine. The following fields should be configured:
    - **answer_files** (_advanced_) - list of answer file *base names* (without `.in` / disk-layout suffixes) for automatic Windows installation. Templates live under `lib/engines/hckinstall/answer-files/`; see the Answer files subsection under [Bundled install engine directories](#bundled-install-engine-directories).
