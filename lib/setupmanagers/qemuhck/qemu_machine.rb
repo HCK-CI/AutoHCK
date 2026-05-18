@@ -303,6 +303,15 @@ module AutoHCK
 
       states_config = Json.read_json(STATES_JSON, @logger)
       states_config.each { |name, state| apply_state name, state }
+
+      apply_cpu_options_config
+    end
+
+    def apply_cpu_options_config
+      extra = option_config('cpu_options')
+      return if extra.nil? || extra.empty?
+
+      extra.split(',').each { |opt| @cpu_options << opt unless opt.empty? }
     end
 
     def config_replacement_map
