@@ -1,9 +1,11 @@
 {
-  "name": "Win10_2004x86",
+  "name": "Win10_2004x86_bios",
   "client_iso": "Win10_2004x86",
   "kit": "HLK2004",
   "setupmanager": "qemuhck",
   "st_image": "HLK2004.qcow2",
+  "fw_type": "bios",
+  "client_arch": "x86",
   "clients": {
     "c1": {
       "name": "CL1",
