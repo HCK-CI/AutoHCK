@@ -9,19 +9,73 @@
 # Add double dispatch to Integer
 # ++
 #
-# source://openssl//lib/openssl/bn.rb#33
+# pkg:gem/openssl#lib/openssl/bn.rb:33
 class Integer < ::Numeric
   # Casts an Integer as an OpenSSL::BN
   #
   # See `man bn` for more info.
   #
-  # source://openssl//lib/openssl/bn.rb#37
+  # pkg:gem/openssl#lib/openssl/bn.rb:37
   def to_bn; end
 end
 
 Integer::GMP_VERSION = T.let(T.unsafe(nil), String)
 
-# source://openssl//lib/openssl/bn.rb#16
+# --
+#
+# = Ruby-space definitions that completes C-space funcs for BN
+#
+# = Info
+# 'OpenSSL for Ruby 2' project
+# Copyright (C) 2002  Michal Rokos <m.rokos@sh.cvut.cz>
+# All rights reserved.
+#
+# = Licence
+# This program is licensed under the same licence as Ruby.
+# (See the file 'COPYING'.)
+# ++
+# --
+# = Ruby-space predefined Cipher subclasses
+#
+# = Info
+# 'OpenSSL for Ruby 2' project
+# Copyright (C) 2002  Michal Rokos <m.rokos@sh.cvut.cz>
+# All rights reserved.
+#
+# = Licence
+# This program is licensed under the same licence as Ruby.
+# (See the file 'COPYING'.)
+# ++
+# --
+# = Ruby-space predefined Digest subclasses
+#
+# = Info
+# 'OpenSSL for Ruby 2' project
+# Copyright (C) 2002  Michal Rokos <m.rokos@sh.cvut.cz>
+# All rights reserved.
+#
+# = Licence
+# This program is licensed under the same licence as Ruby.
+# (See the file 'COPYING'.)
+# ++
+# --
+# = Ruby-space definitions to add DER (de)serialization to classes
+#
+# = Info
+# 'OpenSSL for Ruby 2' project
+# Copyright (C) 2002  Michal Rokos <m.rokos@sh.cvut.cz>
+# All rights reserved.
+#
+# = Licence
+# This program is licensed under the same licence as Ruby.
+# (See the file 'COPYING'.)
+# ++
+# --
+# Ruby/OpenSSL Project
+# Copyright (C) 2017 Ruby/OpenSSL Project Authors
+# ++
+#
+# pkg:gem/openssl#lib/openssl/bn.rb:16
 module OpenSSL
   private
 
@@ -35,7 +89,7 @@ module OpenSSL
   #   OpenSSL::Digest("Foo")
   #   # => NameError: wrong constant name Foo
   #
-  # source://openssl//lib/openssl/digest.rb#63
+  # pkg:gem/openssl#lib/openssl/digest.rb:63
   def Digest(name); end
 
   class << self
@@ -49,7 +103,7 @@ module OpenSSL
     #   OpenSSL::Digest("Foo")
     #   # => NameError: wrong constant name Foo
     #
-    # source://openssl//lib/openssl/digest.rb#67
+    # pkg:gem/openssl#lib/openssl/digest.rb:67
     def Digest(name); end
 
     # :call-seq:
@@ -63,7 +117,7 @@ module OpenSSL
     # the input lengths are known to be equal or are not sensitive,
     # OpenSSL.fixed_length_secure_compare should be used instead.
     #
-    # source://openssl//lib/openssl.rb#36
+    # pkg:gem/openssl#lib/openssl.rb:36
     def secure_compare(a, b); end
   end
 end
@@ -72,11 +126,11 @@ class OpenSSL::ASN1::Constructive < ::OpenSSL::ASN1::ASN1Data
   include ::Enumerable
 end
 
-# source://openssl//lib/openssl/bn.rb#17
+# pkg:gem/openssl#lib/openssl/bn.rb:17
 class OpenSSL::BN
   include ::Comparable
 
-  # source://openssl//lib/openssl/bn.rb#20
+  # pkg:gem/openssl#lib/openssl/bn.rb:20
   def pretty_print(q); end
 end
 
@@ -89,24 +143,24 @@ OpenSSL::BN::CONSTTIME = T.let(T.unsafe(nil), Integer)
 # You typically won't use this module directly, you can see it implemented in
 # OpenSSL::SSL::SSLSocket.
 #
-# source://openssl//lib/openssl/buffering.rb#22
+# pkg:gem/openssl#lib/openssl/buffering.rb:22
 module OpenSSL::Buffering
   include ::Enumerable
 
   # Creates an instance of OpenSSL's buffering IO module.
   #
-  # source://openssl//lib/openssl/buffering.rb#59
+  # pkg:gem/openssl#lib/openssl/buffering.rb:59
   def initialize(*_arg0); end
 
   # Writes _s_ to the stream.  _s_ will be converted to a String using
   # +.to_s+ method.
   #
-  # source://openssl//lib/openssl/buffering.rb#440
+  # pkg:gem/openssl#lib/openssl/buffering.rb:440
   def <<(s); end
 
   # Closes the SSLSocket and flushes any unwritten data.
   #
-  # source://openssl//lib/openssl/buffering.rb#501
+  # pkg:gem/openssl#lib/openssl/buffering.rb:501
   def close; end
 
   # Executes the block for every line in the stream where lines are separated
@@ -114,41 +168,29 @@ module OpenSSL::Buffering
   #
   # See also #gets
   #
-  # source://openssl//lib/openssl/buffering.rb#262
+  # pkg:gem/openssl#lib/openssl/buffering.rb:262
   def each(eol = T.unsafe(nil)); end
 
   # Calls the given block once for each byte in the stream.
   #
-  # source://openssl//lib/openssl/buffering.rb#303
+  # pkg:gem/openssl#lib/openssl/buffering.rb:303
   def each_byte; end
 
-  # Executes the block for every line in the stream where lines are separated
-  # by _eol_.
-  #
-  # See also #gets
-  #
-  # source://openssl//lib/openssl/buffering.rb#267
+  # pkg:gem/openssl#lib/openssl/buffering.rb:267
   def each_line(eol = T.unsafe(nil)); end
 
-  # Returns true if the stream is at file which means there is no more data to
-  # be read.
-  #
-  # @return [Boolean]
-  #
-  # source://openssl//lib/openssl/buffering.rb#338
+  # pkg:gem/openssl#lib/openssl/buffering.rb:338
   def eof; end
 
   # Returns true if the stream is at file which means there is no more data to
   # be read.
   #
-  # @return [Boolean]
-  #
-  # source://openssl//lib/openssl/buffering.rb#334
+  # pkg:gem/openssl#lib/openssl/buffering.rb:334
   def eof?; end
 
   # Flushes buffered data to the SSLSocket.
   #
-  # source://openssl//lib/openssl/buffering.rb#489
+  # pkg:gem/openssl#lib/openssl/buffering.rb:489
   def flush; end
 
   # call-seq:
@@ -156,13 +198,13 @@ module OpenSSL::Buffering
   #
   # Get the next 8bit byte from `ssl`.  Returns `nil` on EOF
   #
-  # source://openssl//lib/openssl/buffering.rb#102
+  # pkg:gem/openssl#lib/openssl/buffering.rb:102
   def getbyte; end
 
   # Reads one character from the stream.  Returns nil if called at end of
   # file.
   #
-  # source://openssl//lib/openssl/buffering.rb#296
+  # pkg:gem/openssl#lib/openssl/buffering.rb:296
   def getc; end
 
   # Reads the next "line" from the stream.  Lines are separated by _eol_.  If
@@ -175,14 +217,14 @@ module OpenSSL::Buffering
   #
   # Unlike IO#gets the separator must be provided if a limit is provided.
   #
-  # source://openssl//lib/openssl/buffering.rb#234
+  # pkg:gem/openssl#lib/openssl/buffering.rb:234
   def gets(eol = T.unsafe(nil), limit = T.unsafe(nil), chomp: T.unsafe(nil)); end
 
   # Writes _args_ to the stream.
   #
   # See IO#print for full details.
   #
-  # source://openssl//lib/openssl/buffering.rb#468
+  # pkg:gem/openssl#lib/openssl/buffering.rb:468
   def print(*args); end
 
   # Formats and writes to the stream converting parameters under control of
@@ -190,14 +232,14 @@ module OpenSSL::Buffering
   #
   # See Kernel#sprintf for format string details.
   #
-  # source://openssl//lib/openssl/buffering.rb#481
+  # pkg:gem/openssl#lib/openssl/buffering.rb:481
   def printf(s, *args); end
 
   # Writes _args_ to the stream along with a record separator.
   #
   # See IO#puts for full details.
   #
-  # source://openssl//lib/openssl/buffering.rb#450
+  # pkg:gem/openssl#lib/openssl/buffering.rb:450
   def puts(*args); end
 
   # Reads _size_ bytes from the stream.  If _buf_ is provided it must
@@ -205,7 +247,7 @@ module OpenSSL::Buffering
   #
   # See IO#read for full details.
   #
-  # source://openssl//lib/openssl/buffering.rb#118
+  # pkg:gem/openssl#lib/openssl/buffering.rb:118
   def read(size = T.unsafe(nil), buf = T.unsafe(nil)); end
 
   # Reads at most _maxlen_ bytes in the non-blocking manner.
@@ -241,38 +283,32 @@ module OpenSSL::Buffering
   # return the symbol +:wait_writable+ or +:wait_readable+ instead. At EOF,
   # it will return +nil+ instead of raising EOFError.
   #
-  # source://openssl//lib/openssl/buffering.rb#203
+  # pkg:gem/openssl#lib/openssl/buffering.rb:203
   def read_nonblock(maxlen, buf = T.unsafe(nil), exception: T.unsafe(nil)); end
 
   # Get the next 8bit byte. Raises EOFError on EOF
   #
-  # @raise [EOFError]
-  #
-  # source://openssl//lib/openssl/buffering.rb#107
+  # pkg:gem/openssl#lib/openssl/buffering.rb:107
   def readbyte; end
 
   # Reads a one-character string from the stream.  Raises an EOFError at end
   # of file.
   #
-  # @raise [EOFError]
-  #
-  # source://openssl//lib/openssl/buffering.rb#313
+  # pkg:gem/openssl#lib/openssl/buffering.rb:313
   def readchar; end
 
   # Reads a line from the stream which is separated by _eol_.
   #
   # Raises EOFError if at end of file.
   #
-  # @raise [EOFError]
-  #
-  # source://openssl//lib/openssl/buffering.rb#287
+  # pkg:gem/openssl#lib/openssl/buffering.rb:287
   def readline(eol = T.unsafe(nil)); end
 
   # Reads lines from the stream which are separated by _eol_.
   #
   # See also #gets
   #
-  # source://openssl//lib/openssl/buffering.rb#274
+  # pkg:gem/openssl#lib/openssl/buffering.rb:274
   def readlines(eol = T.unsafe(nil)); end
 
   # Reads at most _maxlen_ bytes from the stream.  If _buf_ is provided it
@@ -280,21 +316,21 @@ module OpenSSL::Buffering
   #
   # See IO#readpartial for full details.
   #
-  # source://openssl//lib/openssl/buffering.rb#145
+  # pkg:gem/openssl#lib/openssl/buffering.rb:145
   def readpartial(maxlen, buf = T.unsafe(nil)); end
 
   # The "sync mode" of the SSLSocket.
   #
   # See IO#sync for full details.
   #
-  # source://openssl//lib/openssl/buffering.rb#49
+  # pkg:gem/openssl#lib/openssl/buffering.rb:49
   def sync; end
 
   # The "sync mode" of the SSLSocket.
   #
   # See IO#sync for full details.
   #
-  # source://openssl//lib/openssl/buffering.rb#49
+  # pkg:gem/openssl#lib/openssl/buffering.rb:49
   def sync=(_arg0); end
 
   # Pushes character _c_ back onto the stream such that a subsequent buffered
@@ -304,13 +340,13 @@ module OpenSSL::Buffering
   #
   # Has no effect on unbuffered reads (such as #sysread).
   #
-  # source://openssl//lib/openssl/buffering.rb#326
+  # pkg:gem/openssl#lib/openssl/buffering.rb:326
   def ungetc(c); end
 
   # Writes _s_ to the stream.  If the argument is not a String it will be
   # converted using +.to_s+ method.  Returns the number of bytes written.
   #
-  # source://openssl//lib/openssl/buffering.rb#387
+  # pkg:gem/openssl#lib/openssl/buffering.rb:387
   def write(*s); end
 
   # Writes _s_ in the non-blocking manner.
@@ -349,34 +385,34 @@ module OpenSSL::Buffering
   # that write_nonblock should not raise an IO::Wait*able exception, but
   # return the symbol +:wait_writable+ or +:wait_readable+ instead.
   #
-  # source://openssl//lib/openssl/buffering.rb#431
+  # pkg:gem/openssl#lib/openssl/buffering.rb:431
   def write_nonblock(s, exception: T.unsafe(nil)); end
 
   private
 
   # Consumes _size_ bytes from the buffer
   #
-  # source://openssl//lib/openssl/buffering.rb#87
+  # pkg:gem/openssl#lib/openssl/buffering.rb:87
   def consume_rbuff(size = T.unsafe(nil)); end
 
   # Writes _s_ to the buffer.  When the buffer is full or #sync is true the
   # buffer is flushed to the underlying socket.
   #
-  # source://openssl//lib/openssl/buffering.rb#349
+  # pkg:gem/openssl#lib/openssl/buffering.rb:349
   def do_write(s); end
 
   # Fills the buffer from the underlying SSLSocket
   #
-  # source://openssl//lib/openssl/buffering.rb#74
+  # pkg:gem/openssl#lib/openssl/buffering.rb:74
   def fill_rbuff; end
 end
 
 # A buffer which will retain binary encoding.
 #
-# source://openssl//lib/openssl/buffering.rb#26
+# pkg:gem/openssl#lib/openssl/buffering.rb:26
 class OpenSSL::Buffering::Buffer < ::String; end
 
-# source://openssl//lib/openssl/cipher.rb#16
+# pkg:gem/openssl#lib/openssl/cipher.rb:16
 class OpenSSL::Cipher
   # call-seq:
   #   cipher.random_iv -> iv
@@ -386,7 +422,7 @@ class OpenSSL::Cipher
   #
   # You must call #encrypt or #decrypt before calling this method.
   #
-  # source://openssl//lib/openssl/cipher.rb#55
+  # pkg:gem/openssl#lib/openssl/cipher.rb:55
   def random_iv; end
 
   # call-seq:
@@ -397,45 +433,45 @@ class OpenSSL::Cipher
   #
   # You must call #encrypt or #decrypt before calling this method.
   #
-  # source://openssl//lib/openssl/cipher.rb#43
+  # pkg:gem/openssl#lib/openssl/cipher.rb:43
   def random_key; end
 end
 
-# source://openssl//lib/openssl/cipher.rb#18
+# pkg:gem/openssl#lib/openssl/cipher.rb:18
 class OpenSSL::Cipher::AES < ::OpenSSL::Cipher
-  # source://openssl//lib/openssl/cipher.rb#19
+  # pkg:gem/openssl#lib/openssl/cipher.rb:19
   def initialize(*args); end
 end
 
-# source://openssl//lib/openssl/cipher.rb#28
+# pkg:gem/openssl#lib/openssl/cipher.rb:28
 class OpenSSL::Cipher::AES128 < ::OpenSSL::Cipher
-  # source://openssl//lib/openssl/cipher.rb#29
+  # pkg:gem/openssl#lib/openssl/cipher.rb:29
   def initialize(mode = T.unsafe(nil)); end
 end
 
-# source://openssl//lib/openssl/cipher.rb#28
+# pkg:gem/openssl#lib/openssl/cipher.rb:28
 class OpenSSL::Cipher::AES192 < ::OpenSSL::Cipher
-  # source://openssl//lib/openssl/cipher.rb#29
+  # pkg:gem/openssl#lib/openssl/cipher.rb:29
   def initialize(mode = T.unsafe(nil)); end
 end
 
-# source://openssl//lib/openssl/cipher.rb#28
+# pkg:gem/openssl#lib/openssl/cipher.rb:28
 class OpenSSL::Cipher::AES256 < ::OpenSSL::Cipher
-  # source://openssl//lib/openssl/cipher.rb#29
+  # pkg:gem/openssl#lib/openssl/cipher.rb:29
   def initialize(mode = T.unsafe(nil)); end
 end
 
 class OpenSSL::Cipher::AuthTagError < ::OpenSSL::Cipher::CipherError; end
 
-# source://openssl//lib/openssl/cipher.rb#18
+# pkg:gem/openssl#lib/openssl/cipher.rb:18
 class OpenSSL::Cipher::BF < ::OpenSSL::Cipher
-  # source://openssl//lib/openssl/cipher.rb#19
+  # pkg:gem/openssl#lib/openssl/cipher.rb:19
   def initialize(*args); end
 end
 
-# source://openssl//lib/openssl/cipher.rb#18
+# pkg:gem/openssl#lib/openssl/cipher.rb:18
 class OpenSSL::Cipher::CAST5 < ::OpenSSL::Cipher
-  # source://openssl//lib/openssl/cipher.rb#19
+  # pkg:gem/openssl#lib/openssl/cipher.rb:19
   def initialize(*args); end
 end
 
@@ -444,36 +480,36 @@ end
 # This class is only provided for backwards compatibility.
 # Use OpenSSL::Cipher.
 #
-# source://openssl//lib/openssl/cipher.rb#64
+# pkg:gem/openssl#lib/openssl/cipher.rb:64
 class OpenSSL::Cipher::Cipher < ::OpenSSL::Cipher; end
 
-# source://openssl//lib/openssl/cipher.rb#18
+# pkg:gem/openssl#lib/openssl/cipher.rb:18
 class OpenSSL::Cipher::DES < ::OpenSSL::Cipher
-  # source://openssl//lib/openssl/cipher.rb#19
+  # pkg:gem/openssl#lib/openssl/cipher.rb:19
   def initialize(*args); end
 end
 
-# source://openssl//lib/openssl/cipher.rb#18
+# pkg:gem/openssl#lib/openssl/cipher.rb:18
 class OpenSSL::Cipher::IDEA < ::OpenSSL::Cipher
-  # source://openssl//lib/openssl/cipher.rb#19
+  # pkg:gem/openssl#lib/openssl/cipher.rb:19
   def initialize(*args); end
 end
 
-# source://openssl//lib/openssl/cipher.rb#18
+# pkg:gem/openssl#lib/openssl/cipher.rb:18
 class OpenSSL::Cipher::RC2 < ::OpenSSL::Cipher
-  # source://openssl//lib/openssl/cipher.rb#19
+  # pkg:gem/openssl#lib/openssl/cipher.rb:19
   def initialize(*args); end
 end
 
-# source://openssl//lib/openssl/cipher.rb#18
+# pkg:gem/openssl#lib/openssl/cipher.rb:18
 class OpenSSL::Cipher::RC4 < ::OpenSSL::Cipher
-  # source://openssl//lib/openssl/cipher.rb#19
+  # pkg:gem/openssl#lib/openssl/cipher.rb:19
   def initialize(*args); end
 end
 
-# source://openssl//lib/openssl/cipher.rb#18
+# pkg:gem/openssl#lib/openssl/cipher.rb:18
 class OpenSSL::Cipher::RC5 < ::OpenSSL::Cipher
-  # source://openssl//lib/openssl/cipher.rb#19
+  # pkg:gem/openssl#lib/openssl/cipher.rb:19
   def initialize(*args); end
 end
 
@@ -481,7 +517,7 @@ class OpenSSL::Config
   include ::Enumerable
 end
 
-# source://openssl//lib/openssl/digest.rb#16
+# pkg:gem/openssl#lib/openssl/digest.rb:16
 class OpenSSL::Digest < ::Digest::Class
   class << self
     # Return the hash value computed with _name_ Digest. _name_ is either the
@@ -491,7 +527,7 @@ class OpenSSL::Digest < ::Digest::Class
     #
     #   OpenSSL::Digest.digest("SHA256", "abc")
     #
-    # source://openssl//lib/openssl/digest.rb#25
+    # pkg:gem/openssl#lib/openssl/digest.rb:25
     def digest(name, data); end
   end
 end
@@ -501,126 +537,126 @@ end
 # This class is only provided for backwards compatibility.
 # Use OpenSSL::Digest instead.
 #
-# source://openssl//lib/openssl/digest.rb#48
+# pkg:gem/openssl#lib/openssl/digest.rb:48
 class OpenSSL::Digest::Digest < ::OpenSSL::Digest; end
 
-# source://openssl//lib/openssl/digest.rb#30
+# pkg:gem/openssl#lib/openssl/digest.rb:30
 class OpenSSL::Digest::MD4 < ::OpenSSL::Digest
-  # source://openssl//lib/openssl/digest.rb#31
+  # pkg:gem/openssl#lib/openssl/digest.rb:31
   def initialize(data = T.unsafe(nil)); end
 
   class << self
-    # source://openssl//lib/openssl/digest.rb#37
+    # pkg:gem/openssl#lib/openssl/digest.rb:37
     def digest(data); end
 
-    # source://openssl//lib/openssl/digest.rb#38
+    # pkg:gem/openssl#lib/openssl/digest.rb:38
     def hexdigest(data); end
   end
 end
 
-# source://openssl//lib/openssl/digest.rb#30
+# pkg:gem/openssl#lib/openssl/digest.rb:30
 class OpenSSL::Digest::MD5 < ::OpenSSL::Digest
-  # source://openssl//lib/openssl/digest.rb#31
+  # pkg:gem/openssl#lib/openssl/digest.rb:31
   def initialize(data = T.unsafe(nil)); end
 
   class << self
-    # source://openssl//lib/openssl/digest.rb#37
+    # pkg:gem/openssl#lib/openssl/digest.rb:37
     def digest(data); end
 
-    # source://openssl//lib/openssl/digest.rb#38
+    # pkg:gem/openssl#lib/openssl/digest.rb:38
     def hexdigest(data); end
   end
 end
 
-# source://openssl//lib/openssl/digest.rb#30
+# pkg:gem/openssl#lib/openssl/digest.rb:30
 class OpenSSL::Digest::RIPEMD160 < ::OpenSSL::Digest
-  # source://openssl//lib/openssl/digest.rb#31
+  # pkg:gem/openssl#lib/openssl/digest.rb:31
   def initialize(data = T.unsafe(nil)); end
 
   class << self
-    # source://openssl//lib/openssl/digest.rb#37
+    # pkg:gem/openssl#lib/openssl/digest.rb:37
     def digest(data); end
 
-    # source://openssl//lib/openssl/digest.rb#38
+    # pkg:gem/openssl#lib/openssl/digest.rb:38
     def hexdigest(data); end
   end
 end
 
-# source://openssl//lib/openssl/digest.rb#30
+# pkg:gem/openssl#lib/openssl/digest.rb:30
 class OpenSSL::Digest::SHA1 < ::OpenSSL::Digest
-  # source://openssl//lib/openssl/digest.rb#31
+  # pkg:gem/openssl#lib/openssl/digest.rb:31
   def initialize(data = T.unsafe(nil)); end
 
   class << self
-    # source://openssl//lib/openssl/digest.rb#37
+    # pkg:gem/openssl#lib/openssl/digest.rb:37
     def digest(data); end
 
-    # source://openssl//lib/openssl/digest.rb#38
+    # pkg:gem/openssl#lib/openssl/digest.rb:38
     def hexdigest(data); end
   end
 end
 
-# source://openssl//lib/openssl/digest.rb#30
+# pkg:gem/openssl#lib/openssl/digest.rb:30
 class OpenSSL::Digest::SHA224 < ::OpenSSL::Digest
-  # source://openssl//lib/openssl/digest.rb#31
+  # pkg:gem/openssl#lib/openssl/digest.rb:31
   def initialize(data = T.unsafe(nil)); end
 
   class << self
-    # source://openssl//lib/openssl/digest.rb#37
+    # pkg:gem/openssl#lib/openssl/digest.rb:37
     def digest(data); end
 
-    # source://openssl//lib/openssl/digest.rb#38
+    # pkg:gem/openssl#lib/openssl/digest.rb:38
     def hexdigest(data); end
   end
 end
 
-# source://openssl//lib/openssl/digest.rb#30
+# pkg:gem/openssl#lib/openssl/digest.rb:30
 class OpenSSL::Digest::SHA256 < ::OpenSSL::Digest
-  # source://openssl//lib/openssl/digest.rb#31
+  # pkg:gem/openssl#lib/openssl/digest.rb:31
   def initialize(data = T.unsafe(nil)); end
 
   class << self
-    # source://openssl//lib/openssl/digest.rb#37
+    # pkg:gem/openssl#lib/openssl/digest.rb:37
     def digest(data); end
 
-    # source://openssl//lib/openssl/digest.rb#38
+    # pkg:gem/openssl#lib/openssl/digest.rb:38
     def hexdigest(data); end
   end
 end
 
-# source://openssl//lib/openssl/digest.rb#30
+# pkg:gem/openssl#lib/openssl/digest.rb:30
 class OpenSSL::Digest::SHA384 < ::OpenSSL::Digest
-  # source://openssl//lib/openssl/digest.rb#31
+  # pkg:gem/openssl#lib/openssl/digest.rb:31
   def initialize(data = T.unsafe(nil)); end
 
   class << self
-    # source://openssl//lib/openssl/digest.rb#37
+    # pkg:gem/openssl#lib/openssl/digest.rb:37
     def digest(data); end
 
-    # source://openssl//lib/openssl/digest.rb#38
+    # pkg:gem/openssl#lib/openssl/digest.rb:38
     def hexdigest(data); end
   end
 end
 
-# source://openssl//lib/openssl/digest.rb#30
+# pkg:gem/openssl#lib/openssl/digest.rb:30
 class OpenSSL::Digest::SHA512 < ::OpenSSL::Digest
-  # source://openssl//lib/openssl/digest.rb#31
+  # pkg:gem/openssl#lib/openssl/digest.rb:31
   def initialize(data = T.unsafe(nil)); end
 
   class << self
-    # source://openssl//lib/openssl/digest.rb#37
+    # pkg:gem/openssl#lib/openssl/digest.rb:37
     def digest(data); end
 
-    # source://openssl//lib/openssl/digest.rb#38
+    # pkg:gem/openssl#lib/openssl/digest.rb:38
     def hexdigest(data); end
   end
 end
 
-# source://openssl//lib/openssl/hmac.rb#4
+# pkg:gem/openssl#lib/openssl/hmac.rb:4
 class OpenSSL::HMAC
   # Securely compare with another HMAC instance in constant time.
   #
-  # source://openssl//lib/openssl/hmac.rb#6
+  # pkg:gem/openssl#lib/openssl/hmac.rb:6
   def ==(other); end
 
   # :call-seq:
@@ -628,7 +664,7 @@ class OpenSSL::HMAC
   #
   # Returns the authentication code an a Base64-encoded string.
   #
-  # source://openssl//lib/openssl/hmac.rb#17
+  # pkg:gem/openssl#lib/openssl/hmac.rb:17
   def base64digest; end
 
   class << self
@@ -646,7 +682,7 @@ class OpenSSL::HMAC
     #  hmac = OpenSSL::HMAC.base64digest('SHA1', key, data)
     #  #=> "3nybhbi3iqa8ino29wqQcBydtNk="
     #
-    # source://openssl//lib/openssl/hmac.rb#73
+    # pkg:gem/openssl#lib/openssl/hmac.rb:73
     def base64digest(digest, key, data); end
 
     # :call-seq:
@@ -663,7 +699,7 @@ class OpenSSL::HMAC
     #  hmac = OpenSSL::HMAC.digest('SHA1', key, data)
     #  #=> "\xDE|\x9B\x85\xB8\xB7\x8A\xA6\xBC\x8Az6\xF7\n\x90p\x1C\x9D\xB4\xD9"
     #
-    # source://openssl//lib/openssl/hmac.rb#35
+    # pkg:gem/openssl#lib/openssl/hmac.rb:35
     def digest(digest, key, data); end
 
     # :call-seq:
@@ -680,63 +716,61 @@ class OpenSSL::HMAC
     #  hmac = OpenSSL::HMAC.hexdigest('SHA1', key, data)
     #  #=> "de7c9b85b8b78aa6bc8a7a36f70a90701c9db4d9"
     #
-    # source://openssl//lib/openssl/hmac.rb#54
+    # pkg:gem/openssl#lib/openssl/hmac.rb:54
     def hexdigest(digest, key, data); end
   end
 end
 
-# source://openssl//lib/openssl/marshal.rb#15
+# pkg:gem/openssl#lib/openssl/marshal.rb:15
 module OpenSSL::Marshal
   mixes_in_class_methods ::OpenSSL::Marshal::ClassMethods
 
-  # source://openssl//lib/openssl/marshal.rb#26
+  # pkg:gem/openssl#lib/openssl/marshal.rb:26
   def _dump(_level); end
 
   class << self
-    # @private
-    #
-    # source://openssl//lib/openssl/marshal.rb#16
+    # pkg:gem/openssl#lib/openssl/marshal.rb:16
     def included(base); end
   end
 end
 
-# source://openssl//lib/openssl/marshal.rb#20
+# pkg:gem/openssl#lib/openssl/marshal.rb:20
 module OpenSSL::Marshal::ClassMethods
-  # source://openssl//lib/openssl/marshal.rb#21
+  # pkg:gem/openssl#lib/openssl/marshal.rb:21
   def _load(string); end
 end
 
 OpenSSL::PKCS12::KEY_EX = T.let(T.unsafe(nil), Integer)
 OpenSSL::PKCS12::KEY_SIG = T.let(T.unsafe(nil), Integer)
 
-# source://openssl//lib/openssl/pkcs5.rb#8
+# pkg:gem/openssl#lib/openssl/pkcs5.rb:8
 module OpenSSL::PKCS5
   private
 
   # OpenSSL::PKCS5.pbkdf2_hmac has been renamed to OpenSSL::KDF.pbkdf2_hmac.
   # This method is provided for backwards compatibility.
   #
-  # source://openssl//lib/openssl/pkcs5.rb#13
+  # pkg:gem/openssl#lib/openssl/pkcs5.rb:13
   def pbkdf2_hmac(pass, salt, iter, keylen, digest); end
 
-  # source://openssl//lib/openssl/pkcs5.rb#18
+  # pkg:gem/openssl#lib/openssl/pkcs5.rb:18
   def pbkdf2_hmac_sha1(pass, salt, iter, keylen); end
 
   class << self
     # OpenSSL::PKCS5.pbkdf2_hmac has been renamed to OpenSSL::KDF.pbkdf2_hmac.
     # This method is provided for backwards compatibility.
     #
-    # source://openssl//lib/openssl/pkcs5.rb#13
+    # pkg:gem/openssl#lib/openssl/pkcs5.rb:13
     def pbkdf2_hmac(pass, salt, iter, keylen, digest); end
 
-    # source://openssl//lib/openssl/pkcs5.rb#18
+    # pkg:gem/openssl#lib/openssl/pkcs5.rb:18
     def pbkdf2_hmac_sha1(pass, salt, iter, keylen); end
   end
 end
 
 OpenSSL::PKCS7::Signer = OpenSSL::PKCS7::SignerInfo
 
-# source://openssl//lib/openssl/pkey.rb#13
+# pkg:gem/openssl#lib/openssl/pkey.rb:13
 class OpenSSL::PKey::DH < ::OpenSSL::PKey::PKey
   include ::OpenSSL::Marshal
   extend ::OpenSSL::Marshal::ClassMethods
@@ -754,7 +788,7 @@ class OpenSSL::PKey::DH < ::OpenSSL::PKey::PKey
   # * _pub_bn_ is a OpenSSL::BN, *not* the DH instance returned by
   #   DH#public_key as that contains the DH parameters only.
   #
-  # source://openssl//lib/openssl/pkey.rb#64
+  # pkg:gem/openssl#lib/openssl/pkey.rb:64
   def compute_key(pub_bn); end
 
   # :call-seq:
@@ -784,7 +818,7 @@ class OpenSSL::PKey::DH < ::OpenSSL::PKey::PKey
   #   dh = OpenSSL::PKey.generate_key(dh0)
   #   puts dh0.pub_key == dh.pub_key #=> false
   #
-  # source://openssl//lib/openssl/pkey.rb#106
+  # pkg:gem/openssl#lib/openssl/pkey.rb:106
   def generate_key!; end
 
   # :call-seq:
@@ -794,7 +828,7 @@ class OpenSSL::PKey::DH < ::OpenSSL::PKey::PKey
   #
   # The hash has keys 'p', 'q', 'g', 'pub_key', and 'priv_key'.
   #
-  # source://openssl//lib/openssl/pkey.rb#46
+  # pkg:gem/openssl#lib/openssl/pkey.rb:46
   def params; end
 
   # :call-seq:
@@ -818,7 +852,7 @@ class OpenSSL::PKey::DH < ::OpenSSL::PKey::PKey
   #   dhcopy = dh1.public_key
   #   p dhcopy.priv_key #=> nil
   #
-  # source://openssl//lib/openssl/pkey.rb#36
+  # pkg:gem/openssl#lib/openssl/pkey.rb:36
   def public_key; end
 
   class << self
@@ -836,18 +870,18 @@ class OpenSSL::PKey::DH < ::OpenSSL::PKey::PKey
     # +generator+::
     #   The generator.
     #
-    # source://openssl//lib/openssl/pkey.rb#133
+    # pkg:gem/openssl#lib/openssl/pkey.rb:133
     def generate(size, generator = T.unsafe(nil), &blk); end
 
     # Handle DH.new(size, generator) form here; new(str) and new() forms
     # are handled by #initialize
     #
-    # source://openssl//lib/openssl/pkey.rb#143
+    # pkg:gem/openssl#lib/openssl/pkey.rb:143
     def new(*args, &blk); end
   end
 end
 
-# source://openssl//lib/openssl/pkey.rb#156
+# pkg:gem/openssl#lib/openssl/pkey.rb:156
 class OpenSSL::PKey::DSA < ::OpenSSL::PKey::PKey
   include ::OpenSSL::Marshal
   extend ::OpenSSL::Marshal::ClassMethods
@@ -859,7 +893,7 @@ class OpenSSL::PKey::DSA < ::OpenSSL::PKey::PKey
   #
   # The hash has keys 'p', 'q', 'g', 'pub_key', and 'priv_key'.
   #
-  # source://openssl//lib/openssl/pkey.rb#181
+  # pkg:gem/openssl#lib/openssl/pkey.rb:181
   def params; end
 
   # :call-seq:
@@ -875,7 +909,7 @@ class OpenSSL::PKey::DSA < ::OpenSSL::PKey::PKey
   # X.509 SubjectPublicKeyInfo format, check PKey#public_to_pem and
   # PKey#public_to_der.
   #
-  # source://openssl//lib/openssl/pkey.rb#171
+  # pkg:gem/openssl#lib/openssl/pkey.rb:171
   def public_key; end
 
   # :call-seq:
@@ -904,7 +938,7 @@ class OpenSSL::PKey::DSA < ::OpenSSL::PKey::PKey
   #   sig = dsa.sign_raw(nil, digest)
   #   p dsa.verify_raw(nil, sig, digest) #=> true
   #
-  # source://openssl//lib/openssl/pkey.rb#250
+  # pkg:gem/openssl#lib/openssl/pkey.rb:250
   def syssign(string); end
 
   # :call-seq:
@@ -921,7 +955,7 @@ class OpenSSL::PKey::DSA < ::OpenSSL::PKey::PKey
   # +sig+::
   #   A \DSA signature value.
   #
-  # source://openssl//lib/openssl/pkey.rb#269
+  # pkg:gem/openssl#lib/openssl/pkey.rb:269
   def sysverify(digest, sig); end
 
   class << self
@@ -937,18 +971,18 @@ class OpenSSL::PKey::DSA < ::OpenSSL::PKey::PKey
     # +size+::
     #   The desired key size in bits.
     #
-    # source://openssl//lib/openssl/pkey.rb#199
+    # pkg:gem/openssl#lib/openssl/pkey.rb:199
     def generate(size, &blk); end
 
     # Handle DSA.new(size) form here; new(str) and new() forms
     # are handled by #initialize
     #
-    # source://openssl//lib/openssl/pkey.rb#216
+    # pkg:gem/openssl#lib/openssl/pkey.rb:216
     def new(*args, &blk); end
   end
 end
 
-# source://openssl//lib/openssl/pkey.rb#278
+# pkg:gem/openssl#lib/openssl/pkey.rb:278
 class OpenSSL::PKey::EC < ::OpenSSL::PKey::PKey
   include ::OpenSSL::Marshal
   extend ::OpenSSL::Marshal::ClassMethods
@@ -962,7 +996,7 @@ class OpenSSL::PKey::EC < ::OpenSSL::PKey::PKey
   # This method is provided for backwards compatibility, and calls #derive
   # internally.
   #
-  # source://openssl//lib/openssl/pkey.rb#307
+  # pkg:gem/openssl#lib/openssl/pkey.rb:307
   def dh_compute_key(pubkey); end
 
   # :call-seq:
@@ -971,7 +1005,7 @@ class OpenSSL::PKey::EC < ::OpenSSL::PKey::PKey
   # <b>Deprecated in version 3.0</b>.
   # Consider using PKey::PKey#sign_raw and PKey::PKey#verify_raw instead.
   #
-  # source://openssl//lib/openssl/pkey.rb#286
+  # pkg:gem/openssl#lib/openssl/pkey.rb:286
   def dsa_sign_asn1(data); end
 
   # :call-seq:
@@ -980,13 +1014,13 @@ class OpenSSL::PKey::EC < ::OpenSSL::PKey::PKey
   # <b>Deprecated in version 3.0</b>.
   # Consider using PKey::PKey#sign_raw and PKey::PKey#verify_raw instead.
   #
-  # source://openssl//lib/openssl/pkey.rb#295
+  # pkg:gem/openssl#lib/openssl/pkey.rb:295
   def dsa_verify_asn1(data, sig); end
 end
 
 OpenSSL::PKey::EC::EXPLICIT_CURVE = T.let(T.unsafe(nil), Integer)
 
-# source://openssl//lib/openssl/pkey.rb#319
+# pkg:gem/openssl#lib/openssl/pkey.rb:319
 class OpenSSL::PKey::EC::Point
   # :call-seq:
   #    point.to_bn([conversion_form]) -> OpenSSL::BN
@@ -999,11 +1033,11 @@ class OpenSSL::PKey::EC::Point
   #
   # See #to_octet_string for more information.
   #
-  # source://openssl//lib/openssl/pkey.rb#330
+  # pkg:gem/openssl#lib/openssl/pkey.rb:330
   def to_bn(conversion_form = T.unsafe(nil)); end
 end
 
-# source://openssl//lib/openssl/pkey.rb#339
+# pkg:gem/openssl#lib/openssl/pkey.rb:339
 class OpenSSL::PKey::RSA < ::OpenSSL::PKey::PKey
   include ::OpenSSL::Marshal
   extend ::OpenSSL::Marshal::ClassMethods
@@ -1015,7 +1049,7 @@ class OpenSSL::PKey::RSA < ::OpenSSL::PKey::PKey
   #
   # The hash has keys 'n', 'e', 'd', 'p', 'q', 'dmp1', 'dmq1', and 'iqmp'.
   #
-  # source://openssl//lib/openssl/pkey.rb#363
+  # pkg:gem/openssl#lib/openssl/pkey.rb:363
   def params; end
 
   # :call-seq:
@@ -1029,7 +1063,7 @@ class OpenSSL::PKey::RSA < ::OpenSSL::PKey::PKey
   # <b>Deprecated in version 3.0</b>.
   # Consider using PKey::PKey#encrypt and PKey::PKey#decrypt instead.
   #
-  # source://openssl//lib/openssl/pkey.rb#465
+  # pkg:gem/openssl#lib/openssl/pkey.rb:465
   def private_decrypt(data, padding = T.unsafe(nil)); end
 
   # :call-seq:
@@ -1045,7 +1079,7 @@ class OpenSSL::PKey::RSA < ::OpenSSL::PKey::PKey
   # Consider using PKey::PKey#sign_raw and PKey::PKey#verify_raw, and
   # PKey::PKey#verify_recover instead.
   #
-  # source://openssl//lib/openssl/pkey.rb#411
+  # pkg:gem/openssl#lib/openssl/pkey.rb:411
   def private_encrypt(string, padding = T.unsafe(nil)); end
 
   # :call-seq:
@@ -1060,7 +1094,7 @@ class OpenSSL::PKey::RSA < ::OpenSSL::PKey::PKey
   # Consider using PKey::PKey#sign_raw and PKey::PKey#verify_raw, and
   # PKey::PKey#verify_recover instead.
   #
-  # source://openssl//lib/openssl/pkey.rb#430
+  # pkg:gem/openssl#lib/openssl/pkey.rb:430
   def public_decrypt(string, padding = T.unsafe(nil)); end
 
   # :call-seq:
@@ -1075,7 +1109,7 @@ class OpenSSL::PKey::RSA < ::OpenSSL::PKey::PKey
   # <b>Deprecated in version 3.0</b>.
   # Consider using PKey::PKey#encrypt and PKey::PKey#decrypt instead.
   #
-  # source://openssl//lib/openssl/pkey.rb#448
+  # pkg:gem/openssl#lib/openssl/pkey.rb:448
   def public_encrypt(data, padding = T.unsafe(nil)); end
 
   # :call-seq:
@@ -1090,12 +1124,12 @@ class OpenSSL::PKey::RSA < ::OpenSSL::PKey::PKey
   # X.509 SubjectPublicKeyInfo format, check PKey#public_to_pem and
   # PKey#public_to_der.
   #
-  # source://openssl//lib/openssl/pkey.rb#353
+  # pkg:gem/openssl#lib/openssl/pkey.rb:353
   def public_key; end
 
   private
 
-  # source://openssl//lib/openssl/pkey.rb#478
+  # pkg:gem/openssl#lib/openssl/pkey.rb:478
   def translate_padding_mode(num); end
 
   class << self
@@ -1111,13 +1145,13 @@ class OpenSSL::PKey::RSA < ::OpenSSL::PKey::PKey
     # +exponent+::
     #   An odd Integer, normally 3, 17, or 65537.
     #
-    # source://openssl//lib/openssl/pkey.rb#381
+    # pkg:gem/openssl#lib/openssl/pkey.rb:381
     def generate(size, exp = T.unsafe(nil), &blk); end
 
     # Handle RSA.new(size, exponent) form here; new(str) and new() forms
     # are handled by #initialize
     #
-    # source://openssl//lib/openssl/pkey.rb#390
+    # pkg:gem/openssl#lib/openssl/pkey.rb:390
     def new(*args, &blk); end
   end
 end
@@ -1135,27 +1169,27 @@ end
 
 class OpenSSL::Provider::ProviderError < ::OpenSSL::OpenSSLError; end
 
-# source://openssl//lib/openssl/ssl.rb#22
+# pkg:gem/openssl#lib/openssl/ssl.rb:22
 module OpenSSL::SSL
   private
 
-  # source://openssl//lib/openssl/ssl.rb#249
+  # pkg:gem/openssl#lib/openssl/ssl.rb:249
   def verify_certificate_identity(cert, hostname); end
 
-  # source://openssl//lib/openssl/ssl.rb#282
+  # pkg:gem/openssl#lib/openssl/ssl.rb:282
   def verify_hostname(hostname, san); end
 
-  # source://openssl//lib/openssl/ssl.rb#315
+  # pkg:gem/openssl#lib/openssl/ssl.rb:315
   def verify_wildcard(domain_component, san_component); end
 
   class << self
-    # source://openssl//lib/openssl/ssl.rb#280
+    # pkg:gem/openssl#lib/openssl/ssl.rb:280
     def verify_certificate_identity(cert, hostname); end
 
-    # source://openssl//lib/openssl/ssl.rb#313
+    # pkg:gem/openssl#lib/openssl/ssl.rb:313
     def verify_hostname(hostname, san); end
 
-    # source://openssl//lib/openssl/ssl.rb#331
+    # pkg:gem/openssl#lib/openssl/ssl.rb:331
     def verify_wildcard(domain_component, san_component); end
   end
 end
@@ -1180,7 +1214,7 @@ OpenSSL::SSL::OP_TLSEXT_PADDING = T.let(T.unsafe(nil), Integer)
 OpenSSL::SSL::SSL2_VERSION = T.let(T.unsafe(nil), Integer)
 OpenSSL::SSL::SSL3_VERSION = T.let(T.unsafe(nil), Integer)
 
-# source://openssl//lib/openssl/ssl.rb#23
+# pkg:gem/openssl#lib/openssl/ssl.rb:23
 class OpenSSL::SSL::SSLContext
   # call-seq:
   #    SSLContext.new           -> ctx
@@ -1193,9 +1227,7 @@ class OpenSSL::SSL::SSLContext
   # that this form is deprecated. New applications should use #min_version=
   # and #max_version= as necessary.
   #
-  # @return [SSLContext] a new instance of SSLContext
-  #
-  # source://openssl//lib/openssl/ssl.rb#94
+  # pkg:gem/openssl#lib/openssl/ssl.rb:94
   def initialize(version = T.unsafe(nil)); end
 
   # A callback invoked at connect time to distinguish between multiple
@@ -1204,7 +1236,7 @@ class OpenSSL::SSL::SSLContext
   # The callback is invoked with an SSLSocket and a server name.  The
   # callback must return an SSLContext for the server name or nil.
   #
-  # source://openssl//lib/openssl/ssl.rb#82
+  # pkg:gem/openssl#lib/openssl/ssl.rb:82
   def servername_cb; end
 
   # A callback invoked at connect time to distinguish between multiple
@@ -1213,7 +1245,7 @@ class OpenSSL::SSL::SSLContext
   # The callback is invoked with an SSLSocket and a server name.  The
   # callback must return an SSLContext for the server name or nil.
   #
-  # source://openssl//lib/openssl/ssl.rb#82
+  # pkg:gem/openssl#lib/openssl/ssl.rb:82
   def servername_cb=(_arg0); end
 
   # call-seq:
@@ -1228,7 +1260,7 @@ class OpenSSL::SSL::SSLContext
   # cert_store are not set then the system default certificate store is
   # used.
   #
-  # source://openssl//lib/openssl/ssl.rb#112
+  # pkg:gem/openssl#lib/openssl/ssl.rb:112
   def set_params(params = T.unsafe(nil)); end
 
   # call-seq:
@@ -1246,17 +1278,17 @@ class OpenSSL::SSL::SSLContext
   # the context. As of Ruby/OpenSSL 2.1, this accessor method is
   # implemented to call #min_version= and #max_version= instead.
   #
-  # source://openssl//lib/openssl/ssl.rb#145
+  # pkg:gem/openssl#lib/openssl/ssl.rb:145
   def ssl_version=(meth); end
 end
 
 # The list of available SSL/TLS methods. This constant is only provided
 # for backwards compatibility.
 #
-# source://openssl//lib/openssl/ssl.rb#170
+# pkg:gem/openssl#lib/openssl/ssl.rb:170
 OpenSSL::SSL::SSLContext::METHODS = T.let(T.unsafe(nil), Array)
 
-# source://openssl//lib/openssl/ssl.rb#158
+# pkg:gem/openssl#lib/openssl/ssl.rb:158
 OpenSSL::SSL::SSLContext::METHODS_MAP = T.let(T.unsafe(nil), Hash)
 
 class OpenSSL::SSL::SSLErrorWaitReadable < ::OpenSSL::SSL::SSLError
@@ -1269,7 +1301,7 @@ end
 
 # SSLServer represents a TCP/IP server socket with Secure Sockets Layer.
 #
-# source://openssl//lib/openssl/ssl.rb#478
+# pkg:gem/openssl#lib/openssl/ssl.rb:478
 class OpenSSL::SSL::SSLServer
   include ::OpenSSL::SSL::SocketForwarder
 
@@ -1277,48 +1309,46 @@ class OpenSSL::SSL::SSLServer
   # * _srv_ is an instance of TCPServer.
   # * _ctx_ is an instance of OpenSSL::SSL::SSLContext.
   #
-  # @return [SSLServer] a new instance of SSLServer
-  #
-  # source://openssl//lib/openssl/ssl.rb#486
+  # pkg:gem/openssl#lib/openssl/ssl.rb:486
   def initialize(svr, ctx); end
 
   # Works similar to TCPServer#accept.
   #
-  # source://openssl//lib/openssl/ssl.rb#514
+  # pkg:gem/openssl#lib/openssl/ssl.rb:514
   def accept; end
 
   # See IO#close for details.
   #
-  # source://openssl//lib/openssl/ssl.rb#535
+  # pkg:gem/openssl#lib/openssl/ssl.rb:535
   def close; end
 
   # See TCPServer#listen for details.
   #
-  # source://openssl//lib/openssl/ssl.rb#504
+  # pkg:gem/openssl#lib/openssl/ssl.rb:504
   def listen(backlog = T.unsafe(nil)); end
 
   # See BasicSocket#shutdown for details.
   #
-  # source://openssl//lib/openssl/ssl.rb#509
+  # pkg:gem/openssl#lib/openssl/ssl.rb:509
   def shutdown(how = T.unsafe(nil)); end
 
   # When true then #accept works exactly the same as TCPServer#accept
   #
-  # source://openssl//lib/openssl/ssl.rb#481
+  # pkg:gem/openssl#lib/openssl/ssl.rb:481
   def start_immediately; end
 
   # When true then #accept works exactly the same as TCPServer#accept
   #
-  # source://openssl//lib/openssl/ssl.rb#481
+  # pkg:gem/openssl#lib/openssl/ssl.rb:481
   def start_immediately=(_arg0); end
 
   # Returns the TCPServer passed to the SSLServer when initialized.
   #
-  # source://openssl//lib/openssl/ssl.rb#499
+  # pkg:gem/openssl#lib/openssl/ssl.rb:499
   def to_io; end
 end
 
-# source://openssl//lib/openssl/ssl.rb#333
+# pkg:gem/openssl#lib/openssl/ssl.rb:333
 class OpenSSL::SSL::SSLSocket
   include ::Enumerable
   include ::OpenSSL::Buffering
@@ -1328,7 +1358,7 @@ class OpenSSL::SSL::SSLSocket
   # This method is ignored by OpenSSL as there is no reasonable way to
   # implement it, but exists for compatibility with IO.
   #
-  # source://openssl//lib/openssl/ssl.rb#400
+  # pkg:gem/openssl#lib/openssl/ssl.rb:400
   def close_read; end
 
   # Closes the stream for writing. The behavior of this method depends on
@@ -1346,22 +1376,20 @@ class OpenSSL::SSL::SSLSocket
   # completely shut down. On TLS 1.3, the connection will remain open for
   # reading only.
   #
-  # source://openssl//lib/openssl/ssl.rb#419
+  # pkg:gem/openssl#lib/openssl/ssl.rb:419
   def close_write; end
 
   # The SSLContext object used in this connection.
   #
-  # source://openssl//lib/openssl/ssl.rb#344
+  # pkg:gem/openssl#lib/openssl/ssl.rb:344
   def context; end
 
-  # Returns the value of attribute hostname.
-  #
-  # source://openssl//lib/openssl/ssl.rb#337
+  # pkg:gem/openssl#lib/openssl/ssl.rb:337
   def hostname; end
 
   # The underlying IO object.
   #
-  # source://openssl//lib/openssl/ssl.rb#340
+  # pkg:gem/openssl#lib/openssl/ssl.rb:340
   def io; end
 
   # call-seq:
@@ -1372,7 +1400,7 @@ class OpenSSL::SSL::SSLSocket
   # This method MUST be called after calling #connect to ensure that the
   # hostname of a remote peer has been verified.
   #
-  # source://openssl//lib/openssl/ssl.rb#370
+  # pkg:gem/openssl#lib/openssl/ssl.rb:370
   def post_connection_check(hostname); end
 
   # call-seq:
@@ -1381,19 +1409,19 @@ class OpenSSL::SSL::SSLSocket
   # Returns the SSLSession object currently used, or nil if the session is
   # not established.
   #
-  # source://openssl//lib/openssl/ssl.rb#391
+  # pkg:gem/openssl#lib/openssl/ssl.rb:391
   def session; end
 
   # Whether to close the underlying socket as well, when the SSL/TLS
   # connection is shut down. This defaults to +false+.
   #
-  # source://openssl//lib/openssl/ssl.rb#348
+  # pkg:gem/openssl#lib/openssl/ssl.rb:348
   def sync_close; end
 
   # Whether to close the underlying socket as well, when the SSL/TLS
   # connection is shut down. This defaults to +false+.
   #
-  # source://openssl//lib/openssl/ssl.rb#348
+  # pkg:gem/openssl#lib/openssl/ssl.rb:348
   def sync_close=(_arg0); end
 
   # call-seq:
@@ -1404,28 +1432,24 @@ class OpenSSL::SSL::SSLSocket
   #
   # If sync_close is set to +true+, the underlying IO is also closed.
   #
-  # source://openssl//lib/openssl/ssl.rb#357
+  # pkg:gem/openssl#lib/openssl/ssl.rb:357
   def sysclose; end
 
-  # The underlying IO object.
-  #
-  # source://openssl//lib/openssl/ssl.rb#341
+  # pkg:gem/openssl#lib/openssl/ssl.rb:341
   def to_io; end
 
   private
 
-  # source://openssl//lib/openssl/ssl.rb#431
+  # pkg:gem/openssl#lib/openssl/ssl.rb:431
   def client_cert_cb; end
 
-  # source://openssl//lib/openssl/ssl.rb#439
+  # pkg:gem/openssl#lib/openssl/ssl.rb:439
   def session_get_cb; end
 
-  # source://openssl//lib/openssl/ssl.rb#435
+  # pkg:gem/openssl#lib/openssl/ssl.rb:435
   def session_new_cb; end
 
-  # @return [Boolean]
-  #
-  # source://openssl//lib/openssl/ssl.rb#425
+  # pkg:gem/openssl#lib/openssl/ssl.rb:425
   def using_anon_cipher?; end
 
   class << self
@@ -1450,68 +1474,64 @@ class OpenSSL::SSL::SSLSocket
     #   sock = OpenSSL::SSL::SSLSocket.open('localhost', 443, context: ctx)
     #   sock.connect # Initiates a connection to localhost:443 with SSLContext
     #
-    # source://openssl//lib/openssl/ssl.rb#465
+    # pkg:gem/openssl#lib/openssl/ssl.rb:465
     def open(remote_host, remote_port, local_host = T.unsafe(nil), local_port = T.unsafe(nil), context: T.unsafe(nil)); end
   end
 end
 
-# source://openssl//lib/openssl/ssl.rb#176
+# pkg:gem/openssl#lib/openssl/ssl.rb:176
 module OpenSSL::SSL::SocketForwarder
-  # source://openssl//lib/openssl/ssl.rb#182
+  # pkg:gem/openssl#lib/openssl/ssl.rb:182
   def addr; end
 
-  # source://openssl//lib/openssl/ssl.rb#218
+  # pkg:gem/openssl#lib/openssl/ssl.rb:218
   def close_on_exec=(value); end
 
-  # @return [Boolean]
-  #
-  # source://openssl//lib/openssl/ssl.rb#222
+  # pkg:gem/openssl#lib/openssl/ssl.rb:222
   def close_on_exec?; end
 
-  # @return [Boolean]
-  #
-  # source://openssl//lib/openssl/ssl.rb#210
+  # pkg:gem/openssl#lib/openssl/ssl.rb:210
   def closed?; end
 
-  # source://openssl//lib/openssl/ssl.rb#214
+  # pkg:gem/openssl#lib/openssl/ssl.rb:214
   def do_not_reverse_lookup=(flag); end
 
-  # source://openssl//lib/openssl/ssl.rb#206
+  # pkg:gem/openssl#lib/openssl/ssl.rb:206
   def fcntl(*args); end
 
   # The file descriptor for the socket.
   #
-  # source://openssl//lib/openssl/ssl.rb#178
+  # pkg:gem/openssl#lib/openssl/ssl.rb:178
   def fileno; end
 
-  # source://openssl//lib/openssl/ssl.rb#202
+  # pkg:gem/openssl#lib/openssl/ssl.rb:202
   def getsockopt(level, optname); end
 
-  # source://openssl//lib/openssl/ssl.rb#190
+  # pkg:gem/openssl#lib/openssl/ssl.rb:190
   def local_address; end
 
-  # source://openssl//lib/openssl/ssl.rb#186
+  # pkg:gem/openssl#lib/openssl/ssl.rb:186
   def peeraddr; end
 
-  # source://openssl//lib/openssl/ssl.rb#194
+  # pkg:gem/openssl#lib/openssl/ssl.rb:194
   def remote_address; end
 
-  # source://openssl//lib/openssl/ssl.rb#198
+  # pkg:gem/openssl#lib/openssl/ssl.rb:198
   def setsockopt(level, optname, optval); end
 
-  # source://openssl//lib/openssl/ssl.rb#239
+  # pkg:gem/openssl#lib/openssl/ssl.rb:239
   def timeout; end
 
-  # source://openssl//lib/openssl/ssl.rb#243
+  # pkg:gem/openssl#lib/openssl/ssl.rb:243
   def timeout=(value); end
 
-  # source://openssl//lib/openssl/ssl.rb#226
+  # pkg:gem/openssl#lib/openssl/ssl.rb:226
   def wait(*args); end
 
-  # source://openssl//lib/openssl/ssl.rb#230
+  # pkg:gem/openssl#lib/openssl/ssl.rb:230
   def wait_readable(*args); end
 
-  # source://openssl//lib/openssl/ssl.rb#234
+  # pkg:gem/openssl#lib/openssl/ssl.rb:234
   def wait_writable(*args); end
 end
 
@@ -1588,27 +1608,27 @@ class OpenSSL::Timestamp::TokenInfo
   def version; end
 end
 
-# source://openssl//lib/openssl/x509.rb#327
+# pkg:gem/openssl#lib/openssl/x509.rb:327
 class OpenSSL::X509::Attribute
   include ::OpenSSL::Marshal
   extend ::OpenSSL::Marshal::ClassMethods
 
-  # source://openssl//lib/openssl/x509.rb#330
+  # pkg:gem/openssl#lib/openssl/x509.rb:330
   def ==(other); end
 end
 
-# source://openssl//lib/openssl/x509.rb#374
+# pkg:gem/openssl#lib/openssl/x509.rb:374
 class OpenSSL::X509::CRL
   include ::OpenSSL::Marshal
   include ::OpenSSL::X509::Extension::Helpers
   include ::OpenSSL::X509::Extension::AuthorityKeyIdentifier
   extend ::OpenSSL::Marshal::ClassMethods
 
-  # source://openssl//lib/openssl/x509.rb#378
+  # pkg:gem/openssl#lib/openssl/x509.rb:378
   def ==(other); end
 end
 
-# source://openssl//lib/openssl/x509.rb#342
+# pkg:gem/openssl#lib/openssl/x509.rb:342
 class OpenSSL::X509::Certificate
   include ::OpenSSL::Marshal
   include ::OpenSSL::X509::Extension::Helpers
@@ -1618,41 +1638,37 @@ class OpenSSL::X509::Certificate
   include ::OpenSSL::X509::Extension::AuthorityInfoAccess
   extend ::OpenSSL::Marshal::ClassMethods
 
-  # source://openssl//lib/openssl/x509.rb#349
+  # pkg:gem/openssl#lib/openssl/x509.rb:349
   def inspect; end
 
-  # source://openssl//lib/openssl/x509.rb#358
+  # pkg:gem/openssl#lib/openssl/x509.rb:358
   def pretty_print(q); end
 
   class << self
-    # source://openssl//lib/openssl/x509.rb#369
+    # pkg:gem/openssl#lib/openssl/x509.rb:369
     def load_file(path); end
   end
 end
 
-# source://openssl//lib/openssl/x509.rb#45
+# pkg:gem/openssl#lib/openssl/x509.rb:45
 class OpenSSL::X509::Extension
   include ::OpenSSL::Marshal
   extend ::OpenSSL::Marshal::ClassMethods
 
-  # source://openssl//lib/openssl/x509.rb#48
+  # pkg:gem/openssl#lib/openssl/x509.rb:48
   def ==(other); end
 
-  # source://openssl//lib/openssl/x509.rb#64
+  # pkg:gem/openssl#lib/openssl/x509.rb:64
   def to_a; end
 
-  # {"oid"=>sn|ln, "value"=>value, "critical"=>true|false}
-  #
-  # source://openssl//lib/openssl/x509.rb#60
+  # pkg:gem/openssl#lib/openssl/x509.rb:60
   def to_h; end
 
-  # "oid = critical, value"
-  #
-  # source://openssl//lib/openssl/x509.rb#53
+  # pkg:gem/openssl#lib/openssl/x509.rb:53
   def to_s; end
 end
 
-# source://openssl//lib/openssl/x509.rb#154
+# pkg:gem/openssl#lib/openssl/x509.rb:154
 module OpenSSL::X509::Extension::AuthorityInfoAccess
   include ::OpenSSL::X509::Extension::Helpers
 
@@ -1662,7 +1678,7 @@ module OpenSSL::X509::Extension::AuthorityInfoAccess
   #
   # Returns an array of strings or nil or raises ASN1::ASN1Error.
   #
-  # source://openssl//lib/openssl/x509.rb#162
+  # pkg:gem/openssl#lib/openssl/x509.rb:162
   def ca_issuer_uris; end
 
   # Get the URIs for OCSP from the certificate's authority information access
@@ -1670,16 +1686,16 @@ module OpenSSL::X509::Extension::AuthorityInfoAccess
   #
   # Returns an array of strings or nil or raises ASN1::ASN1Error.
   #
-  # source://openssl//lib/openssl/x509.rb#177
+  # pkg:gem/openssl#lib/openssl/x509.rb:177
   def ocsp_uris; end
 
   private
 
-  # source://openssl//lib/openssl/x509.rb#190
+  # pkg:gem/openssl#lib/openssl/x509.rb:190
   def parse_aia_asn1; end
 end
 
-# source://openssl//lib/openssl/x509.rb#95
+# pkg:gem/openssl#lib/openssl/x509.rb:95
 module OpenSSL::X509::Extension::AuthorityKeyIdentifier
   include ::OpenSSL::X509::Extension::Helpers
 
@@ -1690,11 +1706,11 @@ module OpenSSL::X509::Extension::AuthorityKeyIdentifier
   # Returns the binary String keyIdentifier or nil or raises
   # ASN1::ASN1Error.
   #
-  # source://openssl//lib/openssl/x509.rb#104
+  # pkg:gem/openssl#lib/openssl/x509.rb:104
   def authority_key_identifier; end
 end
 
-# source://openssl//lib/openssl/x509.rb#121
+# pkg:gem/openssl#lib/openssl/x509.rb:121
 module OpenSSL::X509::Extension::CRLDistributionPoints
   include ::OpenSSL::X509::Extension::Helpers
 
@@ -1704,17 +1720,17 @@ module OpenSSL::X509::Extension::CRLDistributionPoints
   #
   # Returns an array of strings or nil or raises ASN1::ASN1Error.
   #
-  # source://openssl//lib/openssl/x509.rb#129
+  # pkg:gem/openssl#lib/openssl/x509.rb:129
   def crl_uris; end
 end
 
-# source://openssl//lib/openssl/x509.rb#68
+# pkg:gem/openssl#lib/openssl/x509.rb:68
 module OpenSSL::X509::Extension::Helpers
-  # source://openssl//lib/openssl/x509.rb#69
+  # pkg:gem/openssl#lib/openssl/x509.rb:69
   def find_extension(oid); end
 end
 
-# source://openssl//lib/openssl/x509.rb#74
+# pkg:gem/openssl#lib/openssl/x509.rb:74
 module OpenSSL::X509::Extension::SubjectKeyIdentifier
   include ::OpenSSL::X509::Extension::Helpers
 
@@ -1724,55 +1740,36 @@ module OpenSSL::X509::Extension::SubjectKeyIdentifier
   # Returns the binary String key identifier or nil or raises
   # ASN1::ASN1Error.
   #
-  # source://openssl//lib/openssl/x509.rb#82
+  # pkg:gem/openssl#lib/openssl/x509.rb:82
   def subject_key_identifier; end
 end
 
-# source://openssl//lib/openssl/x509.rb#19
+# pkg:gem/openssl#lib/openssl/x509.rb:19
 class OpenSSL::X509::ExtensionFactory
-  # @raise [ExtensionError]
-  #
-  # source://openssl//lib/openssl/x509.rb#28
+  # pkg:gem/openssl#lib/openssl/x509.rb:28
   def create_ext_from_array(ary); end
 
-  # source://openssl//lib/openssl/x509.rb#40
+  # pkg:gem/openssl#lib/openssl/x509.rb:40
   def create_ext_from_hash(hash); end
 
-  # "oid = critical, value"
-  #
-  # source://openssl//lib/openssl/x509.rb#33
+  # pkg:gem/openssl#lib/openssl/x509.rb:33
   def create_ext_from_string(str); end
 
-  # source://openssl//lib/openssl/x509.rb#20
+  # pkg:gem/openssl#lib/openssl/x509.rb:20
   def create_extension(*arg); end
 end
 
-# source://openssl//lib/openssl/x509.rb#204
+# pkg:gem/openssl#lib/openssl/x509.rb:204
 class OpenSSL::X509::Name
   include ::Comparable
   include ::OpenSSL::Marshal
   extend ::OpenSSL::Marshal::ClassMethods
 
-  # source://openssl//lib/openssl/x509.rb#319
+  # pkg:gem/openssl#lib/openssl/x509.rb:319
   def pretty_print(q); end
 
   class << self
-    # Parses the string representation of a distinguished name. Two
-    # different forms are supported:
-    #
-    # - \OpenSSL format (<tt>X509_NAME_oneline()</tt>) used by
-    #   <tt>#to_s</tt>. For example: <tt>/DC=com/DC=example/CN=nobody</tt>
-    # - \OpenSSL format (<tt>X509_NAME_print()</tt>)
-    #   used by <tt>#to_s(OpenSSL::X509::Name::COMPAT)</tt>. For example:
-    #   <tt>DC=com, DC=example, CN=nobody</tt>
-    #
-    # Neither of them is standardized and has quirks and inconsistencies
-    # in handling of escaped characters or multi-valued RDNs.
-    #
-    # Use of this method is discouraged in new applications. See
-    # Name.parse_rfc2253 and #to_utf8 for the alternative.
-    #
-    # source://openssl//lib/openssl/x509.rb#316
+    # pkg:gem/openssl#lib/openssl/x509.rb:316
     def parse(str, template = T.unsafe(nil)); end
 
     # Parses the string representation of a distinguished name. Two
@@ -1790,7 +1787,7 @@ class OpenSSL::X509::Name
     # Use of this method is discouraged in new applications. See
     # Name.parse_rfc2253 and #to_utf8 for the alternative.
     #
-    # source://openssl//lib/openssl/x509.rb#305
+    # pkg:gem/openssl#lib/openssl/x509.rb:305
     def parse_openssl(str, template = T.unsafe(nil)); end
 
     # Parses the UTF-8 string representation of a distinguished name,
@@ -1798,60 +1795,60 @@ class OpenSSL::X509::Name
     #
     # See also #to_utf8 for the opposite operation.
     #
-    # source://openssl//lib/openssl/x509.rb#286
+    # pkg:gem/openssl#lib/openssl/x509.rb:286
     def parse_rfc2253(str, template = T.unsafe(nil)); end
   end
 end
 
-# source://openssl//lib/openssl/x509.rb#207
+# pkg:gem/openssl#lib/openssl/x509.rb:207
 module OpenSSL::X509::Name::RFC2253DN
   private
 
-  # source://openssl//lib/openssl/x509.rb#237
+  # pkg:gem/openssl#lib/openssl/x509.rb:237
   def expand_hexstring(str); end
 
-  # source://openssl//lib/openssl/x509.rb#225
+  # pkg:gem/openssl#lib/openssl/x509.rb:225
   def expand_pair(str); end
 
-  # source://openssl//lib/openssl/x509.rb#244
+  # pkg:gem/openssl#lib/openssl/x509.rb:244
   def expand_value(str1, str2, str3); end
 
-  # source://openssl//lib/openssl/x509.rb#251
+  # pkg:gem/openssl#lib/openssl/x509.rb:251
   def scan(dn); end
 
   class << self
-    # source://openssl//lib/openssl/x509.rb#237
+    # pkg:gem/openssl#lib/openssl/x509.rb:237
     def expand_hexstring(str); end
 
-    # source://openssl//lib/openssl/x509.rb#225
+    # pkg:gem/openssl#lib/openssl/x509.rb:225
     def expand_pair(str); end
 
-    # source://openssl//lib/openssl/x509.rb#244
+    # pkg:gem/openssl#lib/openssl/x509.rb:244
     def expand_value(str1, str2, str3); end
 
-    # source://openssl//lib/openssl/x509.rb#251
+    # pkg:gem/openssl#lib/openssl/x509.rb:251
     def scan(dn); end
   end
 end
 
-# source://openssl//lib/openssl/x509.rb#391
+# pkg:gem/openssl#lib/openssl/x509.rb:391
 class OpenSSL::X509::Request
   include ::OpenSSL::Marshal
   extend ::OpenSSL::Marshal::ClassMethods
 
-  # source://openssl//lib/openssl/x509.rb#394
+  # pkg:gem/openssl#lib/openssl/x509.rb:394
   def ==(other); end
 end
 
-# source://openssl//lib/openssl/x509.rb#384
+# pkg:gem/openssl#lib/openssl/x509.rb:384
 class OpenSSL::X509::Revoked
-  # source://openssl//lib/openssl/x509.rb#385
+  # pkg:gem/openssl#lib/openssl/x509.rb:385
   def ==(other); end
 end
 
-# source://openssl//lib/openssl/x509.rb#336
+# pkg:gem/openssl#lib/openssl/x509.rb:336
 class OpenSSL::X509::StoreContext
-  # source://openssl//lib/openssl/x509.rb#337
+  # pkg:gem/openssl#lib/openssl/x509.rb:337
   def cleanup; end
 end
 
