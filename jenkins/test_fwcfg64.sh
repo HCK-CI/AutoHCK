@@ -7,7 +7,7 @@ test_name="$(basename "${0}" '.sh')"
 cd "${WORKSPACE}"
 
 bin/auto_hck --verbose test \
-    --platform Win2025x64_host \
+    --platform Win2025x64 \
     --drivers fwcfg64 \
     --driver-path "${VIRTIO_WIN_PATH}/amd64/2k25/" \
     --select-test-names "${WORKSPACE}/jenkins/sanity_tests" \
