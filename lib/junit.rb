@@ -26,7 +26,8 @@ module AutoHCK
         'results_url' => @project.result_uploader&.url,
         'results_html' => @project.result_uploader&.html_url,
         'status' => @project.status.to_s,
-        'report_generation_time' => generation_time
+        'report_generation_time' => generation_time,
+        'whiteboard' => @project.whiteboard
       }
     end
 

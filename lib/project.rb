@@ -14,23 +14,35 @@ module AutoHCK
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :id,
                 :workspace_path, :result_uploader, :engine_tag,
                 :engine_platform, :engine_type, :options, :extra_sw_manager,
-                :run_terminated, :engine_name, :string_log, :status
+                :run_terminated, :engine_name, :string_log, :status, :whiteboard
 
     def initialize(scope, options)
       @scope = scope
       @options = options
+      common = options.common
       init_timestamp
-      Json.update_json_override(options.common.config) unless options.common.config.nil?
-      init_multilog(options.common.verbose)
+      Json.update_json_override(common.config) unless common.config.nil?
+      init_multilog(common.verbose)
       init_class_variables
       init_workspace
-      @id = options.common.id
+      @id = common.id
+      print_whiteboard
       # ResultUploader must be initialized before adding project to scope
       # Project uses ResultUploader on close, so ResultUploader must exist
       # when project is closed
       @result_uploader = ResultUploader.new(@scope, self)
 
       scope << self
+    end
+
+    def print_whiteboard
+      return if @options.common.whiteboard.nil?
+
+      whiteboard = @options.common.whiteboard.to_s.strip.gsub(/[[:cntrl:]]+/, ' ').gsub(/\s+/, ' ').strip
+      return if whiteboard.empty?
+
+      @whiteboard = whiteboard
+      @logger.info("Whiteboard: #{@whiteboard}")
     end
 
     def images_names_query_output
