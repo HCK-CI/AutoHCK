@@ -29,6 +29,13 @@
                 <% end %>
             </div>
         </div>
+        <% unless whiteboard.to_s.strip.empty? %>
+        <div class="row pb-3">
+            <div class="col">
+                <div class="alert alert-info" role="alert">Whiteboard: <strong><%= ERB::Util.html_escape(whiteboard) %></strong></div>
+            </div>
+        </div>
+        <% end %>
         <div class="row pb-3">
             <% if sections.include? 'chart' %>
             <div class="col col-4">

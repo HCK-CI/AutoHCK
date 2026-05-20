@@ -27,6 +27,7 @@ module AutoHCK
       {
         'tag' => @project.engine_tag,
         'status' => @project.status.to_s,
+        'whiteboard' => @project.whiteboard,
         'test_stats' => test_stats(test_steps),
         'test_steps' => test_steps,
         'url' => @project.result_uploader.url,
