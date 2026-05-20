@@ -1,5 +1,5 @@
 {
-  "name": "Win2016x64_host_gui",
+  "name": "Win2016x64_gui",
   "client_iso": "Win2016x64-gui",
   "kit": "HLK1607",
   "setupmanager": "qemuhck",

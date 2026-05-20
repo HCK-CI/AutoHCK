@@ -1,5 +1,5 @@
 {
-  "name": "Win11nextx64_host_viommu",
+  "name": "Win11nextx64_viommu",
   "client_iso": "Win11nextx64",
   "kit": "HLK11_next",
   "setupmanager": "qemuhck",
@@ -8,7 +8,6 @@
     "viommu_state": true,
     "enlightenments_state": true
   },
-  "cpu": "host",
   "st_image": "HLK11_next.qcow2",
   "clients": {
     "c1": {
