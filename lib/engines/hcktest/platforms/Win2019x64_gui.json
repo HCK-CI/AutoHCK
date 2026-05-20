@@ -1,10 +1,9 @@
 {
-  "name": "Win2019x64_host_gui",
+  "name": "Win2019x64_gui",
   "client_iso": "Win2019x64-gui",
   "kit": "HLK1809server",
   "setupmanager": "qemuhck",
   "st_image": "HLK1809.qcow2",
-  "cpu": "host",
   "clients": {
     "c1": {
       "name": "CL1",

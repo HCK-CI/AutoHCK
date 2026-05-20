@@ -1,11 +1,10 @@
 {
-  "name": "Win2025x64_host_gui",
+  "name": "Win2025x64_gui",
   "client_iso": "Win2025x64-gui",
   "kit": "HLK2025",
   "setupmanager": "qemuhck",
   "tpm_state": true,
   "enlightenments_state": true,
-  "cpu": "host",
   "st_image": "HLK2025.qcow2",
   "clients": {
     "c1": {
