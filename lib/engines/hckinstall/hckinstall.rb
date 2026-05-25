@@ -44,12 +44,13 @@ module AutoHCK
       options.install.platform
     end
 
+    sig { params(logger: MultiLogger, options: CLI).returns(Models::HLKPlatform) }
     def self.platform(logger, options)
       platform_name = options.install.platform
       platform_json = "#{PLATFORMS_JSON_DIR}/#{platform_name}.json"
 
       logger.info("Loading platform: #{platform_name}")
-      Json.read_json(platform_json, logger)
+      Models::HLKPlatform.from_json_file(platform_json, logger)
     end
 
     def read_iso(iso_name)
@@ -94,11 +95,11 @@ module AutoHCK
     def init_clients_iso_info
       @client_iso_infos = {}
       @setup_client_isos = {}
-      fallback_iso = @project.engine_platform['client_iso']
+      fallback_iso = @project.engine_platform.client_iso
 
-      @project.engine_platform['clients'].each_value do |client|
-        iso_name = client['client_iso'] || fallback_iso
-        client_name = client['name']
+      @project.engine_platform.clients.each_value do |client|
+        iso_name = client.client_iso || fallback_iso
+        client_name = client.name
 
         @logger.info("Client ISO name for #{client_name} is #{iso_name}")
         @client_iso_infos[client_name] = read_iso(iso_name)
@@ -107,7 +108,7 @@ module AutoHCK
     end
 
     def init_iso_info
-      studio_iso = studio_iso_name(@project.engine_platform['kit'])
+      studio_iso = studio_iso_name(@project.engine_platform.kit)
       @logger.info("Studio ISO name is #{studio_iso}")
       @studio_iso_info = read_iso(studio_iso)
       @setup_studio_iso = Pathname.new(@project.workspace_path).join('setup-studio.iso')
@@ -117,15 +118,15 @@ module AutoHCK
 
     def init_class_variables
       @iso_path = Pathname.new(@project.config['iso_path'])
-      @kit_info = read_kit(@project.engine_platform['kit'])
-      @clients_name = @project.engine_platform['clients'].map { |_k, v| v['name'] }
+      @kit_info = read_kit(@project.engine_platform.kit)
+      @clients_name = @project.engine_platform.clients.values.map(&:name)
     end
 
     def prepare_extra_sw
-      @extra_software = [*@kit_info.extra_software, *@project.engine_platform['extra_software']]
+      @extra_software = [*@kit_info.extra_software, *@project.engine_platform.extra_software]
 
       @project.extra_sw_manager.prepare_software_packages(
-        @extra_software, @project.engine_platform['kit'], ENGINE_MODE
+        @extra_software, @project.engine_platform.kit, ENGINE_MODE
       )
 
       @project.extra_sw_manager.copy_to_setup_scripts(@workspace_hlk_setup_scripts_path)
@@ -324,7 +325,7 @@ module AutoHCK
 
     sig { returns([String, String]) }
     def parse_kit_info
-      kit_string = @project.engine_platform['kit']
+      kit_string = @project.engine_platform.kit
       kit_type = kit_string[0..2] || ''
       kit_version = kit_type == 'HCK' ? '' : (kit_string[3..] || '')
       [kit_type, kit_version]
@@ -395,8 +396,8 @@ module AutoHCK
     end
 
     def client_platform_arch(client_name)
-      client = @project.engine_platform['clients'].values.find { |c| c['name'] == client_name }
-      client&.dig('arch') || @project.engine_platform['client_arch'] || Project::DEFAULT_ARCH
+      client = @project.engine_platform.clients.values.find { |c| c.name == client_name }
+      client&.arch || @project.engine_platform.client_arch || Project::DEFAULT_ARCH
     end
 
     def create_studio_answer_files

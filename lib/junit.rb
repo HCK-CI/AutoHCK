@@ -34,7 +34,7 @@ module AutoHCK
     def engine_properties
       {
         'engine' => @project.engine_name,
-        'platform' => @project.engine_platform&.dig('name') || 'unknown',
+        'platform' => @project.engine_platform&.name || 'unknown',
         'drivers' => run_property_drivers,
         'engine_test_steps_count' => @project.engine.test_steps.count
       }

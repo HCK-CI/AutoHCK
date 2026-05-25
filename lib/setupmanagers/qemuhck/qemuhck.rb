@@ -1,9 +1,11 @@
+# typed: true
 # frozen_string_literal: true
 
 # AutoHCK module
 module AutoHCK
   # QemuHCK class
   class QemuHCK
+    extend T::Sig
     extend AutoloadExtension
 
     autoload_relative :Ns, 'ns'
@@ -17,6 +19,7 @@ module AutoHCK
                    ctrl_net_device vbs_state tpm_state].freeze
 
     def initialize(project)
+      @platform = T.let(project.engine_platform, Models::HLKPlatform)
       initialize_project project
 
       @clients_vm = {}
@@ -34,10 +37,9 @@ module AutoHCK
       @logger = project.logger
 
       @drivers = project.engine.drivers
-      @platform = project.engine_platform
 
       @devices = @drivers&.map(&:device)
-      @kit = @platform['kit']
+      @kit = @platform.kit
     end
 
     def studio_vm_options
@@ -45,7 +47,7 @@ module AutoHCK
         'id' => @id.to_i,
         'client_id' => 0,
         'workspace_path' => @workspace_path,
-        'image_name' => @platform['st_image'],
+        'image_name' => @platform.st_image,
         'logger' => @logger,
         'iso_path' => @project.config['iso_path'],
         'share_on_host_path' => @project.options.common.share_on_host_path,
@@ -73,15 +75,19 @@ module AutoHCK
     def platform_options
       options = {}
       OPT_NAMES.each do |name|
-        options[name] = @platform[name] unless @platform[name].nil?
+        options[name] = @platform.send(name) if @platform.respond_to?(name) && !@platform.send(name).nil?
       end
       options
     end
 
     def platform_client_options
       options = platform_options
+      clients_options = @platform.clients_options
       OPT_NAMES.each do |name|
-        options[name] = @platform.dig('clients_options', name) unless @platform.dig('clients_options', name).nil?
+        if clients_options.respond_to?(name) && !clients_options.send(name).nil?
+          options[name] =
+            clients_options.send(name)
+        end
       end
       options
     end
@@ -105,22 +111,23 @@ module AutoHCK
       }.compact
     end
 
+    sig { params(client_info: Models::HLKClient, index: Integer).returns(T::Hash[String, T.untyped]) }
     def client_vm_options(client_info, index)
       options = drivers_options.merge(platform_client_options)
       options.merge({
         'client_id' => index + 1,
-        'image_name' => client_info['image'],
-        'cpu_count' => client_info['cpus'],
-        'memory_gb' => client_info['memory_gb'],
-        'arch' => client_info['arch'] || @platform['client_arch'] || Project::DEFAULT_ARCH
+        'image_name' => client_info.image,
+        'cpu_count' => client_info.cpus,
+        'memory_gb' => client_info.memory_gb,
+        'arch' => client_info.arch || @platform.client_arch || Project::DEFAULT_ARCH
       }.merge(client_vm_common_options))
     end
 
     def initialize_clients_vm
-      @platform['clients'].each_with_index do |(_k, v), i|
+      @platform.clients.each_with_index do |(_k, v), i|
         vm_options = client_vm_options(v, i)
-        @logger.debug("Creating client VM #{v['name']} with options: #{vm_options}")
-        @clients_vm[v['name']] = QemuMachine.new(vm_options)
+        @logger.debug("Creating client VM #{v.name} with options: #{vm_options}")
+        @clients_vm[v.name] = QemuMachine.new(vm_options)
       end
     end
 
@@ -138,7 +145,7 @@ module AutoHCK
     end
 
     def hypervisor_info
-      `#{@studio_vm.config['qemu_bin']} --version`.lines.first.strip
+      T.must(`#{@studio_vm.config['qemu_bin']} --version`.lines.first).strip
     end
 
     def hypervisor_package_info
@@ -146,26 +153,34 @@ module AutoHCK
       @package_manager.query_package(binary_path) || "Unknown package for #{binary_path}"
     end
 
-    def hypervisor_dependencies_package_info
+    sig { returns(T::Hash[Symbol, String]) }
+    def swtpm_package_info
       binary_path = `which #{@studio_vm.config['swtpm_bin']} 2>/dev/null`.strip
-
       swtpm = if binary_path.empty?
                 'swtpm binary not found'
               else
                 @package_manager.query_package(binary_path) || "Unknown package for #{binary_path}"
               end
-      data = [
-        { name: 'swtpm package', value: swtpm }
-      ]
+
+      { name: 'swtpm package', value: swtpm }
+    end
+
+    sig { params(fw_binaries: T::Hash[String, String]).returns(T::Hash[Symbol, String]) }
+    def ovmf_package_info(fw_binaries)
+      binary_path = fw_binaries.values.first
+      {
+        name: 'OVMF package',
+        value: @package_manager.query_package(binary_path) || "Unknown package for #{binary_path}"
+      }
+    end
+
+    sig { returns(T::Array[T::Hash[Symbol, String]]) }
+    def hypervisor_dependencies_package_info
+      data = T.let([], T::Array[T::Hash[Symbol, String]])
+      data << swtpm_package_info
 
       fw_binaries = @studio_vm.fw['binary']
-      if fw_binaries&.any?
-        binary_path = fw_binaries.values.first
-        data << {
-          name: 'OVMF package',
-          value: @package_manager.query_package(binary_path) || "Unknown package for #{binary_path}"
-        }
-      end
+      data << ovmf_package_info(fw_binaries) if fw_binaries&.any?
 
       data
     end
@@ -192,10 +207,10 @@ module AutoHCK
         Studio Properties:
           #{@studio_vm.dump_config}
       STUDIO_INFO
-      @platform['clients'].each_with_index do |(_k, v), i|
+      @platform.clients.each_with_index do |(_k, v), i|
         logs << <<~CLIENT_INFO
           Client #{i + 1} Properties:
-            #{@clients_vm[v['name']].dump_config}
+            #{@clients_vm[v.name].dump_config}
         CLIENT_INFO
       end
     end
@@ -254,8 +269,8 @@ module AutoHCK
 
     def self.enter(workspace_path)
       $stderr.write "[qemuhck.rb] Entering namespace: #{workspace_path}\n" if ENV['AUTOHCK_NS_VERBOSE']
-      Ns.enter workspace_path, Dir.pwd, 'bin/auto_hck', '-w',
-               workspace_path, *ARGV
+      T.unsafe(Ns).enter workspace_path, Dir.pwd, 'bin/auto_hck', '-w',
+                         workspace_path, *ARGV
     end
   end
 end
