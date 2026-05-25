@@ -22,13 +22,19 @@ module AutoHCK
 
     def project_properties
       {
-        'engine' => @project.engine_name,
-        'platform' => @project.engine_platform&.dig('name') || 'unknown',
         'svvp' => @project.options.test.svvp,
-        'drivers' => run_property_drivers,
         'results_url' => @project.result_uploader&.url,
         'results_html' => @project.result_uploader&.html_url,
         'status' => @project.status.to_s,
+        'report_generation_time' => generation_time
+      }
+    end
+
+    def engine_properties
+      {
+        'engine' => @project.engine_name,
+        'platform' => @project.engine_platform&.dig('name') || 'unknown',
+        'drivers' => run_property_drivers,
         'engine_test_steps_count' => @project.engine.test_steps.count
       }
     end
@@ -44,7 +50,7 @@ module AutoHCK
     end
 
     def run_properties
-      project_properties.merge(setup_manager_properties)
+      project_properties.merge(setup_manager_properties).merge(engine_properties)
     end
 
     def tag
@@ -57,6 +63,10 @@ module AutoHCK
 
     def timestamp
       Time.strptime(@project.timestamp, '%Y_%m_%d_%H_%M_%S').iso8601
+    end
+
+    def generation_time
+      Time.now.iso8601
     end
 
     def engine_test_steps
