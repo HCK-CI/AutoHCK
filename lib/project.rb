@@ -46,9 +46,9 @@ module AutoHCK
     end
 
     def images_names_query_output
-      lines = ["Studio image: #{@engine_platform['st_image']}"]
-      @engine_platform['clients'].each_value do |client|
-        lines << "Client #{client['name']}: #{client['image']}"
+      lines = ["Studio image: #{@engine_platform.st_image}"]
+      @engine_platform.clients.each_value do |client|
+        lines << "Client #{client.name}: #{client.image}"
       end
       lines.join("\n")
     end
@@ -136,8 +136,8 @@ module AutoHCK
       @engine_name = @config["#{@options.mode}_engine"]
       @engine_type = Engine.select(@engine_name)
       @engine_tag = @engine_type.tag(@options)
-      @engine_platform = @engine_type.platform(@logger, @options)
-      @setup_manager_type = @engine_platform.nil? ? nil : SetupManager.select(@engine_platform['setupmanager'])
+      @engine_platform = T.let(@engine_type.platform(@logger, @options), T.nilable(Models::HLKPlatform))
+      @setup_manager_type = @engine_platform.nil? ? nil : SetupManager.select(@engine_platform.setupmanager)
       @run_terminated = false
       @status = :running
       @junit = JUnit.new(self)

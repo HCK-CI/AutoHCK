@@ -75,9 +75,9 @@ module AutoHCK
     def config_clients_addrs
       clients_addrs = {}
       @clients.each_value do |client|
-        clients_addrs[client['name']] = {
-          addr: client['winrm_addr'],
-          port: client['winrm_port']
+        clients_addrs[client.name] = {
+          addr: client.winrm_addr,
+          port: client.winrm_port
         }
       end
       clients_addrs

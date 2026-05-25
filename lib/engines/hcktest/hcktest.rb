@@ -43,10 +43,10 @@ module AutoHCK
       extra_softwares = []
       extra_softwares += @drivers.flat_map(&:extra_software)
       extra_softwares += @extensions.flat_map(&:extra_software)
-      extra_softwares += @project.engine_platform['extra_software'] || []
+      extra_softwares += @project.engine_platform.extra_software
 
       @project.extra_sw_manager.prepare_software_packages(
-        extra_softwares, @project.engine_platform['kit'], ENGINE_MODE
+        extra_softwares, @project.engine_platform.kit, ENGINE_MODE
       )
     end
 
@@ -93,13 +93,23 @@ module AutoHCK
       Models::Driver.from_json_file(driver_json, @logger)
     end
 
+    sig { params(driver: Models::Driver).returns(T::Boolean) }
+    def skip_driver?(driver)
+      return true if driver.device == @project.options.test.boot_device
+      return true if driver.device == @project.options.common.client_ctrl_net_dev
+      return true if driver.device == @project.engine_platform.clients_options.ctrl_net_device
+
+      false
+    end
+
     sig { returns(T::Array[Models::Driver]) }
     def find_drivers
       driver_names.filter_map do |short_name|
         driver = read_driver(short_name)
-        next if driver.device == @project.options.test.boot_device
-        next if driver.device == @project.options.common.client_ctrl_net_dev
-        next if driver.device == @project.engine_platform.dig('clients_options', 'ctrl_net_device')
+        if skip_driver?(driver)
+          @logger.info("Skipping driver: #{driver.name}")
+          next
+        end
 
         driver.short = short_name
 
@@ -134,16 +144,17 @@ module AutoHCK
       end
     end
 
+    sig { params(logger: MultiLogger, options: CLI).returns(Models::HLKPlatform) }
     def self.platform(logger, options)
       platform_name = options.test.platform
-      platform = Json.read_json("#{PLATFORMS_JSON_DIR}/#{platform_name}.json", logger)
+      logger.info("Loading platform: #{platform_name}")
+      platform = Models::HLKPlatform.from_json_file("#{PLATFORMS_JSON_DIR}/#{platform_name}.json", logger)
 
-      platform['clients_options'] ||= {}
-      platform['clients_options']['vbs_state'] ||= options.test.enable_vbs
+      platform.clients_options.vbs_state ||= options.test.enable_vbs
 
       if options.test.svvp
         svvp_info = Models::SVVPConfig.from_json_file(SVVP_JSON, logger)
-        platform['clients_options'].merge!(svvp_info.clients_options.serialize)
+        platform.clients_options.merge!(svvp_info.clients_options)
       end
 
       platform
@@ -155,8 +166,8 @@ module AutoHCK
 
     def run_clients(scope, run_opts = {})
       @clients = {}
-      @project.engine_platform['clients'].each_value do |client|
-        @clients[client['name']] = @project.setup_manager.run_hck_client(scope, @studio, client['name'], run_opts)
+      @project.engine_platform.clients.each_value do |client|
+        @clients[client.name] = @project.setup_manager.run_hck_client(scope, @studio, client.name, run_opts)
 
         break if @project.options.test.svvp
         break unless @drivers.any?(&:support)
@@ -194,7 +205,7 @@ module AutoHCK
     def configure_setup_and_synchronize
       return configure_and_synchronize_clients unless @studio.tools.nil?
 
-      @studio.configure(@project.engine_platform['clients'])
+      @studio.configure(@project.engine_platform.clients)
       configure_and_synchronize_clients
       @studio.keep_snapshot
       @clients.each_value(&:keep_snapshot)
@@ -363,7 +374,7 @@ module AutoHCK
                      @extensions.flat_map(&:tests_config)
 
       tests_config
-        .select { |test_config| test_config.kits.empty? || test_config.kits.include?(@project.engine_platform['kit']) }
+        .select { |test_config| test_config.kits.empty? || test_config.kits.include?(@project.engine_platform.kit) }
     end
 
     def group_tests_by_config
