@@ -35,6 +35,10 @@ module AutoHCK
       @runner.keep_snapshot
     end
 
+    def search_target
+      @target = Targets.new(self, @project, @tools, pool).search_target
+    end
+
     def add_target_to_project
       @target = Targets.new(self, @project, @tools, pool).add_target_to_project
     end
@@ -169,6 +173,12 @@ module AutoHCK
       initialize_client_wait
     end
 
+    def return_when_client_restored
+      @logger.info("Waiting for client #{@name} to rejoin pool #{@project.engine_tag}")
+      sleep 5 until pool == @project.engine_tag
+      @logger.info("Client #{@name} rejoined pool #{@project.engine_tag}")
+    end
+
     def prepare_machine
       @logger.info("Preparing client #{@name}...")
       @project.extra_sw_manager.install_software_before_driver(@tools, @name)
@@ -177,23 +187,34 @@ module AutoHCK
       @project.extra_sw_manager.install_software_after_driver(@tools, @name)
     end
 
+    def configure_restored
+      return_when_client_restored
+      initialize_client_wait
+      configure_machine
+      search_target
+    end
+
+    def configure_fresh(run_only:)
+      unless pool == @project.engine_tag
+        return_when_client_up
+        if run_only
+          @logger.info("Preparing client skipped #{@name}...")
+
+          Thread.exit
+        end
+        prepare_machine
+        move_machine_to_pool
+      end
+
+      configure_machine
+      run_post_start_commands
+      add_target_to_project
+    end
+
     def configure(run_only: false)
       @tools = @studio.tools
       @cooldown_thread = Thread.new do
-        unless pool == @project.engine_tag
-          return_when_client_up
-          if run_only
-            @logger.info("Preparing client skipped #{@name}...")
-
-            Thread.exit
-          end
-          prepare_machine
-          move_machine_to_pool
-        end
-
-        configure_machine
-        run_post_start_commands
-        add_target_to_project
+        @project.restored? ? configure_restored : configure_fresh(run_only:)
       end
     end
 

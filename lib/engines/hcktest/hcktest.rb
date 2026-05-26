@@ -209,6 +209,7 @@ module AutoHCK
       configure_and_synchronize_clients
       @studio.keep_snapshot
       @clients.each_value(&:keep_snapshot)
+      @project.save_session unless @project.restored?
     end
 
     def run_clients_and_configure_setup(scope, **opts)
@@ -314,32 +315,50 @@ module AutoHCK
       e
     end
 
+    def init_vm_options
+      return {} unless @project.restored?
+
+      { boot_from_snapshot: true, create_snapshot: false }
+    end
+
+    def run_restored_session
+      ResourceScope.open do |scope|
+        run_clients_and_configure_setup(scope, **init_vm_options)
+        prepare_tests
+        pause_run
+      end
+    end
+
+    def run_fresh_session
+      # Try to export the project package even if some of the steps fail, it can be
+      # used to simplify the HLK process by reusing the created package and just fixing
+      # the root cause of the failure without the need to run all other tests
+      ex1 = rescue2return { run_tests_without_config }
+      ex2 = rescue2return { run_tests_with_config }
+      ex3 = rescue2return { @tests.create_project_package }
+
+      # Sometimes results file missing filters for last test
+      # After creating project package, all filters should be applied
+      # Reload tests and update results to make sure the final report is correct
+      ex4 = rescue2return { @tests.update_tests_and_results }
+
+      # Propagate the first exception if any occurred; the most likely other exceptions are just
+      # consequences of the first one and will be resolved after fixing the first root cause
+      [ex1, ex2, ex3, ex4].each { |e| raise e if e }
+    end
+
     def auto_run
       ResourceScope.open do |scope|
-        run_studio scope
+        run_studio(scope, **init_vm_options)
         sleep 5 until @studio.up?
-        # Try to export the project package even if some of the steps fail, it can be
-        # used to simplify the HLK process by reusing the created package and just fixing
-        # the root cause of the failure without the need to run all other tests
-        ex1 = rescue2return { run_tests_without_config }
-        ex2 = rescue2return { run_tests_with_config }
 
-        ex3 = rescue2return { @tests.create_project_package }
-
-        # Sometimes results file missing filters for last test
-        # After creating project package, all filters should be applied
-        # Reload tests and update results to make sure the final report is correct
-        ex4 = rescue2return { @tests.update_tests_and_results }
-
-        # Propagate the first exception if any occurred; the most likely other exceptions are just
-        # consequences of the first one and will be resolved after fixing the first root cause
-        [ex1, ex2, ex3, ex4].each { |e| raise e if e }
+        @project.restored? ? run_restored_session : run_fresh_session
       end
     end
 
     def run_tests_without_config
       ResourceScope.open do |scope|
-        run_clients_and_configure_setup scope
+        run_clients_and_configure_setup(scope, **init_vm_options)
         prepare_tests
 
         @logger.info('Client ready, running basic tests')
@@ -388,8 +407,14 @@ module AutoHCK
       grouped_tests
     end
 
+    def upload_driver_package_if_needed
+      return if @driver_path.nil? || @project.restored?
+
+      upload_driver_package
+    end
+
     def run
-      upload_driver_package unless @driver_path.nil?
+      upload_driver_package_if_needed
 
       if @project.options.test.dump
         @project.logger.info('AutoHCK started in dump only mode')

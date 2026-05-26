@@ -107,6 +107,8 @@ module AutoHCK
     prop :auto_retry_failed_tests, Integer, default: 0
     prop :query, T.nilable(String)
     prop :query_output_file, T.nilable(String)
+    prop :session, T.nilable(String)
+    prop :latest_session, T::Boolean, default: false
 
     def create_parser
       OptionParser.new do |parser|
@@ -257,6 +259,14 @@ module AutoHCK
       parser.on('--query-output-file <path>', String,
                 'Write query output to the specified file in addition to the log',
                 &method(:query_output_file=))
+
+      parser.on('--session <path>', String,
+                'Bring up a previous test session from its workspace path',
+                &method(:session=))
+
+      parser.on('--latest-session', TrueClass,
+                'Bring up the most recent test session',
+                &method(:latest_session=))
     end
     # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
   end

@@ -39,7 +39,7 @@ describe 'CLI and Project#prepare query mode (images-names)', :integration do
       expect(cli.test.platform).to eq('Win10_2004x64')
 
       AutoHCK::ResourceScope.open do |scope|
-        project = AutoHCK::Project.new(scope, cli)
+        project = AutoHCK::Project.new(scope, AutoHCK::Session.new(cli:))
         expect(project.prepare).to be(false)
         expect(project.engine).to be_nil
       end
@@ -58,7 +58,7 @@ describe 'CLI and Project#prepare query mode (images-names)', :integration do
     cli.parse(['test', '-p', 'Win10_2004x64', '--query', 'images-names'])
 
     AutoHCK::ResourceScope.open do |scope|
-      project = AutoHCK::Project.new(scope, cli)
+      project = AutoHCK::Project.new(scope, AutoHCK::Session.new(cli:))
       expect(project.prepare).to be(false)
       log = project.string_log.string
       expect(log).to include('Studio image: HLK2004.qcow2')
@@ -73,7 +73,7 @@ describe 'CLI and Project#prepare query mode (images-names)', :integration do
 
     expect do
       AutoHCK::ResourceScope.open do |scope|
-        AutoHCK::Project.new(scope, cli).prepare
+        AutoHCK::Project.new(scope, AutoHCK::Session.new(cli:)).prepare
       end
     end.to raise_error(AutoHCK::AutoHCKError, /Unknown query: unknown-query/)
   end

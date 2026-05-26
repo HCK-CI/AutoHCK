@@ -72,6 +72,7 @@ module AutoHCK
   autoload_relative :ReplacementMap, 'auxiliary/replacement_map'
   autoload_relative :ResourceScope, 'auxiliary/resource_scope'
   autoload_relative :ResultUploader, 'resultuploaders/result_uploader'
+  autoload_relative :Session, 'session'
   autoload_relative :SetupManager, 'setupmanagers/setupmanager'
   autoload_relative :SetupManagerError, 'setupmanagers/exceptions'
   autoload_relative :StudioConnectError, 'setupmanagers/exceptions'
