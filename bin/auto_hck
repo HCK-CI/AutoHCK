@@ -6,9 +6,16 @@ Dir.chdir(File.dirname(__dir__))
 require_relative '../lib/auto_hck'
 
 module AutoHCK
+  def self.build_session(cli)
+    session_path = cli.test.latest_session ? "#{Config.read['workspace_path']}/latest" : cli.test.session
+    session_path ? Session.load(session_path, cli.common.workspace_path) : Session.new(cli:)
+  end
+
   run do
     cli = CLI.new
     cli.parse(ARGV)
+
+    session = build_session(cli)
 
     ENV.store 'LC_ALL', 'en_US.UTF-8'
 
@@ -18,7 +25,7 @@ module AutoHCK
     Thread.report_on_exception = false
 
     ResourceScope.open do |scope|
-      @project = Project.new(scope, cli)
+      @project = Project.new(scope, session)
       Trap.project = @project
       @project.run if @project.prepare
     rescue StandardError => e

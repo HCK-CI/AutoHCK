@@ -16,16 +16,20 @@ module AutoHCK
                 :engine_platform, :engine_type, :options, :extra_sw_manager,
                 :run_terminated, :engine_name, :string_log, :status, :whiteboard
 
-    def initialize(scope, options)
+    def apply_json_override
+      Json.update_json_override(@options.common.config) unless @options.common.config.nil?
+    end
+
+    def initialize(scope, session)
       @scope = scope
-      @options = options
-      common = options.common
+      @options = session.cli
+      @session = session
       init_timestamp
-      Json.update_json_override(common.config) unless common.config.nil?
-      init_multilog(common.verbose)
+      apply_json_override
+      init_multilog(@options.common.verbose)
       init_class_variables
       init_workspace
-      @id = common.id
+      @id = @options.common.id
       print_whiteboard
       # ResultUploader must be initialized before adding project to scope
       # Project uses ResultUploader on close, so ResultUploader must exist
@@ -220,14 +224,15 @@ module AutoHCK
       @options.mode == 'test' && !@options.test.query.nil?
     end
 
-    def init_workspace
-      return if query_mode?
+    def restored?
+      !@options.test.session.nil?
+    end
 
-      unless @options.common.workspace_path.nil?
-        @workspace_path = @options.common.workspace_path
-        return
-      end
+    def save_session
+      @session.save(@workspace_path, @logger)
+    end
 
+    def create_workspace
       @workspace_path = File.join(@config['workspace_path'], @engine_name,
                                   @engine_tag, @timestamp)
       begin
@@ -244,6 +249,22 @@ module AutoHCK
       end
 
       File.symlink(@workspace_path, "#{@config['workspace_path']}/latest")
+    end
+
+    def restore_workspace
+      @workspace_path = @options.test.session
+      @logger.info("Restoring workspace from #{@workspace_path}")
+    end
+
+    def init_workspace
+      return if query_mode?
+
+      unless @options.common.workspace_path.nil?
+        @workspace_path = @options.common.workspace_path
+        return
+      end
+
+      restored? ? restore_workspace : create_workspace
       @setup_manager_type&.enter @workspace_path
     end
 
@@ -262,6 +283,8 @@ module AutoHCK
     end
 
     def generate_junit
+      return if restored?
+
       results_file = "#{@workspace_path}/#{JUNIT_RESULT}"
 
       @junit.generate(results_file)

@@ -759,7 +759,7 @@ module AutoHCK
 
     def run(scope, run_opts = nil)
       @run_opts = validate_run_opts(run_opts.to_h)
-      @keep_alive = run_opts[:keep_alive]
+      @keep_alive = @run_opts[:keep_alive]
 
       process_device_commands
       normalize_lists
@@ -767,7 +767,7 @@ module AutoHCK
       if @run_opts[:dump_only]
         dump_commands
       else
-        unless @configured
+        unless @configured || @run_opts[:boot_from_snapshot]
           run_config_commands
           @configured = true
         end
