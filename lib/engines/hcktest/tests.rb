@@ -769,6 +769,13 @@ module AutoHCK
       end
     end
 
+    sig { void }
+    def update_tests_and_results
+      update_tests
+      @project.generate_result_report
+      @project.generate_junit
+    end
+
     sig { params(tests: T::Array[Models::HLK::Test]).void }
     def run(tests)
       load_clients_system_info

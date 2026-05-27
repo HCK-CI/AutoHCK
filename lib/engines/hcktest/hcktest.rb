@@ -315,11 +315,14 @@ module AutoHCK
 
         ex3 = rescue2return { @tests.create_project_package }
 
+        # Sometimes results file missing filters for last test
+        # After creating project package, all filters should be applied
+        # Reload tests and update results to make sure the final report is correct
+        ex4 = rescue2return { @tests.update_tests_and_results }
+
         # Propagate the first exception if any occurred; the most likely other exceptions are just
         # consequences of the first one and will be resolved after fixing the first root cause
-        raise ex1 if ex1
-        raise ex2 if ex2
-        raise ex3 if ex3
+        [ex1, ex2, ex3, ex4].each { |e| raise e if e }
       end
     end
 
