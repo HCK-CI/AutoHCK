@@ -4,7 +4,6 @@
   "kit": "HLK1607",
   "setupmanager": "qemuhck",
   "st_image": "HLK1607.qcow2",
-  "cpu": "host",
   "clients": {
     "c1": {
       "name": "CL1",
