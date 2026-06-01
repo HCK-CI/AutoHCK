@@ -4,8 +4,10 @@
   "kit": "HLK2004",
   "setupmanager": "qemuhck",
   "st_image": "HLK2004.qcow2",
-  "fw_type": "bios",
   "client_arch": "x86",
+  "clients_options": {
+    "fw_type": "bios"
+  },
   "clients": {
     "c1": {
       "name": "CL1",

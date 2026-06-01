@@ -11,14 +11,19 @@ module AutoHCK
       prop :enlightenments_state, T.nilable(T::Boolean)
       prop :vbs_state, T.nilable(T::Boolean)
       prop :ctrl_net_device, T.nilable(String)
+      prop :fw_type, T.nilable(String)
 
+      # rubocop:disable Metrics/AbcSize
+      # There is no way to reduce the ABC size of this method
       sig { params(other: HLKPlatformClientsOptions).void }
       def merge!(other)
         self.viommu_state = other.viommu_state unless other.viommu_state.nil?
         self.enlightenments_state = other.enlightenments_state unless other.enlightenments_state.nil?
         self.vbs_state = other.vbs_state unless other.vbs_state.nil?
         self.ctrl_net_device = other.ctrl_net_device unless other.ctrl_net_device.nil?
+        self.fw_type = other.fw_type unless other.fw_type.nil?
       end
+      # rubocop:enable Metrics/AbcSize
     end
 
     class HLKClient < T::Struct
