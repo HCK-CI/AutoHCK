@@ -20,8 +20,9 @@
       "tests": [
         "Flush Test"
       ],
-      "kits": ["HLK2022"],
-      "errata": "Flush Test - known HLK failure on Win2022"
+      "kits": ["HLK2004", "HLK2022"],
+      "skip_retry": true,
+      "errata": "Flush Test - known HLK failure on Windows Server 2022 and Windows 10 22H2"
     },
     {
       "tests": [
