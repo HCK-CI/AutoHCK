@@ -131,6 +131,7 @@ module AutoHCK
           'name' => @clients.values[0].name,
           'type' => @svvp_info.type,
           'select_test_names' => @svvp_info.select_test_names,
+          'sequence_test_names' => @svvp_info.sequence_test_names,
           'reject_test_names' => @svvp_info.reject_test_names
         }
       else
@@ -139,6 +140,7 @@ module AutoHCK
           'name' => driver.name,
           'type' => driver.type,
           'select_test_names' => driver.select_test_names,
+          'sequence_test_names' => [],
           'reject_test_names' => driver.reject_test_names
         }
       end
