@@ -51,6 +51,7 @@ module AutoHCK
       custom_select_test_names(log)
       custom_reject_test_names(log)
       sort_by_duration
+      reorder_sequence_tests
     end
 
     def update_target(target)
@@ -96,6 +97,17 @@ module AutoHCK
     sig { returns(T::Array[Models::HLK::Test]) }
     def sort_by_duration
       @tests.sort_by!(&:duration)
+    end
+
+    # Move tests listed in sequence_test_names to the end in the specified order.
+    def reorder_sequence_tests
+      sequence_names = @project.engine.target['sequence_test_names']
+
+      matched, remaining = @tests.partition { |t| sequence_names.include?(t.name) }
+      return @tests if matched.empty?
+
+      matched.sort_by! { |t| sequence_names.index(t.name) }
+      @tests = remaining + matched
     end
 
     def intersect_select_tests(select_test_names)
