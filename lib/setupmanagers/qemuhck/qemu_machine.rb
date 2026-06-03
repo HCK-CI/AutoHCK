@@ -147,7 +147,7 @@ module AutoHCK
     MONITOR_BASE_PORT = 10_000
     VNC_BASE_PORT = 5900
     MAX_RUN_ID = 999
-    MAX_CLIENT_ID = 2
+    MAX_CLIENT_ID = 3
 
     DEFAULT_RUN_OPTIONS = {
       keep_alive: false,

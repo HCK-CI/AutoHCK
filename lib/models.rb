@@ -15,6 +15,7 @@ module AutoHCK
     autoload_relative :HLKPlatformClientsOptions, 'models/hlk_platform'
     autoload_relative :HLKClient, 'models/hlk_platform'
     autoload_relative :HLKPlatform, 'models/hlk_platform'
+    autoload_relative :ClientRole, 'models/client_role'
     autoload_relative :SVVPConfig, 'models/svvp_config'
     autoload_relative :QemuHCKDevice, 'models/qemuhck_device'
     autoload_relative :HLK, 'models/hlk'

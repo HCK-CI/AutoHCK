@@ -78,7 +78,13 @@ module AutoHCK
       raise ClientRunError, "Couldn't set #{@name} state to Ready"
     end
 
+    def pool_only_client?
+      @project.engine.platform_clients.pool_only?(@name)
+    end
+
     def post_start_commands
+      return [] if pool_only_client?
+
       (@project.engine.drivers.flat_map(&:post_start_commands) +
        @project.engine.extensions.flat_map(&:post_start_commands) +
         @setup_manager.client_post_start_commands).select(&:guest_run)
@@ -202,13 +208,18 @@ module AutoHCK
 
           Thread.exit
         end
-        prepare_machine
+        if pool_only_client?
+          @logger.info("Skipping driver preparation for #{@name} " \
+                       "(role: #{@project.engine.platform_clients.role_for(@name)})")
+        else
+          prepare_machine
+        end
         move_machine_to_pool
       end
 
       configure_machine
       run_post_start_commands
-      add_target_to_project
+      add_target_to_project unless pool_only_client?
     end
 
     def configure(run_only: false)
