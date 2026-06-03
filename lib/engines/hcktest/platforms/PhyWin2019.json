@@ -5,6 +5,7 @@
   "clients": {
     "c1": {
       "name": "CL1",
+      "role": "dut",
       "winrm_port": 4002
     }
   }

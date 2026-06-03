@@ -7,6 +7,7 @@
   "clients": {
     "c1": {
       "name": "CL1",
+      "role": "dut",
       "cpus": 4,
       "memory_gb": 8,
       "winrm_addr": "192.168.100.2",
@@ -14,6 +15,7 @@
     },
     "c2": {
       "name": "CL2",
+      "role": "support",
       "cpus": 4,
       "memory_gb": 8,
       "winrm_addr": "192.168.100.3",
