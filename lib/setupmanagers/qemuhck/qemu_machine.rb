@@ -147,7 +147,19 @@ module AutoHCK
     MONITOR_BASE_PORT = 10_000
     VNC_BASE_PORT = 5900
     MAX_RUN_ID = 999
-    MAX_CLIENT_ID = 3
+    # https://learn.microsoft.com/en-us/windows-hardware/test/hlk/testref/test-server-configuration
+    # 0 - Studio
+    # 1 - Active Directory (SVVP-only but mandatory)
+    # 2 - SUT / DUT
+    # 3 - Master client / Support client for DUT
+    # 4 - Stress Client 1
+    # 5 - Stress Client 2
+    # 6 - Stress Client 3
+    # 7 - Stress Client 4
+    # 8 - Stress Client 5
+    # 9 - Stress Client 6
+    # 10 - Stress Client 7 (LoadGen supports up to 64 SC machines, but 8 is usually sufficient, QE uses 4)
+    MAX_CLIENT_ID = 10
 
     DEFAULT_RUN_OPTIONS = {
       keep_alive: false,
