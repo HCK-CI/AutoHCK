@@ -1,0 +1,26 @@
+{
+  "comments": [
+     "Workaround for the 'Operate In Server Core' test on Windows Server 2016.",
+     "The test should be filtered out (20801 v4 / 200656 v3), but filtering does not work on Server 2016.",
+     "To work around this, temporarily set the 'InstallationType' registry value to 'Server Core'."
+  ],
+  "tests_config": [
+    {
+      "tests": [
+        "Operate In Server Core"
+      ],
+      "pre_test_commands": [
+        {
+          "desc": "Set 'Server Core' into Registry to work around Server Core test issues",
+          "guest_run": "Set-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion' -Name 'InstallationType' -Value 'Server Core'"
+        }
+      ],
+      "post_test_commands": [
+        {
+          "desc": "Revert 'Server Core' to 'Server' registry value after test completion",
+          "guest_run": "Set-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion' -Name 'InstallationType' -Value 'Server'"
+        }
+      ]
+    }
+  ]
+}
