@@ -301,8 +301,8 @@ module AutoHCK
       @machine = read_machine
       load_fw
 
-      states_config = Json.read_json(STATES_JSON, @logger)
-      states_config.each { |name, state| apply_state name, state }
+      @states_config = Json.read_json(STATES_JSON, @logger)
+      @states_config.each { |name, state| apply_state name, state }
 
       apply_cpu_options_config
     end
@@ -615,25 +615,41 @@ module AutoHCK
       @nm.find_world_ip option_config('world_net_device'), full_replacement_map
     end
 
+    def format_dump_config_line(name, value)
+      "   #{name} ".ljust(34, '.') + " #{value}"
+    end
+
+    def dump_base_config
+      [
+        format_dump_config_line('Setup ID', '@run_id@'),
+        format_dump_config_line('Machine type', '@machine_name@'),
+        format_dump_config_line('QEMU binary', '@qemu_bin@'),
+        format_dump_config_line('FW type', @fw_name),
+        format_dump_config_line('Test devices', @devices_list.join(', ')),
+        format_dump_config_line('VM ID', '@client_id@'),
+        format_dump_config_line('VM image', @image_path),
+        format_dump_config_line('VM VCPU', '@cpu@'),
+        format_dump_config_line('VM VCPUs', '@cpu_count@'),
+        format_dump_config_line('VM Memory', '@memory@'),
+        format_dump_config_line('VM pluggable memory', '@pluggable_memory@'),
+        format_dump_config_line('VM display port', 'Vnc @vnc_id@/@vnc_port@'),
+        format_dump_config_line('VM monitor port', 'Telnet @qemu_monitor_port@')
+      ]
+    end
+
+    def state_name_for_dump(name)
+      name.tr('_', ' ').capitalize
+    end
+
+    def dump_state_config
+      @states_config.map { |name, _| format_dump_config_line(state_name_for_dump(name), option_config(name)) }
+    end
+
     def dump_config
       config = [
-        'Setup configuration:',
-        '   Setup ID ................... @run_id@',
-        '   Machine type ............... @machine_name@',
-        '   QEMU binary ................ @qemu_bin@',
-        "   FW type .................... #{@fw_name}",
-        "   Test devices ............... #{@devices_list.join(', ')}",
-        '   VM ID ...................... @client_id@',
-        "   VM image ................... #{@image_path}",
-        '   VM VCPU .................... @cpu@',
-        '   VM VCPUs ................... @cpu_count@',
-        '   VM Memory .................. @memory@',
-        '   VM pluggable memory ........ @pluggable_memory@',
-        '   VM display port ............ Vnc @vnc_id@/@vnc_port@',
-        '   VM monitor port ............ Telnet @qemu_monitor_port@'
-      ]
+        'Setup configuration:'
+      ].concat(dump_base_config).concat(dump_state_config)
       #  Test suite type............ ${TEST_DEV_TYPE}
-      #  Test device................ ${TEST_DEV_NAME}
       #  Test device extra config... ${EXTRA_PARAMS}
       #  Graphics................... ${VIDEO_TYPE}
       #  Test network backend....... ${TEST_NET_TYPE}
@@ -641,10 +657,6 @@ module AutoHCK
       #  Client world access........ ${CLIENT_WORLD_ACCESS_NOTIFY}
       #  World network device....... ${WORLD_NET_DEVICE}
       #  Control network device..... ${CTRL_NET_DEVICE}
-      #  VHOST...................... ${VHOST_STATE}
-      #  Enlightenments..............${ENLIGHTENMENTS_STATE}
-      #  S3 enabled..................${ENABLE_S3}
-      #  S4 enabled..................${ENABLE_S4}
       #  Snapshot mode.............. ${SNAPSHOT}
       full_replacement_map.replace(config.join("\n"))
     end
