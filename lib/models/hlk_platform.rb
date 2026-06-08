@@ -52,7 +52,7 @@ module AutoHCK
       const :setupmanager, String
       const :fw_type, String, default: 'uefi'
       const :tpm_state, T::Boolean, default: false
-      const :enlightenments_state, T::Boolean, default: false
+      const :enlightenments_state, T.nilable(T::Boolean)
       const :cpu, T.nilable(String)
       const :clients_options, HLKPlatformClientsOptions, factory: -> { HLKPlatformClientsOptions.new }
       const :st_image, T.nilable(String)
