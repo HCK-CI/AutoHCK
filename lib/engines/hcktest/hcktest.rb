@@ -8,7 +8,7 @@ module AutoHCK
     extend T::Sig
     include Helper
 
-    attr_reader :config, :drivers, :platform, :extensions
+    attr_reader :config, :drivers, :platform, :extensions, :platform_clients
 
     PLATFORMS_JSON_DIR = 'lib/engines/hcktest/platforms'
     CONFIG_JSON = 'lib/engines/hcktest/hcktest.json'
@@ -17,6 +17,16 @@ module AutoHCK
     SVVP_JSON = 'svvp.json'
     ENGINE_MODE = 'test'
     AUTOHCK_RETRIES = 5
+
+    # Maps platform roles to the HLK machine-set role names used in QueueTest.
+    HLK_ROLE_MAP = {
+      Models::ClientRole::Support => 'Support',
+      Models::ClientRole::Master => 'MC',
+      Models::ClientRole::Stress => 'SC'
+    }.freeze
+
+    # Roles that are the primary test target
+    PRIMARY_ROLES = [Models::ClientRole::Dut, Models::ClientRole::Sut].freeze
 
     def initialize(project)
       @project = project
@@ -28,6 +38,12 @@ module AutoHCK
       @extensions = find_extensions
       prepare_extra_sw
       validate_paths unless @driver_path.nil?
+      @platform_clients = build_platform_clients
+    end
+
+    sig { returns(PlatformClients) }
+    def build_platform_clients
+      PlatformClients.new(@project.engine_platform, logger: @logger)
     end
 
     def test_steps
@@ -126,24 +142,31 @@ module AutoHCK
     end
 
     def target
-      if @project.options.test.svvp
-        {
-          'name' => @clients.values[0].name,
-          'type' => @svvp_info.type,
-          'select_test_names' => @svvp_info.select_test_names,
-          'sequence_test_names' => @svvp_info.sequence_test_names,
-          'reject_test_names' => @svvp_info.reject_test_names
-        }
-      else
-        driver = drivers.first
-        {
-          'name' => driver.name,
-          'type' => driver.type,
-          'select_test_names' => driver.select_test_names,
-          'sequence_test_names' => [],
-          'reject_test_names' => driver.reject_test_names
-        }
-      end
+      @project.options.test.svvp ? svvp_target : whql_target
+    end
+
+    def svvp_target
+      primary_entry = @platform_clients.primary_entry
+      raise InvalidConfigFile, 'SVVP platform is missing a sut client' if primary_entry.nil?
+
+      {
+        'name' => primary_entry['name'],
+        'type' => @svvp_info.type,
+        'select_test_names' => @svvp_info.select_test_names,
+        'sequence_test_names' => @svvp_info.sequence_test_names,
+        'reject_test_names' => @svvp_info.reject_test_names
+      }
+    end
+
+    def whql_target
+      driver = drivers.first
+      {
+        'name' => driver.name,
+        'type' => driver.type,
+        'select_test_names' => driver.select_test_names,
+        'sequence_test_names' => [],
+        'reject_test_names' => driver.reject_test_names
+      }
     end
 
     sig { params(logger: MultiLogger, options: CLI).returns(Models::HLKPlatform) }
@@ -168,16 +191,17 @@ module AutoHCK
 
     def run_clients(scope, run_opts = {})
       @clients = {}
-      @project.engine_platform.clients.each_value do |client|
-        @clients[client.name] = @project.setup_manager.run_hck_client(scope, @studio, client.name, run_opts)
+      @platform_clients.entries.each { |client| start_client(scope, client, run_opts) }
+      raise InvalidConfigFile, 'Clients configuration for this platform is incorrect' if @clients.empty?
+    end
 
-        break if @project.options.test.svvp
-        break unless @drivers.any?(&:support)
-      end
-      return unless @clients.empty?
+    def start_client(scope, client, run_opts)
+      name = client['name']
+      role = client['role']
+      return if !PRIMARY_ROLES.include?(role) && !@project.options.test.svvp && @drivers.none?(&:support)
 
-      raise InvalidConfigFile, 'Clients configuration for \
-                                this platform is incorrect'
+      @logger.info("Starting client #{name} (role: #{role})")
+      @clients[name] = @project.setup_manager.run_hck_client(scope, @studio, name, run_opts)
     end
 
     def post_start_commands
@@ -296,14 +320,16 @@ module AutoHCK
     end
 
     def prepare_tests
-      client, support = @clients.values
+      client = primary_client
+      aux_clients = aux_clients_by_hlk_role
 
-      @tests = Tests.new(client, support, @project, client.target, @studio.tools)
+      @tests = Tests.new(client, @project, client.target, @studio.tools, aux_clients: aux_clients)
 
       if client.target.nil?
         raise EngineError, 'HLK test target is not defined' unless @project.options.test.manual
 
         @project.logger.info('HLK test target is not defined, allow in manual mode')
+        return
       end
 
       @test_list = @tests.update_tests(log: true)
@@ -433,6 +459,30 @@ module AutoHCK
 
     def result_uploader_needed?
       true
+    end
+
+    private
+
+    sig { returns(T::Hash[String, T::Array[HCKClient]]) }
+    def aux_clients_by_hlk_role
+      @platform_clients.entries
+                       .reject { |e| PRIMARY_ROLES.include?(e['role']) }
+                       .each_with_object({}) do |e, result|
+                         hlk_role = HLK_ROLE_MAP[e['role']]
+                         client = @clients[e['name']]
+                         (result[hlk_role] ||= []) << client if hlk_role && client
+                       end
+    end
+
+    sig { returns(HCKClient) }
+    def primary_client
+      entry = @platform_clients.primary_entry
+      raise InvalidConfigFile, 'Platform is missing a primary client (sut or dut)' if entry.nil?
+
+      client = @clients[entry['name']]
+      raise InvalidConfigFile, "Client #{entry['name']} was not started" if client.nil?
+
+      client
     end
   end
 end

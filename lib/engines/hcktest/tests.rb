@@ -23,13 +23,13 @@ module AutoHCK
     DEFAULT_FILE_ACTION_REMOTE_PATH = 'C:\\'
     DEFAULT_FILE_ACTION_LOCAL_PATH = '@workspace@'
 
-    def initialize(client, support, project, target, tools)
+    def initialize(client, project, target, tools, aux_clients: {})
       @client = client
       @project = project
       @tag = project.engine_tag
       @target = target
       @tools = tools
-      @support = support
+      @aux_clients = aux_clients
       @logger = project.logger
       @playlist = Playlist.new(client, project, target, tools, @client.kit)
       @tests = T.let([], T::Array[Models::HLK::Test])
@@ -102,8 +102,15 @@ module AutoHCK
       (test.scheduleoptions & %w[6 RequiresMultipleMachines]) != []
     end
 
+    # The primary auxiliary client (WHQL support machine), nil in SVVP mode.
+    def support_client
+      @aux_clients[HCKTest::HLK_ROLE_MAP[Models::ClientRole::Support]]&.first
+    end
+
     def test_support(test)
-      @support.name if support_needed?(test)
+      return unless support_needed?(test) && @aux_clients.any?
+
+      @aux_clients.transform_values { |clients| clients.map(&:name) }.to_json
     end
 
     sig { params(test: Models::HLK::Test, status: String).void }
@@ -215,9 +222,9 @@ module AutoHCK
       return unless command.guest_run
 
       run_command_on_client(@client, command.guest_run, command.desc, command.guest_reboot, replacement)
-      return if @support.nil?
+      return if support_client.nil?
 
-      run_command_on_client(@support, command.guest_run, command.desc, command.guest_reboot, replacement)
+      run_command_on_client(support_client, command.guest_run, command.desc, command.guest_reboot, replacement)
     end
 
     def run_host_test_command(command)
@@ -293,9 +300,9 @@ module AutoHCK
 
         prepare_file_action_for_client(@client.name, files_action, replacement)
 
-        next if @support.nil?
+        next if support_client.nil?
 
-        prepare_file_action_for_client(@support.name, files_action, replacement)
+        prepare_file_action_for_client(support_client.name, files_action, replacement)
       end
     end
 
@@ -520,13 +527,10 @@ module AutoHCK
     end
 
     def download_memory_dumps(l_tmp_path)
-      downloaded_client = download_memory_dump(@client.name, "#{l_tmp_path}/#{@client.name}_#{current_timestamp}")
-      unless @support.nil?
-        downloaded_support = download_memory_dump(@support.name,
-                                                  "#{l_tmp_path}/#{@support.name}_#{current_timestamp}")
-      end
-
-      downloaded_client || downloaded_support
+      all_clients = [@client] + @aux_clients.values.flatten
+      all_clients.map do |client|
+        download_memory_dump(client.name, "#{l_tmp_path}/#{client.name}_#{current_timestamp}")
+      end.any?
     end
 
     sig { params(test: Models::HLK::Test).void }
@@ -590,7 +594,7 @@ module AutoHCK
 
     def reset_clients_to_ready_state
       @client.reset_to_ready_state
-      @support&.reset_to_ready_state
+      @aux_clients.each_value { |clients| clients.each(&:reset_to_ready_state) }
     end
 
     def apply_filters
@@ -702,9 +706,9 @@ module AutoHCK
       client_sysinfo = parser.parse(@tools.get_machine_system_info(@client.name))
       build_system_info(client_sysinfo)
 
-      return if @support.nil?
+      return if support_client.nil?
 
-      support_sysinfo = parser.parse(@tools.get_machine_system_info(@support.name))
+      support_sysinfo = parser.parse(@tools.get_machine_system_info(support_client.name))
       build_system_info(support_sysinfo)
     end
 

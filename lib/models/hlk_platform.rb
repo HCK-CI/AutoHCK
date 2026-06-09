@@ -31,6 +31,7 @@ module AutoHCK
       extend JsonHelper
 
       const :name, String
+      const :role, T.nilable(String)
       const :cpus, T.nilable(Integer)
       const :memory_gb, T.nilable(Integer)
       const :winrm_addr, T.nilable(String)
@@ -85,6 +86,7 @@ module AutoHCK
 
       sig { params(client: HLKClient).void }
       def validate_qemuhck_client(client)
+        raise(InvalidConfigFile, 'HLKPlatform: client.role is required for qemuhck') if client.role.nil?
         raise(InvalidConfigFile, 'HLKPlatform: client.cpus is required for qemuhck') if client.cpus.nil?
         raise(InvalidConfigFile, 'HLKPlatform: client.memory_gb is required for qemuhck') if client.memory_gb.nil?
         raise(InvalidConfigFile, 'HLKPlatform: client.winrm_addr is required for qemuhck') if client.winrm_addr.nil?
