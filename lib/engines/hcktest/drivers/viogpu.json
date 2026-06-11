@@ -11,6 +11,14 @@
   "tests_config": [
     {
       "tests": [
+        "Display capture tests - Check Color Space Support"
+      ],
+      "kits": ["HLK11_25H2"],
+      "skip_retry": true,
+      "errata": "Display capture tests - known HLK failure on Windows 11 25H2, filter 323917 with manual errata"
+    },
+    {
+      "tests": [
         "Test for EDID Requirements \\(Manual\\)"
       ],
       "pre_test_commands": [
