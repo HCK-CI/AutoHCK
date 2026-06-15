@@ -276,6 +276,10 @@ module AutoHCK
       HCKClient.new(self, scope, studio, name, run_opts)
     end
 
+    def run_functest_client(scope, name, run_opts = nil)
+      FunctestClient.new(self, scope, name, run_opts)
+    end
+
     def self.enter(workspace_path)
       $stderr.write "[qemuhck.rb] Entering namespace: #{workspace_path}\n" if ENV['AUTOHCK_NS_VERBOSE']
       T.unsafe(Ns).enter workspace_path, Dir.pwd, 'bin/auto_hck', '-w',

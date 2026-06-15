@@ -5,6 +5,7 @@ module AutoHCK
     extend AutoloadExtension
 
     autoload_relative :CommandInfo, 'models/command_info'
+    autoload_relative :FileActionConfig, 'models/command_info'
     autoload_relative :DriverInstallMethods, 'models/driver_install_methods'
     autoload_relative :Driver, 'models/driver'
     autoload_relative :Extension, 'models/extension'
