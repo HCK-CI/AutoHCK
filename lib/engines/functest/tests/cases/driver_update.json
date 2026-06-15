@@ -1,0 +1,62 @@
+{
+    "name": "driver_update",
+    "description": "Uninstall and reinstall @driver_module@ from the driver package",
+    "test_system_ref": "VIRT-201",
+    "timeout": 600,
+    "test_steps": [
+        {
+            "desc": "Confirm @driver_module@ is currently installed",
+            "guest_run_file": "lib/engines/functest/tests/scripts/check_driver_installed.ps1",
+            "timeout": 30
+        },
+        {
+            "desc": "Remove @driver_module@ from the Windows DriverStore",
+            "guest_run_file": "lib/engines/functest/tests/scripts/remove_driver_from_store.ps1",
+            "expected_output_contains": "Driver removed from store",
+            "timeout": 120
+        },
+        {
+            "desc": "Reboot to complete driver removal",
+            "guest_reboot": true
+        },
+        {
+            "desc": "Upload fresh driver package from host",
+            "files_action": [
+                {
+                    "local_path": "@driver_path@",
+                    "remote_path": "C:\\AutoHCK\\driver_reinstall",
+                    "direction": "local-to-remote"
+                }
+            ]
+        },
+        {
+            "desc": "Reinstall driver from uploaded package",
+            "guest_run": "pnputil -i -a C:\\AutoHCK\\driver_reinstall\\@driver_inf@",
+            "expected_output_matches": "(?i)(successfully installed|driver package added|0 error)",
+            "timeout": 120
+        },
+        {
+            "desc": "Reboot so reinstalled driver is fully active",
+            "guest_reboot": true
+        },
+        {
+            "desc": "Verify @driver_module@.sys is present in DriverStore after reinstall",
+            "guest_run_file": "lib/engines/functest/tests/scripts/find_driver_in_store.ps1",
+            "expected_output_contains": "Found:",
+            "timeout": 60
+        },
+        {
+            "desc": "Verify @driver_module@.sys is digitally signed after reinstall",
+            "guest_run_file": "lib/engines/functest/tests/scripts/verify_driver_signed.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 60
+        }
+    ],
+    "cleanup": [
+        {
+            "desc": "Remove temporary driver upload directory",
+            "guest_run": "Remove-Item -Recurse -Force C:\\AutoHCK\\driver_reinstall -ErrorAction SilentlyContinue",
+            "ignore_errors": true
+        }
+    ]
+}

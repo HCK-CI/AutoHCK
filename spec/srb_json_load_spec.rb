@@ -7,7 +7,9 @@ JSON_TYPES_MAP = {
   './lib/engines/hcktest/hcktest.json' => AutoHCK::Models::HCKTestConfig,
   './svvp.json' => AutoHCK::Models::SVVPConfig,
   './lib/setupmanagers/qemuhck/devices/*.json' => AutoHCK::Models::QemuHCKDevice,
-  './lib/engines/hcktest/extensions/*.json' => AutoHCK::Models::Extension
+  './lib/engines/hcktest/extensions/*.json' => AutoHCK::Models::Extension,
+  './lib/engines/functest/tests/cases/**/*.json' => AutoHCK::Functest::TestCase,
+  './lib/engines/functest/tests/suites/*.json' => AutoHCK::Functest::Suite
 }.freeze
 
 describe 'srb_json_load' do
