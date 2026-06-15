@@ -109,6 +109,8 @@ module AutoHCK
     prop :query_output_file, T.nilable(String)
     prop :session, T.nilable(String)
     prop :latest_session, T::Boolean, default: false
+    prop :category, T.nilable(String)
+    prop :testcase, T.nilable(String)
 
     def create_parser
       OptionParser.new do |parser|
@@ -267,6 +269,14 @@ module AutoHCK
       parser.on('--latest-session', TrueClass,
                 'Bring up the most recent test session',
                 &method(:latest_session=))
+
+      parser.on('--category <test_suite_name>', String,
+                'Run functest test suite (used with functest engine)',
+                &method(:category=))
+
+      parser.on('--testcase <test_case_names>', String,
+                'Run specific functest test cases, comma-separated (used with functest engine)',
+                &method(:testcase=))
     end
     # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
   end
@@ -337,7 +347,8 @@ module AutoHCK
     def sub_parser
       @sub_parser ||= {
         'test' => test.create_parser,
-        'install' => install.create_parser
+        'install' => install.create_parser,
+        'functest' => test.create_parser
       }
     end
 

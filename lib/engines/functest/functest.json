@@ -1,0 +1,8 @@
+{
+  "name": "functest",
+  "description": "Functional test engine using JSON-driven test definitions",
+  "test_definitions_path": "lib/engines/functest/tests",
+  "default_timeout": 300,
+  "result_format": ["json", "junit"],
+  "workspace_subdir": "functest"
+}

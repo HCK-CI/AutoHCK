@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-# AutoHCK module
 module AutoHCK
   module Engine
     ENGINES = {
       hcktest: HCKTest,
       hckinstall: HCKInstall,
-      config_manager: ConfigManager
+      config_manager: ConfigManager,
+      functest: FunctestEngine
     }.freeze
 
     def self.select(name)

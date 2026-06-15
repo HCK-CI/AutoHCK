@@ -7,17 +7,26 @@ module AutoHCK
     ACTION_RETRIES = 5
     HLK_ACTION_RETRY_SLEEP = 30
     ACTION_RETRY_SLEEP = 90
-    def initialize(project, ip_addr, clients)
+    def initialize(project, ip_addr = nil, clients = nil, no_studio: false, clients_addrs: nil)
       @logger = project.logger
       @config = project.config
-      @clients = clients
-      connect(addr: ip_addr,
-              user: @config['windows_username'],
-              pass: @config['windows_password'],
-              clients_addrs: config_clients_addrs,
-              timeout: 120,
-              logger: @logger,
-              outp_dir: project.workspace_path)
+
+      conn = {
+        user: @config['windows_username'],
+        pass: @config['windows_password'],
+        logger: @logger,
+        outp_dir: project.workspace_path
+      }
+
+      if no_studio
+        @clients_addrs = clients_addrs || {}
+        conn.merge!(no_studio: true, clients_addrs: @clients_addrs)
+      else
+        @clients = clients
+        conn.merge!(addr: ip_addr, clients_addrs: config_clients_addrs, timeout: 120)
+      end
+
+      connect(conn)
     end
 
     # A custom ToolsHCK error exception
