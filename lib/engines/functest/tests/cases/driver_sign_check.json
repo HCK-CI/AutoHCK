@@ -1,0 +1,24 @@
+{
+    "name": "driver_sign_check",
+    "description": "Verify the installed driver .sys is digitally signed (@driver_module@)",
+    "test_system_ref": "VIRT-200",
+    "timeout": 120,
+    "test_steps": [
+        {
+            "desc": "Reboot so the freshly installed driver is fully loaded",
+            "guest_reboot": true
+        },
+        {
+            "desc": "Locate @driver_module@.sys in the DriverStore",
+            "guest_run_file": "lib/engines/functest/tests/scripts/find_driver_in_store.ps1",
+            "expected_output_contains": "Found:",
+            "timeout": 60
+        },
+        {
+            "desc": "Verify @driver_module@.sys is digitally signed",
+            "guest_run_file": "lib/engines/functest/tests/scripts/verify_driver_signed.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 60
+        }
+    ]
+}

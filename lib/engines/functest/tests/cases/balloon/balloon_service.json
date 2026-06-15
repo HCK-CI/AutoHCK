@@ -1,0 +1,65 @@
+{
+    "name": "balloon_service",
+    "description": "Install, verify, and uninstall the virtio-balloon Windows service (blnsvr.exe)",
+    "test_system_ref": "VIRT-251",
+    "timeout": 300,
+    "test_steps": [
+        {
+            "desc": "Verify Balloon PnP device is present and working",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/check_balloon_pnp_device.ps1",
+            "expected_output_contains": "Balloon device:",
+            "timeout": 30
+        },
+        {
+            "desc": "Upload balloon driver package (contains blnsvr.exe)",
+            "files_action": [
+                {
+                    "local_path": "@driver_path@",
+                    "remote_path": "C:\\AutoHCK\\balloon_pkg",
+                    "direction": "local-to-remote"
+                }
+            ]
+        },
+        {
+            "desc": "Install balloon service (blnsvr.exe -i)",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/install_balloon_service.ps1",
+            "expected_output_contains": "Balloon service install command executed",
+            "timeout": 30
+        },
+        {
+            "desc": "Verify balloon service is registered and running",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/verify_balloon_service.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 30
+        },
+        {
+            "desc": "Stop balloon service",
+            "guest_run": "Stop-Service BalloonService -Force; $svc = Get-Service BalloonService; Write-Output \"Service stopped: $($svc.Status)\"",
+            "timeout": 30
+        },
+        {
+            "desc": "Uninstall balloon service (blnsvr.exe -u)",
+            "guest_run": "$blnsvr = Get-ChildItem -Recurse C:\\AutoHCK\\balloon_pkg -Filter blnsvr.exe | Select-Object -First 1; & $blnsvr.FullName -u; Write-Output 'PASS: Balloon service uninstalled'",
+            "expected_output_contains": "PASS:",
+            "timeout": 30
+        },
+        {
+            "desc": "Confirm service is no longer registered",
+            "guest_run": "$svc = Get-Service -Name 'BalloonService' -ErrorAction SilentlyContinue; if ($svc) { throw 'BalloonService still registered after uninstall' }; Write-Output 'PASS: BalloonService removed successfully'",
+            "expected_output_contains": "PASS:",
+            "timeout": 15
+        }
+    ],
+    "cleanup": [
+        {
+            "desc": "Force uninstall balloon service if still present",
+            "guest_run": "if (Test-Path C:\\AutoHCK\\balloon_pkg) { $blnsvr = Get-ChildItem -Recurse C:\\AutoHCK\\balloon_pkg -Filter blnsvr.exe | Select-Object -First 1; if ($blnsvr) { & $blnsvr.FullName -u } }; exit 0",
+            "ignore_errors": true
+        },
+        {
+            "desc": "Remove uploaded balloon package directory",
+            "guest_run": "if (Test-Path C:\\AutoHCK\\balloon_pkg) { Remove-Item -Recurse -Force C:\\AutoHCK\\balloon_pkg }",
+            "ignore_errors": true
+        }
+    ]
+}

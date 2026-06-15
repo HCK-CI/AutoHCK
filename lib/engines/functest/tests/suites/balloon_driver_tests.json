@@ -1,0 +1,14 @@
+{
+    "name": "balloon_driver_tests",
+    "description": "Driver qualification tests for balloon: sign check, service lifecycle, update",
+    "test_system_ref": "VIRT-250",
+    "tests": [
+        "driver_sign_check",
+        "balloon/balloon_service",
+        "driver_update"
+    ],
+    "requirements": {
+        "drivers": [ "Balloon" ],
+        "platforms": [ "Win10x64", "Win2019x64", "Win2022x64", "Win2025x64" ]
+    }
+}
