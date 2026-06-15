@@ -6,4 +6,6 @@ module AutoHCK
   class QemuHCKError < SetupManagerError; end
 
   class QemuRunError < QemuHCKError; end
+
+  class QMPError < QemuHCKError; end
 end

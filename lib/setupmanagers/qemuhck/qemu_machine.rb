@@ -22,6 +22,8 @@ module AutoHCK
       # machine abort sleep for each trial
       ABORT_SLEEP = 30
 
+      attr_reader :qmp
+
       def initialize(scope, logger, machine, run_name, run_opts)
         @logger = logger
         @machine = machine

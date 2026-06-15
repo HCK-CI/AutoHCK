@@ -23,6 +23,7 @@ module AutoHCK
       initialize_project project
 
       @clients_vm = {}
+      @clients_vm_runners = {}
       @package_manager = PackageManager.new(@logger)
       initialize_studio_vm
       initialize_clients_vm
@@ -255,8 +256,16 @@ module AutoHCK
       @studio_vm.run(scope, run_opts)
     end
 
+    def run_hypervisor_client_command(name, cmd, arguments = nil)
+      @clients_vm_runners[name].qmp.run_cmd(cmd, arguments)
+    end
+
+    def wait_for_hypervisor_client_event(name, event, timeout: 60)
+      @clients_vm_runners[name].qmp.wait_for('event', event, timeout)
+    end
+
     def run_client(scope, name, run_opts = nil)
-      @clients_vm[name].run(scope, run_opts)
+      @clients_vm_runners[name] = @clients_vm[name].run(scope, run_opts)
     end
 
     def run_hck_studio(scope, run_opts)

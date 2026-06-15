@@ -12,6 +12,7 @@ module AutoHCK
         @name = name
         @logger = logger
         @negotiated = false
+        @events = []
         @logger.info("Initiating QMP session for #{name}")
         @socket, @socket_internal = UNIXSocket.pair
         scope << @socket
@@ -28,25 +29,48 @@ module AutoHCK
         run_cmd('system_powerdown')
       end
 
-      private
-
-      def run_cmd(cmd)
+      def run_cmd(cmd, arguments = nil)
         unless @negotiated
           send_cmd 'qmp_capabilities'
           @negotiated = true
         end
 
-        send_cmd cmd
+        send_cmd(cmd, arguments)
       end
 
-      def send_cmd(cmd)
-        @socket_internal.write JSON.dump({ 'execute' => cmd })
+      def wait_for(name, value, timeout = 60)
+        if (index = @events.index { |e| e[name] == value })
+          return @events.delete_at(index)
+        end
+
+        Timeout.timeout(timeout) do
+          loop do
+            response = JSON.parse(@socket_internal.readline)
+            @logger.debug("Received QMP message: #{response}")
+            return response if response[name] == value
+
+            @events << response if response.key?('event')
+            raise(QMPError, response['error'].to_s) if response.key?('error')
+          end
+        end
+      end
+
+      private
+
+      def send_cmd(cmd, arguments = nil)
+        cmd_hash = { 'execute' => cmd }
+        cmd_hash['arguments'] = arguments if arguments
+        @socket_internal.write JSON.dump(cmd_hash)
         @socket_internal.flush
 
         loop do
           response = JSON.parse(@socket_internal.readline)
+          if response.key?('event')
+            @events << response
+            next
+          end
           break response['return'] if response.key?('return')
-          raise response['error'].to_s if response.key?('error')
+          raise(QMPError, response['error'].to_s) if response.key?('error')
         end
       end
     end
