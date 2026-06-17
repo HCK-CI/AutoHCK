@@ -18,5 +18,6 @@ module AutoHCK
     autoload_relative :SVVPConfig, 'models/svvp_config'
     autoload_relative :QemuHCKDevice, 'models/qemuhck_device'
     autoload_relative :HLK, 'models/hlk'
+    autoload_relative :TestResult, 'models/test_result'
   end
 end
