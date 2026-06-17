@@ -507,44 +507,10 @@ module AutoHCK
         current_test.nil?
     end
 
-    def download_memory_dump(machine, l_tmp_path)
-      exist = @tools.exists_on_machine?(machine, '${env:SystemRoot}/Minidump')
-      @logger.debug("Checking Minidump exist on #{machine}: #{exist}")
-      return false unless exist
-
-      @logger.info("Downloading memory dump (Minidump) from #{machine}")
-      @tools.download_from_machine(machine, '${env:SystemRoot}/Minidump', l_tmp_path)
-      @tools.delete_on_machine(machine, '${env:SystemRoot}/Minidump')
-
-      true
-    end
-
-    def download_memory_dumps(l_tmp_path)
-      downloaded_client = download_memory_dump(@client.name, "#{l_tmp_path}/#{@client.name}_#{current_timestamp}")
-      unless @support.nil?
-        downloaded_support = download_memory_dump(@support.name,
-                                                  "#{l_tmp_path}/#{@support.name}_#{current_timestamp}")
-      end
-
-      downloaded_client || downloaded_support
-    end
-
-    sig { params(test: Models::HLK::Test).void }
-    def collect_memory_dumps(test)
-      l_zip_path = "#{@project.workspace_path}/memory_dump_#{test.id}.zip"
-      l_tmp_path = "#{@project.workspace_path}/tmp_#{test.id}"
-
-      if download_memory_dumps(l_tmp_path)
-        create_zip_from_directory(l_zip_path, l_tmp_path)
-        test.dump_path = l_zip_path
-      end
-
-      FileUtils.rm_rf(l_tmp_path)
-    end
-
     sig { params(test: Models::HLK::Test, test_result: T::Hash[String, T.untyped]).void }
     def handle_finished_test_result(test, test_result)
-      collect_memory_dumps(test)
+      machine_names = [@client.name, @support&.name].compact
+      test.dump_path = MemoryDumpCollector.new(@tools, machine_names, @project.workspace_path, @logger).collect(test.id)
 
       print_test_results(test, test_result)
       archive_test_results(test, test_result)
