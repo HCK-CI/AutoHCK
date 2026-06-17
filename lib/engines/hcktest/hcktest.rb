@@ -31,7 +31,7 @@ module AutoHCK
     end
 
     def test_steps
-      (@tests&.tests || []) + (@tests&.rejected_tests || [])
+      ((@tests&.tests || []) + (@tests&.rejected_tests || [])).map { |t| Models::TestResult.from_hlk_test(t) }
     end
 
     sig { returns(T::Hash[String, T.untyped]) }
