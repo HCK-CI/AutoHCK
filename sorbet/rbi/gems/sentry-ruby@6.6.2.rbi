@@ -5445,7 +5445,7 @@ class Sentry::TelemetryEventBuffer < ::Sentry::ThreadedPeriodicWorker
   # pkg:gem/sentry-ruby#lib/sentry/telemetry_event_buffer.rb:52
   def add_item(item); end
 
-  # pkg:gem/sentry-ruby#lib/sentry/telemetry_event_buffer.rb:77
+  # pkg:gem/sentry-ruby#lib/sentry/telemetry_event_buffer.rb:80
   def clear!; end
 
   # @!visibility private
@@ -5453,7 +5453,7 @@ class Sentry::TelemetryEventBuffer < ::Sentry::ThreadedPeriodicWorker
   # pkg:gem/sentry-ruby#lib/sentry/telemetry_event_buffer.rb:17
   def data_category; end
 
-  # pkg:gem/sentry-ruby#lib/sentry/telemetry_event_buffer.rb:69
+  # pkg:gem/sentry-ruby#lib/sentry/telemetry_event_buffer.rb:72
   def empty?; end
 
   # @!visibility private
@@ -5472,7 +5472,7 @@ class Sentry::TelemetryEventBuffer < ::Sentry::ThreadedPeriodicWorker
   # pkg:gem/sentry-ruby#lib/sentry/telemetry_event_buffer.rb:50
   def run; end
 
-  # pkg:gem/sentry-ruby#lib/sentry/telemetry_event_buffer.rb:73
+  # pkg:gem/sentry-ruby#lib/sentry/telemetry_event_buffer.rb:76
   def size; end
 
   # @!visibility private
@@ -5482,7 +5482,7 @@ class Sentry::TelemetryEventBuffer < ::Sentry::ThreadedPeriodicWorker
 
   private
 
-  # pkg:gem/sentry-ruby#lib/sentry/telemetry_event_buffer.rb:83
+  # pkg:gem/sentry-ruby#lib/sentry/telemetry_event_buffer.rb:86
   def send_items; end
 end
 
