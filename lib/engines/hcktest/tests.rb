@@ -772,6 +772,7 @@ module AutoHCK
     sig { void }
     def update_tests_and_results
       update_tests
+      @project.update_test_stats(tests_stats)
       @project.generate_result_report
       @project.generate_junit
     end
