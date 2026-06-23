@@ -32,6 +32,7 @@ module AutoHCK
         @tools = tools
         @support = support
         @logger = project.logger
+        @file_action_handler = FileActionHandler.new(@tools, @logger)
         @playlist = Playlist.new(client, project, target, tools, @client.kit)
         @tests = T.let([], T::Array[Models::HLK::Test])
         @test_results = []
@@ -229,50 +230,6 @@ module AutoHCK
         run_cmd(command.host_run)
       end
 
-      def run_remote_to_local_action_on_client(client_name, files_action)
-        remote_path = files_action.remote_path
-
-        unless @tools.exists_on_machine?(client_name, remote_path)
-          if files_action.allow_missing
-            @logger.warn("Remote file #{remote_path} not found on client #{client_name}: skipping download")
-            return
-          end
-
-          raise EngineError, "Remote file not found on client #{client_name}: #{remote_path}"
-        end
-
-        @tools.download_from_machine(client_name, remote_path, files_action.local_path)
-        @tools.delete_on_machine(client_name, remote_path) if files_action.move
-      end
-
-      def run_local_to_remote_action_on_client(client_name, files_action)
-        local_path = files_action.local_path
-        unless File.exist?(local_path)
-          if files_action.allow_missing
-            @logger.warn("Local file #{local_path} not found: skipping upload")
-            return
-          end
-
-          raise EngineError, "Local file not found: #{local_path}"
-        end
-
-        @tools.upload_to_machine(client_name, local_path, files_action.remote_path)
-        FileUtils.rm_rf(local_path) if files_action.move
-      end
-
-      sig { params(client_name: String, files_action: Models::FileActionConfig).void }
-      def run_file_action_on_client(client_name, files_action)
-        @logger.info("Running file action on #{client_name} " \
-                     "#{files_action.direction} from #{files_action.remote_path} to #{files_action.local_path}")
-
-        case files_action.direction
-        when Models::FileActionDirection::RemoteToLocal
-          run_remote_to_local_action_on_client(client_name, files_action)
-        when Models::FileActionDirection::LocalToRemote
-          run_local_to_remote_action_on_client(client_name, files_action)
-        end
-      end
-
       sig do
         params(client_name: String, files_action: Models::FileActionConfig, replacement: ReplacementMap).void
       end
@@ -280,7 +237,7 @@ module AutoHCK
         client_replacement = replacement.merge({ '@client_name@' => client_name })
         updated_action = files_action.dup_and_replace_path(client_replacement, DEFAULT_FILE_ACTION_REMOTE_PATH,
                                                            DEFAULT_FILE_ACTION_LOCAL_PATH)
-        run_file_action_on_client(client_name, updated_action)
+        @file_action_handler.handle(client_name, updated_action)
       end
 
       sig do
