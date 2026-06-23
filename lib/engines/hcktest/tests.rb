@@ -5,6 +5,7 @@
 module AutoHCK
   class HCKTest
     # Tests class
+    # rubocop:disable Metrics/ClassLength
     class Tests
       extend T::Sig
       include Helper
@@ -468,16 +469,21 @@ module AutoHCK
 
       sig { params(test: Models::HLK::Test, test_result: T::Hash[String, T.untyped]).void }
       def handle_finished_test_result(test, test_result)
+        collect_test_memory_dump(test)
+        print_test_results(test, test_result)
+        archive_test_results(test, test_result)
+        test.finished_at = DateTime.now
+        test.last_result = test_result
+        apply_errata_if_failed(test)
+      end
+
+      def collect_test_memory_dump(test)
         machine_names = [@client.name, @support&.name].compact
         collector = MemoryDumpCollector.new(@tools, machine_names, @project.workspace_path, @logger)
         test.dump_path = collector.collect(test.id)
+      end
 
-        print_test_results(test, test_result)
-        archive_test_results(test, test_result)
-
-        test.finished_at = DateTime.now
-        test.last_result = test_result
-
+      def apply_errata_if_failed(test)
         return unless test.status == Models::HLK::TestResultStatus::Failed
 
         errata = test_errata(test.name)
