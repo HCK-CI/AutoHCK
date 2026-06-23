@@ -6,7 +6,10 @@ module AutoHCK
   # HCKTest class
   class HCKTest
     extend T::Sig
+    extend AutoloadExtension
     include Helper
+
+    autoload_relative :Tests, 'tests'
 
     attr_reader :config, :drivers, :platform, :extensions
 

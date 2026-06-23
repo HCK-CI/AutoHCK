@@ -3,765 +3,771 @@
 
 # AutoHCK module
 module AutoHCK
-  # Tests class
-  class Tests
-    extend T::Sig
-    include Helper
+  class HCKTest
+    # Tests class
+    class Tests
+      extend T::Sig
+      include Helper
 
-    attr_reader :tests, :clients_system_info
+      attr_reader :tests, :clients_system_info
 
-    HANDLE_TESTS_POLLING_INTERVAL = 60
-    APPLYING_FILTERS_INTERVAL = 50
-    SLEEP_AFTER_REBOOT = 60
-    TOOLS_ACTION_RETRIES = 5
-    TOOLS_ACTION_SLEEP = 5
-    QUEUE_TEST_TIMEOUT = '00:15:00'
-    RUNNING_TEST_TIMEOUT = '00:15:00'
-    SUMMARY_LOG_FILE = 'logs.txt'
-    STUDIO_PACKAGE_ASSETS_PATH = 'C:\\AutoHCK\\PackageAssets'
+      HANDLE_TESTS_POLLING_INTERVAL = 60
+      APPLYING_FILTERS_INTERVAL = 50
+      SLEEP_AFTER_REBOOT = 60
+      TOOLS_ACTION_RETRIES = 5
+      TOOLS_ACTION_SLEEP = 5
+      QUEUE_TEST_TIMEOUT = '00:15:00'
+      RUNNING_TEST_TIMEOUT = '00:15:00'
+      SUMMARY_LOG_FILE = 'logs.txt'
+      STUDIO_PACKAGE_ASSETS_PATH = 'C:\\AutoHCK\\PackageAssets'
 
-    DEFAULT_FILE_ACTION_REMOTE_PATH = 'C:\\'
-    DEFAULT_FILE_ACTION_LOCAL_PATH = '@workspace@'
+      DEFAULT_FILE_ACTION_REMOTE_PATH = 'C:\\'
+      DEFAULT_FILE_ACTION_LOCAL_PATH = '@workspace@'
 
-    def initialize(client, support, project, target, tools)
-      @client = client
-      @project = project
-      @tag = project.engine_tag
-      @target = target
-      @tools = tools
-      @support = support
-      @logger = project.logger
-      @playlist = Playlist.new(client, project, target, tools, @client.kit)
-      @tests = T.let([], T::Array[Models::HLK::Test])
-      @test_results = []
-      @replacement_map = ReplacementMap.new({ '@workspace@' => @project.workspace_path })
-    end
-
-    sig { params(updated_tests: T::Array[Models::HLK::Test]).returns(T::Array[Models::HLK::Test]) }
-    def merge_tests_update(updated_tests)
-      # Initial load of tests, no extra information
-      return @tests = updated_tests if @tests.empty?
-
-      @tests.each do |test|
-        updated_test = updated_tests.find { _1.id == test.id }
-        # This should not happen, but to make Sorbet happy
-        raise(EngineError, "Test not found: #{test.id}") if updated_test.nil?
-
-        test.update_from_hck(updated_test)
-      end
-    end
-
-    sig { returns(T::Array[Models::HLK::Test]) }
-    def rejected_tests
-      @playlist.rejected_test
-    end
-
-    sig { params(log: T::Boolean).returns(T::Array[Models::HLK::Test]) }
-    def update_tests(log: false)
-      retries = 0
-      begin
-        last_done_test_results = done_test_results
-        @test_results = @tools.list_all_results(@target['key'], @client.name, @tag)
-        @new_done_test_results = done_test_results - last_done_test_results
-
-        merge_tests_update(@playlist.list_tests(log))
-      rescue Playlist::ListTestsError, Tools::ToolsHCKError => e
-        @logger.warn(e.message)
-        @logger.info('Reconnecting tools...')
-        @tools.reconnect
-        raise unless (retries += 1) == 1 || verify_target
-
-        @logger.info('Trying again to list tests')
-        retry
-      end
-    end
-
-    def verify_target
-      retries = 0
-      begin
-        @logger.info('Verifying target...')
-        target = Targets.new(@client, @project, @tools, @tag).search_target
-        return false if target.eql?(@target)
-
-        @logger.info('Target changed, updating...')
+      def initialize(client, support, project, target, tools)
+        @client = client
+        @project = project
+        @tag = project.engine_tag
         @target = target
-        @playlist.update_target(target)
-        true
-      rescue Targets::SearchTargetError, Tools::ToolsHCKError => e
-        @logger.warn(e.message)
-        raise unless (retries += 1) < TOOLS_ACTION_RETRIES
-
-        sleep TOOLS_ACTION_SLEEP
-        @logger.info('Trying again to verify target')
-        retry
+        @tools = tools
+        @support = support
+        @logger = project.logger
+        @playlist = Playlist.new(client, project, target, tools, @client.kit)
+        @tests = T.let([], T::Array[Models::HLK::Test])
+        @test_results = []
+        @replacement_map = ReplacementMap.new({ '@workspace@' => @project.workspace_path })
       end
-    end
 
-    sig { params(test: Models::HLK::Test).returns(T::Boolean) }
-    def support_needed?(test)
-      (test.scheduleoptions & %w[6 RequiresMultipleMachines]) != []
-    end
+      sig { params(updated_tests: T::Array[Models::HLK::Test]).returns(T::Array[Models::HLK::Test]) }
+      def merge_tests_update(updated_tests)
+        # Initial load of tests, no extra information
+        return @tests = updated_tests if @tests.empty?
 
-    def test_support(test)
-      @support.name if support_needed?(test)
-    end
+        @tests.each do |test|
+          updated_test = updated_tests.find { _1.id == test.id }
+          # This should not happen, but to make Sorbet happy
+          raise(EngineError, "Test not found: #{test.id}") if updated_test.nil?
 
-    sig { params(test: Models::HLK::Test, status: String).void }
-    def set_test_status(test, status)
-      return if test.ex_status == status
-
-      test.ex_status = status
-      update_summary_results_log
-    end
-
-    def check_test_queued_time
-      # We can't compare test objects directly because the list_tests
-      # function updates the test object but the current_test function
-      # returns the pure object.
-      @logger.debug("Checking queued time for test id: #{@last_queued_test&.id}. Current test: #{current_test}")
-
-      # When @last_queued_test is nil then all queued tests are running or finished
-      return if @last_queued_test.nil?
-
-      @logger.debug("Test extra information: #{@last_queued_test.extra}")
-
-      # When 'started_at' is not nil then last queued test is running or finished
-      return unless @last_queued_test.started_at.nil?
-
-      diff = time_diff(@last_queued_test.queued_at, DateTime.now)
-
-      return if diff < time_to_seconds(QUEUE_TEST_TIMEOUT)
-
-      @logger.warn("Test was queued #{seconds_to_time(diff)} ago! HCK hangs on?")
-      set_test_status(@last_queued_test, 'Hangs on at queued state?')
-    end
-
-    def check_test_duration_time
-      return if (test = current_test).nil?
-
-      started_at = test.started_at
-
-      return if started_at.nil?
-
-      diff = time_diff(started_at, DateTime.now)
-
-      return if diff < (2 * test.duration) + time_to_seconds(RUNNING_TEST_TIMEOUT)
-
-      @logger.warn("Test was running #{seconds_to_time(diff)} ago! HCK hangs on?")
-      set_test_status(test, 'Hangs on at running state?')
-    end
-
-    def wait_queued_test(id)
-      loop do
-        sleep 5
-        results = @tools.list_test_results(id, @target['key'], @client.name, @tag)
-        last_result = results.max_by { |k| k['instanceid'].to_i }
-
-        check_test_queued_time
-
-        break if last_result['status'] == 'InQueue'
-        break if last_result['status'] == 'Running'
-        break if test_result_finished?(last_result)
+          test.update_from_hck(updated_test)
+        end
       end
-    end
 
-    def all_tests_configs
-      @project.engine.config.tests_config +
-        @project.engine.drivers.flat_map(&:tests_config) +
-        @project.engine.extensions.flat_map(&:tests_config)
-    end
+      sig { returns(T::Array[Models::HLK::Test]) }
+      def rejected_tests
+        @playlist.rejected_test
+      end
 
-    def select_test_config(test_name, config)
-      all_tests_configs
-        .select { |test_config| Regexp.union(test_config.tests.map { Regexp.new(_1) }).match?(test_name) }
-        .select { |test_config| test_config.kits.empty? || test_config.kits.include?(@client.kit) }
-        .flat_map(&config)
-    end
+      sig { params(log: T::Boolean).returns(T::Array[Models::HLK::Test]) }
+      def update_tests(log: false)
+        retries = 0
+        begin
+          last_done_test_results = done_test_results
+          @test_results = @tools.list_all_results(@target['key'], @client.name, @tag)
+          @new_done_test_results = done_test_results - last_done_test_results
 
-    def test_parameters(test_name)
-      select_test_config(test_name, :parameters)
-        .to_h { |parameter| [parameter.name, parameter.value] }
-    end
+          merge_tests_update(@playlist.list_tests(log))
+        rescue Playlist::ListTestsError, Tools::ToolsHCKError => e
+          @logger.warn(e.message)
+          @logger.info('Reconnecting tools...')
+          @tools.reconnect
+          raise unless (retries += 1) == 1 || verify_target
 
-    def test_skip_retry?(test_name)
-      select_test_config(test_name, :skip_retry).any? { _1 == true }
-    end
+          @logger.info('Trying again to list tests')
+          retry
+        end
+      end
 
-    def test_errata(test_name)
-      select_test_config(test_name, :errata).compact.first
-    end
+      def verify_target
+        retries = 0
+        begin
+          @logger.info('Verifying target...')
+          target = Targets.new(@client, @project, @tools, @tag).search_target
+          return false if target.eql?(@target)
 
-    def run_command_on_client(client, command, desc, guest_reboot, replacement)
-      cl_name = client.name
-      @logger.info("Running command (#{desc}) on client #{cl_name}")
-      # Don't use create_cmd because it calls shellescape that performs wrong escaping for Windows commands
-      # E.g. it escapes backslashes that are used in Windows paths
-      updated_command = client.replacement_map.merge(@replacement_map).merge(replacement).replace(command)
-      @logger.debug("Running command after replacement (#{desc}) on client #{cl_name}: #{updated_command}")
+          @logger.info('Target changed, updating...')
+          @target = target
+          @playlist.update_target(target)
+          true
+        rescue Targets::SearchTargetError, Tools::ToolsHCKError => e
+          @logger.warn(e.message)
+          raise unless (retries += 1) < TOOLS_ACTION_RETRIES
 
-      @tools.run_on_machine(cl_name, desc, updated_command)
+          sleep TOOLS_ACTION_SLEEP
+          @logger.info('Trying again to verify target')
+          retry
+        end
+      end
 
-      return unless guest_reboot
+      sig { params(test: Models::HLK::Test).returns(T::Boolean) }
+      def support_needed?(test)
+        (test.scheduleoptions & %w[6 RequiresMultipleMachines]) != []
+      end
 
-      @logger.info("Rebooting client #{cl_name} after command (#{desc}) and sleeping for #{SLEEP_AFTER_REBOOT} seconds")
-      @tools.restart_machine(cl_name)
-      # Reboot takes some time, so we need to wait until machine is ready otherwise next commands can fail
-      # with strange WinRMAuthorizationError error because Windows prevents connections to the machine during reboot
-      # There is no good way to check if machine is ready, so just wait some time after reboot
-      sleep SLEEP_AFTER_REBOOT
-    end
+      def test_support(test)
+        @support.name if support_needed?(test)
+      end
 
-    def run_guest_test_command(command, replacement)
-      return unless command.guest_run
+      sig { params(test: Models::HLK::Test, status: String).void }
+      def set_test_status(test, status)
+        return if test.ex_status == status
 
-      run_command_on_client(@client, command.guest_run, command.desc, command.guest_reboot, replacement)
-      return if @support.nil?
+        test.ex_status = status
+        update_summary_results_log
+      end
 
-      run_command_on_client(@support, command.guest_run, command.desc, command.guest_reboot, replacement)
-    end
+      def check_test_queued_time
+        # We can't compare test objects directly because the list_tests
+        # function updates the test object but the current_test function
+        # returns the pure object.
+        @logger.debug("Checking queued time for test id: #{@last_queued_test&.id}. Current test: #{current_test}")
 
-    def run_host_test_command(command)
-      return unless command.host_run
+        # When @last_queued_test is nil then all queued tests are running or finished
+        return if @last_queued_test.nil?
 
-      @logger.info("Running command (#{command.desc}) on host")
-      run_cmd(command.host_run)
-    end
+        @logger.debug("Test extra information: #{@last_queued_test.extra}")
 
-    def run_remote_to_local_action_on_client(client_name, files_action)
-      remote_path = files_action.remote_path
+        # When 'started_at' is not nil then last queued test is running or finished
+        return unless @last_queued_test.started_at.nil?
 
-      unless @tools.exists_on_machine?(client_name, remote_path)
-        if files_action.allow_missing
-          @logger.warn("Remote file #{remote_path} not found on client #{client_name}: skipping download")
-          return
+        diff = time_diff(@last_queued_test.queued_at, DateTime.now)
+
+        return if diff < time_to_seconds(QUEUE_TEST_TIMEOUT)
+
+        @logger.warn("Test was queued #{seconds_to_time(diff)} ago! HCK hangs on?")
+        set_test_status(@last_queued_test, 'Hangs on at queued state?')
+      end
+
+      def check_test_duration_time
+        return if (test = current_test).nil?
+
+        started_at = test.started_at
+
+        return if started_at.nil?
+
+        diff = time_diff(started_at, DateTime.now)
+
+        return if diff < (2 * test.duration) + time_to_seconds(RUNNING_TEST_TIMEOUT)
+
+        @logger.warn("Test was running #{seconds_to_time(diff)} ago! HCK hangs on?")
+        set_test_status(test, 'Hangs on at running state?')
+      end
+
+      def wait_queued_test(id)
+        loop do
+          sleep 5
+          results = @tools.list_test_results(id, @target['key'], @client.name, @tag)
+          last_result = results.max_by { |k| k['instanceid'].to_i }
+
+          check_test_queued_time
+
+          break if last_result['status'] == 'InQueue'
+          break if last_result['status'] == 'Running'
+          break if test_result_finished?(last_result)
+        end
+      end
+
+      def all_tests_configs
+        @project.engine.config.tests_config +
+          @project.engine.drivers.flat_map(&:tests_config) +
+          @project.engine.extensions.flat_map(&:tests_config)
+      end
+
+      def select_test_config(test_name, config)
+        all_tests_configs
+          .select { |test_config| Regexp.union(test_config.tests.map { Regexp.new(_1) }).match?(test_name) }
+          .select { |test_config| test_config.kits.empty? || test_config.kits.include?(@client.kit) }
+          .flat_map(&config)
+      end
+
+      def test_parameters(test_name)
+        select_test_config(test_name, :parameters)
+          .to_h { |parameter| [parameter.name, parameter.value] }
+      end
+
+      def test_skip_retry?(test_name)
+        select_test_config(test_name, :skip_retry).any? { _1 == true }
+      end
+
+      def test_errata(test_name)
+        select_test_config(test_name, :errata).compact.first
+      end
+
+      def run_command_on_client(client, command, desc, guest_reboot, replacement)
+        cl_name = client.name
+        @logger.info("Running command (#{desc}) on client #{cl_name}")
+        # Don't use create_cmd because it calls shellescape that performs wrong escaping for Windows commands
+        # E.g. it escapes backslashes that are used in Windows paths
+        updated_command = client.replacement_map.merge(@replacement_map).merge(replacement).replace(command)
+        @logger.debug("Running command after replacement (#{desc}) on client #{cl_name}: #{updated_command}")
+
+        @tools.run_on_machine(cl_name, desc, updated_command)
+
+        return unless guest_reboot
+
+        @logger.info("Rebooting client #{cl_name} after command (#{desc}) " \
+                     "and sleeping for #{SLEEP_AFTER_REBOOT} seconds")
+        @tools.restart_machine(cl_name)
+        # Reboot takes some time, so we need to wait until machine is ready otherwise next commands can fail
+        # with strange WinRMAuthorizationError error because Windows prevents connections to the machine during reboot
+        # There is no good way to check if machine is ready, so just wait some time after reboot
+        sleep SLEEP_AFTER_REBOOT
+      end
+
+      def run_guest_test_command(command, replacement)
+        return unless command.guest_run
+
+        run_command_on_client(@client, command.guest_run, command.desc, command.guest_reboot, replacement)
+        return if @support.nil?
+
+        run_command_on_client(@support, command.guest_run, command.desc, command.guest_reboot, replacement)
+      end
+
+      def run_host_test_command(command)
+        return unless command.host_run
+
+        @logger.info("Running command (#{command.desc}) on host")
+        run_cmd(command.host_run)
+      end
+
+      def run_remote_to_local_action_on_client(client_name, files_action)
+        remote_path = files_action.remote_path
+
+        unless @tools.exists_on_machine?(client_name, remote_path)
+          if files_action.allow_missing
+            @logger.warn("Remote file #{remote_path} not found on client #{client_name}: skipping download")
+            return
+          end
+
+          raise EngineError, "Remote file not found on client #{client_name}: #{remote_path}"
         end
 
-        raise EngineError, "Remote file not found on client #{client_name}: #{remote_path}"
+        @tools.download_from_machine(client_name, remote_path, files_action.local_path)
+        @tools.delete_on_machine(client_name, remote_path) if files_action.move
       end
 
-      @tools.download_from_machine(client_name, remote_path, files_action.local_path)
-      @tools.delete_on_machine(client_name, remote_path) if files_action.move
-    end
+      def run_local_to_remote_action_on_client(client_name, files_action)
+        local_path = files_action.local_path
+        unless File.exist?(local_path)
+          if files_action.allow_missing
+            @logger.warn("Local file #{local_path} not found: skipping upload")
+            return
+          end
 
-    def run_local_to_remote_action_on_client(client_name, files_action)
-      local_path = files_action.local_path
-      unless File.exist?(local_path)
-        if files_action.allow_missing
-          @logger.warn("Local file #{local_path} not found: skipping upload")
-          return
+          raise EngineError, "Local file not found: #{local_path}"
         end
 
-        raise EngineError, "Local file not found: #{local_path}"
+        @tools.upload_to_machine(client_name, local_path, files_action.remote_path)
+        FileUtils.rm_rf(local_path) if files_action.move
       end
 
-      @tools.upload_to_machine(client_name, local_path, files_action.remote_path)
-      FileUtils.rm_rf(local_path) if files_action.move
-    end
+      sig { params(client_name: String, files_action: Models::FileActionConfig).void }
+      def run_file_action_on_client(client_name, files_action)
+        @logger.info("Running file action on #{client_name} " \
+                     "#{files_action.direction} from #{files_action.remote_path} to #{files_action.local_path}")
 
-    sig { params(client_name: String, files_action: Models::FileActionConfig).void }
-    def run_file_action_on_client(client_name, files_action)
-      @logger.info("Running file action on #{client_name} " \
-                   "#{files_action.direction} from #{files_action.remote_path} to #{files_action.local_path}")
-
-      case files_action.direction
-      when Models::FileActionDirection::RemoteToLocal
-        run_remote_to_local_action_on_client(client_name, files_action)
-      when Models::FileActionDirection::LocalToRemote
-        run_local_to_remote_action_on_client(client_name, files_action)
-      end
-    end
-
-    sig do
-      params(client_name: String, files_action: Models::FileActionConfig, replacement: ReplacementMap).void
-    end
-    def prepare_file_action_for_client(client_name, files_action, replacement)
-      client_replacement = replacement.merge({ '@client_name@' => client_name })
-      updated_action = files_action.dup_and_replace_path(client_replacement, DEFAULT_FILE_ACTION_REMOTE_PATH,
-                                                         DEFAULT_FILE_ACTION_LOCAL_PATH)
-      run_file_action_on_client(client_name, updated_action)
-    end
-
-    sig do
-      params(files_actions: T::Array[Models::FileActionConfig], replacement: ReplacementMap).void
-    end
-    def run_file_actions(files_actions, replacement)
-      files_actions.each do |files_action|
-        if files_action.remote_path.nil? && files_action.local_path.nil?
-          @logger.warn('Both remote and local paths are nil, skipping file action')
-          next
+        case files_action.direction
+        when Models::FileActionDirection::RemoteToLocal
+          run_remote_to_local_action_on_client(client_name, files_action)
+        when Models::FileActionDirection::LocalToRemote
+          run_local_to_remote_action_on_client(client_name, files_action)
         end
-
-        prepare_file_action_for_client(@client.name, files_action, replacement)
-
-        next if @support.nil?
-
-        prepare_file_action_for_client(@support.name, files_action, replacement)
-      end
-    end
-
-    sig { params(test: Models::HLK::Test, type: Symbol, replacement: ReplacementMap).void }
-    def run_test_commands(test, type, replacement)
-      select_test_config(test.name, type).each do |command|
-        run_guest_test_command(command, replacement)
-        run_host_test_command(command)
-
-        run_file_actions(command.files_action, replacement)
-      end
-    end
-
-    sig { params(test: Models::HLK::Test).void }
-    def perform_queue_test_commands(test)
-      @tools.queue_test(test_id: test.id,
-                        target_key: @target['key'],
-                        machine: @client.name,
-                        tag: @tag,
-                        support: test_support(test),
-                        parameters: test_parameters(test.name))
-    end
-
-    sig { params(test: Models::HLK::Test, wait: T::Boolean).void }
-    def queue_test(test, wait: false)
-      retries = 0
-      begin
-        perform_queue_test_commands(test)
-
-        test.queued_at = DateTime.now
-
-        @last_queued_test = test
-
-        return unless wait
-
-        wait_queued_test(test.id)
-      rescue Tools::ToolsHCKError => e
-        @logger.warn(e.message)
-        sleep TOOLS_ACTION_SLEEP
-        raise unless (retries += 1) < TOOLS_ACTION_RETRIES
-
-        @logger.info('Trying again to queue test')
-        retry
-      end
-    end
-
-    sig { returns(T.nilable(Models::HLK::Test)) }
-    def current_test
-      @tests.find { |test| test.executionstate == Models::HLK::ExecutionState::Running }
-    end
-
-    def tests_stats
-      cnt_passed = tests_stats_status_count(Models::HLK::TestResultStatus::Passed)
-      cnt_failed = tests_stats_status_count(Models::HLK::TestResultStatus::Failed)
-      total = @tests.count
-
-      # 'inqueue' means tests that are in AutoHCK queue not in HCK queue
-      # as we run tests one by one, we don't have tests in HCK queue
-      { 'current' => current_test, 'passed' => cnt_passed,
-        'failed' => cnt_failed, 'inqueue' => total - cnt_passed - cnt_failed,
-        'skipped' => @playlist.rejected_test.count,
-        'currentcount' => cnt_passed + cnt_failed + 1, 'total' => total }
-    end
-
-    def test_result_finished?(result)
-      %w[Passed Failed].include? result['status']
-    end
-
-    sig { params(status: Models::HLK::TestResultStatus).returns(Integer) }
-    def tests_stats_status_count(status)
-      # When test is running more than once HLK reports test['status'] = PASS/FAIL
-      # even when test is still running again. So we need to check test['executionstate']
-      # to be sure that test is really finished.
-      # Otherwise update_tests function can report test as finished multiple times
-      # just with different executionstate.
-      @tests.count { |test| test.status == status && test.executionstate == Models::HLK::ExecutionState::NotRunning }
-    end
-
-    def done_test_results
-      @test_results.select { |test_result| test_result_finished?(test_result) }
-    end
-
-    sig { params(test: Models::HLK::Test).void }
-    def on_test_start(test)
-      @logger.info(">>> Currently running: #{test.name} [#{test.estimatedruntime}]")
-
-      test.started_at = DateTime.now
-      test.ex_status = nil
-
-      update_summary_results_log
-    end
-
-    def print_tests_stats
-      stats = tests_stats
-      @logger.info("<<< Passed: #{stats['passed']} | Failed: #{stats['failed']} | InQueue: #{stats['inqueue']}")
-    end
-
-    sig { params(test: Models::HLK::Test, test_result: T::Hash[String, T.untyped]).void }
-    def print_test_results(test, test_result)
-      @logger.info("#{test_result['status']}: #{test.name}")
-      @logger.info("Test information page: #{test.url}")
-    end
-
-    sig { params(test: Models::HLK::Test, test_result: T::Hash[String, T.untyped]).void }
-    def archive_test_results(test, test_result)
-      res = @tools.zip_test_result_logs(result_index: test_result['instanceid'],
-                                        test: test.id,
-                                        target: @target['key'],
-                                        project: @tag,
-                                        machine: @client.name,
-                                        pool: @tag,
-                                        index_instance_id: true)
-      @logger.info('Test archive successfully created')
-    rescue Tools::ZipTestResultLogsError
-      @logger.info('Skipping archiving test result logs')
-    ensure
-      update_remote(test, test_result, res&.dig('hostlogszippath'), test_result['status'], test.safe_name)
-      @logger.info('Test results uploaded via the result uploader')
-    end
-
-    def summary_rejected_test_log
-      @playlist.rejected_test.reduce('') do |sum, test|
-        sum + "Skipped: #{test.name} [#{test.estimatedruntime}]\n"
-      end
-    end
-
-    def summary_results_log
-      @tests.reduce('') do |sum, test|
-        extra_info = test.dump_path ? '(with Minidump)' : ''
-        status = test.ex_status || test.status
-
-        sum + "#{status}: #{test.name} [#{test.estimatedruntime}]#{extra_info}#{format_times(test)}\n"
-      end
-    end
-
-    sig { params(test: Models::HLK::Test).returns(String) }
-    def format_times(test)
-      queued_at = test.queued_at
-      queued_at_str = queued_at ? " [Queued time: #{queued_at}]" : ''
-      started_at = test.started_at
-      started_at_str = started_at ? " [Started time: #{started_at}]" : ''
-      finished_at = test.finished_at
-      finished_at_str = finished_at ? " [Finished time: #{finished_at}]" : ''
-
-      "#{queued_at_str}#{started_at_str}#{finished_at_str}"
-    end
-
-    def update_summary_results_log
-      logs = summary_rejected_test_log
-      logs += summary_results_log
-
-      @logger.info('Tests results logs updated via the result uploader')
-      @project.result_uploader.update_file_content(logs, SUMMARY_LOG_FILE)
-      File.write("#{@project.workspace_path}/#{SUMMARY_LOG_FILE}", logs)
-    end
-
-    sig do
-      params(test: Models::HLK::Test,
-             test_result: T::Hash[String, T.untyped],
-             test_logs_path: T.nilable(String),
-             status: String,
-             testname: String).void
-    end
-    def update_remote(test, test_result, test_logs_path, status, testname)
-      test_instance_id = test_result['instanceid']
-      delete_old_remote(testname, test_instance_id)
-
-      if test_logs_path
-        r_name = "#{status}_#{test_instance_id}_#{testname}#{File.extname(test_logs_path)}"
-        @project.result_uploader.upload_file(test_logs_path, r_name)
       end
 
-      r_name = "Result_#{test_instance_id}_#{testname}.json"
-      File.write("#{@project.workspace_path}/#{r_name}", JSON.pretty_generate(test_result))
-      @project.result_uploader.upload_file("#{@project.workspace_path}/#{r_name}", r_name)
-
-      if test.dump_path
-        r_name = "Minidump_#{test_instance_id}_#{testname}.zip"
-        @project.result_uploader.upload_file(test.dump_path, r_name)
+      sig do
+        params(client_name: String, files_action: Models::FileActionConfig, replacement: ReplacementMap).void
+      end
+      def prepare_file_action_for_client(client_name, files_action, replacement)
+        client_replacement = replacement.merge({ '@client_name@' => client_name })
+        updated_action = files_action.dup_and_replace_path(client_replacement, DEFAULT_FILE_ACTION_REMOTE_PATH,
+                                                           DEFAULT_FILE_ACTION_LOCAL_PATH)
+        run_file_action_on_client(client_name, updated_action)
       end
 
-      update_summary_results_log
-    end
+      sig do
+        params(files_actions: T::Array[Models::FileActionConfig], replacement: ReplacementMap).void
+      end
+      def run_file_actions(files_actions, replacement)
+        files_actions.each do |files_action|
+          if files_action.remote_path.nil? && files_action.local_path.nil?
+            @logger.warn('Both remote and local paths are nil, skipping file action')
+            next
+          end
 
-    def delete_old_remote(test_name, result_instance_id)
-      r_name = "Minidump_#{result_instance_id}_#{test_name}.zip"
-      @project.result_uploader.delete_file(r_name)
-      r_name = "Result_#{result_instance_id}_#{test_name}.json"
-      @project.result_uploader.delete_file(r_name)
-      r_name = "Failed_#{result_instance_id}_#{test_name}.zip"
-      @project.result_uploader.delete_file(r_name)
-      r_name = "Passed_#{result_instance_id}_#{test_name}.zip"
-      @project.result_uploader.delete_file(r_name)
-    end
+          prepare_file_action_for_client(@client.name, files_action, replacement)
 
-    def all_tests_finished?
-      # When the test runs several times:
-      # Test 'status' changed to 'Passed/Failed' just after the test 'executionstate'
-      # moved from 'InQueue' to 'Running'
-      # Test 'executionstate' moves from 'Running' to 'NotRunning' just after the main
-      # part of the test is finished even if the cleanup stage is still running
-      # As a result `@new_done_test_results = []`, because test result `status` is
-      # not 'Passed/Failed' yet.
+          next if @support.nil?
 
-      @tests.none? { _1.status == Models::HLK::TestResultStatus::InQueue } &&
-        # TestResult.Status does not return Queued
-        # (if a test is scheduled or running it returns Running).
-        @test_results.none? { _1['status'] == 'Running' } &&
-        current_test.nil?
-    end
+          prepare_file_action_for_client(@support.name, files_action, replacement)
+        end
+      end
 
-    sig { params(test: Models::HLK::Test, test_result: T::Hash[String, T.untyped]).void }
-    def handle_finished_test_result(test, test_result)
-      machine_names = [@client.name, @support&.name].compact
-      test.dump_path = MemoryDumpCollector.new(@tools, machine_names, @project.workspace_path, @logger).collect(test.id)
+      sig { params(test: Models::HLK::Test, type: Symbol, replacement: ReplacementMap).void }
+      def run_test_commands(test, type, replacement)
+        select_test_config(test.name, type).each do |command|
+          run_guest_test_command(command, replacement)
+          run_host_test_command(command)
 
-      print_test_results(test, test_result)
-      archive_test_results(test, test_result)
+          run_file_actions(command.files_action, replacement)
+        end
+      end
 
-      test.finished_at = DateTime.now
-      test.last_result = test_result
+      sig { params(test: Models::HLK::Test).void }
+      def perform_queue_test_commands(test)
+        @tools.queue_test(test_id: test.id,
+                          target_key: @target['key'],
+                          machine: @client.name,
+                          tag: @tag,
+                          support: test_support(test),
+                          parameters: test_parameters(test.name))
+      end
 
-      return unless test.status == Models::HLK::TestResultStatus::Failed
+      sig { params(test: Models::HLK::Test, wait: T::Boolean).void }
+      def queue_test(test, wait: false)
+        retries = 0
+        begin
+          perform_queue_test_commands(test)
 
-      errata = test_errata(test.name)
-      return unless errata
+          test.queued_at = DateTime.now
 
-      @logger.info("Test '#{test.name}' failed but has manual errata: #{errata}")
-      test.errata = errata
-    end
+          @last_queued_test = test
 
-    sig { params(result: T::Hash[String, T.untyped]).returns(Models::HLK::Test) }
-    def test_for_result(result)
-      test = @tests.find { |test| test.name == result['name'] }
+          return unless wait
 
-      raise "Test not found for result: #{result}" if test.nil?
+          wait_queued_test(test.id)
+        rescue Tools::ToolsHCKError => e
+          @logger.warn(e.message)
+          sleep TOOLS_ACTION_SLEEP
+          raise unless (retries += 1) < TOOLS_ACTION_RETRIES
 
-      test
-    end
+          @logger.info('Trying again to queue test')
+          retry
+        end
+      end
 
-    def handle_finished_test_results(results)
-      @project.update_test_stats(tests_stats)
+      sig { returns(T.nilable(Models::HLK::Test)) }
+      def current_test
+        @tests.find { |test| test.executionstate == Models::HLK::ExecutionState::Running }
+      end
 
-      results.each do |result|
-        test = test_for_result(result)
-        next if test.nil?
+      def tests_stats
+        cnt_passed = tests_stats_status_count(Models::HLK::TestResultStatus::Passed)
+        cnt_failed = tests_stats_status_count(Models::HLK::TestResultStatus::Failed)
+        total = @tests.count
 
+        # 'inqueue' means tests that are in AutoHCK queue not in HCK queue
+        # as we run tests one by one, we don't have tests in HCK queue
+        { 'current' => current_test, 'passed' => cnt_passed,
+          'failed' => cnt_failed, 'inqueue' => total - cnt_passed - cnt_failed,
+          'skipped' => @playlist.rejected_test.count,
+          'currentcount' => cnt_passed + cnt_failed + 1, 'total' => total }
+      end
+
+      def test_result_finished?(result)
+        %w[Passed Failed].include? result['status']
+      end
+
+      sig { params(status: Models::HLK::TestResultStatus).returns(Integer) }
+      def tests_stats_status_count(status)
+        # When test is running more than once HLK reports test['status'] = PASS/FAIL
+        # even when test is still running again. So we need to check test['executionstate']
+        # to be sure that test is really finished.
+        # Otherwise update_tests function can report test as finished multiple times
+        # just with different executionstate.
+        @tests.count { |test| test.status == status && test.executionstate == Models::HLK::ExecutionState::NotRunning }
+      end
+
+      def done_test_results
+        @test_results.select { |test_result| test_result_finished?(test_result) }
+      end
+
+      sig { params(test: Models::HLK::Test).void }
+      def on_test_start(test)
+        @logger.info(">>> Currently running: #{test.name} [#{test.estimatedruntime}]")
+
+        test.started_at = DateTime.now
         test.ex_status = nil
-        handle_finished_test_result(test, result)
 
-        @last_queued_test = nil if test.id == @last_queued_test&.id
+        update_summary_results_log
       end
-      print_tests_stats
 
-      @project.generate_result_report
-      @project.generate_junit
-    end
+      def print_tests_stats
+        stats = tests_stats
+        @logger.info("<<< Passed: #{stats['passed']} | Failed: #{stats['failed']} | InQueue: #{stats['inqueue']}")
+      end
 
-    def reset_clients_to_ready_state
-      @client.reset_to_ready_state
-      @support&.reset_to_ready_state
-    end
+      sig { params(test: Models::HLK::Test, test_result: T::Hash[String, T.untyped]).void }
+      def print_test_results(test, test_result)
+        @logger.info("#{test_result['status']}: #{test.name}")
+        @logger.info("Test information page: #{test.url}")
+      end
 
-    def apply_filters
-      @logger.info('Applying filters on finished tests')
-      @tools.apply_project_filters(@tag)
-      sleep APPLYING_FILTERS_INTERVAL
-    end
+      sig { params(test: Models::HLK::Test, test_result: T::Hash[String, T.untyped]).void }
+      def archive_test_results(test, test_result)
+        res = @tools.zip_test_result_logs(result_index: test_result['instanceid'],
+                                          test: test.id,
+                                          target: @target['key'],
+                                          project: @tag,
+                                          machine: @client.name,
+                                          pool: @tag,
+                                          index_instance_id: true)
+        @logger.info('Test archive successfully created')
+      rescue Tools::ZipTestResultLogsError
+        @logger.info('Skipping archiving test result logs')
+      ensure
+        update_remote(test, test_result, res&.dig('hostlogszippath'), test_result['status'], test.safe_name)
+        @logger.info('Test results uploaded via the result uploader')
+      end
 
-    def check_new_finished_results
-      return unless @new_done_test_results.any?
+      def summary_rejected_test_log
+        @playlist.rejected_test.reduce('') do |sum, test|
+          sum + "Skipped: #{test.name} [#{test.estimatedruntime}]\n"
+        end
+      end
 
-      apply_filters
-      handle_finished_test_results(@new_done_test_results)
-    end
+      def summary_results_log
+        @tests.reduce('') do |sum, test|
+          extra_info = test.dump_path ? '(with Minidump)' : ''
+          status = test.ex_status || test.status
 
-    def handle_test_running
-      running = T.let(nil, T.nilable(Models::HLK::Test))
-      @project.generate_result_report
+          sum + "#{status}: #{test.name} [#{test.estimatedruntime}]#{extra_info}#{format_times(test)}\n"
+        end
+      end
 
-      until @project.run_terminated
-        @project.check_run_termination
-        # Update tests results to get the latest status of the tests
+      sig { params(test: Models::HLK::Test).returns(String) }
+      def format_times(test)
+        queued_at = test.queued_at
+        queued_at_str = queued_at ? " [Queued time: #{queued_at}]" : ''
+        started_at = test.started_at
+        started_at_str = started_at ? " [Started time: #{started_at}]" : ''
+        finished_at = test.finished_at
+        finished_at_str = finished_at ? " [Finished time: #{finished_at}]" : ''
+
+        "#{queued_at_str}#{started_at_str}#{finished_at_str}"
+      end
+
+      def update_summary_results_log
+        logs = summary_rejected_test_log
+        logs += summary_results_log
+
+        @logger.info('Tests results logs updated via the result uploader')
+        @project.result_uploader.update_file_content(logs, SUMMARY_LOG_FILE)
+        File.write("#{@project.workspace_path}/#{SUMMARY_LOG_FILE}", logs)
+      end
+
+      sig do
+        params(test: Models::HLK::Test,
+               test_result: T::Hash[String, T.untyped],
+               test_logs_path: T.nilable(String),
+               status: String,
+               testname: String).void
+      end
+      def update_remote(test, test_result, test_logs_path, status, testname)
+        test_instance_id = test_result['instanceid']
+        delete_old_remote(testname, test_instance_id)
+
+        if test_logs_path
+          r_name = "#{status}_#{test_instance_id}_#{testname}#{File.extname(test_logs_path)}"
+          @project.result_uploader.upload_file(test_logs_path, r_name)
+        end
+
+        r_name = "Result_#{test_instance_id}_#{testname}.json"
+        File.write("#{@project.workspace_path}/#{r_name}", JSON.pretty_generate(test_result))
+        @project.result_uploader.upload_file("#{@project.workspace_path}/#{r_name}", r_name)
+
+        if test.dump_path
+          r_name = "Minidump_#{test_instance_id}_#{testname}.zip"
+          @project.result_uploader.upload_file(test.dump_path, r_name)
+        end
+
+        update_summary_results_log
+      end
+
+      def delete_old_remote(test_name, result_instance_id)
+        r_name = "Minidump_#{result_instance_id}_#{test_name}.zip"
+        @project.result_uploader.delete_file(r_name)
+        r_name = "Result_#{result_instance_id}_#{test_name}.json"
+        @project.result_uploader.delete_file(r_name)
+        r_name = "Failed_#{result_instance_id}_#{test_name}.zip"
+        @project.result_uploader.delete_file(r_name)
+        r_name = "Passed_#{result_instance_id}_#{test_name}.zip"
+        @project.result_uploader.delete_file(r_name)
+      end
+
+      def all_tests_finished?
+        # When the test runs several times:
+        # Test 'status' changed to 'Passed/Failed' just after the test 'executionstate'
+        # moved from 'InQueue' to 'Running'
+        # Test 'executionstate' moves from 'Running' to 'NotRunning' just after the main
+        # part of the test is finished even if the cleanup stage is still running
+        # As a result `@new_done_test_results = []`, because test result `status` is
+        # not 'Passed/Failed' yet.
+
+        @tests.none? { _1.status == Models::HLK::TestResultStatus::InQueue } &&
+          # TestResult.Status does not return Queued
+          # (if a test is scheduled or running it returns Running).
+          @test_results.none? { _1['status'] == 'Running' } &&
+          current_test.nil?
+      end
+
+      sig { params(test: Models::HLK::Test, test_result: T::Hash[String, T.untyped]).void }
+      def handle_finished_test_result(test, test_result)
+        machine_names = [@client.name, @support&.name].compact
+        collector = MemoryDumpCollector.new(@tools, machine_names, @project.workspace_path, @logger)
+        test.dump_path = collector.collect(test.id)
+
+        print_test_results(test, test_result)
+        archive_test_results(test, test_result)
+
+        test.finished_at = DateTime.now
+        test.last_result = test_result
+
+        return unless test.status == Models::HLK::TestResultStatus::Failed
+
+        errata = test_errata(test.name)
+        return unless errata
+
+        @logger.info("Test '#{test.name}' failed but has manual errata: #{errata}")
+        test.errata = errata
+      end
+
+      sig { params(result: T::Hash[String, T.untyped]).returns(Models::HLK::Test) }
+      def test_for_result(result)
+        test = @tests.find { |test| test.name == result['name'] }
+
+        raise "Test not found for result: #{result}" if test.nil?
+
+        test
+      end
+
+      def handle_finished_test_results(results)
+        @project.update_test_stats(tests_stats)
+
+        results.each do |result|
+          test = test_for_result(result)
+          next if test.nil?
+
+          test.ex_status = nil
+          handle_finished_test_result(test, result)
+
+          @last_queued_test = nil if test.id == @last_queued_test&.id
+        end
+        print_tests_stats
+
+        @project.generate_result_report
+        @project.generate_junit
+      end
+
+      def reset_clients_to_ready_state
+        @client.reset_to_ready_state
+        @support&.reset_to_ready_state
+      end
+
+      def apply_filters
+        @logger.info('Applying filters on finished tests')
+        @tools.apply_project_filters(@tag)
+        sleep APPLYING_FILTERS_INTERVAL
+      end
+
+      def check_new_finished_results
+        return unless @new_done_test_results.any?
+
+        apply_filters
+        handle_finished_test_results(@new_done_test_results)
+      end
+
+      def handle_test_running
+        running = T.let(nil, T.nilable(Models::HLK::Test))
+        @project.generate_result_report
+
+        until @project.run_terminated
+          @project.check_run_termination
+          # Update tests results to get the latest status of the tests
+          update_tests
+          reset_clients_to_ready_state
+          check_new_finished_results
+          check_test_queued_time
+          check_test_duration_time
+          if current_test != running
+            running = current_test
+            on_test_start(running) if running
+          end
+          break if all_tests_finished?
+
+          sleep HANDLE_TESTS_POLLING_INTERVAL
+        end
+      end
+
+      sig { params(type: String, path: T.nilable(String)).returns(T.nilable(String)) }
+      def upload_package_asset(type, path)
+        return nil unless path
+
+        unless File.exist?(path)
+          @logger.warn("#{type} path '#{path}' specified, but does not exist, skipping including")
+          return nil
+        end
+
+        remote_path = "#{STUDIO_PACKAGE_ASSETS_PATH}\\#{type}"
+        @logger.info("Uploading #{type.downcase} from '#{path}' to '#{remote_path}'")
+        @tools.upload_to_studio(path, remote_path)
+        remote_path
+      end
+
+      sig { returns(T.nilable(String)) }
+      def prepare_package_driver_content
+        return if @project.options.test.package_with_driver == :none
+
+        upload_package_asset('Driver', @project.options.test.driver_path)
+      end
+
+      sig { returns(T.nilable(String)) }
+      def prepare_package_supplemental_content
+        upload_package_asset('Supplemental', @project.options.test.supplemental_path)
+      end
+
+      def print_project_package_results(res)
+        messages = (res['messages'] || []).map { "    -- #{_1}\n" }.join
+        if res['iserror'] == false
+          @logger.info('Project package successfully created')
+          @logger.debug("Project package creation result:\n#{messages}")
+        else
+          @logger.warn('Project package creation got an error. Check the logs for details.')
+          @logger.warn("Project package creation result:\n#{messages}")
+        end
+      end
+
+      def create_project_package
+        test_options = @project.options.test
+        package_playlist = @playlist.playlist if test_options.package_with_playlist
+
+        remote_driver_path = prepare_package_driver_content
+        remote_supplemental_path = prepare_package_supplemental_content
+
+        res = @tools.create_project_package(@tag, package_playlist, nil, remote_driver_path, remote_supplemental_path,
+                                            remove_driver_signatures: test_options.package_with_driver == :unsigned)
+        print_project_package_results(res)
+
+        r_name = @tag + File.extname(res['hostprojectpackagepath'])
+        @project.result_uploader.upload_file(res['hostprojectpackagepath'], r_name)
+      end
+
+      def build_system_info(info)
+        @clients_system_info ||= {}
+
+        system_info = {
+          'Host' => info['Host Name'],
+          'OS' => "#{info['OS Name']} #{info['OS Version']}",
+          'System' => "#{info['System Manufacturer']} #{info['System Model']} #{info['System Type']}",
+          'CPU' => info['Processor(s)'].join(' '),
+          'Memory' => info['Total Physical Memory'],
+          'BIOS' => info['BIOS Version']
+        }
+
+        @clients_system_info[info['Host Name']] = system_info
+      end
+
+      def load_clients_system_info
+        parser = SysInfoParser.new
+
+        client_sysinfo = parser.parse(@tools.get_machine_system_info(@client.name))
+        build_system_info(client_sysinfo)
+
+        return if @support.nil?
+
+        support_sysinfo = parser.parse(@tools.get_machine_system_info(@support.name))
+        build_system_info(support_sysinfo)
+      end
+
+      sig { params(test: Models::HLK::Test, run_number: Integer, run_count: Integer).void }
+      def one_test_run(test, run_number, run_count)
+        replacement = @replacement_map.merge(
+          '@safe_test_name@' => test.safe_name,
+          '@run_number@' => run_number.to_s
+        )
+
+        run_test_commands(test, :pre_test_commands, replacement)
+
+        test_str = "run #{run_number}/#{run_count} #{test.name} (#{test.id})"
+        @logger.info("Adding to queue: #{test_str}")
+        queue_test(test, wait: true)
+        handle_test_running
+
+        run_test_commands(test, :post_test_commands, replacement)
+      end
+
+      sig { params(current_run_tests: T::Array[Models::HLK::Test]).returns(T::Array[Models::HLK::Test]) }
+      def select_tests_for_retry(current_run_tests)
+        # HLK Failed tests
+        failed_tests = @tests.select { |test| test.status == Models::HLK::TestResultStatus::Failed }
+
+        max_retries = @project.options.test.auto_retry_failed_tests
+        # Bisect failed tests and tests for current environment configuration
+        # we need this because some tests require specific environment state
+        # and will be run independently in the next run
+        failed_tests.select do |test|
+          test_name = test.name
+
+          next unless current_run_tests.any? { _1.name == test_name }
+
+          skip_retry = test_skip_retry?(test_name)
+
+          @logger.debug("[AutoRetrySelect] test: '#{test_name}', " \
+                        "retried: #{test.retried_times}, cfg_skip: #{skip_retry}")
+
+          next if skip_retry
+
+          max_retries == -1 || test.retried_times < max_retries
+        end
+      end
+
+      sig { params(current_run_tests: T::Array[Models::HLK::Test]).void }
+      def retry_tests(current_run_tests)
+        loop do
+          tests_to_retry = select_tests_for_retry(current_run_tests)
+          break if tests_to_retry.empty?
+
+          @logger.info("Found #{tests_to_retry.size} failed tests to auto retry")
+
+          tests_to_retry.each do |test|
+            run_id = test.run_count + test.retried_times + 1
+            one_test_run(test, run_id, run_id)
+            test.retried_times += 1
+
+            break if @project.run_terminated
+          end
+
+          break if @project.run_terminated
+        end
+      end
+
+      sig { void }
+      def update_tests_and_results
         update_tests
-        reset_clients_to_ready_state
-        check_new_finished_results
-        check_test_queued_time
-        check_test_duration_time
-        if current_test != running
-          running = current_test
-          on_test_start(running) if running
-        end
-        break if all_tests_finished?
-
-        sleep HANDLE_TESTS_POLLING_INTERVAL
-      end
-    end
-
-    sig { params(type: String, path: T.nilable(String)).returns(T.nilable(String)) }
-    def upload_package_asset(type, path)
-      return nil unless path
-
-      unless File.exist?(path)
-        @logger.warn("#{type} path '#{path}' specified, but does not exist, skipping including")
-        return nil
+        @project.update_test_stats(tests_stats)
+        @project.generate_result_report
+        @project.generate_junit
       end
 
-      remote_path = "#{STUDIO_PACKAGE_ASSETS_PATH}\\#{type}"
-      @logger.info("Uploading #{type.downcase} from '#{path}' to '#{remote_path}'")
-      @tools.upload_to_studio(path, remote_path)
-      remote_path
-    end
+      sig { params(tests: T::Array[Models::HLK::Test]).void }
+      def run(tests)
+        load_clients_system_info
+        update_summary_results_log
+        tests.each do |test|
+          run_count = test.run_count
 
-    sig { returns(T.nilable(String)) }
-    def prepare_package_driver_content
-      return if @project.options.test.package_with_driver == :none
+          (1..run_count).each do |run_number|
+            one_test_run(test, run_number, run_count)
 
-      upload_package_asset('Driver', @project.options.test.driver_path)
-    end
-
-    sig { returns(T.nilable(String)) }
-    def prepare_package_supplemental_content
-      upload_package_asset('Supplemental', @project.options.test.supplemental_path)
-    end
-
-    def print_project_package_results(res)
-      messages = (res['messages'] || []).map { "    -- #{_1}\n" }.join
-      if res['iserror'] == false
-        @logger.info('Project package successfully created')
-        @logger.debug("Project package creation result:\n#{messages}")
-      else
-        @logger.warn('Project package creation got an error. Check the logs for details.')
-        @logger.warn("Project package creation result:\n#{messages}")
-      end
-    end
-
-    def create_project_package
-      test_options = @project.options.test
-      package_playlist = @playlist.playlist if test_options.package_with_playlist
-
-      remote_driver_path = prepare_package_driver_content
-      remote_supplemental_path = prepare_package_supplemental_content
-
-      res = @tools.create_project_package(@tag, package_playlist, nil, remote_driver_path, remote_supplemental_path,
-                                          remove_driver_signatures: test_options.package_with_driver == :unsigned)
-      print_project_package_results(res)
-
-      r_name = @tag + File.extname(res['hostprojectpackagepath'])
-      @project.result_uploader.upload_file(res['hostprojectpackagepath'], r_name)
-    end
-
-    def build_system_info(info)
-      @clients_system_info ||= {}
-
-      system_info = {
-        'Host' => info['Host Name'],
-        'OS' => "#{info['OS Name']} #{info['OS Version']}",
-        'System' => "#{info['System Manufacturer']} #{info['System Model']} #{info['System Type']}",
-        'CPU' => info['Processor(s)'].join(' '),
-        'Memory' => info['Total Physical Memory'],
-        'BIOS' => info['BIOS Version']
-      }
-
-      @clients_system_info[info['Host Name']] = system_info
-    end
-
-    def load_clients_system_info
-      parser = SysInfoParser.new
-
-      client_sysinfo = parser.parse(@tools.get_machine_system_info(@client.name))
-      build_system_info(client_sysinfo)
-
-      return if @support.nil?
-
-      support_sysinfo = parser.parse(@tools.get_machine_system_info(@support.name))
-      build_system_info(support_sysinfo)
-    end
-
-    sig { params(test: Models::HLK::Test, run_number: Integer, run_count: Integer).void }
-    def one_test_run(test, run_number, run_count)
-      replacement = @replacement_map.merge(
-        '@safe_test_name@' => test.safe_name,
-        '@run_number@' => run_number.to_s
-      )
-
-      run_test_commands(test, :pre_test_commands, replacement)
-
-      test_str = "run #{run_number}/#{run_count} #{test.name} (#{test.id})"
-      @logger.info("Adding to queue: #{test_str}")
-      queue_test(test, wait: true)
-      handle_test_running
-
-      run_test_commands(test, :post_test_commands, replacement)
-    end
-
-    sig { params(current_run_tests: T::Array[Models::HLK::Test]).returns(T::Array[Models::HLK::Test]) }
-    def select_tests_for_retry(current_run_tests)
-      # HLK Failed tests
-      failed_tests = @tests.select { |test| test.status == Models::HLK::TestResultStatus::Failed }
-
-      max_retries = @project.options.test.auto_retry_failed_tests
-      # Bisect failed tests and tests for current environment configuration
-      # we need this because some tests require specific environment state
-      # and will be run independently in the next run
-      failed_tests.select do |test|
-        test_name = test.name
-
-        next unless current_run_tests.any? { _1.name == test_name }
-
-        skip_retry = test_skip_retry?(test_name)
-
-        @logger.debug("[AutoRetrySelect] test: '#{test_name}', retried: #{test.retried_times}, cfg_skip: #{skip_retry}")
-
-        next if skip_retry
-
-        max_retries == -1 || test.retried_times < max_retries
-      end
-    end
-
-    sig { params(current_run_tests: T::Array[Models::HLK::Test]).void }
-    def retry_tests(current_run_tests)
-      loop do
-        tests_to_retry = select_tests_for_retry(current_run_tests)
-        break if tests_to_retry.empty?
-
-        @logger.info("Found #{tests_to_retry.size} failed tests to auto retry")
-
-        tests_to_retry.each do |test|
-          run_id = test.run_count + test.retried_times + 1
-          one_test_run(test, run_id, run_id)
-          test.retried_times += 1
+            break if @project.run_terminated
+          end
 
           break if @project.run_terminated
         end
 
-        break if @project.run_terminated
+        return if @project.run_terminated
+
+        retry_tests(tests) unless @project.options.test.auto_retry_failed_tests.zero?
       end
     end
-
-    sig { void }
-    def update_tests_and_results
-      update_tests
-      @project.update_test_stats(tests_stats)
-      @project.generate_result_report
-      @project.generate_junit
-    end
-
-    sig { params(tests: T::Array[Models::HLK::Test]).void }
-    def run(tests)
-      load_clients_system_info
-      update_summary_results_log
-      tests.each do |test|
-        run_count = test.run_count
-
-        (1..run_count).each do |run_number|
-          one_test_run(test, run_number, run_count)
-
-          break if @project.run_terminated
-        end
-
-        break if @project.run_terminated
-      end
-
-      return if @project.run_terminated
-
-      retry_tests(tests) unless @project.options.test.auto_retry_failed_tests.zero?
-    end
+    # rubocop:enable Metrics/ClassLength
   end
 end

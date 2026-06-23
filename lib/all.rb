@@ -81,7 +81,6 @@ module AutoHCK
   autoload_relative :StudioConnectError, 'setupmanagers/exceptions'
   autoload_relative :SysInfoParser, 'auxiliary/sysinfo_parser'
   autoload_relative :Targets, 'engines/hcktest/targets'
-  autoload_relative :Tests, 'engines/hcktest/tests'
   autoload_relative :Tools, 'engines/hcktest/tools'
   autoload_relative :Trap, 'trap'
 end
