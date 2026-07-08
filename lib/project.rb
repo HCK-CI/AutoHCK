@@ -326,7 +326,7 @@ module AutoHCK
       failed = engine.test_steps.any? do |step|
         !step.is_skipped &&
           step.errata.nil? &&
-          step.status == Models::HLK::TestResultStatus::Failed &&
+          step.failed? &&
           step.executionstate == Models::HLK::ExecutionState::NotRunning
       end
 

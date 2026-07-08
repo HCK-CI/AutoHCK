@@ -8,9 +8,10 @@ module AutoHCK
       extend T::Sig
       include Helper
       extend Helper
+      include HLK::TestResultStatusPredicates
 
       const :name,             String
-      const :status,           HLK::TestResultStatus
+      const :status,           HLK::TestResultStatus, override: true
       const :executionstate,   HLK::ExecutionState
       const :execution_time,   Float
       const :is_skipped,       T::Boolean

@@ -279,7 +279,7 @@ module AutoHCK
       test_options = @project.options.test
 
       auto_manual_need = test_options.auto_manual &&
-                         (!exception.nil? || @tests&.tests&.any? { _1.status == Models::HLK::TestResultStatus::Failed })
+                         (!exception.nil? || @tests&.tests&.any?(&:failed?))
 
       @logger.debug("Switch to manual mode check: manual=#{test_options.manual} auto_manual_need=#{auto_manual_need}")
       return unless test_options.manual || auto_manual_need

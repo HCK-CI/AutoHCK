@@ -30,7 +30,7 @@
                 <% end %>
                 <% if test_step.errata %>
                     <system-out>Passed with errata: <%= test_step.errata %></system-out>
-                <% elsif test_step.status == Models::HLK::TestResultStatus::Failed %>
+                <% elsif test_step.failed? %>
                     <failure />
                 <% elsif test_step.is_skipped %>
                     <skipped />

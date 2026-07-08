@@ -46,12 +46,12 @@ module AutoHCK
           t.executionstate == Models::HLK::ExecutionState::NotRunning
       end
       passed = run_steps.count do |t|
-        t.status == Models::HLK::TestResultStatus::Passed &&
+        t.passed? &&
           t.errata.nil? &&
           t.executionstate == Models::HLK::ExecutionState::NotRunning
       end
       failed = run_steps.count do |t|
-        t.status == Models::HLK::TestResultStatus::Failed &&
+        t.failed? &&
           t.errata.nil? &&
           t.executionstate == Models::HLK::ExecutionState::NotRunning
       end

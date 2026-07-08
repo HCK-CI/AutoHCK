@@ -331,7 +331,7 @@ module AutoHCK
         # to be sure that test is really finished.
         # Otherwise update_tests function can report test as finished multiple times
         # just with different executionstate.
-        @tests.count { |test| test.status == status && test.executionstate == Models::HLK::ExecutionState::NotRunning }
+        @tests.count { |test| test.status?(status) && test.executionstate == Models::HLK::ExecutionState::NotRunning }
       end
 
       def done_test_results
@@ -460,7 +460,7 @@ module AutoHCK
         # As a result `@new_done_test_results = []`, because test result `status` is
         # not 'Passed/Failed' yet.
 
-        @tests.none? { _1.status == Models::HLK::TestResultStatus::InQueue } &&
+        @tests.none?(&:in_queue?) &&
           # TestResult.Status does not return Queued
           # (if a test is scheduled or running it returns Running).
           @test_results.none? { _1['status'] == 'Running' } &&
@@ -484,7 +484,7 @@ module AutoHCK
       end
 
       def apply_errata_if_failed(test)
-        return unless test.status == Models::HLK::TestResultStatus::Failed
+        return unless test.failed?
 
         errata = test_errata(test.name)
         return unless errata
@@ -660,7 +660,7 @@ module AutoHCK
       sig { params(current_run_tests: T::Array[Models::HLK::Test]).returns(T::Array[Models::HLK::Test]) }
       def select_tests_for_retry(current_run_tests)
         # HLK Failed tests
-        failed_tests = @tests.select { |test| test.status == Models::HLK::TestResultStatus::Failed }
+        failed_tests = @tests.select(&:failed?)
 
         max_retries = @project.options.test.auto_retry_failed_tests
         # Bisect failed tests and tests for current environment configuration

@@ -74,9 +74,7 @@ module AutoHCK
       return [] if @project&.engine&.test_steps.nil?
 
       @project.engine.test_steps.select do |step|
-        step.is_skipped ||
-          [Models::HLK::TestResultStatus::Failed,
-           Models::HLK::TestResultStatus::Passed].include?(step.status)
+        step.is_skipped || step.passed? || step.failed?
       end
     end
 
@@ -85,7 +83,7 @@ module AutoHCK
     end
 
     def junit_failed_test_steps_count
-      engine_test_steps.count { _1.status == Models::HLK::TestResultStatus::Failed && _1.errata.nil? }
+      engine_test_steps.count { _1.failed? && _1.errata.nil? }
     end
 
     def junit_suite_tests_count

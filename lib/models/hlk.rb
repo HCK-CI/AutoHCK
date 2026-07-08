@@ -37,6 +37,52 @@ module AutoHCK
         end
       end
 
+      # Status predicate helpers for objects with a TestResultStatus (Test, TestResult).
+      module TestResultStatusPredicates
+        extend T::Sig
+        extend T::Helpers
+
+        abstract!
+
+        sig { abstract.returns(TestResultStatus) }
+        def status; end
+
+        sig { params(expected: TestResultStatus).returns(T::Boolean) }
+        def status?(expected)
+          status == expected
+        end
+
+        sig { returns(T::Boolean) }
+        def canceled?
+          status?(TestResultStatus::Canceled)
+        end
+
+        sig { returns(T::Boolean) }
+        def failed?
+          status?(TestResultStatus::Failed)
+        end
+
+        sig { returns(T::Boolean) }
+        def in_queue?
+          status?(TestResultStatus::InQueue)
+        end
+
+        sig { returns(T::Boolean) }
+        def not_run?
+          status?(TestResultStatus::NotRun)
+        end
+
+        sig { returns(T::Boolean) }
+        def passed?
+          status?(TestResultStatus::Passed)
+        end
+
+        sig { returns(T::Boolean) }
+        def running?
+          status?(TestResultStatus::Running)
+        end
+      end
+
       class TestType < T::Enum
         extend T::Sig
 
@@ -57,6 +103,7 @@ module AutoHCK
         extend T::Sig
         extend JsonHelper
         include Helper
+        include TestResultStatusPredicates
 
         const :name, String
         const :id, String
@@ -65,7 +112,7 @@ module AutoHCK
         const :requiresspecialconfiguration, String
         const :requiressupplementalcontent, String
         const :scheduleoptions, T::Array[String]
-        const :status, TestResultStatus
+        const :status, TestResultStatus, override: true
         const :executionstate, ExecutionState
 
         prop :url, T.nilable(String)

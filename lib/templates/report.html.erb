@@ -88,9 +88,9 @@
                         <tr class="table-warning">
                         <% elsif test.errata %>
                         <tr class="table-info">
-                        <% elsif test.status == AutoHCK::Models::HLK::TestResultStatus::Passed %>
+                        <% elsif test.passed? %>
                         <tr class="table-success">
-                        <% elsif test.status == AutoHCK::Models::HLK::TestResultStatus::Failed %>
+                        <% elsif test.failed? %>
                         <tr class="table-danger">
                         <% else %>
                         <tr class="table-secondary">
