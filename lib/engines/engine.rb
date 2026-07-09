@@ -6,7 +6,8 @@ module AutoHCK
       hcktest: HCKTest,
       hckinstall: HCKInstall,
       config_manager: ConfigManager,
-      functest: FunctestEngine
+      functest: FunctestEngine,
+      hlkxmerge: HLKXMerge
     }.freeze
 
     def self.select(name)

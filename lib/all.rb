@@ -53,6 +53,7 @@ module AutoHCK
   autoload_relative :HCKInstall, 'engines/hckinstall/hckinstall'
   autoload_relative :HCKStudio, 'setupmanagers/hckstudio'
   autoload_relative :HCKTest, 'engines/hcktest/hcktest'
+  autoload_relative :HLKXMerge, 'engines/hlkxmerge/hlkxmerge'
   autoload_relative :Helper, 'helper'
   autoload_relative :InvalidConfigFile, 'exceptions'
   autoload_relative :InvalidEngineTypeError, 'engines/exceptions'

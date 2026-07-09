@@ -334,6 +334,40 @@ module AutoHCK
     end
   end
 
+  class CliMergeOptions < T::Struct
+    extend T::Sig
+
+    prop :platform, T.nilable(String)
+    prop :packages, T::Array[String], default: []
+    prop :output_file, T.nilable(String)
+
+    def create_parser
+      OptionParser.new do |parser|
+        parser.banner = 'Usage: auto_hck.rb merge [merge options]'
+        parser.separator ''
+        define_options(parser)
+        parser.on_tail('-h', '--help', 'Show this message') do
+          puts parser
+          exit
+        end
+      end
+    end
+
+    def define_options(parser)
+      parser.on('-p', '--platform <platform_name>', String,
+                'Platform for Studio VM (determines HLK version)',
+                &method(:platform=))
+
+      parser.on('--packages <pkg1,pkg2,...>', Array,
+                'Comma-separated list of HLKX package paths to merge (minimum 2)',
+                &method(:packages=))
+
+      parser.on('--output <output_path>', String,
+                'Output path for the merged HLKX package',
+                &method(:output_file=))
+    end
+  end
+
   class CLI < T::Struct
     extend AutoHCK::Models::JsonHelper
     extend T::Sig
@@ -341,6 +375,7 @@ module AutoHCK
     prop :test, CliTestOptions, factory: -> { CliTestOptions.new }
     prop :common, CliCommonOptions, factory: -> { CliCommonOptions.new }
     prop :install, CliInstallOptions, factory: -> { CliInstallOptions.new }
+    prop :merge, CliMergeOptions, factory: -> { CliMergeOptions.new }
     prop :mode, T.nilable(String), default: nil
 
     sig { returns(T::Hash[String, OptionParser]) }
@@ -348,7 +383,8 @@ module AutoHCK
       @sub_parser ||= {
         'test' => test.create_parser,
         'install' => install.create_parser,
-        'functest' => test.create_parser
+        'functest' => test.create_parser,
+        'merge' => merge.create_parser
       }
     end
 

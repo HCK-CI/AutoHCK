@@ -83,7 +83,7 @@ module AutoHCK
 
     def config_clients_addrs
       clients_addrs = {}
-      @clients.each_value do |client|
+      @clients&.each_value do |client|
         clients_addrs[client.name] = {
           addr: client.winrm_addr,
           port: client.winrm_port
@@ -397,6 +397,12 @@ module AutoHCK
           tools.create_project_package(project, playlist, handler, driver_path, supplemental_path,
                                        remove_driver_signatures:)
         end
+      end
+    end
+
+    def merge_hlkx_packages(packages, output = nil)
+      retry_tools_command(__method__) do
+        act_with_tools { _1.merge_hlkx_packages(packages, output) }
       end
     end
 
