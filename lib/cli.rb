@@ -8,7 +8,7 @@ module AutoHCK
     prop :verbose, T::Boolean, default: false
     prop :config, T.nilable(String)
     prop :client_world_net, T::Boolean, default: false
-    prop :id, Integer, default: 2
+    prop :id, Integer, factory: -> { Integer(ENV.fetch('AUTOHCK_DEFAULT_ID', 2)) }
     prop :share_on_host_path, T.nilable(String)
     prop :workspace_path, T.nilable(String)
     prop :client_ctrl_net_dev, T.nilable(String)
