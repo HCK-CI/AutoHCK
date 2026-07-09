@@ -5,7 +5,7 @@ module AutoHCK
     # Executes individual JSON test steps against a single client VM.
     #
     # Supported step types: guest_run, guest_run_file, files_action,
-    # guest_reboot, host_run, barrier, qmp_command, qmp_wait_event.
+    # guest_reboot, host_run, host_run_file, barrier, qmp_command, qmp_wait_event.
     class StepHandler
       include Helper
 
@@ -14,6 +14,7 @@ module AutoHCK
         'guest_run' => :handle_guest_run,
         'files_action' => :handle_files_action,
         'guest_reboot' => :handle_guest_reboot,
+        'host_run_file' => :handle_host_run_file,
         'host_run' => :handle_host_run,
         'barrier' => :handle_barrier,
         'qmp_command' => :handle_qmp_command,
@@ -104,7 +105,15 @@ module AutoHCK
       end
 
       def handle_host_run(step, _desc = nil)
-        command = @context.substitute_variables(step.host_run, step.variables)
+        run_host_command(step, step.host_run)
+      end
+
+      def handle_host_run_file(step, _desc = nil)
+        run_host_command(step, read_script_file(step.host_run_file))
+      end
+
+      def run_host_command(step, command)
+        command = @context.substitute_variables(command, step.variables)
         @logger.debug("Host command: #{command}")
         run_cmd(command)
       end
@@ -165,7 +174,8 @@ module AutoHCK
         raise error_message unless step.ignore_errors
       end
 
-      # Reads the script file content to be sent inline over WinRM.
+      # Reads local script file content, to be run either inline on the host
+      # or sent inline to the guest over WinRM.
       def read_script_file(path)
         full_path = File.expand_path(path)
         raise EngineError, "Script file not found: #{full_path}" unless File.exist?(full_path)
