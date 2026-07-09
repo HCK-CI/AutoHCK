@@ -26,7 +26,7 @@ module AutoHCK
     #
     # Functest-only fields (not processed by hcktest):
     #   timeout, capture_output, ignore_errors, variables,
-    #   guest_run_file, barrier, qmp_command, qmp_wait_event,
+    #   guest_run_file, host_run_file, barrier, qmp_command, qmp_wait_event,
     #   expected_output_contains, expected_output_matches
     class TestStep < T::Struct
       extend T::Sig
@@ -44,6 +44,7 @@ module AutoHCK
       const :guest_reboot, T.nilable(T::Boolean)
       const :files_action, T.nilable(T::Array[Models::FileActionConfig])
       const :host_run, T.nilable(String)
+      const :host_run_file, T.nilable(String)
       const :barrier, T.nilable(String)
       const :qmp_command, T.nilable(QmpCommandConfig)
       const :qmp_wait_event, T.nilable(QmpWaitEventConfig)

@@ -56,7 +56,7 @@ lib/engines/functest/
   tests/
     suites/                       Test suite definitions  (*.json)
     cases/                        Individual test cases   (*/*.json or *.json)
-    scripts/                      PowerShell scripts used by guest_run_file steps
+    scripts/                      Scripts used by guest_run_file (PowerShell) and host_run_file (shell) steps
 ```
 
 ## Engine Configuration
@@ -137,7 +137,7 @@ See [`lib/engines/functest/tests/cases/driver_sign_check.json`](../lib/engines/f
 
 ## Step Types
 
-> Each step object must have **exactly one** step-type field (`guest_run`, `guest_run_file`, `guest_reboot`, `host_run`, `files_action`, `qmp_command`, `qmp_wait_event`, `barrier`). All other fields are optional modifiers.
+> Each step object must have **exactly one** step-type field (`guest_run`, `guest_run_file`, `guest_reboot`, `host_run`, `host_run_file`, `files_action`, `qmp_command`, `qmp_wait_event`, `barrier`). All other fields are optional modifiers.
 
 ### Common Step Fields
 
@@ -147,9 +147,9 @@ See [`lib/engines/functest/tests/cases/driver_sign_check.json`](../lib/engines/f
 | `timeout` | Step timeout in seconds; overrides the engine default of 300s. |
 | `ignore_errors` | If `true`, a failure in this step does not abort the test. Useful for optional steps in `test_steps`. Default: `false`. |
 | `variables` | Maps `@placeholder@` strings to existing context variable names for extra substitution within this step. |
-| `capture_output` | Name of a variable to store the step's output in. For example, `"capture_output": "driver_version"` stores the output and makes it available as `@driver_version@` in subsequent steps. |
-| `expected_output_contains` | The step fails if the command output does not contain this exact string. |
-| `expected_output_matches` | The step fails if the command output does not match this regex pattern. |
+| `capture_output` | Name of a variable to store the step's output in. For example, `"capture_output": "driver_version"` stores the output and makes it available as `@driver_version@` in subsequent steps. Supported by `guest_run`/`guest_run_file`, `qmp_command`, and `qmp_wait_event`. |
+| `expected_output_contains` | The step fails if the command output does not contain this exact string. Only supported by `guest_run`/`guest_run_file`. |
+| `expected_output_matches` | The step fails if the command output does not match this regex pattern. Only supported by `guest_run`/`guest_run_file`. |
 
 ---
 
@@ -198,7 +198,7 @@ Reboots the client VM and waits for it to come back online before proceeding.
 
 ### `host_run`
 
-Runs a command on the host machine running AutoHCK.
+Runs a command on the host machine running AutoHCK. Pass/fail is determined solely by the command's exit code (non-zero exit fails the step); `capture_output`/`expected_output_contains`/`expected_output_matches` are not supported here.
 
 ```json
 {
@@ -206,6 +206,14 @@ Runs a command on the host machine running AutoHCK.
     "host_run": "unzip /tmp/driver.zip -d /tmp/driver_extracted"
 }
 ```
+
+---
+
+### `host_run_file`
+
+Reads a local script file and runs its content on the host machine running AutoHCK, the host-side equivalent of `guest_run_file`. The path is relative to the AutoHCK root. Like `host_run`, pass/fail is determined by the script's exit code.
+
+Note: Only Bash scripts are supported; shebang lines are not honored.
 
 ---
 
@@ -292,7 +300,7 @@ A named synchronization point. In the current single-VM implementation it only l
 
 ## Variable Substitution
 
-Variables are substituted in `desc`, `guest_run`, `guest_run_file` (script body), `host_run`, `local_path`, and `remote_path` fields using the `@variable_name@` syntax.
+Variables are substituted in `desc`, `guest_run`, `guest_run_file` (script body), `host_run`, `host_run_file` (script body), `local_path`, and `remote_path` fields using the `@variable_name@` syntax.
 
 ### Built-in Variables
 
