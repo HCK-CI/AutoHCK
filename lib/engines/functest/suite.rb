@@ -21,6 +21,7 @@ module AutoHCK
       const :test_system_ref, T.nilable(String)
       const :tests, T::Array[String]
       const :requirements, T.nilable(SuiteRequirements)
+      const :reject_test_names, T::Array[String], default: []
     end
   end
 end

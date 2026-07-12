@@ -17,8 +17,12 @@ The functest engine runs JSON-driven functional tests against a Windows client V
 | `--driver-path <path>` | Host path to the driver package directory; required when drivers are configured |
 | `--category <suite>` | Run a named test suite; `<suite>` is the suite name from `lib/engines/functest/tests/suites/<suite>.json` |
 | `--testcase <names>` | Comma-separated list of test case names to run (e.g. `driver_sign_check,balloon/balloon_service`) |
+| `--select-test-names <file>` | Path to a text file (one test name per line); only tests whose name appears in the file are kept |
+| `--reject-test-names <file>` | Path to a text file (one test name per line); tests whose name appears in the file are skipped. Overrides the suite's own `reject_test_names`, if any. |
 
 Exactly one of `--category` or `--testcase` is required. All common options (`--verbose`, `--config`, `--id`, etc.) apply as documented in [Home](Home.md).
+
+`--select-test-names`/`--reject-test-names` are the same flags used by the `hcktest` engine; the "test name" they match against is the test case identifier as written in `--testcase`/a suite's `tests` array (e.g. `balloon/balloon_service`), not the `name` field inside the test case's own JSON.
 
 ### Examples
 
@@ -46,6 +50,35 @@ For test cases in subdirectories, use the relative path from `lib/engines/functe
 
 ```bash
 --testcase balloon/balloon_service,driver_sign_check
+```
+
+#### Narrow down a suite
+
+Given a suite with many tests, run only a subset of them, or skip a few, without editing the suite file or hand-listing everything via `--testcase`:
+
+```bash
+./bin/auto_hck functest \
+  -p Win2025x64_gui \
+  -d Balloon \
+  --driver-path /path/to/balloon/driver \
+  --category balloon_driver_tests \
+  --select-test-names /path/to/select_names.txt
+```
+
+```bash
+./bin/auto_hck functest \
+  -p Win2025x64_gui \
+  -d Balloon \
+  --driver-path /path/to/balloon/driver \
+  --category balloon_driver_tests \
+  --reject-test-names /path/to/reject_names.txt
+```
+
+Where each file contains one test name per line, e.g.:
+
+```
+balloon/balloon_service
+driver_update
 ```
 
 ## Directory Layout
@@ -85,6 +118,7 @@ A suite is an ordered list of test case references, plus optional metadata. Suit
 | `tests` | Yes | Ordered list of test case names to execute |
 | `requirements.drivers` | No | Informational only — not enforced at runtime |
 | `requirements.platforms` | No | Informational only — not enforced at runtime |
+| `reject_test_names` | No | Test case names to always skip when running this suite. Ignored if `--reject-test-names` is passed on the CLI. |
 
 ### Example
 
