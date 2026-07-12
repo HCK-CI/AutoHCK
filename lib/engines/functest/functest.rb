@@ -96,18 +96,62 @@ module AutoHCK
     end
 
     def load_tests(loader)
+      names, static_reject_names = test_names_and_static_rejects(loader)
+
+      names = apply_select_test_names(names)
+      names = apply_reject_test_names(names, static_reject_names)
+
+      names.map { |test_name| loader.load_test(test_name) }
+    end
+
+    # Returns the ordered list of test names to load, plus the suite's own
+    # static reject list (empty when running via --testcase, since there is
+    # no suite in that case).
+    def test_names_and_static_rejects(loader)
       test_options = @project.options.test
       if test_options.category
         suite = loader.load_suite(test_options.category)
         @logger.info("Loaded test suite: #{suite.name}")
-        loader.load_suite_tests(suite)
+        [suite.tests, suite.reject_test_names]
       elsif test_options.testcase
-        test_options.testcase.split(',').map do |test_name|
-          loader.load_test(test_name.strip)
-        end
+        [test_options.testcase.split(',').map(&:strip), []]
       else
         raise AutoHCKError, 'Functest requires --category or --testcase'
       end
+    end
+
+    # Reads a text file of test names, one per line.
+    def read_test_names_file(path)
+      raise AutoHCKError, "Test names file not found: #{path}" unless File.exist?(path)
+
+      File.readlines(path, chomp: true).map(&:strip).reject(&:empty?)
+    end
+
+    # --select-test-names <file>: keep only tests whose name appears in the file,
+    # preserving the original order. No-op when the option is not set.
+    def apply_select_test_names(names)
+      select_file = @project.options.test.select_test_names
+      return names unless select_file
+
+      select_names = read_test_names_file(select_file)
+      selected = names & select_names
+
+      @logger.info("Applying custom selected test names: #{selected.length} of #{names.length} test(s) selected")
+      selected
+    end
+
+    # --reject-test-names <file> takes precedence over the suite's own static
+    # reject_test_names list; if neither is present, nothing is rejected.
+    def apply_reject_test_names(names, static_reject_names)
+      reject_file = @project.options.test.reject_test_names
+      reject_names = reject_file ? read_test_names_file(reject_file) : static_reject_names
+      return names if reject_names.empty?
+
+      remaining = names - reject_names
+      rejected_count = names.length - remaining.length
+      @logger.info("Applying custom rejected test names: #{rejected_count} of #{names.length} test(s) rejected") \
+        if rejected_count.positive?
+      remaining
     end
 
     # Loads Models::Driver objects for the drivers listed on the CLI, skipping
