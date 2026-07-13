@@ -106,6 +106,10 @@ module AutoHCK
       HCKClient.new(self, scope, studio, name, run_opts)
     end
 
+    def client_replacement_map(_name)
+      ReplacementMap.new({})
+    end
+
     def self.enter(*); end
   end
 end

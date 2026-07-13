@@ -344,6 +344,10 @@ module AutoHCK
       }
     end
 
+    def replacement_map
+      ReplacementMap.new(machine_replacement_map, { '@client_id@' => @client_id })
+    end
+
     def memory_replacement_map
       memory_gb = option_config('memory_gb')
 
