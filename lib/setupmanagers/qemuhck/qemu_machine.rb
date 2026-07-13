@@ -337,7 +337,7 @@ module AutoHCK
     def machine_replacement_map
       {
         '@bus_name@' => @machine['bus_name'],
-        '@ctrl_bus_name@' => @machine['ctrl_bus_name'],
+        '@ctrl_bus_name@' => @machine['ctrl_dev_bus_name'],
         '@disable_s3_param@' => @machine['disable_s3_param'],
         '@disable_s4_param@' => @machine['disable_s4_param'],
         '@machine_name@' => @machine_name
