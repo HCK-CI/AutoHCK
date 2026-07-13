@@ -11,16 +11,6 @@
             "timeout": 30
         },
         {
-            "desc": "Upload balloon driver package (contains blnsvr.exe)",
-            "files_action": [
-                {
-                    "local_path": "@driver_path@",
-                    "remote_path": "C:\\AutoHCK\\balloon_pkg",
-                    "direction": "local-to-remote"
-                }
-            ]
-        },
-        {
             "desc": "Install balloon service (blnsvr.exe -i)",
             "guest_run_file": "lib/engines/functest/tests/scripts/balloon/install_balloon_service.ps1",
             "expected_output_contains": "Balloon service install command executed",
@@ -39,7 +29,7 @@
         },
         {
             "desc": "Uninstall balloon service (blnsvr.exe -u)",
-            "guest_run": "$blnsvr = Get-ChildItem -Recurse C:\\AutoHCK\\balloon_pkg -Filter blnsvr.exe | Select-Object -First 1; & $blnsvr.FullName -u; Write-Output 'PASS: Balloon service uninstalled'",
+            "guest_run": "$blnsvr = Get-ChildItem -Recurse '@driver_dir@' -Filter blnsvr.exe | Select-Object -First 1; & $blnsvr.FullName -u; Write-Output 'PASS: Balloon service uninstalled'",
             "expected_output_contains": "PASS:",
             "timeout": 30
         },
