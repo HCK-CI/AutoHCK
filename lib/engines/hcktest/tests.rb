@@ -37,7 +37,7 @@ module AutoHCK
         @playlist = Playlist.new(client, project, target, tools, @client.kit)
         @tests = T.let([], T::Array[Models::HLK::Test])
         @test_results = []
-        @replacement_map = ReplacementMap.new({ '@workspace@' => @project.workspace_path })
+        @replacement_map = @project.project_replacement_map
       end
 
       sig { params(updated_tests: T::Array[Models::HLK::Test]).returns(T::Array[Models::HLK::Test]) }

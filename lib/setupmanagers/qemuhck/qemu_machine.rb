@@ -167,9 +167,10 @@ module AutoHCK
     CONFIG_JSON = 'lib/setupmanagers/qemuhck/qemu_machine.json'
     STATES_JSON = 'lib/setupmanagers/qemuhck/states.json'
 
-    def initialize(options)
+    def initialize(project, options)
       define_local_variables
 
+      @project = project
       load_options(options)
       init_config
       init_ports
@@ -207,8 +208,6 @@ module AutoHCK
       @logger = @options['logger'] || MonoLogger.new($stderr)
 
       @id = format('%04d', @options['id'])
-      @id_first = @id[0..1]
-      @id_second = @id[2..3]
       @client_id = format('%02d', @options['client_id'])
       @run_name = "QemuMachine#{@id}_CL#{@client_id}"
 
@@ -398,25 +397,20 @@ module AutoHCK
     end
 
     def full_replacement_map
-      ReplacementMap.new({
-                           '@run_id@' => @id,
-                           '@run_id_first@' => @id_first,
-                           '@run_id_second@' => @id_second,
-                           '@client_id@' => @client_id,
-                           '@source@' => Dir.pwd,
-                           '@workspace@' => @workspace_path,
-                           '@cpu@' => option_config('cpu'),
-                           '@cpu_options@' => option_config('cpu_options'),
-                           '@cpu_count@' => option_config('cpu_count'),
-                           '@vnc_id@' => @vnc_id,
-                           '@vnc_port@' => @vnc_port,
-                           '@qemu_monitor_port@' => @monitor_port
-                         }, config_replacement_map,
-                         machine_replacement_map,
-                         memory_replacement_map,
-                         options_replacement_map,
-                         device_define_variables,
-                         @define_variables)
+      @project.project_replacement_map.merge({
+                                               '@client_id@' => @client_id,
+                                               '@cpu@' => option_config('cpu'),
+                                               '@cpu_options@' => option_config('cpu_options'),
+                                               '@cpu_count@' => option_config('cpu_count'),
+                                               '@vnc_id@' => @vnc_id,
+                                               '@vnc_port@' => @vnc_port,
+                                               '@qemu_monitor_port@' => @monitor_port
+                                             }, config_replacement_map,
+                                             machine_replacement_map,
+                                             memory_replacement_map,
+                                             options_replacement_map,
+                                             device_define_variables,
+                                             @define_variables)
     end
 
     def read_dynamic_device(device)
