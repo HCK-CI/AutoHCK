@@ -71,7 +71,7 @@ module AutoHCK
         client = @project.setup_manager.run_functest_client(scope, client_name)
         client.prepare_machine
 
-        @executor = Functest::TestExecutor.new(@project, client.tools, client.name,
+        @executor = Functest::TestExecutor.new(@project, client,
                                                default_timeout: @config['default_timeout'])
         setup_test_context(@executor.context)
         summary = @executor.execute_tests(tests)

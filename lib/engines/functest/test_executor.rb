@@ -12,13 +12,13 @@ module AutoHCK
         @test_results ||= @results.map { |r| Models::TestResult.from_functest(r) }
       end
 
-      def initialize(project, tools, machine_name, default_timeout:)
+      def initialize(project, client, default_timeout:)
         @project = project
-        @tools = tools
-        @machine_name = machine_name
+        @tools = client.tools
+        @machine_name = client.name
         @logger = project.logger
-        @context = TestContext.new(project)
-        @step_handler = StepHandler.new(project, tools, machine_name, @context,
+        @context = TestContext.new(project, client.replacement_map)
+        @step_handler = StepHandler.new(project, @tools, @machine_name, @context,
                                         default_timeout: default_timeout)
         @results = []
       end
