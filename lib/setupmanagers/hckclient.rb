@@ -22,7 +22,7 @@ module AutoHCK
       @runner = setup_manager.run_client(scope, @name, run_opts)
       scope << self
       @setup_manager = setup_manager
-      @replacement_map = ReplacementMap.new
+      @replacement_map = @project.project_replacement_map.merge(setup_manager.client_replacement_map(name))
     end
 
     def pool

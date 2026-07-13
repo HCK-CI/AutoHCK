@@ -5,7 +5,7 @@ module AutoHCK
   #
   # Boots the client VM and prepares it for functest runs (no HLK Studio).
   class FunctestClient
-    attr_reader :name, :tools
+    attr_reader :name, :tools, :replacement_map
 
     def initialize(setup_manager, scope, name, run_opts = nil)
       @project = setup_manager.project
@@ -15,6 +15,7 @@ module AutoHCK
       @logger.info("Starting functest client #{name}")
       @runner = setup_manager.run_client(scope, name, run_opts)
       scope << self
+      @replacement_map = @project.project_replacement_map.merge(setup_manager.client_replacement_map(name))
     end
 
     def prepare_machine

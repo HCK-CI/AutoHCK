@@ -6,10 +6,11 @@ module AutoHCK
     class TestContext
       attr_reader :logger, :project
 
-      def initialize(project)
+      def initialize(project, replacement_map)
         @project = project
         @logger = project.logger
-        @replacement_map = ReplacementMap.new
+        @replacement_map = ReplacementMap.new(replacement_map)
+        @replacement_map.each { |placeholder, value| @logger.debug("Initial variable '#{placeholder}' = '#{value}'") }
         @start_time = Time.now
       end
 
