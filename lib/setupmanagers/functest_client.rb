@@ -40,6 +40,17 @@ module AutoHCK
       { addr: client.winrm_addr }
     end
 
+    def insert_driver_replacement(driver, replacement)
+      client_replacement = replacement.transform_keys { |k| k.dup.insert(1, "#{driver.short}.") }
+      @replacement_map.merge!(client_replacement)
+
+      # If there is only one driver, we can use generic keys without driver short name.
+      return unless @project.engine.drivers.one?
+
+      @replacement_map.merge!({ '@driver_short_name@' => driver.short })
+      @replacement_map.merge!(replacement)
+    end
+
     def install_drivers
       driver_path = @project.options.test.driver_path
       drivers = @project.engine.drivers
@@ -49,7 +60,10 @@ module AutoHCK
       return if drivers.empty?
 
       @logger.info('Installing drivers on client VM...')
-      drivers.each { |driver| install_driver(driver, driver_path) }
+      drivers.each do |driver|
+        driver_replacement = install_driver(driver, driver_path)
+        insert_driver_replacement(driver, driver_replacement) unless driver_replacement.nil?
+      end
     end
 
     def install_driver(driver, driver_path)
