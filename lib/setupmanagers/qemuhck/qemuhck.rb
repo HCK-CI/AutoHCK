@@ -57,7 +57,7 @@ module AutoHCK
     end
 
     def initialize_studio_vm
-      @studio_vm = QemuMachine.new(studio_vm_options)
+      @studio_vm = QemuMachine.new(@project, studio_vm_options)
     end
 
     def drivers_options
@@ -128,7 +128,7 @@ module AutoHCK
       @platform.clients.each_with_index do |(_k, v), i|
         vm_options = client_vm_options(v, i)
         @logger.debug("Creating client VM #{v.name} with options: #{vm_options}")
-        @clients_vm[v.name] = QemuMachine.new(vm_options)
+        @clients_vm[v.name] = QemuMachine.new(@project, vm_options)
       end
     end
 

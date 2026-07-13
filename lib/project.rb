@@ -14,7 +14,8 @@ module AutoHCK
     attr_reader :config, :logger, :timestamp, :setup_manager, :engine, :id,
                 :workspace_path, :result_uploader, :engine_tag,
                 :engine_platform, :engine_type, :options, :extra_sw_manager,
-                :run_terminated, :engine_name, :string_log, :status, :whiteboard
+                :run_terminated, :engine_name, :string_log, :status, :whiteboard,
+                :project_replacement_map
 
     def apply_json_override
       Json.update_json_override(@options.common.config) unless @options.common.config.nil?
@@ -29,7 +30,8 @@ module AutoHCK
       init_multilog(@options.common.verbose)
       init_class_variables
       init_workspace
-      @id = @options.common.id
+      init_ids
+      init_project_replacement_map
       print_whiteboard
       # ResultUploader must be initialized before adding project to scope
       # Project uses ResultUploader on close, so ResultUploader must exist
@@ -37,6 +39,24 @@ module AutoHCK
       @result_uploader = ResultUploader.new(@scope, self)
 
       scope << self
+    end
+
+    def init_ids
+      @id = @options.common.id
+
+      @run_id = format('%04d', @id)
+      @id_first = @run_id[0..1]
+      @id_second = @run_id[2..3]
+    end
+
+    def init_project_replacement_map
+      @project_replacement_map = ReplacementMap.new(
+        '@run_id@' => @run_id,
+        '@run_id_first@' => @id_first,
+        '@run_id_second@' => @id_second,
+        '@source@' => Dir.pwd,
+        '@workspace@' => @workspace_path
+      )
     end
 
     def print_whiteboard
