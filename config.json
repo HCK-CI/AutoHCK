@@ -11,5 +11,6 @@
     "install_engine": "hckinstall",
     "config_engine": "config_manager",
     "functest_engine": "functest",
+    "merge_engine": "hlkxmerge",
     "time_out": "9"
 }
