@@ -2,7 +2,7 @@
 
 $ErrorActionPreference = 'Stop'
 
-$blnsvr = Get-ChildItem -Recurse C:\AutoHCK\balloon_pkg -Filter blnsvr.exe |
+$blnsvr = Get-ChildItem -Recurse '@driver_dir@' -Filter blnsvr.exe |
     Select-Object -First 1
 
 if (-not $blnsvr) {
