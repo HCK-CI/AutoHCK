@@ -108,6 +108,7 @@ module AutoHCK
         'boot_device' => test_opt.boot_device,
         'fs_test_image_format' => test_opt.fs_test_image_format,
         'net_test_speed' => test_opt.net_test_speed,
+        'drive_aio_state' => test_opt.drive_aio_state,
         'ctrl_net_device' => common.client_ctrl_net_dev
       }.compact
     end

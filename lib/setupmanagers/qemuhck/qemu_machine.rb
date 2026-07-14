@@ -4,6 +4,7 @@
 # AutoHCK module
 module AutoHCK
   # QemuMachine class
+  # rubocop:disable Metrics/ClassLength
   class QemuMachine
     extend T::Sig
     extend AutoHCK::AutoloadExtension
@@ -304,8 +305,27 @@ module AutoHCK
 
       @states_config = Json.read_json(STATES_JSON, @logger)
       @states_config.each { |name, state| apply_state name, state }
+      apply_drive_aio_state
+      validate_drive_aio_state
 
       apply_cpu_options_config
+    end
+
+    def apply_drive_aio_state
+      case option_config('drive_aio_state')
+      when 'native' then @drive_cache_options << ',cache=none,aio=native'
+      when 'threads' then @drive_cache_options << ',cache=none,aio=threads'
+      end
+    end
+
+    # cache=unsafe has cache.direct=off, which conflicts with the cache=none (cache.direct=on)
+    # forced by drive_aio_state above, so QEMU would fail to start with both applied at once.
+    def validate_drive_aio_state
+      return unless %w[native threads].include?(option_config('drive_aio_state'))
+      return unless option_config('drive_unsafe_cache_state')
+
+      raise QemuHCKError, "drive_aio_state=#{option_config('drive_aio_state')} is incompatible with " \
+                          'drive_unsafe_cache_state=true (both set a conflicting cache= mode)'
     end
 
     def apply_cpu_options_config
@@ -792,4 +812,5 @@ module AutoHCK
       end
     end
   end
+  # rubocop:enable Metrics/ClassLength
 end
