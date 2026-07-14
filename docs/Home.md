@@ -92,6 +92,8 @@ Usage: auto_hck.rb test [test options]
         --fs-test-image-format <fs_test_image_format>
                                      Filesystem test image format (qcow2/raw). Default is qcow2.
                                      Has effect only when testing storage drivers.
+        --aio-native                  Use aio=native for virtual disks (forces cache=none, cannot combine with --aio-threads)
+        --aio-threads                 Use aio=threads for virtual disks (forces cache=none, cannot combine with --aio-native)
         --extensions <extensions_list>
                                      List of extensions for run test
         --net-test-speed <net_test_speed>

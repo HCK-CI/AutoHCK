@@ -111,6 +111,19 @@ module AutoHCK
     prop :latest_session, T::Boolean, default: false
     prop :category, T.nilable(String)
     prop :testcase, T.nilable(String)
+    prop :drive_aio_state, T.nilable(String)
+
+    def aio_native=(value)
+      raise(AutoHCKError, '--aio-native cannot be combined with --aio-threads') if value && drive_aio_state == 'threads'
+
+      self.drive_aio_state = 'native' if value
+    end
+
+    def aio_threads=(value)
+      raise(AutoHCKError, '--aio-threads cannot be combined with --aio-native') if value && drive_aio_state == 'native'
+
+      self.drive_aio_state = 'threads' if value
+    end
 
     def create_parser
       OptionParser.new do |parser|
@@ -277,6 +290,14 @@ module AutoHCK
       parser.on('--testcase <test_case_names>', String,
                 'Run specific functest test cases, comma-separated (used with functest engine)',
                 &method(:testcase=))
+
+      parser.on('--aio-native', TrueClass,
+                'Use aio=native for virtual disks (forces cache=none, cannot combine with --aio-threads)',
+                &method(:aio_native=))
+
+      parser.on('--aio-threads', TrueClass,
+                'Use aio=threads for virtual disks (forces cache=none, cannot combine with --aio-native)',
+                &method(:aio_threads=))
     end
     # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
   end
