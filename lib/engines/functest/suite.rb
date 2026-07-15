@@ -9,6 +9,7 @@ module AutoHCK
 
       const :drivers, T::Array[String], default: []
       const :platforms, T::Array[String], default: []
+      const :extra_software, T::Array[String], default: []
     end
 
     # Sorbet model for a functest suite JSON file
@@ -20,7 +21,7 @@ module AutoHCK
       const :description, T.nilable(String)
       const :test_system_ref, T.nilable(String)
       const :tests, T::Array[String]
-      const :requirements, T.nilable(SuiteRequirements)
+      const :requirements, SuiteRequirements, factory: -> { SuiteRequirements.new }
       const :reject_test_names, T::Array[String], default: []
     end
   end

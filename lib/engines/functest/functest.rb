@@ -22,6 +22,7 @@ module AutoHCK
       @project.append_multilog("#{project.engine_tag}.log")
       @config = load_engine_config
       @drivers = load_drivers
+      @tests = init_tests
       prepare_extra_sw
       @logger.info('Functest engine initialized')
     end
@@ -59,13 +60,16 @@ module AutoHCK
       {}
     end
 
-    # rubocop:disable Metrics/AbcSize
-    def run
-      @logger.info('Starting functest engine')
-
+    def init_tests
       loader = Functest::TestLoader.new(@project, @config['test_definitions_path'])
       tests = load_tests(loader)
       @logger.info("Total tests to run: #{tests.length}")
+      tests
+    end
+
+    # rubocop:disable Metrics/AbcSize
+    def run
+      @logger.info('Starting functest engine')
 
       ResourceScope.open do |scope|
         client = @project.setup_manager.run_functest_client(scope, client_name)
@@ -74,7 +78,7 @@ module AutoHCK
         @executor = Functest::TestExecutor.new(@project, client,
                                                default_timeout: @config['default_timeout'])
         setup_test_context(@executor.context)
-        summary = @executor.execute_tests(tests)
+        summary = @executor.execute_tests(@tests)
 
         generate_results(summary)
         summary[:failed].zero? ? 0 : 1
@@ -110,9 +114,9 @@ module AutoHCK
     def test_names_and_static_rejects(loader)
       test_options = @project.options.test
       if test_options.category
-        suite = loader.load_suite(test_options.category)
-        @logger.info("Loaded test suite: #{suite.name}")
-        [suite.tests, suite.reject_test_names]
+        @suite = loader.load_suite(test_options.category)
+        @logger.info("Loaded test suite: #{@suite.name}")
+        [@suite.tests, @suite.reject_test_names]
       elsif test_options.testcase
         [test_options.testcase.split(',').map(&:strip), []]
       else
@@ -191,6 +195,7 @@ module AutoHCK
     def prepare_extra_sw
       extra_softwares = @drivers.flat_map(&:extra_software)
       extra_softwares += @project.engine_platform.extra_software
+      extra_softwares += @suite.requirements.extra_software if @suite
 
       @project.extra_sw_manager.prepare_software_packages(
         extra_softwares, @project.engine_platform.kit, ENGINE_MODE
