@@ -116,6 +116,7 @@ module AutoHCK
     prop :discard_granularity, T.nilable(String)
     prop :fs_daemon_cache_mode, T.nilable(String)
     prop :pcie_spare_root_ports, T.nilable(Integer)
+    prop :test_params, T::Hash[String, String], default: {}
 
     def aio_native=(value)
       raise(AutoHCKError, '--aio-native cannot be combined with --aio-threads') if value && drive_aio_state == 'threads'
@@ -324,6 +325,13 @@ module AutoHCK
                 'Allocate N extra empty pcie-root-ports at boot for later hotplug (q35 only, default: 0)',
                 'Max N depends on QEMU',
                 &method(:pcie_spare_root_ports=))
+      parser.on('--test-param KEY=VALUE', String,
+                'Set a test parameter (can be repeated, available as @KEY@ in test JSON)') do |kv|
+        key, value = kv.split('=', 2)
+        raise AutoHCKError, "Invalid --test-param format: #{kv}" if key.to_s.empty? || value.nil?
+
+        self.test_params = test_params.merge(key => value)
+      end
     end
     # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
   end
