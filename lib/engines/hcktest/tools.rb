@@ -258,6 +258,10 @@ module AutoHCK
       retry
     end
 
+    def restart_machine_and_wait(_machine)
+      raise ToolsHCKError, 'Unimplemented method: restart_machine_and_wait'
+    end
+
     def restart_machine(machine)
       retries ||= 0
       act_with_tools { _1.machine_shutdown(machine, restart: true) }

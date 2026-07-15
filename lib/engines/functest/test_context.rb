@@ -4,7 +4,7 @@ module AutoHCK
   module Functest
     # TestContext holds runtime state for test execution
     class TestContext
-      attr_reader :logger, :project
+      attr_reader :logger, :project, :replacement_map
 
       def initialize(project, replacement_map)
         @project = project

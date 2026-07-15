@@ -43,16 +43,44 @@ module AutoHCK
       end
     end
 
-    # CommandInfo class
+    class QmpCommandConfig < T::Struct
+      extend T::Sig
+
+      const :execute, String
+      const :arguments, T.nilable(T::Hash[String, T.untyped])
+    end
+
+    class QmpWaitEventConfig < T::Struct
+      extend T::Sig
+
+      const :event, String
+      const :timeout, T.nilable(Integer)
+    end
+
+    # Unified command/step descriptor for HCK test hooks, post-start commands,
+    # and functest JSON steps.
     class CommandInfo < T::Struct
       extend T::Sig
       extend JsonHelper
 
       const :desc, String
-      const :host_run, T.nilable(String)
+      const :timeout, T.nilable(Integer)
+      const :capture_output, T.nilable(String)
+      const :ignore_errors, T.nilable(T::Boolean)
+      const :variables, T::Hash[String, String], default: {}
+
       const :guest_run, T.nilable(String)
+      const :guest_run_file, T.nilable(String)
       const :guest_reboot, T::Boolean, default: false
       const :files_action, T::Array[FileActionConfig], default: []
+      const :host_run, T.nilable(String)
+      const :host_run_file, T.nilable(String)
+      const :barrier, T.nilable(String)
+      const :qmp_command, T.nilable(QmpCommandConfig)
+      const :qmp_wait_event, T.nilable(QmpWaitEventConfig)
+
+      const :expected_output_contains, T.nilable(String)
+      const :expected_output_matches, T.nilable(String)
     end
   end
 end

@@ -5,7 +5,6 @@
 module AutoHCK
   class HCKTest
     # Tests class
-    # rubocop:disable Metrics/ClassLength
     class Tests
       extend T::Sig
       include Helper
@@ -14,16 +13,12 @@ module AutoHCK
 
       HANDLE_TESTS_POLLING_INTERVAL = 60
       APPLYING_FILTERS_INTERVAL = 50
-      SLEEP_AFTER_REBOOT = 60
       TOOLS_ACTION_RETRIES = 5
       TOOLS_ACTION_SLEEP = 5
       QUEUE_TEST_TIMEOUT = '00:15:00'
       RUNNING_TEST_TIMEOUT = '00:15:00'
       SUMMARY_LOG_FILE = 'logs.txt'
       STUDIO_PACKAGE_ASSETS_PATH = 'C:\\AutoHCK\\PackageAssets'
-
-      DEFAULT_FILE_ACTION_REMOTE_PATH = 'C:\\'
-      DEFAULT_FILE_ACTION_LOCAL_PATH = '@workspace@'
 
       def initialize(client, support, project, target, tools)
         @client = client
@@ -33,11 +28,11 @@ module AutoHCK
         @tools = tools
         @support = support
         @logger = project.logger
-        @file_action_handler = FileActionHandler.new(@tools, @logger)
+        @replacement_map = @project.project_replacement_map
+        @command_execution_manager = project.engine.command_execution_manager
         @playlist = Playlist.new(client, project, target, tools, @client.kit)
         @tests = T.let([], T::Array[Models::HLK::Test])
         @test_results = []
-        @replacement_map = @project.project_replacement_map
       end
 
       sig { params(updated_tests: T::Array[Models::HLK::Test]).returns(T::Array[Models::HLK::Test]) }
@@ -194,78 +189,10 @@ module AutoHCK
         select_test_config(test_name, :errata).compact.first
       end
 
-      def run_command_on_client(client, command, desc, guest_reboot, replacement)
-        cl_name = client.name
-        @logger.info("Running command (#{desc}) on client #{cl_name}")
-        # Don't use create_cmd because it calls shellescape that performs wrong escaping for Windows commands
-        # E.g. it escapes backslashes that are used in Windows paths
-        updated_command = client.replacement_map.merge(@replacement_map).merge(replacement).replace(command)
-        @logger.debug("Running command after replacement (#{desc}) on client #{cl_name}: #{updated_command}")
-
-        @tools.run_on_machine(cl_name, desc, updated_command)
-
-        return unless guest_reboot
-
-        @logger.info("Rebooting client #{cl_name} after command (#{desc}) " \
-                     "and sleeping for #{SLEEP_AFTER_REBOOT} seconds")
-        @tools.restart_machine(cl_name)
-        # Reboot takes some time, so we need to wait until machine is ready otherwise next commands can fail
-        # with strange WinRMAuthorizationError error because Windows prevents connections to the machine during reboot
-        # There is no good way to check if machine is ready, so just wait some time after reboot
-        sleep SLEEP_AFTER_REBOOT
-      end
-
-      def run_guest_test_command(command, replacement)
-        return unless command.guest_run
-
-        run_command_on_client(@client, command.guest_run, command.desc, command.guest_reboot, replacement)
-        return if @support.nil?
-
-        run_command_on_client(@support, command.guest_run, command.desc, command.guest_reboot, replacement)
-      end
-
-      def run_host_test_command(command)
-        return unless command.host_run
-
-        @logger.info("Running command (#{command.desc}) on host")
-        run_cmd(command.host_run)
-      end
-
-      sig do
-        params(client_name: String, files_action: Models::FileActionConfig, replacement: ReplacementMap).void
-      end
-      def prepare_file_action_for_client(client_name, files_action, replacement)
-        client_replacement = replacement.merge({ '@client_name@' => client_name })
-        updated_action = files_action.dup_and_replace_path(client_replacement, DEFAULT_FILE_ACTION_REMOTE_PATH,
-                                                           DEFAULT_FILE_ACTION_LOCAL_PATH)
-        @file_action_handler.handle(client_name, updated_action)
-      end
-
-      sig do
-        params(files_actions: T::Array[Models::FileActionConfig], replacement: ReplacementMap).void
-      end
-      def run_file_actions(files_actions, replacement)
-        files_actions.each do |files_action|
-          if files_action.remote_path.nil? && files_action.local_path.nil?
-            @logger.warn('Both remote and local paths are nil, skipping file action')
-            next
-          end
-
-          prepare_file_action_for_client(@client.name, files_action, replacement)
-
-          next if @support.nil?
-
-          prepare_file_action_for_client(@support.name, files_action, replacement)
-        end
-      end
-
       sig { params(test: Models::HLK::Test, type: Symbol, replacement: ReplacementMap).void }
       def run_test_commands(test, type, replacement)
         select_test_config(test.name, type).each do |command|
-          run_guest_test_command(command, replacement)
-          run_host_test_command(command)
-
-          run_file_actions(command.files_action, replacement)
+          @command_execution_manager.execute(command, replacement: replacement)
         end
       end
 
@@ -731,6 +658,5 @@ module AutoHCK
         retry_tests(tests) unless @project.options.test.auto_retry_failed_tests.zero?
       end
     end
-    # rubocop:enable Metrics/ClassLength
   end
 end

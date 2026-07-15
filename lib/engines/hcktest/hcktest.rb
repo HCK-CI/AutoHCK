@@ -191,9 +191,17 @@ module AutoHCK
 
     def run_clients_post_start_host_commands
       post_start_commands.each do |command|
-        @logger.info("Running command (#{command.desc}) on host")
-        run_cmd(command.host_run)
+        command_execution_manager.execute(command)
       end
+    end
+
+    def command_execution_manager
+      client, support = @clients.values
+      @command_execution_manager ||= CommandExecutionManager.new(
+        project: @project,
+        tools: @studio.tools,
+        machines: [client.name, support&.name].compact
+      )
     end
 
     def configure_and_synchronize_clients

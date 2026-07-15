@@ -273,14 +273,19 @@ module AutoHCK
     end
 
     def run_hck_client(scope, studio, name, run_opts)
-      HCKClient.new(self, scope, studio, name, run_opts)
+      @clients ||= {}
+      @clients[name] = HCKClient.new(self, scope, studio, name, run_opts)
     end
 
     def run_functest_client(scope, name, run_opts = nil)
-      FunctestClient.new(self, scope, name, run_opts)
+      @clients ||= {}
+      @clients[name] = FunctestClient.new(self, scope, name, run_opts)
     end
 
     def client_replacement_map(name)
+      client = @clients&.[](name)
+      return client.replacement_map if client
+
       @clients_vm[name].replacement_map
     end
 

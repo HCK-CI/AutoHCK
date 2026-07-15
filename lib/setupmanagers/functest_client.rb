@@ -26,6 +26,19 @@ module AutoHCK
       @project.extra_sw_manager.install_software_after_driver(@tools, @name)
     end
 
+    def command_execution_manager
+      raise AutoHCKError, 'Tools not initialized; call prepare_machine first' unless @tools
+
+      @command_execution_manager ||= CommandExecutionManager.new(
+        project: @project,
+        tools: @tools,
+        machines: [@name],
+        init_opts: {
+          reboot_strategy: CommandExecutionManager::RebootStrategy[:WinrmPoll]
+        }
+      )
+    end
+
     def close
       @logger.info("Exiting FunctestClient #{@name}")
     end
