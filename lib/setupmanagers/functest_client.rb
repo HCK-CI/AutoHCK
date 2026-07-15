@@ -21,6 +21,7 @@ module AutoHCK
     def prepare_machine
       @logger.info("Preparing client #{@name}...")
       @tools = FunctestTools.new(@project, @name, client_winrm_addr)
+      @tools.wait_for_client_online(@name)
       @project.extra_sw_manager.install_software_before_driver(@tools, @name)
       install_drivers
       @project.extra_sw_manager.install_software_after_driver(@tools, @name)
