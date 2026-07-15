@@ -253,8 +253,8 @@ module AutoHCK
     end
 
     def create_workspace
-      @workspace_path = File.join(@config['workspace_path'], @engine_name,
-                                  @engine_tag, @timestamp)
+      engine_base = File.join(@config['workspace_path'], @engine_name, @engine_tag)
+      @workspace_path = File.join(engine_base, @timestamp)
       begin
         FileUtils.mkdir_p(@workspace_path)
       rescue Errno::EEXIST
@@ -262,6 +262,7 @@ module AutoHCK
       end
       @logger.info("Workspace path: #{@workspace_path}")
 
+      # Create global 'latest' symlink at workspace root
       begin
         File.delete("#{@config['workspace_path']}/latest")
       rescue Errno::ENOENT
@@ -269,6 +270,16 @@ module AutoHCK
       end
 
       File.symlink(@workspace_path, "#{@config['workspace_path']}/latest")
+
+      # Create engine-tag-specific 'latest' symlink
+      latest_link = File.join(engine_base, 'latest')
+      begin
+        File.delete(latest_link)
+      rescue Errno::ENOENT
+        # no previous symlink to delete
+      end
+
+      File.symlink(@workspace_path, latest_link)
     end
 
     def restore_workspace
