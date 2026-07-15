@@ -86,19 +86,19 @@ module AutoHCK
 
     def run_post_start_commands
       post_start_commands&.each do |command|
-        desc = command.desc
-        @logger.info("Running command (#{desc}) on client #{@name}")
-        updated_command = @replacement_map.create_cmd(command.guest_run)
-        @logger.debug("Running command after replacement (#{desc}) on client #{@name}: #{updated_command}")
-
-        @tools.run_on_machine(@name, desc, updated_command)
-        next unless command.guest_reboot
-
-        @logger.info("Rebooting client #{@name} after command (#{desc})")
-        # Reconfigure machine calls reboot, so no need to call reboot separately here.
-        # No extra wait needed, reconfigure_machine waits until machine is ready in HCK Controller.
-        reconfigure_machine
+        command_execution_manager.execute(command)
       end
+    end
+
+    def command_execution_manager
+      @command_execution_manager ||= CommandExecutionManager.new(
+        project: @project,
+        tools: @tools,
+        machines: [@name],
+        init_opts: {
+          reboot_callback: ->(_name) { reconfigure_machine }
+        }
+      )
     end
 
     def install_driver(driver)

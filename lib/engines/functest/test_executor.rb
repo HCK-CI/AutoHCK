@@ -14,11 +14,13 @@ module AutoHCK
 
       def initialize(project, client, default_timeout:)
         @project = project
+        @client = client
         @tools = client.tools
         @machine_name = client.name
         @logger = project.logger
         @context = TestContext.new(project, client.replacement_map)
-        @step_handler = StepHandler.new(project, @tools, @machine_name, @context,
+        @command_execution_manager = client.command_execution_manager
+        @step_handler = StepHandler.new(project, @command_execution_manager, @machine_name, @context,
                                         default_timeout: default_timeout)
         @results = []
       end

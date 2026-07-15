@@ -34,6 +34,7 @@ module AutoHCK
   autoload_relative :ConfigManager, 'engines/config_manager/config_manager'
   autoload_relative :CmdRun, 'auxiliary/cmd_run'
   autoload_relative :CmdRunError, 'exceptions'
+  autoload_relative :CommandExecutionManager, 'auxiliary/command_execution_manager'
   autoload_relative :DiffChecker, 'auxiliary/diff_checker'
   autoload_relative :Downloader, 'auxiliary/downloader'
   autoload_relative :Engine, 'engines/engine'
