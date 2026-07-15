@@ -30,6 +30,13 @@ module AutoHCK
       @logger.info("#{machine} is back after reboot")
     end
 
+    # Block until WinRM is reachable. Driver install steps do this implicitly;
+    # functest runs without -d need an explicit wait before guest steps run.
+    def wait_for_client_online(machine)
+      wait_for_machine_winrm(machine)
+      @logger.info("#{machine} is online")
+    end
+
     private
 
     def wait_for_machine_winrm(machine)
