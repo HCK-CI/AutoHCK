@@ -112,9 +112,10 @@ module AutoHCK
     prop :category, T.nilable(String)
     prop :testcase, T.nilable(String)
 
-    def create_parser
+    sig { params(name: String).returns(OptionParser) }
+    def create_parser(name)
       OptionParser.new do |parser|
-        parser.banner = 'Usage: auto_hck.rb test [test options]'
+        parser.banner = "Usage: auto_hck.rb #{name} [test options]"
         parser.separator ''
         define_options(parser)
         parser.on_tail('-h', '--help', 'Show this message') do
@@ -346,9 +347,9 @@ module AutoHCK
     sig { returns(T::Hash[String, OptionParser]) }
     def sub_parser
       @sub_parser ||= {
-        'test' => test.create_parser,
+        'test' => test.create_parser('test'),
         'install' => install.create_parser,
-        'functest' => test.create_parser
+        'functest' => test.create_parser('functest')
       }
     end
 
