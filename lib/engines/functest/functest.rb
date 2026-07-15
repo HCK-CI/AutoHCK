@@ -212,6 +212,10 @@ module AutoHCK
       context.set_variable('test_binaries_path', test_binaries_path) if test_binaries_path
 
       set_driver_context_variables(context, @drivers.first)
+
+      @project.options.test.test_params.each do |key, value|
+        context.set_variable(key, value)
+      end
     end
 
     def set_driver_context_variables(context, drv)

@@ -113,6 +113,7 @@ module AutoHCK
     prop :category, T.nilable(String)
     prop :testcase, T.nilable(String)
     prop :drive_aio_state, T.nilable(String)
+    prop :test_params, T::Hash[String, String], default: {}
 
     def aio_native=(value)
       raise(AutoHCKError, '--aio-native cannot be combined with --aio-threads') if value && drive_aio_state == 'threads'
@@ -307,6 +308,13 @@ module AutoHCK
       parser.on('--aio-threads', TrueClass,
                 'Use aio=threads for virtual disks (forces cache=none, cannot combine with --aio-native)',
                 &method(:aio_threads=))
+      parser.on('--test-param KEY=VALUE', String,
+                'Set a test parameter (can be repeated, available as @KEY@ in test JSON)') do |kv|
+        key, value = kv.split('=', 2)
+        raise AutoHCKError, "Invalid --test-param format: #{kv}" if key.to_s.empty? || value.nil?
+
+        self.test_params = test_params.merge(key => value)
+      end
     end
     # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
   end
