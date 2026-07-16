@@ -208,16 +208,25 @@ module AutoHCK
       driver_path = @project.options.test.driver_path
       context.set_variable('driver_path', driver_path) if driver_path
 
+      test_binaries_path = @project.options.test.test_binaries_path
+      context.set_variable('test_binaries_path', test_binaries_path) if test_binaries_path
+
       set_driver_context_variables(context, @drivers.first)
     end
 
     def set_driver_context_variables(context, drv)
       return unless drv
 
+      context.set_variable('driver_name', drv.name)
+
+      unless drv.inf
+        @logger.info("Driver #{drv.name} has no package (device-only); skipping driver_inf/driver_module")
+        return
+      end
+
       module_name = drv.inf.sub(/\.inf$/i, '')
       context.set_variable('driver_inf', drv.inf)
       context.set_variable('driver_module', module_name)
-      context.set_variable('driver_name', drv.name)
 
       @logger.info("Test context: driver_module=#{module_name}, driver_inf=#{drv.inf}")
     end
