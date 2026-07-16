@@ -5,6 +5,8 @@ module AutoHCK
   #
   # Boots the client VM and prepares it for functest runs (no HLK Studio).
   class FunctestClient
+    TEST_BINARIES_REMOTE_PATH = 'C:\\AutoHCK\\test_binaries'
+
     attr_reader :name, :tools, :replacement_map
 
     def initialize(setup_manager, scope, name, run_opts = nil)
@@ -23,6 +25,7 @@ module AutoHCK
       @tools = FunctestTools.new(@project, @name, client_winrm_addr)
       @project.extra_sw_manager.install_software_before_driver(@tools, @name)
       install_drivers
+      copy_test_binaries
       @project.extra_sw_manager.install_software_after_driver(@tools, @name)
     end
 
@@ -64,19 +67,37 @@ module AutoHCK
       @replacement_map.merge!(replacement)
     end
 
+    def copy_test_binaries
+      test_binaries_path = @project.options.test.test_binaries_path
+      return unless test_binaries_path
+
+      @logger.info("Copying test binaries to client #{@name}...")
+      remote_path = @tools.upload_to_machine(@name, test_binaries_path, TEST_BINARIES_REMOTE_PATH)
+      @replacement_map.merge!({ '@test_binaries_dir@' => remote_path })
+    end
+
     def install_drivers
       driver_path = @project.options.test.driver_path
       drivers = @project.engine.drivers
-      raise AutoHCKError, '--driver-path is required when drivers are configured' \
-        if drivers.any? && driver_path.nil?
 
       return if drivers.empty?
+      return if skip_drivers_installation?(driver_path)
+
+      raise AutoHCKError, '--driver-path is required when drivers are configured' if driver_path.nil?
 
       @logger.info('Installing drivers on client VM...')
       drivers.each do |driver|
         driver_replacement = install_driver(driver, driver_path)
         insert_driver_replacement(driver, driver_replacement) unless driver_replacement.nil?
       end
+    end
+
+    def skip_drivers_installation?(driver_path)
+      return false unless driver_path.nil? && @project.options.test.test_binaries_path
+
+      @logger.info('--test-binaries-path provided without --driver-path: ' \
+                   'skipping driver installation, device(s) attached only')
+      true
     end
 
     def install_driver(driver, driver_path)

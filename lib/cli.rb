@@ -83,6 +83,7 @@ module AutoHCK
     prop :platform, T.nilable(String)
     prop :drivers, T::Array[String], default: []
     prop :driver_path, T.nilable(String)
+    prop :test_binaries_path, T.nilable(String)
     prop :supplemental_path, T.nilable(String)
     prop :package_with_driver, Symbol, default: :none
     prop :commit, T.nilable(String)
@@ -151,6 +152,13 @@ module AutoHCK
       parser.on('--driver-path <driver_path>', String,
                 'Path to the location of the driver wanted to be tested',
                 &method(:driver_path=))
+
+      parser.on('--test-binaries-path <test_binaries_path>', String,
+                'Path to arbitrary binaries/content needed by the test (e.g. a third-party installer);',
+                'available to test steps as @test_binaries_path@ (used with functest engine).',
+                'When set without --driver-path, driver installation is skipped and configured',
+                'devices are attached without installing their driver package.',
+                &method(:test_binaries_path=))
 
       parser.on('--supplemental-path <supplemental_path>', String,
                 'Path to the supplemental content folder (e.g. for README)',

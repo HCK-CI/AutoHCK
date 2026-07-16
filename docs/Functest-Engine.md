@@ -14,7 +14,8 @@ The functest engine runs JSON-driven functional tests against a Windows client V
 |---|---|
 | `-p`, `--platform <name>` | Platform name (maps to `lib/engines/hcktest/platforms/<name>.json`) |
 | `-d`, `--drivers <list>` | Comma-separated driver short names (maps to `lib/engines/hcktest/drivers/<name>.json`) |
-| `--driver-path <path>` | Host path to the driver package directory; required when drivers are configured |
+| `--driver-path <path>` | Host path to the driver package directory; required when drivers are configured, unless `--test-binaries-path` is used instead (see [Device-only testing](#device-only-testing) below) |
+| `--test-binaries-path <path>` | Host path to binaries the test needs (e.g. an installer); available to test steps as `@test_binaries_path@` |
 | `--category <suite>` | Run a named test suite; `<suite>` is the suite name from `lib/engines/functest/tests/suites/<suite>.json` |
 | `--testcase <names>` | Comma-separated list of test case names to run (e.g. `driver_sign_check,balloon/balloon_service`) |
 | `--select-test-names <file>` | Path to a text file (one test name per line); only tests whose name appears in the file are kept |
@@ -80,6 +81,27 @@ Where each file contains one test name per line, e.g.:
 balloon/balloon_service
 driver_update
 ```
+
+### Device-only testing
+
+Pass `--test-binaries-path <path>` without `--driver-path` to attach configured devices (`-d`) while skipping
+driver installation. The content of `--test-binaries-path` is uploaded to the client VM automatically (to
+`C:\AutoHCK\test_binaries`). The host path is exposed to test steps as `@test_binaries_path@`, and the
+uploaded guest path as `@test_binaries_dir@`.
+
+```bash
+./bin/auto_hck functest \
+  -p Win2025x64_gui \
+  -d Balloon \
+  --test-binaries-path /path/to/installer \
+  --testcase <test-name>
+```
+
+| `--driver-path` | `--test-binaries-path` | Result |
+|---|---|---|
+| set | any | Normal driver installation |
+| nil | set | Driver installation skipped; devices still attached |
+| nil | nil | Error: `--driver-path is required when drivers are configured` |
 
 ## Directory Layout
 
@@ -343,9 +365,11 @@ These are populated automatically from CLI arguments and driver configuration:
 | Variable | Description |
 |---|---|
 | `@driver_path@` | Local path to the driver package directory (`--driver-path` CLI option) |
-| `@driver_module@` | Driver module name derived from the INF filename (e.g. `balloon` from `balloon.inf`) |
-| `@driver_inf@` | INF filename of the driver (e.g. `balloon.inf`) |
+| `@driver_module@` | Driver module name derived from the INF filename (e.g. `balloon` from `balloon.inf`). Not set for `no-drv` drivers, which have no INF. |
+| `@driver_inf@` | INF filename of the driver (e.g. `balloon.inf`). Not set for `no-drv` drivers, which have no INF. |
 | `@driver_name@` | Full driver name as defined in the driver JSON configuration |
+| `@test_binaries_path@` | Local host path to test binaries content (`--test-binaries-path` CLI option); see [Device-only testing](#device-only-testing) |
+| `@test_binaries_dir@` | Guest path where `--test-binaries-path` content was uploaded (`C:\AutoHCK\test_binaries`) |
 
 ### Step-level Variable Overrides
 
