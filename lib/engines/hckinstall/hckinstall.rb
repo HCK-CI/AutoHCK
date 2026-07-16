@@ -316,7 +316,8 @@ module AutoHCK
         kit_type:,
         hlk_kit_ver: kit_version,
         debug: options_install.debug,
-        no_reboot_after_bugcheck: options_install.no_reboot_after_bugcheck
+        no_reboot_after_bugcheck: options_install.no_reboot_after_bugcheck,
+        vmnames: ['STUDIO'] + @clients_name.map(&:upcase)
       }
 
       prepare_kit_installer(kit_type, kit_version)

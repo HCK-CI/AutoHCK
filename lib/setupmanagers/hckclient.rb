@@ -27,7 +27,7 @@ module AutoHCK
 
     def pool
       @studio.list_pools.each do |pool|
-        return pool['name'] if pool['machines'].any? { |machine| machine['name'].eql?(@name) }
+        return pool['name'] if pool['machines'].any? { |machine| machine['name']&.casecmp?(@name) }
       end
     end
 
@@ -152,8 +152,8 @@ module AutoHCK
     end
 
     def machine_info
-      @studio.list_pools.flat_map { |pool| pool['machines'] }
-                        .detect { |machine| machine['name'].eql?(@name) }
+      machines = @studio.list_pools.flat_map { |pool| pool['machines'] }
+      machines.detect { |machine| machine['name']&.casecmp?(@name) }
     end
 
     def recognize_client_wait

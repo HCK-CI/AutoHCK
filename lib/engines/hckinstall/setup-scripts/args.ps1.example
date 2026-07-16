@@ -1,3 +1,4 @@
+$VMNAMES = @('STUDIO', 'CL1', 'CL2')
 $KITTYPE = "HLK"
 $HLKKITVER = 2004
 $REMOVEGUI = $false

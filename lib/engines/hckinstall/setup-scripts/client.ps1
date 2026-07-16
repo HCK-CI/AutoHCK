@@ -34,7 +34,10 @@ function Stage-One {
         if (($macSegments[5] -eq "CC") -and ($macSegments[4] -eq "CC")) {
             $clientNumber = [int32]("0x" + $macSegments[3])
             $clientIp = $clientNumber + 1
-            $clientName = "$CLIENTCOMPUTERNAME$clientNumber"
+            $clientName = $VMNAMES[$clientNumber]
+            if (-not $clientName) {
+                Write-Error "No VM name found in VMNAMES for client number $clientNumber"
+            }
 
             Write-Output "Renaming hostname to $clientName"
             Rename-Computer -NewName "$clientName"
@@ -49,7 +52,7 @@ function Stage-One {
         }
     }
 
-    "$STUDIOIP $STUDIOCOMPUTERNAME #STUDIO VM IP" |  Out-File -encoding ASCII -append 'C:\Windows\System32\drivers\etc\hosts'
+    "$STUDIOIP $($VMNAMES[0]) #STUDIO VM IP" |  Out-File -encoding ASCII -append 'C:\Windows\System32\drivers\etc\hosts'
 
     Enable-PowerShellRemoting
 
@@ -73,17 +76,17 @@ function Stage-Three {
     Set-NewStage -Stage "Four"
 
     do {
-        Write-Output "Waiting for ping to $STUDIOCOMPUTERNAME..."
+        Write-Output "Waiting for ping to $($VMNAMES[0])..."
         # The correct parameter is -ComputerName for PowerShell v5.1. The parameter changed to -TargetName in PowerShell v6.
         # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/test-connection?view=powershell-7.1
         # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/test-connection?view=powershell-5.1
-        $pingStatus = Test-Connection -ComputerName "$STUDIOCOMPUTERNAME" -Quiet
+        $pingStatus = Test-Connection -ComputerName "$($VMNAMES[0])" -Quiet
     } until ($pingStatus)
 
     Write-Output "Copying $KITTYPE client installation from studio to client..."
 
     $clientInstallerFolder = "$env:TEMP\Client"
-    Copy-Item -Path "\\$STUDIOCOMPUTERNAME\${KITTYPE}Install\Client" -Destination "$clientInstallerFolder" -Recurse
+    Copy-Item -Path "\\$($VMNAMES[0])\${KITTYPE}Install\Client" -Destination "$clientInstallerFolder" -Recurse
 
     Write-Output "Starting $KITTYPE client installation..."
     # HLK Installer

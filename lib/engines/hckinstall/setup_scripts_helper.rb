@@ -12,7 +12,8 @@ module AutoHCK
       hlk_kit_ver: '',
       remove_gui: '',
       debug: '',
-      no_reboot_after_bugcheck: ''
+      no_reboot_after_bugcheck: '',
+      vmnames: []
     }.freeze
 
     sig { params(workspace_hlk_setup_scripts_path: Pathname, hck_setup_scripts_template_path: Pathname).void }
@@ -71,6 +72,9 @@ module AutoHCK
             value = "'#{v}'"
           when Integer
             value = v
+          when Array
+            items = v.map { |item| "'#{item.to_s.gsub("'", "''")}'" }.join(', ')
+            value = "@(#{items})"
           else
             @logger.fatal("Unexpected value #{v} for config")
             Kernel.raise(AutoHCKError, "Unexpected value #{v} for config")
