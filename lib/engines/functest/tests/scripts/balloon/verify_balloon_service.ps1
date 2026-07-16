@@ -15,4 +15,8 @@ if ($svc.Status -ne 'Running') {
 }
 
 $svc = Get-Service BalloonService
+if ($svc.Status -ne 'Running') {
+    throw "BalloonService did not reach Running state (current: $($svc.Status))"
+}
+
 Write-Output "PASS: BalloonService is $($svc.Status)"
