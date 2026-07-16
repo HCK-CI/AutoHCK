@@ -10,8 +10,8 @@ if (-not $d) {
     throw 'Balloon PnP device (VEN_1AF4 DEV_1002/1045) not found in device list'
 }
 
-Write-Output "Balloon device: $($d.FriendlyName) [$($d.Status)]"
-
 if ($d.Status -eq 'Error') {
     throw 'Balloon device found but in Error state: ' + $d.ConfigManagerErrorCode
 }
+
+Write-Output "PASS: Balloon device found - $($d.FriendlyName) [$($d.Status)]"

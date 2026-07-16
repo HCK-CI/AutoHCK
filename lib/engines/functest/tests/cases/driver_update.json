@@ -7,12 +7,13 @@
         {
             "desc": "Confirm @driver_module@ is currently installed",
             "guest_run_file": "lib/engines/functest/tests/scripts/check_driver_installed.ps1",
+            "expected_output_contains": "PASS:",
             "timeout": 30
         },
         {
             "desc": "Remove @driver_module@ from the Windows DriverStore",
             "guest_run_file": "lib/engines/functest/tests/scripts/remove_driver_from_store.ps1",
-            "expected_output_contains": "Driver removed from store",
+            "expected_output_contains": "PASS:",
             "timeout": 120
         },
         {
@@ -42,7 +43,7 @@
         {
             "desc": "Verify @driver_module@.sys is present in DriverStore after reinstall",
             "guest_run_file": "lib/engines/functest/tests/scripts/find_driver_in_store.ps1",
-            "expected_output_contains": "Found:",
+            "expected_output_contains": "PASS:",
             "timeout": 60
         },
         {

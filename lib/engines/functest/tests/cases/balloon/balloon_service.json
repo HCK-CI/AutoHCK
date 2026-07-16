@@ -7,13 +7,13 @@
         {
             "desc": "Verify Balloon PnP device is present and working",
             "guest_run_file": "lib/engines/functest/tests/scripts/balloon/check_balloon_pnp_device.ps1",
-            "expected_output_contains": "Balloon device:",
+            "expected_output_contains": "PASS:",
             "timeout": 30
         },
         {
             "desc": "Install balloon service (blnsvr.exe -i)",
             "guest_run_file": "lib/engines/functest/tests/scripts/balloon/install_balloon_service.ps1",
-            "expected_output_contains": "Balloon service install command executed",
+            "expected_output_contains": "PASS:",
             "timeout": 30
         },
         {

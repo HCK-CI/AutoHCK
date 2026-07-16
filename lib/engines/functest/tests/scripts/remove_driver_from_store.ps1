@@ -15,4 +15,4 @@ pnputil /delete-driver $drv.Driver /uninstall /force
 if ($LASTEXITCODE -ne 0) {
     throw "pnputil failed with exit code $LASTEXITCODE"
 }
-Write-Output 'Driver removed from store'
+Write-Output 'PASS: Driver removed from store'
