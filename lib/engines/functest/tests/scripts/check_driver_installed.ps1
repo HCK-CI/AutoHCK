@@ -1,4 +1,4 @@
-# Confirm @driver_module@ is present in the driver list before an update.
+# Confirm @driver_module@ is installed; outputs PASS: on success.
 
 $ErrorActionPreference = 'Stop'
 
@@ -9,4 +9,4 @@ if (-not $d) {
     throw 'Driver @driver_module@ not found - driver may not be installed'
 }
 
-Write-Output "Pre-update: $($d.'Display Name') is $($d.State)"
+Write-Output "PASS: @driver_module@ driver installed - $($d.'Display Name') is $($d.State)"

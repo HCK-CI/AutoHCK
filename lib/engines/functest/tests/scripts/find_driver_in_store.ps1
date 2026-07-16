@@ -19,4 +19,4 @@ if (-not $sys) {
     throw '@driver_module@.sys not found in DriverStore at ' + $drvDir
 }
 
-Write-Output "Found: $($sys.FullName)"
+Write-Output "PASS: Found @driver_module@.sys at $($sys.FullName)"

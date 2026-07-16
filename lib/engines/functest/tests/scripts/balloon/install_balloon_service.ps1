@@ -14,4 +14,4 @@ Write-Output "Found: $($blnsvr.FullName)"
 if ($LASTEXITCODE -ne 0) {
     throw "blnsvr.exe -i failed with exit code $LASTEXITCODE"
 }
-Write-Output 'Balloon service install command executed'
+Write-Output 'PASS: Balloon service install command executed'

@@ -11,7 +11,7 @@
         {
             "desc": "Locate @driver_module@.sys in the DriverStore",
             "guest_run_file": "lib/engines/functest/tests/scripts/find_driver_in_store.ps1",
-            "expected_output_contains": "Found:",
+            "expected_output_contains": "PASS:",
             "timeout": 60
         },
         {
