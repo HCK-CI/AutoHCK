@@ -22,7 +22,7 @@ function Stage-One {
     Disable-Screensaver
     Disable-PowerSavingOptions
 
-    Rename-Computer -NewName "$STUDIOCOMPUTERNAME"
+    Rename-Computer -NewName "$($VMNAMES[0])"
 
     Get-NetAdapter | ForEach-Object {
         $adapterName = $_.Name
