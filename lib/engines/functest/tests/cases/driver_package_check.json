@@ -1,0 +1,13 @@
+{
+    "name": "driver_package_check",
+    "description": "Verify Authenticode signatures of the @driver_module@ driver package (.sys, .cat) before installation",
+    "timeout": 60,
+    "test_steps": [
+        {
+            "desc": "Verify Authenticode signatures of @driver_module@ package",
+            "guest_run_file": "lib/engines/functest/tests/scripts/verify_driver_package.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 45
+        }
+    ]
+}
