@@ -60,6 +60,13 @@ module AutoHCK
       const :clients, T::Hash[String, HLKClient]
       const :extra_software, T::Array[String], default: []
 
+      # client_id is the client's 1-based position in the clients map.
+      sig { params(client_id: Integer).returns(T.nilable(HLKClient)) }
+      def client_for_id(client_id)
+        role_id = clients.keys[client_id - 1]
+        role_id && clients[role_id]
+      end
+
       sig { params(hash: T::Hash[String, T.untyped], strict: T::Boolean).void }
       # This is Sorbet function, so we can't change the signature
       # rubocop:disable Style/OptionalBooleanParameter
