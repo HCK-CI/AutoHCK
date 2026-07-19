@@ -70,12 +70,17 @@ module AutoHCK
     # rubocop:disable Metrics/AbcSize
     def run
       @logger.info('Starting functest engine')
+      validate_tests_selected!
 
       ResourceScope.open do |scope|
-        client = @project.setup_manager.run_functest_client(scope, client_name)
-        client.prepare_machine
+        clients = boot_clients(scope)
+        raise AutoHCKError, 'No clients booted for the selected tests' if clients.empty?
 
-        @executor = Functest::TestExecutor.new(@project, client,
+        tools = build_tools(clients)
+        prepare_clients(clients, tools)
+        command_execution_manager = build_command_execution_manager(tools, clients)
+
+        @executor = Functest::TestExecutor.new(@project, clients, tools, command_execution_manager,
                                                default_timeout: @config['default_timeout'])
         setup_test_context(@executor.context)
         summary = @executor.execute_tests(@tests)
@@ -92,11 +97,56 @@ module AutoHCK
 
     private
 
-    def client_name
-      name = @project.engine_platform.clients.values.first&.name
-      raise AutoHCKError, 'No client found in platform configuration' unless name
+    # Stops early with a clear error if no tests were selected. Without
+    # this, boot_clients would boot zero clients and crash later.
+    def validate_tests_selected!
+      return unless @tests.empty?
 
-      name
+      raise AutoHCKError, 'No tests selected to run (check --category/--testcase and ' \
+                          '--select-test-names/--reject-test-names filters)'
+    end
+
+    # All client role-ids needed by the selected tests, combined and
+    # de-duplicated, in the order first seen.
+    def client_role_ids
+      @tests.flat_map(&:clients).uniq
+    end
+
+    def boot_clients(scope)
+      platform_clients = @project.engine_platform.clients
+
+      client_role_ids.map do |role_id|
+        client = platform_clients[role_id]
+        unless client
+          raise AutoHCKError, "Test(s) require client '#{role_id}', which is not declared " \
+                              'in the platform configuration'
+        end
+
+        @project.setup_manager.run_functest_client(scope, client.name)
+      end
+    end
+
+    # One FunctestTools instance, shared by every booted client.
+    def build_tools(clients)
+      clients_addrs = clients.to_h { |client| [client.name, client.winrm_addr] }
+      FunctestTools.new(@project, clients_addrs)
+    end
+
+    # Gets every client ready (wait online, install software/drivers)
+    def prepare_clients(clients, tools)
+      threads = clients.map { |client| Thread.new { client.prepare_machine(tools) } }
+      threads.each(&:join)
+    end
+
+    def build_command_execution_manager(tools, clients)
+      CommandExecutionManager.new(
+        project: @project,
+        tools: tools,
+        machines: clients.map(&:name),
+        init_opts: {
+          reboot_strategy: CommandExecutionManager::RebootStrategy[:WinrmPoll]
+        }
+      )
     end
 
     def load_tests(loader)

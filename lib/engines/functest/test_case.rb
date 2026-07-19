@@ -14,6 +14,9 @@ module AutoHCK
       const :timeout, T.nilable(Integer)
       const :test_steps, T::Array[Models::CommandInfo]
       const :cleanup, T::Array[Models::CommandInfo], default: []
+
+      # Platform client role-ids (e.g. "c1", "c2") this test case needs booted.
+      const :clients, T::Array[String], default: ['c1']
     end
   end
 end

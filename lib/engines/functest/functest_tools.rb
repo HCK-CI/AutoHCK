@@ -15,8 +15,8 @@ module AutoHCK
     WAIT_WINRM_TIMEOUT = 600
     WAIT_WINRM_INTERVAL = 10
 
-    def initialize(project, client_name, winrm_addr)
-      super(project, no_studio: true, clients_addrs: { client_name => winrm_addr })
+    def initialize(project, clients_addrs)
+      super(project, no_studio: true, clients_addrs: clients_addrs)
     end
 
     # Restart the VM and block until WinRM is reachable again.

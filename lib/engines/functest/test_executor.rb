@@ -12,15 +12,17 @@ module AutoHCK
         @test_results ||= @results.map { |r| Models::TestResult.from_functest(r) }
       end
 
-      def initialize(project, client, default_timeout:)
+      # clients is every FunctestClient booted for this run. tools and
+      # command_execution_manager are shared by all of them.
+      def initialize(project, clients, tools, command_execution_manager, default_timeout:)
         @project = project
-        @client = client
-        @tools = client.tools
-        @machine_name = client.name
+        @clients = clients
+        @tools = tools
+        @machine_names = clients.map(&:name)
         @logger = project.logger
-        @context = TestContext.new(project, client.replacement_map)
-        @command_execution_manager = client.command_execution_manager
-        @step_handler = StepHandler.new(project, @command_execution_manager, @machine_name, @context,
+        @context = TestContext.new(project, clients.first.replacement_map)
+        @command_execution_manager = command_execution_manager
+        @step_handler = StepHandler.new(project, @command_execution_manager, @context,
                                         default_timeout: default_timeout)
         @results = []
       end
@@ -74,6 +76,7 @@ module AutoHCK
       end
 
       def run_test_steps(test, result)
+        prepare_test_clients!(test)
         test.test_steps.each_with_index { |step, index| result[:steps] << execute_test_step(step, index) }
         result[:status] = 'passed'
         @logger.info("PASSED: #{test.name}")
@@ -81,6 +84,21 @@ module AutoHCK
         result[:status] = 'failed'
         result[:error] = e.message
         @logger.error("FAILED: #{test.name} - #{e.message}")
+      end
+
+      # Sets CommandExecutionManager's default machines to this test's own
+      # clients. Then fails the test right away if any step (including
+      # cleanup) targets a client this test didn't declare.
+      def prepare_test_clients!(test)
+        @command_execution_manager.scope_to_test(test.clients)
+
+        (test.test_steps + test.cleanup).each do |step|
+          unknown = step.clients - test.clients
+          next if unknown.empty?
+
+          raise EngineError, "Test '#{test.name}' step targets client(s) #{unknown.join(', ')} not declared " \
+                             "in this test case's own clients list (#{test.clients.join(', ')})"
+        end
       end
 
       def execute_test_step(step, index)
@@ -125,7 +143,7 @@ module AutoHCK
 
       def collect_memory_dumps(test_name)
         id = test_name.gsub(/\W/, '_')
-        MemoryDumpCollector.new(@tools, [@machine_name], @project.workspace_path, @logger).collect(id)
+        MemoryDumpCollector.new(@tools, @machine_names, @project.workspace_path, @logger).collect(id)
       end
     end
   end
