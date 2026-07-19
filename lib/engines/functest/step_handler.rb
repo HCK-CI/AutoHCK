@@ -7,10 +7,9 @@ module AutoHCK
     class StepHandler
       STEP_TYPE_FIELDS = CommandExecutionManager::STEP_TYPE_FIELDS
 
-      def initialize(project, command_execution_manager, machine_name, context, default_timeout:)
+      def initialize(project, command_execution_manager, context, default_timeout:)
         @project = project
         @command_execution_manager = command_execution_manager
-        @machine_name = machine_name
         @context = context
         @logger = project.logger
         @default_timeout = default_timeout
@@ -66,39 +65,63 @@ module AutoHCK
       end
 
       def handle_step_result(result, step)
-        output = guest_output(result)
-        @logger.debug("Guest output:\n#{output}") unless output.strip.empty?
+        primary_output = guest_output(result, step)
+        @logger.debug("Guest output:\n#{primary_output}") unless primary_output.strip.empty?
 
         if step.capture_output
-          captured = capture_value(result, output)
+          captured = capture_value(result, primary_output, step)
           @context.set_variable(step.capture_output, captured)
           @logger.debug("Captured '#{step.capture_output}': #{captured.to_s[0..100]}")
         end
 
-        validate_output(output, step)
+        validate_outputs(result, step)
       end
 
-      def guest_output(result)
-        result.fetch(:guest_outputs, {}).fetch(@machine_name, '').to_s
+      def guest_outputs(result)
+        result.fetch(:guest_outputs, {})
       end
 
-      def capture_value(result, guest_output)
+      # Only used by capture_output, since it can only store one value.
+      # expected_output_contains/matches don't use this — they use
+      # #validate_outputs instead, to check every target machine.
+      def guest_output(result, step)
+        machine = @command_execution_manager.primary_machine(step)
+        guest_outputs(result).fetch(machine, '').to_s
+      end
+
+      # qmp_result/qmp_event are keyed by machine name, so pick out the
+      # primary machine's value instead of capturing every machine's.
+      def capture_value(result, guest_output, step)
         return guest_output.strip unless guest_output.strip.empty?
-        return result[:qmp_result].to_json if result[:qmp_result]
-        return result[:qmp_event].to_json if result[:qmp_event]
+
+        machine = @command_execution_manager.primary_machine(step)
+        return result[:qmp_result][machine].to_json if result[:qmp_result]
+        return result[:qmp_event][machine].to_json if result[:qmp_event]
 
         ''
       end
 
-      def validate_output(output, step)
+      # Checks expected_output_contains/matches on every machine the step
+      # ran on. If any one of them fails, the step fails.
+      def validate_outputs(result, step)
+        outputs = guest_outputs(result)
+        return validate_output('', step) if outputs.empty?
+
+        outputs.each { |machine, output| validate_output(output.to_s, step, machine) }
+      end
+
+      def validate_output(output, step, machine = nil)
+        target = machine ? " on #{machine}" : ''
         if step.expected_output_contains && !output.include?(step.expected_output_contains)
-          raise EngineError, "Output validation failed: expected to contain '#{step.expected_output_contains}'"
+          raise EngineError, "Output validation failed#{target}: expected to contain '#{step.expected_output_contains}'"
         end
 
         return unless step.expected_output_matches
 
         pattern = Regexp.new(step.expected_output_matches)
-        raise EngineError, "Output validation failed: expected to match '#{pattern}'" unless output.match?(pattern)
+        return if output.match?(pattern)
+
+        raise EngineError, "Output validation failed#{target}: expected to match '#{pattern}'"
       end
 
       def handle_step_error(step, error_message)
