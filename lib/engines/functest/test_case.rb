@@ -17,6 +17,10 @@ module AutoHCK
       prop :test_steps, T::Array[Models::CommandInfo]
       const :cleanup, T::Array[Models::CommandInfo], default: []
 
+      # Client ids (e.g. 1, 2) this test case needs booted, by position in
+      # the platform JSON's clients map.
+      const :clients, T::Array[Integer], default: [1]
+
       sig { returns(String) }
       def safe_name
         name.gsub(/[^\w\-.]/, '_').gsub(/(^_|_$)/, '')
