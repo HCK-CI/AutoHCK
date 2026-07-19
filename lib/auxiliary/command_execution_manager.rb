@@ -60,6 +60,17 @@ module AutoHCK
       @reboot_strategy = init_opts[:reboot_strategy]
       @reboot_callback = init_opts[:reboot_callback]
       @default_timeout = init_opts[:default_timeout]
+
+      # Default machines for a step with no `clients` field; narrowed per
+      # test case by #scope_to_test.
+      @scoped_machines = @machines
+    end
+
+    # Sets the default machines to one test case's own clients. Call once
+    # per test case, before its steps run.
+    sig { params(role_ids: T::Array[String]).void }
+    def scope_to_test(role_ids)
+      @scoped_machines = role_ids.map { |role_id| resolve_client_name(role_id) }.uniq
     end
 
     sig do
@@ -74,7 +85,7 @@ module AutoHCK
       result = T.let({ desc: desc }, T::Hash[Symbol, T.untyped])
 
       result[:guest_outputs] = execute_guest(command_info, replacement, desc) if guest_command?(command_info)
-      execute_guest_reboot(desc) if command_info.guest_reboot
+      execute_guest_reboot(command_info, desc) if command_info.guest_reboot
       execute_host(command_info, replacement, desc) if host_command?(command_info)
       execute_files_actions(command_info, replacement) unless command_info.files_action.empty?
       execute_barrier(command_info) if command_info.barrier
@@ -90,7 +101,39 @@ module AutoHCK
       @project.project_replacement_map.merge(@project.setup_manager.client_replacement_map(machine_name))
     end
 
+    # Turns a step's `clients` role-ids into real machine names. If empty,
+    # uses the current test case's default machines instead.
+    sig { params(command_info: Models::CommandInfo).returns(T::Array[String]) }
+    def target_machines(command_info)
+      return @scoped_machines if command_info.clients.empty?
+
+      command_info.clients.map { |role_id| resolve_client_name(role_id) }.uniq
+    end
+
+    # The step's main target machine, used for capture_output: its first
+    # `clients` entry, or the first machine in scope if broadcasting.
+    sig { params(command_info: Models::CommandInfo).returns(T.nilable(String)) }
+    def primary_machine(command_info)
+      target_machines(command_info).first
+    end
+
     private
+
+    sig { params(role_id: String).returns(String) }
+    def resolve_client_name(role_id)
+      client = @project.engine_platform.clients[role_id]
+      unless client
+        raise EngineError, "Step targets unknown client role-id '#{role_id}' " \
+                           '(not declared in the platform configuration)'
+      end
+
+      name = client.name
+      unless @machines.include?(name)
+        raise EngineError, "Step targets client '#{role_id}' (#{name}), which was not booted for this run"
+      end
+
+      name
+    end
 
     sig { params(command_info: Models::CommandInfo).returns(String) }
     def command_desc(command_info)
@@ -117,7 +160,7 @@ module AutoHCK
     def execute_guest(command_info, replacement, desc)
       outputs = {}
 
-      @machines.each do |machine_name|
+      target_machines(command_info).each do |machine_name|
         @logger.info("Running command (#{desc}) on client #{machine_name}")
         command = resolve_guest_command(command_info, machine_name, replacement)
         @logger.debug("Running command after replacement (#{desc}) on client #{machine_name}: #{command}")
@@ -128,9 +171,9 @@ module AutoHCK
       outputs
     end
 
-    sig { params(desc: String).void }
-    def execute_guest_reboot(desc)
-      @machines.each do |machine_name|
+    sig { params(command_info: Models::CommandInfo, desc: String).void }
+    def execute_guest_reboot(command_info, desc)
+      target_machines(command_info).each do |machine_name|
         reboot_machine(machine_name, desc)
       end
     end
@@ -157,7 +200,7 @@ module AutoHCK
           next
         end
 
-        @machines.each do |machine_name|
+        target_machines(command_info).each do |machine_name|
           action = prepare_file_action(files_action, machine_name, replacement, command_info)
           @file_action_handler.handle(machine_name, action)
         end
@@ -181,7 +224,7 @@ module AutoHCK
 
     sig { params(command_info: Models::CommandInfo).void }
     def execute_barrier(command_info)
-      @logger.info("Barrier: #{command_info.barrier} (single-VM mode, no-op)")
+      @logger.info("Barrier: #{command_info.barrier} (no-op)")
     end
 
     def run_qmp_command(execute, arguments, machine_name)
@@ -197,7 +240,7 @@ module AutoHCK
       execute = qmp.execute
 
       outputs = {}
-      @machines.each do |machine_name|
+      target_machines(command_info).each do |machine_name|
         outputs[machine_name] = run_qmp_command(execute, qmp.arguments, machine_name)
       rescue QMPError => e
         raise EngineError, "QMP command '#{execute}' failed on #{machine_name}: #{e.message}"
@@ -222,7 +265,7 @@ module AutoHCK
       event = qmp.event
 
       outputs = {}
-      @machines.each do |machine_name|
+      target_machines(command_info).each do |machine_name|
         outputs[machine_name] = run_qmp_wait_event(event, machine_name, timeout)
       rescue QMPError => e
         raise EngineError, "QMP event '#{event}' wait failed on #{machine_name}: #{e.message}"
@@ -268,7 +311,7 @@ module AutoHCK
     end
     def replacement_map_for(machine_name, replacement, command_info)
       apply_variables(
-        machine_replacement_map(machine_name).merge(replacement),
+        replacement.merge(machine_replacement_map(machine_name)),
         command_info.variables
       )
     end

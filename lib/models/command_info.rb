@@ -81,6 +81,10 @@ module AutoHCK
 
       const :expected_output_contains, T.nilable(String)
       const :expected_output_matches, T.nilable(String)
+
+      # Platform client role-ids (e.g. "c1", "c2") this step targets. Empty
+      # (the default) broadcasts to every client in the current test case.
+      const :clients, T::Array[String], default: []
     end
   end
 end
