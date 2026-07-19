@@ -83,6 +83,11 @@ module AutoHCK
 
       const :expected_output_contains, T.nilable(String)
       const :expected_output_matches, T.nilable(String)
+
+      # Client ids (e.g. 1, 2) this step targets, by position in the platform
+      # JSON's clients map. Empty (default) broadcasts to every client in
+      # the current test case.
+      const :clients, T::Array[Integer], default: []
     end
   end
 end
