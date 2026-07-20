@@ -307,7 +307,6 @@ module AutoHCK
       @states_config.each { |name, state| apply_state name, state }
       apply_drive_aio_state
       validate_drive_aio_state
-
       apply_cpu_options_config
     end
 
@@ -390,6 +389,29 @@ module AutoHCK
       }
     end
 
+    DISCARD_GRANULARITY_FORMAT = /\A(\d+)([KMG])?\z/i
+    DISCARD_GRANULARITY_UNITS = { 'K' => 1024, 'M' => 1024**2, 'G' => 1024**3 }.freeze
+
+    # Sets discard=unmap and discard_granularity (in bytes) on the virtio-blk-pci
+    # device, when the discard_granularity option is configured.
+    def discard_granularity_replacement_map
+      value = option_config('discard_granularity')
+      return { '@drive_discard_param@' => '', '@blk_discard_granularity_param@' => '' } if value.nil?
+
+      match = DISCARD_GRANULARITY_FORMAT.match(value.to_s)
+      unless match
+        raise QemuHCKError, "discard_granularity value '#{value}' is invalid; " \
+                            'expected a size such as 4096, 4K, 256K, or 32M'
+      end
+
+      bytes = match[1].to_i * DISCARD_GRANULARITY_UNITS.fetch(match[2]&.upcase, 1)
+
+      {
+        '@drive_discard_param@' => ',discard=unmap',
+        '@blk_discard_granularity_param@' => ",discard_granularity=#{bytes}"
+      }
+    end
+
     sig { returns(T::Array[String]) }
     def device_config_commands
       @device_infos.map(&:config_commands).flatten.compact
@@ -433,6 +455,7 @@ module AutoHCK
                                              machine_replacement_map,
                                              memory_replacement_map,
                                              options_replacement_map,
+                                             discard_granularity_replacement_map,
                                              device_define_variables,
                                              @define_variables)
     end
