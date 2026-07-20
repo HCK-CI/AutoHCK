@@ -113,6 +113,7 @@ module AutoHCK
     prop :category, T.nilable(String)
     prop :testcase, T.nilable(String)
     prop :drive_aio_state, T.nilable(String)
+    prop :discard_granularity, T.nilable(String)
 
     def aio_native=(value)
       raise(AutoHCKError, '--aio-native cannot be combined with --aio-threads') if value && drive_aio_state == 'threads'
@@ -307,6 +308,11 @@ module AutoHCK
       parser.on('--aio-threads', TrueClass,
                 'Use aio=threads for virtual disks (forces cache=none, cannot combine with --aio-native)',
                 &method(:aio_threads=))
+
+      parser.on('--discard-granularity <size>', String,
+                'Set discard_granularity on virtio-blk-pci devices and discard=unmap on their drive',
+                'Size can be a plain byte count or use a K/M/G suffix (e.g. 4096, 4K, 256K, 32M)',
+                &method(:discard_granularity=))
     end
     # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
   end

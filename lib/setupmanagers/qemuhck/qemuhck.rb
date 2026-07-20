@@ -93,6 +93,7 @@ module AutoHCK
       options
     end
 
+    # rubocop:disable Metrics/AbcSize
     def client_vm_common_options
       common = @project.options.common
       test_opt = @project.options.test
@@ -109,9 +110,11 @@ module AutoHCK
         'fs_test_image_format' => test_opt.fs_test_image_format,
         'net_test_speed' => test_opt.net_test_speed,
         'drive_aio_state' => test_opt.drive_aio_state,
+        'discard_granularity' => test_opt.discard_granularity,
         'ctrl_net_device' => common.client_ctrl_net_dev
       }.compact
     end
+    # rubocop:enable Metrics/AbcSize
 
     sig { params(client_info: Models::HLKClient, index: Integer).returns(T::Hash[String, T.untyped]) }
     def client_vm_options(client_info, index)
