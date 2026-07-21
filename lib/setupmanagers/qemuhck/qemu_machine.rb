@@ -364,7 +364,10 @@ module AutoHCK
     end
 
     def replacement_map
-      ReplacementMap.new(machine_replacement_map, { '@client_id@' => @client_id })
+      ReplacementMap.new(@project.project_replacement_map, machine_replacement_map, {
+                           '@client_id@' => @client_id,
+                           '@test_netdev_id@' => @nm.test_device_ifname
+                         })
     end
 
     def memory_replacement_map

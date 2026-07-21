@@ -23,6 +23,10 @@ module AutoHCK
         @config = Json.read_json(CONFIG_JSON, @logger)
       end
 
+      def test_device_ifname
+        @config['devices']['test']['ifname']
+      end
+
       def read_device(device)
         @logger.info("Loading device: #{device}")
         Models::QemuHCKDevice.from_json_file("#{DEVICES_JSON_DIR}/#{device}.json", @logger)
