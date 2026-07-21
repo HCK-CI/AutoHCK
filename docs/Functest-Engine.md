@@ -176,6 +176,7 @@ A test case defines an ordered sequence of steps and optional cleanup steps. Cas
 | `test_system_ref` | No | Reference to an issue or ticket |
 | `test_steps` | Yes | Ordered array of step objects; a failure aborts remaining steps |
 | `cleanup` | No | Steps run after test completes (pass or fail); errors here do not change test status |
+| `clients` | No | Platform client role-ids (e.g. `["c1", "c2"]`) this test case needs booted. Default: `["c1"]`. See [Multi-Client Support](#multi-client-support). |
 
 ### Example
 
@@ -203,9 +204,10 @@ See [`lib/engines/functest/tests/cases/driver_sign_check.json`](../lib/engines/f
 | `timeout` | Step timeout in seconds; overrides the engine default of 300s. |
 | `ignore_errors` | If `true`, a failure in this step does not abort the test. Useful for optional steps in `test_steps`. Default: `false`. |
 | `variables` | Maps `@placeholder@` strings to existing context variable names for extra substitution within this step. |
-| `capture_output` | Name of a variable to store the step's output in. For example, `"capture_output": "driver_version"` stores the output and makes it available as `@driver_version@` in subsequent steps. Supported by `guest_run`/`guest_run_file`, `qmp_command`, and `qmp_wait_event`. |
-| `expected_output_contains` | The step fails if the command output does not contain this exact string. Only supported by `guest_run`/`guest_run_file`. |
-| `expected_output_matches` | The step fails if the command output does not match this regex pattern. Only supported by `guest_run`/`guest_run_file`. |
+| `capture_output` | Name of a variable to store the step's output in, e.g. `"capture_output": "driver_version"` makes it available as `@driver_version@` later. Supported by `guest_run`/`guest_run_file`, `qmp_command`, `qmp_wait_event`. On a multi-client step, only the primary target's output is captured. |
+| `expected_output_contains` | The step fails if the output does not contain this string. Only for `guest_run`/`guest_run_file`. Checked against every client the step ran on. |
+| `expected_output_matches` | The step fails if the output does not match this regex. Only for `guest_run`/`guest_run_file`. Checked against every client the step ran on. |
+| `clients` | Platform client role-ids (e.g. `["c2"]`) this step targets. Applies to `guest_run`/`guest_run_file`, `guest_reboot`, `files_action`, `qmp_command`, `qmp_wait_event`; `host_run`/`host_run_file` always run once on the host regardless. Omitted/empty broadcasts to every client booted for the test case. See [Multi-Client Support](#multi-client-support). |
 
 ---
 
@@ -350,7 +352,35 @@ Blocks until a specific QEMU event is received from the client VM.
 
 ### `barrier`
 
-A named synchronization point. In the current single-VM implementation it only logs the barrier name and does nothing else. Reserved for future multi-VM support.
+A named synchronization point. It only logs the barrier name and does nothing else.
+
+---
+
+## Multi-Client Support
+
+A test case can declare multiple clients via its top-level `clients` field, and a step can target one of them via its own `clients` field. Both use platform role-ids (`"c1"`, `"c2"`, ... — the keys of a platform JSON's `clients` map), not the VM's `name`.
+
+```json
+{
+    "name": "multi_client_example",
+    "clients": ["c1", "c2"],
+    "test_steps": [
+        {
+            "desc": "Runs only on c1",
+            "clients": ["c1"],
+            "guest_run": "Write-Output 'hello from c1'"
+        },
+        {
+            "desc": "Runs on every client booted for this test case",
+            "guest_run": "Write-Output 'hello from everyone'"
+        }
+    ]
+}
+```
+
+- `clients` defaults to `["c1"]`, so existing single-client tests are unaffected. `FunctestEngine` boots the union of `clients` across every selected test, once, up front.
+- A step's `clients` must be a subset of its test case's `clients`, and declared in the platform JSON — otherwise the step fails.
+- `capture_output` stores only the primary target's output; `expected_output_contains`/`expected_output_matches` are checked against every machine the step ran on.
 
 ---
 
@@ -370,6 +400,7 @@ These are populated automatically from CLI arguments and driver configuration:
 | `@driver_name@` | Full driver name as defined in the driver JSON configuration |
 | `@test_binaries_path@` | Local host path to test binaries content (`--test-binaries-path` CLI option); see [Device-only testing](#device-only-testing) |
 | `@test_binaries_dir@` | Guest path where `--test-binaries-path` content was uploaded (`C:\AutoHCK\test_binaries`) |
+| `@client_id@` | Zero-padded client id (e.g. `01`, `02`). Varies per target machine in `guest_run`/`guest_run_file`/`files_action`. |
 
 ### Step-level Variable Overrides
 

@@ -7,7 +7,7 @@ module AutoHCK
   class FunctestClient
     TEST_BINARIES_REMOTE_PATH = 'C:\\AutoHCK\\test_binaries'
 
-    attr_reader :name, :tools, :replacement_map
+    attr_reader :name, :tools, :replacement_map, :winrm_addr
 
     def initialize(setup_manager, scope, name, run_opts = nil)
       @project = setup_manager.project
@@ -18,29 +18,19 @@ module AutoHCK
       @runner = setup_manager.run_client(scope, name, run_opts)
       scope << self
       @replacement_map = @project.project_replacement_map.merge(setup_manager.client_replacement_map(name))
+      @winrm_addr = lookup_winrm_addr
     end
 
-    def prepare_machine
+    # tools is a FunctestTools instance shared by every client booted this
+    # run. FunctestEngine builds it.
+    def prepare_machine(tools)
       @logger.info("Preparing client #{@name}...")
-      @tools = FunctestTools.new(@project, @name, client_winrm_addr)
+      @tools = tools
       @tools.wait_for_client_online(@name)
       @project.extra_sw_manager.install_software_before_driver(@tools, @name)
       install_drivers
       copy_test_binaries
       @project.extra_sw_manager.install_software_after_driver(@tools, @name)
-    end
-
-    def command_execution_manager
-      raise AutoHCKError, 'Tools not initialized; call prepare_machine first' unless @tools
-
-      @command_execution_manager ||= CommandExecutionManager.new(
-        project: @project,
-        tools: @tools,
-        machines: [@name],
-        init_opts: {
-          reboot_strategy: CommandExecutionManager::RebootStrategy[:WinrmPoll]
-        }
-      )
     end
 
     def close
@@ -49,12 +39,12 @@ module AutoHCK
 
     private
 
-    def client_winrm_addr
+    def lookup_winrm_addr
       client = @project.engine_platform.clients.values.find { |c| c.name == @name }
       raise AutoHCKError, "No platform client entry found for #{@name}" unless client
       raise AutoHCKError, "winrm_addr missing for client #{@name} in platform config" unless client.winrm_addr
 
-      { addr: client.winrm_addr }
+      { addr: client.winrm_addr, port: client.winrm_port }
     end
 
     def insert_driver_replacement(driver, replacement)
