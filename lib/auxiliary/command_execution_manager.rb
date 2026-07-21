@@ -78,7 +78,7 @@ module AutoHCK
       execute_host(command_info, replacement, desc) if host_command?(command_info)
       execute_files_actions(command_info, replacement) unless command_info.files_action.empty?
       execute_barrier(command_info) if command_info.barrier
-      result[:qmp_result] = execute_qmp_command(command_info) if command_info.qmp_command
+      result[:qmp_result] = execute_qmp_command(command_info, replacement) if command_info.qmp_command
       result[:qmp_event] = execute_qmp_wait_event(command_info) if command_info.qmp_wait_event
 
       result
@@ -191,14 +191,16 @@ module AutoHCK
       result
     end
 
-    sig { params(command_info: Models::CommandInfo).returns(T.untyped) }
-    def execute_qmp_command(command_info)
+    sig { params(command_info: Models::CommandInfo, replacement: ReplacementMap).returns(T.untyped) }
+    def execute_qmp_command(command_info, replacement)
       qmp = T.must(command_info.qmp_command)
       execute = qmp.execute
 
       outputs = {}
       @machines.each do |machine_name|
-        outputs[machine_name] = run_qmp_command(execute, qmp.arguments, machine_name)
+        map = replacement_map_for(machine_name, replacement, command_info)
+        arguments = qmp.arguments && map.replace(qmp.arguments)
+        outputs[machine_name] = run_qmp_command(execute, arguments, machine_name)
       rescue QMPError => e
         raise EngineError, "QMP command '#{execute}' failed on #{machine_name}: #{e.message}"
       end
