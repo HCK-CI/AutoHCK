@@ -62,6 +62,16 @@ module AutoHCK
         { name: name, description: description, status: 'not_run', duration: 0, dump_path: nil }
       end
 
+      def tests_stats
+        total = @results.length
+        passed = @results.count { |r| r[:status] == 'passed' }
+        failed = @results.count { |r| r[:status] == 'failed' }
+
+        { 'current' => @current_test, 'passed' => passed,
+          'failed' => failed, 'inqueue' => total - passed - failed,
+          'currentcount' => passed + failed + 1, 'total' => total }
+      end
+
       def record_test(test)
         start_time = Time.now
         @current_test = test.name
@@ -75,6 +85,7 @@ module AutoHCK
       ensure
         finalize_result(result, test, start_time)
         @current_test = nil
+
         @project.update_test_stats(tests_stats)
       end
 
