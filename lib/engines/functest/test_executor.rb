@@ -23,16 +23,20 @@ module AutoHCK
         @step_handler = StepHandler.new(project, @command_execution_manager, @machine_name, @context,
                                         default_timeout: default_timeout)
         @results = []
+        @current_test = nil
       end
 
       def execute_test(test)
         log_section("Starting test: #{test.name}")
         @logger.info("Description: #{@context.substitute_variables(test.description)}") if test.description
+
+        @results << empty_test_result(test.name, test.description) unless @results.any? { |r| r[:name] == test.name }
         record_test(test)
       end
 
       def execute_tests(tests)
         @logger.info("Executing #{tests.length} test(s)")
+        @results += tests.map { |test| empty_test_result(test.name, test.description) }
         tests.each { |test| execute_test(test) }
         summary
       end
@@ -54,14 +58,24 @@ module AutoHCK
 
       private
 
+      def empty_test_result(name, description)
+        { name: name, description: description, status: 'not_run', duration: 0, dump_path: nil }
+      end
+
       def record_test(test)
         start_time = Time.now
-        result = { name: test.name, description: test.description,
-                   status: 'running', steps: [], start_time: start_time.utc.iso8601 }
+        @current_test = test.name
+        result = @results.find { |r| r[:name] == test.name }
+        raise EngineError, "Result placeholder not found for #{test.name}" unless result
+
+        result.merge!({ status: 'running', steps: [], start_time: start_time.utc.iso8601 })
+        @project.generate_result_report
         run_test_steps(test, result)
         result
       ensure
         finalize_result(result, test, start_time)
+        @current_test = nil
+        @project.update_test_stats(tests_stats)
       end
 
       def finalize_result(result, test, start_time)
@@ -70,7 +84,18 @@ module AutoHCK
         end_time = Time.now
         result[:end_time] = end_time.utc.iso8601
         result[:duration] = end_time - start_time
-        @results << result
+
+        @results.find { |r| r[:name] == test.name }.merge!(result)
+        save_result(result, test)
+      end
+
+      def save_result(result, test)
+        r_name = "Result_#{test.safe_name}.json"
+        File.write("#{@project.workspace_path}/#{r_name}", JSON.pretty_generate(result))
+        @project.result_uploader.upload_file("#{@project.workspace_path}/#{r_name}", r_name)
+
+        @project.generate_result_report
+        @project.generate_junit
       end
 
       def run_test_steps(test, result)
