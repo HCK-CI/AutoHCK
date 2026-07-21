@@ -111,6 +111,7 @@ module AutoHCK
         'net_test_speed' => test_opt.net_test_speed,
         'drive_aio_state' => test_opt.drive_aio_state,
         'discard_granularity' => test_opt.discard_granularity,
+        'fs_daemon_cache_mode' => test_opt.fs_daemon_cache_mode,
         'ctrl_net_device' => common.client_ctrl_net_dev
       }.compact
     end

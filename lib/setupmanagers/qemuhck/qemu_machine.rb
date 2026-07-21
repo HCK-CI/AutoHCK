@@ -412,6 +412,16 @@ module AutoHCK
       }
     end
 
+    FS_DAEMON_CACHE_MODES = %w[auto always never].freeze
+
+    # virtiofsd cache mode for the virtio-fs device; defaults to 'always'
+    def fs_daemon_cache_mode_replacement_map
+      mode = option_config('fs_daemon_cache_mode')
+      mode = 'always' unless FS_DAEMON_CACHE_MODES.include?(mode)
+
+      { '@fs_daemon_cache_mode@' => mode }
+    end
+
     sig { returns(T::Array[String]) }
     def device_config_commands
       @device_infos.map(&:config_commands).flatten.compact
@@ -456,6 +466,7 @@ module AutoHCK
                                              memory_replacement_map,
                                              options_replacement_map,
                                              discard_granularity_replacement_map,
+                                             fs_daemon_cache_mode_replacement_map,
                                              device_define_variables,
                                              @define_variables)
     end
