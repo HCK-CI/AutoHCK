@@ -14,6 +14,11 @@ module AutoHCK
       const :timeout, T.nilable(Integer)
       const :test_steps, T::Array[Models::CommandInfo]
       const :cleanup, T::Array[Models::CommandInfo], default: []
+
+      sig { returns(String) }
+      def safe_name
+        name.gsub(/[^\w\-.]/, '_').gsub(/(^_|_$)/, '')
+      end
     end
   end
 end
