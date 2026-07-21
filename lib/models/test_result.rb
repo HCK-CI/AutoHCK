@@ -40,6 +40,8 @@ module AutoHCK
         new(
           name: result_hash[:name],
           status: case result_hash[:status]
+                  when 'not_run' then HLK::TestResultStatus::NotRun
+                  when 'running' then HLK::TestResultStatus::Running
                   when 'passed' then HLK::TestResultStatus::Passed
                   when 'failed' then HLK::TestResultStatus::Failed
                   else raise "Unexpected functest status: #{result_hash[:status]}"
