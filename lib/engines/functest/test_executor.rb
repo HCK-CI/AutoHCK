@@ -9,7 +9,7 @@ module AutoHCK
       attr_reader :results, :context
 
       def test_results
-        @test_results ||= @results.map { |r| Models::TestResult.from_functest(r) }
+        @results.map { |r| Models::TestResult.from_functest(r) }
       end
 
       def initialize(project, client, default_timeout:)
