@@ -96,6 +96,7 @@ Usage: auto_hck.rb test [test options]
         --aio-threads                 Use aio=threads for virtual disks (forces cache=none, cannot combine with --aio-native)
         --discard-granularity <size>  Set discard_granularity on virtio-blk-pci devices and discard=unmap on their drive
                                      Size can be a plain byte count or use a K/M/G suffix (e.g. 4096, 4K, 256K, 32M)
+        --virtiofs-cache <mode>       Set virtiofsd cache mode for the virtio-fs device (default: always)
         --extensions <extensions_list>
                                      List of extensions for run test
         --net-test-speed <net_test_speed>

@@ -13,7 +13,7 @@
   "pre_start_commands": [
     "mkdir -p @fs_daemon_share_path@",
     "rm -f @fs_daemon_socket@",
-    "@source@/bin/unix_spawn @fs_daemon_socket@ @fs_daemon_bin@ --fd 3 -o source=@fs_daemon_share_path@ --cache always"
+    "@source@/bin/unix_spawn @fs_daemon_socket@ @fs_daemon_bin@ --fd 3 -o source=@fs_daemon_share_path@ --cache @fs_daemon_cache_mode@"
   ],
   "post_stop_commands": [
     "rm -f @fs_daemon_socket@"
