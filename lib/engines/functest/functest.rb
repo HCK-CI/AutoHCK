@@ -27,10 +27,24 @@ module AutoHCK
       @logger.info('Functest engine initialized')
     end
 
-    def self.tag(options)
+    def self.base_tag(options)
       platform = options.test.platform
+
+      category = options.test.category
+      return "#{category}-#{platform}" if category
+
       drivers = options.test.drivers
-      drivers.empty? ? "functest-#{platform}" : "#{drivers.join('-')}-#{platform}"
+      return "#{drivers.first}-#{platform}" if drivers.length == 1
+
+      "functest-#{platform}"
+    end
+
+    def self.tag(options)
+      base_tag = base_tag(options)
+      suffix = options.test.tag_suffix&.strip
+      return base_tag unless suffix && !suffix.empty?
+
+      "#{base_tag}-#{suffix}"
     end
 
     def self.platform(logger, options)
