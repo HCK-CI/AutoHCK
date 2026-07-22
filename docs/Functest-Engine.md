@@ -370,6 +370,7 @@ These are populated automatically from CLI arguments and driver configuration:
 | `@driver_name@` | Full driver name as defined in the driver JSON configuration |
 | `@test_binaries_path@` | Local host path to test binaries content (`--test-binaries-path` CLI option); see [Device-only testing](#device-only-testing) |
 | `@test_binaries_dir@` | Guest path where `--test-binaries-path` content was uploaded (`C:\AutoHCK\test_binaries`) |
+| `@spare_pcie_root_port_N@` (`N` = `0`, `1`, ...) | Bus id of the Nth spare, empty `pcie-root-port` allocated at boot via `--pcie-spare-root-ports <N>` (e.g. `@spare_pcie_root_port_0@` → `root2.0`). The max value of `N` depends on QEMU |
 
 ### Step-level Variable Overrides
 

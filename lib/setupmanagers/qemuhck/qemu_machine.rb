@@ -196,6 +196,7 @@ module AutoHCK
       @define_variables = {}
       @run_opts = {}
       @configured = false
+      @spare_pcie_root_ports = []
     end
 
     sig { returns(T::Array[Models::CommandInfo]) }
@@ -367,7 +368,15 @@ module AutoHCK
       ReplacementMap.new(@project.project_replacement_map, machine_replacement_map, {
                            '@client_id@' => @client_id,
                            '@test_netdev_id@' => @nm.test_device_ifname
-                         })
+                         }, spare_pcie_root_port_replacement_map)
+    end
+
+    # Exposes each spare pcie-root-port's bus id (e.g. @spare_pcie_root_port_0@ => "root5.0")
+    # so test steps (e.g. qmp_command device_add) can hotplug onto it.
+    def spare_pcie_root_port_replacement_map
+      @spare_pcie_root_ports.each_with_index.to_h do |bus_name, i|
+        ["@spare_pcie_root_port_#{i}@", "#{bus_name}.0"]
+      end
     end
 
     def memory_replacement_map
@@ -620,6 +629,31 @@ module AutoHCK
       @device_infos.each do |device_info|
         @logger.debug("Processing device: #{device_info.name}")
         process_device_command(device_info)
+      end
+
+      allocate_spare_pcie_root_ports
+    end
+
+    sig { returns(Integer) }
+    def pcie_spare_root_port_count
+      count = (option_config('pcie_spare_root_ports') || 0).to_i
+      return count if count.zero?
+
+      if @machine['pcie_root_port'].nil?
+        raise QemuHCKError, "pcie_spare_root_ports requires a PCIe-capable machine type (got '#{@machine_name}')"
+      end
+
+      count
+    end
+
+    # Creates empty pcie-root-ports with no device attached, so a later QMP
+    # device_add can hotplug onto a real bus instead of pcie.0 directly.
+    sig { void }
+    def allocate_spare_pcie_root_ports
+      @spare_pcie_root_ports = Array.new(pcie_spare_root_port_count) do
+        cmd, bus_name = @pcim.create_pci_root_port
+        @device_commands << cmd
+        bus_name
       end
     end
 
