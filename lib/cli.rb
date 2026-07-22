@@ -115,6 +115,7 @@ module AutoHCK
     prop :drive_aio_state, T.nilable(String)
     prop :discard_granularity, T.nilable(String)
     prop :fs_daemon_cache_mode, T.nilable(String)
+    prop :pcie_spare_root_ports, T.nilable(Integer)
 
     def aio_native=(value)
       raise(AutoHCKError, '--aio-native cannot be combined with --aio-threads') if value && drive_aio_state == 'threads'
@@ -318,6 +319,11 @@ module AutoHCK
       parser.on('--virtiofs-cache <mode>', %w[auto always never],
                 'Set virtiofsd cache mode for the virtio-fs device (default: always)',
                 &method(:fs_daemon_cache_mode=))
+
+      parser.on('--pcie-spare-root-ports <N>', Integer,
+                'Allocate N extra empty pcie-root-ports at boot for later hotplug (q35 only, default: 0)',
+                'Max N depends on QEMU',
+                &method(:pcie_spare_root_ports=))
     end
     # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
   end
