@@ -367,8 +367,10 @@ module AutoHCK
     def replacement_map
       ReplacementMap.new(@project.project_replacement_map, machine_replacement_map, {
                            '@client_id@' => @client_id,
-                           '@test_netdev_id@' => @nm.test_device_ifname
-                         }, spare_pcie_root_port_replacement_map)
+                           '@test_netdev_id@' => @nm.test_device_ifname,
+                           '@storage_dev_id@' => format('%02d', @sm.dev_id)
+                         }, device_define_variables,
+                         spare_pcie_root_port_replacement_map)
     end
 
     # Exposes each spare pcie-root-port's bus id (e.g. @spare_pcie_root_port_0@ => "root5.0")

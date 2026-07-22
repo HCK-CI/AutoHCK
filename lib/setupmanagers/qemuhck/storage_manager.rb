@@ -10,10 +10,13 @@ module AutoHCK
 
       IMAGE_FORMAT = 'qcow2'
 
+      attr_reader :dev_id
+
       def initialize(id, client_id, qemu_config, qemu_options, logger)
         @id = id
         @client_id = client_id
         @logger = logger
+        @dev_id = 0
 
         @workspace_path = qemu_options['workspace_path']
         @qemu_img_bin = qemu_config['qemu_img_bin']
@@ -26,8 +29,13 @@ module AutoHCK
       end
 
       def device_command_info(type, device, command_options, bus_name, qemu_replacement_map)
+        @dev_id += 1
+
         replacement_map = qemu_replacement_map.merge command_options
-        device_command = replacement_map.merge({ '@bus_name@' => bus_name }).create_cmd(device.command_line.join(' '))
+        device_command = replacement_map.merge({
+                                                 '@bus_name@' => bus_name,
+                                                 '@storage_dev_id@' => format('%02d', @dev_id)
+                                               }).create_cmd(device.command_line.join(' '))
 
         @logger.debug("Device #{device.name} used as #{type} device")
         @logger.debug("Device command: #{device_command}")
