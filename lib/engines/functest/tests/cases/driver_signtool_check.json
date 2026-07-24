@@ -1,0 +1,19 @@
+{
+    "name": "driver_signtool_check",
+    "description": "Verify @driver_module@ catalog integrity using signtool — requires extra_software signtool",
+    "timeout": 120,
+    "test_steps": [
+        {
+            "desc": "Locate signtool.exe",
+            "guest_run": "$st = Get-Item (Join-Path $env:SystemDrive '\\signtool\\signtool.exe') -ErrorAction SilentlyContinue; if (-not $st) { $st = Get-ChildItem (Join-Path ${env:ProgramFiles(x86)} 'Windows Kits') -Recurse -Filter signtool.exe -ErrorAction SilentlyContinue | Where-Object { $_.Directory.Name -eq 'x64' } | Select-Object -First 1 }; if ($st) { Write-Output $st.FullName } else { Write-Output 'not-found' }",
+            "capture_output": "signtool_path",
+            "timeout": 30
+        },
+        {
+            "desc": "Verify @driver_module@ catalog integrity via signtool",
+            "guest_run_file": "lib/engines/functest/tests/scripts/verify_driver_signtool.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 90
+        }
+    ]
+}
