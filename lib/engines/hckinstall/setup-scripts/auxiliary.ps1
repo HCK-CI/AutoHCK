@@ -1,6 +1,5 @@
 $FILTERS = "https://go.microsoft.com/fwlink/?linkid=875139"
-$STUDIOCOMPUTERNAME = "STUDIO"
-$CLIENTCOMPUTERNAME = "CL"
+$VMNAMES = @('STUDIO', 'CL1', 'CL2')
 $CONTROLNET = "192.168.100" # The =FIRST THREE= octets of the IP
 $STUDIOIP = "${CONTROLNET}.1"
 $KITTYPE = "HLK"
