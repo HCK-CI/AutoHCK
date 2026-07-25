@@ -110,6 +110,7 @@ module AutoHCK
       end
 
       def run_test_steps(test, result)
+        run_pre_test_commands(test)
         test.test_steps.each_with_index { |step, index| result[:steps] << execute_test_step(step, index) }
         result[:status] = 'passed'
         @logger.info("PASSED: #{test.name}")
@@ -146,6 +147,20 @@ module AutoHCK
         @logger.info('=' * 80)
         @logger.info(title)
         @logger.info('=' * 80)
+      end
+
+      def run_pre_test_commands(test)
+        return if test.pre_test_commands.empty?
+
+        @logger.info('Running pre-test commands...')
+        desc = nil
+        test.pre_test_commands.each_with_index do |step, index|
+          desc = @context.substitute_variables(step.desc)
+          @step_handler.execute_step(step, index)
+        rescue StandardError => e
+          @logger.error("  FAIL: Pre-test command failed (#{desc}): #{e.message}")
+          raise
+        end
       end
 
       def run_cleanup(test)
