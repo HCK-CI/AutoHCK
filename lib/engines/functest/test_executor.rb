@@ -72,6 +72,22 @@ module AutoHCK
           'currentcount' => passed + failed + 1, 'total' => total }
       end
 
+      def create_local_test_copy(test)
+        TestCase.new(
+          name: test.name,
+          description: test.description,
+          test_system_ref: test.test_system_ref,
+          timeout: test.timeout,
+          pre_test_commands: test.pre_test_commands.map(&:dup),
+          cycles: test.cycles,
+          test_steps: test.test_steps.map(&:dup),
+          cleanup: test.cleanup.map(&:dup)
+        ).tap do |test_local|
+          test_local.add_auto_index
+          test_local.apply_cycles_to_steps
+        end
+      end
+
       def record_test(test)
         start_time = Time.now
         test_name = test.name
@@ -81,8 +97,8 @@ module AutoHCK
 
         result.merge!({ status: 'running', steps: [], start_time: start_time.utc.iso8601 })
         @project.generate_result_report
-        test.add_auto_index
-        run_test_steps(test, result)
+        test_local = create_local_test_copy(test)
+        run_test_steps(test_local, result)
         result
       ensure
         finalize_result(result, test, start_time)
