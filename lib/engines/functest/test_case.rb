@@ -13,7 +13,8 @@ module AutoHCK
       const :test_system_ref, T.nilable(String)
       const :timeout, T.nilable(Integer)
       const :pre_test_commands, T::Array[Models::CommandInfo], default: []
-      const :test_steps, T::Array[Models::CommandInfo]
+      const :cycles, Integer, default: 1
+      prop :test_steps, T::Array[Models::CommandInfo]
       const :cleanup, T::Array[Models::CommandInfo], default: []
 
       sig { returns(String) }
@@ -30,6 +31,22 @@ module AutoHCK
         test_steps.each_with_index do |step, index|
           step.desc = "[Step #{index + 1}] #{step.desc}"
         end
+      end
+
+      sig { void }
+      def apply_cycles_to_steps
+        return if cycles <= 1
+
+        new_test_steps = []
+        cycles.times do |cycle|
+          test_steps.each do |step|
+            new_step = step.dup
+            new_step.desc = "[Cycle #{cycle + 1}] #{step.desc}"
+            new_test_steps << new_step
+          end
+        end
+
+        self.test_steps = new_test_steps
       end
     end
   end
