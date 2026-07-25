@@ -74,12 +74,14 @@ module AutoHCK
 
       def record_test(test)
         start_time = Time.now
-        @current_test = test.name
-        result = @results.find { |r| r[:name] == test.name }
-        raise EngineError, "Result placeholder not found for #{test.name}" unless result
+        test_name = test.name
+        @current_test = test_name
+        result = @results.find { |r| r[:name] == test_name }
+        raise EngineError, "Result placeholder not found for #{test_name}" unless result
 
         result.merge!({ status: 'running', steps: [], start_time: start_time.utc.iso8601 })
         @project.generate_result_report
+        test.add_auto_index
         run_test_steps(test, result)
         result
       ensure
@@ -121,7 +123,7 @@ module AutoHCK
       end
 
       def execute_test_step(step, index)
-        desc = @context.substitute_variables(step.desc || "Step #{index + 1}")
+        desc = @context.substitute_variables(step.desc)
         start_time = Time.now
         step_result = { index: index, description: desc, status: 'running', start_time: start_time.utc.iso8601 }
         run_step(step, index, step_result, desc)

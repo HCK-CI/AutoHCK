@@ -20,6 +20,17 @@ module AutoHCK
       def safe_name
         name.gsub(/[^\w\-.]/, '_').gsub(/(^_|_$)/, '')
       end
+
+      sig { void }
+      def add_auto_index
+        pre_test_commands.each_with_index do |step, index|
+          step.desc = "[Pre-test step #{index + 1}] #{step.desc}"
+        end
+
+        test_steps.each_with_index do |step, index|
+          step.desc = "[Step #{index + 1}] #{step.desc}"
+        end
+      end
     end
   end
 end
