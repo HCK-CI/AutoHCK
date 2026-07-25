@@ -63,7 +63,7 @@ module AutoHCK
       extend T::Sig
       extend JsonHelper
 
-      const :desc, String
+      prop :desc, String
       const :timeout, T.nilable(Integer)
       const :capture_output, T.nilable(String)
       const :ignore_errors, T.nilable(T::Boolean)
