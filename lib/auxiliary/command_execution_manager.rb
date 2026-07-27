@@ -191,6 +191,22 @@ module AutoHCK
       result
     end
 
+    # QEMU QMP expects JSON numbers for numeric device properties (e.g. guest-cid
+    # as uint64). ReplacementMap#replace always yields Strings, so coerce
+    # digit-only values after substitution. Non-numeric strings are unchanged.
+    def coerce_numeric_qmp_values(value)
+      case value
+      when String
+        value.match?(/\A-?\d+\z/) ? value.to_i : value
+      when Hash
+        value.transform_values { |v| coerce_numeric_qmp_values(v) }
+      when Array
+        value.map { |v| coerce_numeric_qmp_values(v) }
+      else
+        value
+      end
+    end
+
     sig { params(command_info: Models::CommandInfo, replacement: ReplacementMap).returns(T.untyped) }
     def execute_qmp_command(command_info, replacement)
       qmp = T.must(command_info.qmp_command)
@@ -199,7 +215,7 @@ module AutoHCK
       outputs = {}
       @machines.each do |machine_name|
         map = replacement_map_for(machine_name, replacement, command_info)
-        arguments = qmp.arguments && map.replace(qmp.arguments)
+        arguments = qmp.arguments && coerce_numeric_qmp_values(map.replace(qmp.arguments))
         outputs[machine_name] = run_qmp_command(execute, arguments, machine_name)
       rescue QMPError => e
         raise EngineError, "QMP command '#{execute}' failed on #{machine_name}: #{e.message}"
