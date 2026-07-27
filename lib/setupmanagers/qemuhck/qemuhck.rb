@@ -274,6 +274,28 @@ module AutoHCK
       @clients_vm_runners[name] = @clients_vm[name].run(scope, run_opts)
     end
 
+    # Stops the client's VM (if running) and boots a new one with run_opts.
+    def power_cycle_client(scope, name, run_opts = nil)
+      stop_client(name)
+      @clients_vm_runners[name] = @clients_vm[name].run(scope, run_opts)
+    end
+
+    # Stops the client's VM without deleting its disk, so the disk can
+    # still be read or saved as a snapshot afterwards.
+    def stop_client(name)
+      @clients_vm_runners[name]&.vm_abort
+    end
+
+    def client_save_snapshot(name, tag)
+      @clients_vm[name].save_snapshot(tag)
+    end
+
+    # Raises an error if the snapshot tag does not exist for the given client.
+    def client_snapshot_tag(name, tag)
+      path = @clients_vm[name].snapshot_path(tag)
+      raise AutoHCKError, "Unknown snapshot tag '#{tag}' for client #{name}" unless File.exist?(path)
+    end
+
     def run_hck_studio(scope, run_opts)
       HCKStudio.new(self, scope, run_opts) { @studio_vm.find_world_ip }
     end

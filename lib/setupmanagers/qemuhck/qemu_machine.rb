@@ -169,6 +169,7 @@ module AutoHCK
       first_time: false,
       create_snapshot: true,
       boot_from_snapshot: false,
+      boot_from_tag: nil,
       attach_iso_list: [],
       dump_only: false,
       secure: false
@@ -845,6 +846,16 @@ module AutoHCK
 
     def delete_snapshot
       @sm.delete_boot_snapshot
+    end
+
+    def snapshot_path(tag)
+      @sm.tag_snapshot_path(tag)
+    end
+
+    # Renames the current boot overlay to a named tag. The VM must already
+    # be stopped.
+    def save_snapshot(tag)
+      @sm.save_boot_snapshot_as_tag(tag)
     end
 
     def validate_run_opts(run_opts)

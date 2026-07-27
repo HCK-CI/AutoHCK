@@ -93,6 +93,8 @@ module AutoHCK
       Runner.new(@logger)
     end
 
+    def power_cycle_client(*); end
+
     def client_post_start_commands
       []
     end

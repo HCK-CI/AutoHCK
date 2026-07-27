@@ -48,6 +48,12 @@ module AutoHCK
         "#{@workspace_path}/#{filename}-snapshot.#{IMAGE_FORMAT}"
       end
 
+      # Returns the workspace path for a named snapshot tag.
+      def tag_snapshot_path(tag)
+        filename = File.basename(@boot_image_path, '.*')
+        "#{@workspace_path}/#{filename}-snapshot-#{tag}.#{IMAGE_FORMAT}"
+      end
+
       def check_image_exist
         File.exist?(@boot_image_path)
       end
@@ -76,18 +82,33 @@ module AutoHCK
         end
       end
 
+      # Creates a new qcow2 overlay at target_path backed by backing_path.
+      def create_snapshot_from(backing_path, target_path)
+        run_cmd(*%W[#{@qemu_img_bin} create -f #{IMAGE_FORMAT} -F #{IMAGE_FORMAT}
+                    -b #{backing_path} #{target_path}])
+      end
+
       def create_boot_snapshot
         @logger.info("Creating CL#{@client_id} snapshot file")
-        run_cmd(*%W[#{@qemu_img_bin} create -f #{IMAGE_FORMAT} -F #{IMAGE_FORMAT}
-                    -b #{@boot_image_path} #{boot_snapshot_path}])
+        create_snapshot_from(@boot_image_path, boot_snapshot_path)
       end
 
       def delete_boot_snapshot
         FileUtils.rm_f(boot_snapshot_path)
       end
 
+      # Renames the current boot overlay to a named tag.
+      def save_boot_snapshot_as_tag(tag)
+        target = tag_snapshot_path(tag)
+        raise MachineRunError, "Snapshot tag already exists: '#{tag}' (#{target})" if File.exist?(target)
+
+        @logger.info("Saving CL#{@client_id} boot snapshot as tag '#{tag}'")
+        FileUtils.mv(boot_snapshot_path, target)
+        target
+      end
+
       def boot_device_command(device, run_opts, bus_name, qemu_replacement_map)
-        create_boot_snapshot if run_opts[:create_snapshot]
+        ensure_boot_image_ready(run_opts)
         image_path = boot_device_image_path(run_opts)
 
         options = {
@@ -99,8 +120,19 @@ module AutoHCK
         [device_command_info('boot', device, options, bus_name, qemu_replacement_map), image_path]
       end
 
+      # Creates the boot overlay, using the named snapshot tag as backing if set.
+      def ensure_boot_image_ready(run_opts)
+        if (tag = run_opts[:boot_from_tag])
+          create_snapshot_from(tag_snapshot_path(tag), boot_snapshot_path)
+          return
+        end
+
+        create_boot_snapshot if run_opts[:create_snapshot]
+      end
+
       def boot_device_image_path(run_opts)
-        return boot_snapshot_path if run_opts[:create_snapshot] || run_opts[:boot_from_snapshot]
+        return boot_snapshot_path if run_opts[:boot_from_tag] || run_opts[:create_snapshot] ||
+                                     run_opts[:boot_from_snapshot]
 
         @boot_image_path
       end
