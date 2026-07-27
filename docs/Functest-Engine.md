@@ -226,6 +226,25 @@ A test case defines an ordered sequence of steps and optional cleanup steps. Cas
 | `test_steps` | Yes | Ordered array of step objects; a failure aborts remaining steps |
 | `cleanup` | No | Steps run after test completes (pass or fail); errors here do not change test status |
 | `clients` | No | Client ids (e.g. `[1, 2]`) this test case needs booted. Default: `[1]`. See [Multi-Client Support](#multi-client-support). |
+| `clean_boot` | No | If `true`, throw away the client's current VM state and boot fresh from the clean base image before running `test_steps`. Can't be used together with `boot_from_snapshot_tag`. Default: `false`. |
+| `boot_from_snapshot_tag` | No | Name of a snapshot tag saved earlier in the suite by another test's `save_snapshot_as`. Boots from that tag before running `test_steps`. Can't be used together with `clean_boot`. |
+| `save_snapshot_as` | No | After `test_steps` pass, save the VM's disk as a snapshot tag with this name, then reboot from it. Other tests can later boot from this tag using `boot_from_snapshot_tag`. |
+
+### VM Snapshots
+
+`clean_boot`, `boot_from_snapshot_tag`, and `save_snapshot_as` let tests in a suite share VM state, so a later test can reuse what an earlier one set up instead of doing it again:
+
+| Order | Test | Field | Effect |
+|---|---|---|---|
+| 1 | `test_a` | `save_snapshot_as: "state_x"` | Runs as normal; if it passes, saves the VM's disk as tag `state_x`. |
+| 2 | `test_b` | `boot_from_snapshot_tag: "state_x"` | Boots from tag `state_x` instead of continuing from `test_a`. |
+| 3 | `test_c` | `boot_from_snapshot_tag: "state_x"` | Also boots from `state_x`, separately from `test_b`. |
+| 4 | `test_d` | `clean_boot: true` | Ignores all tags; boots from the clean base image. |
+| 5 | `test_e` | *(none)* | No change; just keeps using the VM as `test_d` left it. |
+
+A tag has to be created by an earlier test's `save_snapshot_as` before another test can use it with `boot_from_snapshot_tag`. Using a tag that doesn't exist yet fails the test with an error.
+
+Tag files (`*-snapshot-<tag>.qcow2` in the workspace directory) are never deleted automatically, whether the suite passes or fails. You can always boot from one later by hand to check the state it holds.
 
 ### Example
 

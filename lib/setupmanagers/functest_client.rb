@@ -13,12 +13,37 @@ module AutoHCK
       @project = setup_manager.project
       @logger = @project.logger
       @setup_manager = setup_manager
+      @scope = scope
       @name = name
       @logger.info("Starting functest client #{name}")
       @runner = setup_manager.run_client(scope, name, run_opts)
       scope << self
       @replacement_map = @project.project_replacement_map.merge(setup_manager.client_replacement_map(name))
       @winrm_addr = lookup_winrm_addr
+    end
+
+    # Boots a fresh VM from the clean base image, discarding current state.
+    def reboot_clean
+      @logger.info("Rebooting client #{@name} from a clean image")
+      @runner = @setup_manager.power_cycle_client(@scope, @name, create_snapshot: true)
+      reconnect
+    end
+
+    # Boots a fresh VM from a previously saved snapshot tag.
+    def reboot_from_snapshot(tag)
+      @setup_manager.client_snapshot_tag(@name, tag)
+      @logger.info("Rebooting client #{@name} from snapshot tag '#{tag}'")
+      @runner = @setup_manager.power_cycle_client(@scope, @name, create_snapshot: true, boot_from_tag: tag)
+      reconnect
+    end
+
+    # Saves the VM's current state as a snapshot tag and reboots from it.
+    def save_snapshot(tag)
+      @logger.info("Saving client #{@name}'s current state as snapshot tag '#{tag}'")
+      @setup_manager.stop_client(@name)
+      @setup_manager.client_save_snapshot(@name, tag)
+      @runner = @setup_manager.power_cycle_client(@scope, @name, create_snapshot: true, boot_from_tag: tag)
+      reconnect
     end
 
     # tools is a FunctestTools instance shared by every client booted this
@@ -38,6 +63,10 @@ module AutoHCK
     end
 
     private
+
+    def reconnect
+      @tools.wait_for_client_online(@name)
+    end
 
     def lookup_winrm_addr
       client = @project.engine_platform.clients.values.find { |c| c.name == @name }
