@@ -28,6 +28,7 @@ module AutoHCK
                                         default_timeout: engine.default_timeout)
         @results = []
         @current_test = nil
+        @created_tags = Set.new
       end
       # rubocop:enable Metrics/AbcSize
 
@@ -77,6 +78,8 @@ module AutoHCK
           'currentcount' => passed + failed + 1, 'total' => total }
       end
 
+      # rubocop:disable Metrics/AbcSize
+      # There is no way to reduce the ABC size of this method without losing clarity.
       def create_local_test_copy(test)
         TestCase.new(
           name: test.name,
@@ -87,12 +90,16 @@ module AutoHCK
           cycles: test.cycles,
           test_steps: test.test_steps.map(&:dup),
           cleanup: test.cleanup.map(&:dup),
-          clients: test.clients.dup
+          clients: test.clients.dup,
+          clean_boot: test.clean_boot,
+          boot_from_snapshot_tag: test.boot_from_snapshot_tag,
+          save_snapshot_as: test.save_snapshot_as
         ).tap do |test_local|
           test_local.add_auto_index
           test_local.apply_cycles_to_steps
         end
       end
+      # rubocop:enable Metrics/AbcSize
 
       def record_test(test)
         start_time = Time.now
@@ -142,9 +149,11 @@ module AutoHCK
 
       def run_test_steps(test, result)
         prepare_test_clients!(test)
+        ensure_boot_state!(test)
         run_extension_pre_test_commands(test.name)
         run_pre_test_commands(test)
-        test.test_steps.each_with_index { |step, index| result[:steps] << execute_test_step(step, index) }
+        execute_test_steps(test, result)
+        save_snapshot_if_needed(test)
         result[:status] = 'passed'
         @logger.info("PASSED: #{test.name}")
       rescue StandardError => e
@@ -172,6 +181,46 @@ module AutoHCK
           raise EngineError, "Test '#{test.name}' step targets client(s) #{unknown.join(', ')} not declared " \
                              "in this test case's own clients list (#{test.clients.join(', ')})"
         end
+      end
+
+      def execute_test_steps(test, result)
+        test.test_steps.each_with_index { |step, index| result[:steps] << execute_test_step(step, index) }
+      end
+
+      # Boots the VM into the state this test needs, if any. With neither
+      # field set, nothing happens and the VM stays as-is.
+      def ensure_boot_state!(test)
+        if test.clean_boot && test.boot_from_snapshot_tag
+          raise EngineError, "#{test.name}: clean_boot and boot_from_snapshot_tag are mutually exclusive"
+        end
+
+        client = @clients.first
+        if test.clean_boot
+          client.reboot_clean
+        elsif test.boot_from_snapshot_tag
+          ensure_tag_known!(test.boot_from_snapshot_tag, test.name)
+          client.reboot_from_snapshot(test.boot_from_snapshot_tag)
+        end
+      end
+
+      # A tag can only be used once the test that saved it (save_snapshot_as) has run.
+      def ensure_tag_known!(tag, test_name)
+        return if @created_tags.include?(tag)
+
+        raise EngineError, "#{test_name}: boot_from_snapshot_tag references unknown tag '#{tag}' " \
+                           '(the test that creates it via save_snapshot_as must run earlier in the suite)'
+      end
+
+      def save_snapshot_if_needed(test)
+        tag = test.save_snapshot_as
+        return unless tag
+
+        if @created_tags.include?(tag)
+          raise EngineError, "#{test.name}: snapshot tag '#{tag}' was already created by an earlier test"
+        end
+
+        @clients.first.save_snapshot(tag)
+        @created_tags << tag
       end
 
       def execute_test_step(step, index)
