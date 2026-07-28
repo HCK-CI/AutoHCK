@@ -208,10 +208,11 @@ module AutoHCK
       outputs
     end
 
-    sig { params(event: String, machine_name: String, timeout: Integer).returns(T.untyped) }
-    def run_qmp_wait_event(event, machine_name, timeout)
-      @logger.info("Waiting for QMP event '#{event}' on #{machine_name} (timeout: #{timeout}s)")
-      response = @project.setup_manager.wait_for_hypervisor_client_event(machine_name, event, timeout: timeout)
+    sig { params(events: T::Array[String], machine_name: String, timeout: Integer).returns(T.untyped) }
+    def run_qmp_wait_event(events, machine_name, timeout)
+      events_desc = events.join("' or '")
+      @logger.info("Waiting for QMP event '#{events_desc}' on #{machine_name} (timeout: #{timeout}s)")
+      response = @project.setup_manager.wait_for_hypervisor_client_event(machine_name, events, timeout: timeout)
       @logger.debug("QMP event received: #{response.inspect}")
 
       response
@@ -221,13 +222,14 @@ module AutoHCK
     def execute_qmp_wait_event(command_info)
       qmp = T.must(command_info.qmp_wait_event)
       timeout = qmp.timeout || command_info.timeout || @default_timeout
-      event = qmp.event
+      events = qmp.events
+      events_desc = events.join("' or '")
 
       outputs = {}
       @machines.each do |machine_name|
-        outputs[machine_name] = run_qmp_wait_event(event, machine_name, timeout)
+        outputs[machine_name] = run_qmp_wait_event(events, machine_name, timeout)
       rescue QMPError => e
-        raise EngineError, "QMP event '#{event}' wait failed on #{machine_name}: #{e.message}"
+        raise EngineError, "QMP event '#{events_desc}' wait failed on #{machine_name}: #{e.message}"
       end
 
       outputs

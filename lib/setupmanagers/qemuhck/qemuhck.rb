@@ -266,8 +266,8 @@ module AutoHCK
       @clients_vm_runners[name].qmp.run_cmd(cmd, arguments)
     end
 
-    def wait_for_hypervisor_client_event(name, event, timeout: 60)
-      @clients_vm_runners[name].qmp.wait_for('event', event, timeout)
+    def wait_for_hypervisor_client_event(name, events, timeout: 60)
+      @clients_vm_runners[name].qmp.wait_for('event', events, timeout)
     end
 
     def run_client(scope, name, run_opts = nil)

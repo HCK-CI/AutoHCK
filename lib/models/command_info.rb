@@ -53,7 +53,9 @@ module AutoHCK
     class QmpWaitEventConfig < T::Struct
       extend T::Sig
 
-      const :event, String
+      # List of event names to wait for; returns as soon as any one of
+      # them occurs (e.g. a device that may emit either one).
+      const :events, T::Array[String]
       const :timeout, T.nilable(Integer)
     end
 
