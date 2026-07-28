@@ -329,14 +329,24 @@ Send a QEMU Monitor Protocol (QMP) command to the client VM at the hypervisor le
 
 ### `qmp_wait_event`
 
-Blocks until a specific QEMU event is received from the client VM.
+Blocks until one of the given QEMU events is received from the client VM. `events` is a list of event names; this returns as soon as any one of them is seen — useful for devices that may emit one of several events depending on guest state:
 
 ```json
 {
     "desc": "Wait for balloon change event",
     "qmp_wait_event": {
-        "event": "BALLOON_CHANGE",
+        "events": ["BALLOON_CHANGE"],
         "timeout": 30
+    }
+}
+```
+
+```json
+{
+    "desc": "Wait for a guest crash event from the pvpanic device",
+    "qmp_wait_event": {
+        "events": ["GUEST_PANICKED", "GUEST_CRASHLOADED"],
+        "timeout": 120
     }
 }
 ```
@@ -345,8 +355,10 @@ Blocks until a specific QEMU event is received from the client VM.
 
 | Field | Required | Description |
 |---|---|---|
-| `event` | Yes | QMP event name to wait for (e.g. `BALLOON_CHANGE`) |
+| `events` | Yes | Array of QMP event names to wait for (e.g. `["BALLOON_CHANGE"]`); returns as soon as any one occurs |
 | `timeout` | No | Maximum seconds to wait. Defaults to the engine `default_timeout`. |
+
+> Use `capture_output` to record which event actually fired (the full event payload, including its `event` name, is captured) so a later step can branch on it.
 
 ---
 
