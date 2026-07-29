@@ -13,8 +13,13 @@ module AutoHCK
     include Helper
 
     DRIVERS_JSON_DIR = 'lib/engines/hcktest/drivers'
+    EXTENSIONS_JSON_DIR = 'lib/engines/hcktest/extensions'
 
-    attr_reader :project, :logger, :drivers
+    attr_reader :project, :logger, :drivers, :extensions
+
+    def default_timeout
+      @config['default_timeout']
+    end
 
     def initialize(project)
       @project = project
@@ -23,6 +28,7 @@ module AutoHCK
       @config = load_engine_config
       @drivers = load_drivers
       @tests = init_tests
+      @extensions = find_extensions
       prepare_extra_sw
       @logger.info('Functest engine initialized')
     end
@@ -94,8 +100,12 @@ module AutoHCK
         prepare_clients(clients, tools)
         command_execution_manager = build_command_execution_manager(tools, clients)
 
-        @executor = Functest::TestExecutor.new(@project, clients, tools, command_execution_manager,
-                                               default_timeout: @config['default_timeout'])
+        run_context = Functest::TestExecutor::RunContext.new(
+          clients: clients,
+          tools: tools,
+          command_execution_manager: command_execution_manager
+        )
+        @executor = Functest::TestExecutor.new(self, run_context)
         setup_test_context(@executor.context)
         summary = @executor.execute_tests(@tests)
 
@@ -262,6 +272,7 @@ module AutoHCK
 
     def prepare_extra_sw
       extra_softwares = @drivers.flat_map(&:extra_software)
+      extra_softwares += @extensions.flat_map(&:extra_software)
       extra_softwares += @project.engine_platform.extra_software
       extra_softwares += @suite.requirements.extra_software if @suite
       extra_softwares += @tests.flat_map(&:extra_software)
@@ -310,6 +321,14 @@ module AutoHCK
       context.set_variable('driver_module', module_name)
 
       @logger.info("Test context: driver_module=#{module_name}, driver_inf=#{drv.inf}")
+    end
+
+    def find_extensions
+      @project.options.test.extensions.map do |ext_name|
+        @logger.info("Loading functest extension: #{ext_name}")
+        path = File.join(EXTENSIONS_JSON_DIR, "#{File.basename(ext_name)}.json")
+        Models::Extension.from_json_file(path, @logger)
+      end
     end
 
     def load_engine_config

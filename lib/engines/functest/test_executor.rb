@@ -12,21 +12,24 @@ module AutoHCK
         @results.map { |r| Models::TestResult.from_functest(r) }
       end
 
-      # clients is every FunctestClient booted for this run. tools and
-      # command_execution_manager are shared by all of them.
-      def initialize(project, clients, tools, command_execution_manager, default_timeout:)
-        @project = project
-        @clients = clients
-        @tools = tools
-        @machine_names = clients.map(&:name)
-        @logger = project.logger
-        @context = TestContext.new(project, clients.first.replacement_map)
-        @command_execution_manager = command_execution_manager
-        @step_handler = StepHandler.new(project, @command_execution_manager, @context,
-                                        default_timeout: default_timeout)
+      RunContext = Struct.new(:clients, :tools, :command_execution_manager, keyword_init: true)
+
+      # rubocop:disable Metrics/AbcSize
+      def initialize(engine, run_context)
+        @project = engine.project
+        @extensions = engine.extensions
+        @clients = run_context.clients
+        @tools = run_context.tools
+        @machine_names = run_context.clients.map(&:name)
+        @logger = engine.project.logger
+        @context = TestContext.new(engine.project, run_context.clients.first.replacement_map)
+        @command_execution_manager = run_context.command_execution_manager
+        @step_handler = StepHandler.new(@project, @command_execution_manager, @context,
+                                        default_timeout: engine.default_timeout)
         @results = []
         @current_test = nil
       end
+      # rubocop:enable Metrics/AbcSize
 
       def execute_test(test)
         log_section("Starting test: #{test.name}")
@@ -112,6 +115,13 @@ module AutoHCK
 
       def finalize_result(result, test, start_time)
         run_cleanup(test)
+        begin
+          run_extension_post_test_commands(test.name)
+        rescue StandardError => e
+          @logger.error("Extension post-test command failed: #{e.message}")
+          result[:status] = 'failed'
+          result[:error] = e.message
+        end
         result[:dump_path] = collect_memory_dumps(test.name)
         end_time = Time.now
         result[:end_time] = end_time.utc.iso8601
@@ -132,6 +142,7 @@ module AutoHCK
 
       def run_test_steps(test, result)
         prepare_test_clients!(test)
+        run_extension_pre_test_commands(test.name)
         run_pre_test_commands(test)
         test.test_steps.each_with_index { |step, index| result[:steps] << execute_test_step(step, index) }
         result[:status] = 'passed'
@@ -220,6 +231,42 @@ module AutoHCK
       def collect_memory_dumps(test_name)
         id = test_name.gsub(/\W/, '_')
         MemoryDumpCollector.new(@tools, @machine_names, @project.workspace_path, @logger).collect(id)
+      end
+
+      def extension_commands_for(test_name, type)
+        @extension_test_regexes ||= {}
+        @extensions.flat_map(&:tests_config).select do |config|
+          regex = (@extension_test_regexes[config] ||= Regexp.union(config.tests.map { Regexp.new(_1) }))
+          regex.match?(test_name)
+        end.flat_map(&type)
+      end
+
+      def run_extension_pre_test_commands(test_name)
+        cmds = extension_commands_for(test_name, :pre_test_commands)
+        return if cmds.empty?
+
+        @logger.info('Running extension pre-test commands...')
+        cmds.each_with_index do |step, index|
+          desc = @context.substitute_variables("[Extension pre-test step #{index + 1}] #{step.desc}")
+          @step_handler.execute_step(step, index)
+        rescue StandardError => e
+          @logger.error("  FAIL: Extension pre-test command failed (#{desc}): #{e.message}")
+          raise
+        end
+      end
+
+      def run_extension_post_test_commands(test_name)
+        cmds = extension_commands_for(test_name, :post_test_commands)
+        return if cmds.empty?
+
+        @logger.info('Running extension post-test commands...')
+        cmds.each_with_index do |step, index|
+          desc = @context.substitute_variables("[Extension post-test step #{index + 1}] #{step.desc}")
+          @step_handler.execute_step(step, index)
+        rescue StandardError => e
+          @logger.error("  FAIL: Extension post-test command failed (#{desc}): #{e.message}")
+          raise
+        end
       end
     end
   end
