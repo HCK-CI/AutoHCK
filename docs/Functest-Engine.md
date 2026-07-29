@@ -22,6 +22,7 @@ The functest engine runs JSON-driven functional tests against a Windows client V
 | `--reject-test-names <file>` | Path to a text file (one test name per line); tests whose name appears in the file are skipped. Overrides the suite's own `reject_test_names`, if any. |
 | `--manual` | Run tests normally, then pause before VM teardown and drop into an IRB shell for manual inspection |
 | `--auto-manual` | Same as `--manual`, but only pauses if any test failed or an exception occurred |
+| `--extensions <list>` | Comma-separated list of extension names to activate (e.g. `driver_verifier`); each maps to `lib/engines/hcktest/extensions/<name>.json` |
 
 Exactly one of `--category` or `--testcase` is required. All common options (`--verbose`, `--config`, `--id`, etc.) apply as documented in [Home](Home.md).
 
@@ -127,6 +128,49 @@ lib/engines/functest/
 | `test_definitions_path` | Root directory for test case and suite JSON files |
 | `default_timeout` | Default step timeout in seconds (used when a step does not specify `timeout`) |
 | `result_format` | Output formats for results (e.g. `["json", "junit"]`) |
+
+## Extensions
+
+Extensions inject commands around test cases without modifying test case JSON files. They are stored in `lib/engines/hcktest/extensions/` and activated via `--extensions <name>` (comma-separated for multiple).
+
+Execution order per test:
+
+```
+extension pre_test_commands   (e.g. enable DV + reboot)
+  test pre_test_commands
+    test_steps
+  test cleanup
+extension post_test_commands  (e.g. disable DV + reboot)
+```
+
+A failure in extension `pre_test_commands` marks the test failed. A failure in `post_test_commands` is logged as a warning only.
+
+### Extension JSON format
+
+| Field | Description |
+|---|---|
+| `extra_software` | Packages to pre-install on the guest before any tests run |
+| `tests_config` | Array of per-test hook entries |
+
+Each `tests_config` entry:
+
+| Field | Description |
+|---|---|
+| `tests` | Regex patterns matched against the test case `name` field. Use `[".*"]` for all tests. |
+| `pre_test_commands` | Steps run before each matching test |
+| `post_test_commands` | Steps run after each matching test |
+
+> `tests` matches the `name` field inside the test case JSON, **not** the path used in a suite. A test at `balloon/balloon_service` has `name` = `balloon_service`.
+
+Multiple extensions can be listed with `--extensions EXT1,EXT2`. The order follows the CLI argument order — EXT1 pre commands run before EXT2 pre commands, and the same for post commands.
+
+### Available extensions
+
+| Name | Description |
+|---|---|
+| `driver_verifier` | Enables Driver Verifier (standard flags) before each test and disables it after, with a reboot on each side. |
+
+---
 
 ## Test Suite Format
 
