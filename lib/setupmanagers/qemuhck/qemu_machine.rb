@@ -436,6 +436,27 @@ module AutoHCK
       { '@fs_daemon_cache_mode@' => mode }
     end
 
+    def numa_replacement_map
+      return {} unless option_config('numa_state')
+
+      cpu_count = option_config('cpu_count').to_i
+      raise "NUMA topology requires at least 2 vCPUs (got #{cpu_count})" if cpu_count < 2
+
+      memory_gb = option_config('memory_gb')
+      raise "NUMA topology requires at least 2 GB memory (got #{memory_gb})" if memory_gb < 2
+
+      half_cpu = cpu_count / 2
+      half_mem = memory_gb / 2
+
+      {
+        '@numa_node0_memory@' => "#{half_mem}G",
+        '@numa_node1_memory@' => "#{memory_gb - half_mem}G",
+        '@numa_node0_max_cpu@' => (half_cpu - 1).to_s,
+        '@numa_node1_min_cpu@' => half_cpu.to_s,
+        '@numa_node1_max_cpu@' => (cpu_count - 1).to_s
+      }
+    end
+
     sig { returns(T::Array[String]) }
     def device_config_commands
       @device_infos.map(&:config_commands).flatten.compact
@@ -482,6 +503,7 @@ module AutoHCK
                                              discard_granularity_replacement_map,
                                              fs_daemon_cache_mode_replacement_map,
                                              device_define_variables,
+                                             numa_replacement_map,
                                              @define_variables)
     end
 
@@ -666,7 +688,7 @@ module AutoHCK
     def base_cmd
       [
         '@qemu_bin@ -enable-kvm -machine @machine_options@ ',
-        '-m @memory@,maxmem=@max_memory@ -smp @cpu_count@,cores=@cpu_count@ ',
+        '-m @memory@,maxmem=@max_memory@@memory_slots@ -smp @cpu_count@,cores=@cpu_count@ ',
         '-cpu @cpu_options@ -boot menu=on,splash-time=10000 ',
         '-nodefaults -no-user-config -usb -device usb-tablet -vnc :@vnc_id@ ',
         '-global kvm-pit.lost_tick_policy=discard -rtc base=localtime,clock=host,driftfix=slew ',

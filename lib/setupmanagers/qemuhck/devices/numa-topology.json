@@ -1,0 +1,9 @@
+{
+  "name": "numa-topology",
+  "command_line": [
+    "-object memory-backend-ram,id=numa_mem0,size=@numa_node0_memory@",
+    "-object memory-backend-ram,id=numa_mem1,size=@numa_node1_memory@",
+    "-numa node,memdev=numa_mem0,cpus=0-@numa_node0_max_cpu@",
+    "-numa node,memdev=numa_mem1,cpus=@numa_node1_min_cpu@-@numa_node1_max_cpu@"
+  ]
+}

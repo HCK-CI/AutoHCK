@@ -66,6 +66,21 @@
             ]
         }
     },
+    "numa_state": {
+        "true": {
+            "devices_list": [
+                "numa-topology"
+            ],
+            "define_variables": {
+                "@memory_slots@": ",slots=20"
+            }
+        },
+        "false": {
+            "define_variables": {
+                "@memory_slots@": ""
+            }
+        }
+    },
     "vbs_state": {
         "true": {
             "post_start_commands": [

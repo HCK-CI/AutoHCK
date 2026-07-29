@@ -32,6 +32,7 @@
     "vhost_state": true,
     "viommu_state": false,
     "drive_unsafe_cache_state": false,
-    "tpm_state": false
+    "tpm_state": false,
+    "numa_state": false
   }
 }
