@@ -1,0 +1,31 @@
+{
+  "tests_config": [
+    {
+      "tests": [".*"],
+      "pre_test_commands": [
+        {
+          "desc": "Enable Driver Verifier for @driver_module@",
+          "guest_run_file": "lib/engines/functest/tests/scripts/enable_driver_verifier.ps1",
+          "expected_output_contains": "PASS:",
+          "timeout": 60
+        },
+        {
+          "desc": "Reboot to activate Driver Verifier settings",
+          "guest_reboot": true
+        }
+      ],
+      "post_test_commands": [
+        {
+          "desc": "Disable Driver Verifier for @driver_module@",
+          "guest_run_file": "lib/engines/functest/tests/scripts/disable_driver_verifier.ps1",
+          "expected_output_contains": "PASS:",
+          "timeout": 60
+        },
+        {
+          "desc": "Reboot to deactivate Driver Verifier settings",
+          "guest_reboot": true
+        }
+      ]
+    }
+  ]
+}
