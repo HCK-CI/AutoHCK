@@ -4,5 +4,6 @@
   "inf": "viomem.inf",
   "install_method": "PNP",
   "type": 0,
-  "support": false
+  "support": false,
+  "numa_state": true
 }

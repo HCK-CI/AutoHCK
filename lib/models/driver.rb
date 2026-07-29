@@ -25,6 +25,8 @@ module AutoHCK
       const :s3_state, T.nilable(T::Boolean)
       const :s4_state, T.nilable(T::Boolean)
       const :enlightenments_state, T.nilable(T::Boolean)
+      const :numa_state, T.nilable(T::Boolean)
+      const :pcie_spare_root_ports, T.nilable(Integer)
 
       const :post_start_commands, T::Array[CommandInfo], default: []
       const :extra_software, T::Array[String], default: []
