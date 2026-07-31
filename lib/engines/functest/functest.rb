@@ -276,10 +276,18 @@ module AutoHCK
       context.set_variable('test_binaries_path', test_binaries_path) if test_binaries_path
 
       set_driver_context_variables(context, @drivers.first)
+      apply_platform_context_variables(context)
 
       @project.options.test.test_params.each do |key, value|
         context.set_variable(key, value)
       end
+    end
+
+    def apply_platform_context_variables(context)
+      client = @project.engine_platform.clients.values.first
+      return unless client&.memory_gb
+
+      context.set_variable('vm_memory_gb', client.memory_gb.to_s)
     end
 
     def set_driver_context_variables(context, drv)
