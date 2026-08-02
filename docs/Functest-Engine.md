@@ -250,7 +250,7 @@ See [`lib/engines/functest/tests/cases/driver_sign_check.json`](../lib/engines/f
 | Field | Description |
 |---|---|
 | `desc` | Human-readable description; logged and shown in results. |
-| `timeout` | Step timeout in seconds; overrides the engine default of 300s. |
+| `timeout` | Step timeout in seconds; overrides the engine default of 300s. Not applicable to `files_action` steps — file transfers run without a timeout. |
 | `ignore_errors` | If `true`, a failure in this step does not abort the test. Useful for optional steps in `test_steps`. Default: `false`. |
 | `variables` | Maps `@placeholder@` strings to existing context variable names for extra substitution within this step. |
 | `capture_output` | Name of a variable to store the step's output in, e.g. `"capture_output": "driver_version"` makes it available as `@driver_version@` later. Supported by `guest_run`/`guest_run_file`, `qmp_command`, `qmp_wait_event`. On a multi-client step, only the primary target's output is captured. |
@@ -327,6 +327,8 @@ Note: Only Bash scripts are supported; shebang lines are not honored.
 ### `files_action`
 
 Transfer files or directories between the host and the client VM.
+
+> **Note:** `files_action` steps run without a step-level timeout. The `timeout` field is ignored for this step type, as file transfers may take an indeterminate amount of time.
 
 ```json
 {
