@@ -196,7 +196,7 @@ See [`lib/engines/functest/tests/cases/driver_sign_check.json`](../lib/engines/f
 
 ## Step Types
 
-> Each step object must have **exactly one** step-type field (`guest_run`, `guest_run_file`, `guest_reboot`, `host_run`, `host_run_file`, `files_action`, `qmp_command`, `qmp_wait_event`, `barrier`). All other fields are optional modifiers.
+> Each step object must have **exactly one** step-type field (`guest_run`, `guest_run_file`, `guest_reboot`, `host_run`, `host_run_file`, `files_action`, `qmp_command`, `qmp_wait_event`, `barrier`, `set_variable`). All other fields are optional modifiers.
 
 ### Common Step Fields
 
@@ -367,6 +367,30 @@ Blocks until one of the given QEMU events is received from the client VM. `event
 ### `barrier`
 
 A named synchronization point. It only logs the barrier name and does nothing else.
+
+---
+
+### `set_variable`
+
+Sets one or more context variables directly. Values support `@variable@` substitution.
+
+```json
+{
+    "desc": "Set hotplug disk number",
+    "set_variable": { "disk_number": "2" }
+}
+```
+
+The variable is then available as `@disk_number@` in all subsequent steps. Overwriting an existing variable is allowed and logged.
+
+Multiple variables can be set in a single step:
+
+```json
+{
+    "desc": "Set test parameters",
+    "set_variable": { "disk_number": "2", "bus_slot": "0x04" }
+}
+```
 
 ---
 

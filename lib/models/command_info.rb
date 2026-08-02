@@ -78,6 +78,7 @@ module AutoHCK
       const :host_run, T.nilable(String)
       const :host_run_file, T.nilable(String)
       const :barrier, T.nilable(String)
+      const :set_variable, T.nilable(T::Hash[String, String])
       const :qmp_command, T.nilable(QmpCommandConfig)
       const :qmp_wait_event, T.nilable(QmpWaitEventConfig)
 

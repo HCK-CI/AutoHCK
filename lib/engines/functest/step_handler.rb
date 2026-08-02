@@ -19,6 +19,11 @@ module AutoHCK
         desc = @context.substitute_variables(step.desc || "Step #{step_index + 1}")
         @logger.info("Executing: #{desc}")
 
+        if step.set_variable
+          execute_set_variable(step)
+          return
+        end
+
         timeout = step.timeout || @default_timeout
 
         Timeout.timeout(timeout) do
@@ -46,10 +51,19 @@ module AutoHCK
         case field
         when :files_action then value.any?
         when :guest_reboot then value == true
+        when :set_variable then value.is_a?(Hash) && !value.empty?
         when :guest_run, :guest_run_file, :host_run, :host_run_file, :barrier
           value.is_a?(String) ? !value.empty? : !value.nil?
         else
           !value.nil?
+        end
+      end
+
+      def execute_set_variable(step)
+        step.set_variable.each do |name, value|
+          resolved = @context.substitute_variables(value)
+          @logger.debug("Overwriting variable '#{name}'") if @context.replacement_map["@#{name}@"]
+          @context.set_variable(name, resolved)
         end
       end
 
