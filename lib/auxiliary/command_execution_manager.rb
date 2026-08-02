@@ -26,7 +26,7 @@ module AutoHCK
 
     STEP_TYPE_FIELDS = T.let(%i[
       guest_run guest_run_file guest_reboot files_action host_run host_run_file
-      barrier qmp_command qmp_wait_event
+      barrier set_variable qmp_command qmp_wait_event
     ].freeze, T::Array[Symbol])
 
     sig { params(init_opts: T::Hash[Symbol, T.untyped]).returns(T::Hash[Symbol, T.untyped]) }
