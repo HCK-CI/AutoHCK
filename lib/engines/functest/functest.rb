@@ -99,8 +99,12 @@ module AutoHCK
         setup_test_context(@executor.context)
         summary = @executor.execute_tests(@tests)
 
+        pause_run_if_needed(summary)
         generate_results(summary)
         summary[:failed].zero? ? 0 : 1
+      rescue StandardError => e
+        pause_run_if_needed(nil, e)
+        raise
       end
     rescue StandardError => e
       @logger.error("Functest engine failed: #{e.message}")
@@ -322,6 +326,29 @@ module AutoHCK
       @logger.info("Results written to: #{results_path}")
 
       @project.result_uploader&.upload_file(results_path, 'functest_results.json')
+    end
+
+    def pause_run_if_needed(summary = nil, exception = nil)
+      test_options = @project.options.test
+
+      auto_manual_need = test_options.auto_manual &&
+                         (!exception.nil? || (summary && summary[:failed].positive?))
+
+      @logger.debug("Switch to manual mode check: manual=#{test_options.manual} auto_manual_need=#{auto_manual_need}")
+      return unless test_options.manual || auto_manual_need
+
+      pause_run
+    end
+
+    def pause_run
+      @project.logger.info('AutoHCK switched in manual mode. Waiting for manual exit.')
+      @project.logger.info("Type 'exit' and press ENTER to exit manual mode")
+
+      # rubocop:disable Lint/Debugger
+      binding.irb
+      # rubocop:enable Lint/Debugger
+
+      @project.logger.info('Manual exit. AutoHCK will continue.')
     end
   end
 end

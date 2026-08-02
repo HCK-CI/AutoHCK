@@ -20,6 +20,8 @@ The functest engine runs JSON-driven functional tests against a Windows client V
 | `--testcase <names>` | Comma-separated list of test case names to run (e.g. `driver_sign_check,balloon/balloon_service`) |
 | `--select-test-names <file>` | Path to a text file (one test name per line); only tests whose name appears in the file are kept |
 | `--reject-test-names <file>` | Path to a text file (one test name per line); tests whose name appears in the file are skipped. Overrides the suite's own `reject_test_names`, if any. |
+| `--manual` | Run tests normally, then pause before VM teardown and drop into an IRB shell for manual inspection |
+| `--auto-manual` | Same as `--manual`, but only pauses if any test failed or an exception occurred |
 
 Exactly one of `--category` or `--testcase` is required. All common options (`--verbose`, `--config`, `--id`, etc.) apply as documented in [Home](Home.md).
 
