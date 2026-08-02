@@ -174,6 +174,7 @@ A test case defines an ordered sequence of steps and optional cleanup steps. Cas
 | `name` | Yes | Test case name; shown in results and log output |
 | `description` | No | Human-readable description |
 | `test_system_ref` | No | Reference to an issue or ticket |
+| `extra_software` | No | List of software packages to install on the guest before any tests run |
 | `pre_test_commands` | No | Steps run before test start; a failure aborts remaining steps |
 | `cycles` | No | Allow to repeat test_steps several times |
 | `test_steps` | Yes | Ordered array of step objects; a failure aborts remaining steps |

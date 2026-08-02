@@ -260,6 +260,7 @@ module AutoHCK
       extra_softwares = @drivers.flat_map(&:extra_software)
       extra_softwares += @project.engine_platform.extra_software
       extra_softwares += @suite.requirements.extra_software if @suite
+      extra_softwares += @tests.flat_map(&:extra_software)
 
       @project.extra_sw_manager.prepare_software_packages(
         extra_softwares, @project.engine_platform.kit, ENGINE_MODE
