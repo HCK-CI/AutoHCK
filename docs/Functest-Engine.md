@@ -258,7 +258,7 @@ Reboots the client VM and waits for it to come back online before proceeding.
 
 ### `host_run`
 
-Runs a command on the host machine running AutoHCK. Pass/fail is determined solely by the command's exit code (non-zero exit fails the step); `capture_output`/`expected_output_contains`/`expected_output_matches` are not supported here.
+Runs a command on the host machine running AutoHCK. The command runs with the workspace as its working directory, so relative paths resolve inside the workspace. Pass/fail is determined solely by the command's exit code (non-zero exit fails the step); `capture_output`/`expected_output_contains`/`expected_output_matches` are not supported here.
 
 ```json
 {
@@ -271,7 +271,7 @@ Runs a command on the host machine running AutoHCK. Pass/fail is determined sole
 
 ### `host_run_file`
 
-Reads a local script file and runs its content on the host machine running AutoHCK, the host-side equivalent of `guest_run_file`. The path is relative to the AutoHCK root. Like `host_run`, pass/fail is determined by the script's exit code.
+Reads a local script file and runs its content on the host machine running AutoHCK, the host-side equivalent of `guest_run_file`. The path is relative to the AutoHCK root. Like `host_run`, the script runs with the workspace as its working directory and pass/fail is determined by the exit code.
 
 Note: Only Bash scripts are supported; shebang lines are not honored.
 

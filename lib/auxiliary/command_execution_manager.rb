@@ -189,7 +189,7 @@ module AutoHCK
       command = resolve_host_command(command_info, replacement)
       @logger.info("Running command (#{desc}) on host")
       @logger.debug("Host command: #{command}")
-      run_cmd(command)
+      run_cmd(command, chdir: @project.workspace_path)
     end
 
     sig { params(command_info: Models::CommandInfo, replacement: ReplacementMap).void }
