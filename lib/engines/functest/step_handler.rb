@@ -19,18 +19,20 @@ module AutoHCK
         desc = @context.substitute_variables(step.desc || "Step #{step_index + 1}")
         @logger.info("Executing: #{desc}")
 
+        timeout = step.timeout || @default_timeout
+
         if step.set_variable
           execute_set_variable(step)
           return
         end
 
-        timeout = step.timeout || @default_timeout
-
-        Timeout.timeout(timeout) do
-          validate_step_type!(step, desc)
-          result = @command_execution_manager.execute(step, replacement: step_replacement(step))
-          handle_step_result(result, step)
+        # Skip timeout for files_action steps
+        if step.files_action.any?
+          execute_and_handle(step, desc)
+          return
         end
+
+        Timeout.timeout(timeout) { execute_and_handle(step, desc) }
       rescue Timeout::Error
         handle_step_error(step, "Timeout after #{timeout}s: #{desc}")
       rescue StandardError => e
@@ -65,6 +67,12 @@ module AutoHCK
           @logger.debug("Overwriting variable '#{name}'") if @context.replacement_map["@#{name}@"]
           @context.set_variable(name, resolved)
         end
+      end
+
+      def execute_and_handle(step, desc)
+        validate_step_type!(step, desc)
+        result = @command_execution_manager.execute(step, replacement: step_replacement(step))
+        handle_step_result(result, step)
       end
 
       def step_replacement(step)
