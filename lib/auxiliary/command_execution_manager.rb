@@ -86,7 +86,7 @@ module AutoHCK
 
       result[:guest_outputs] = execute_guest(command_info, replacement, desc) if guest_command?(command_info)
       execute_guest_reboot(command_info, desc) if command_info.guest_reboot
-      execute_host(command_info, replacement, desc) if host_command?(command_info)
+      result[:host_output] = execute_host(command_info, replacement, desc) if host_command?(command_info)
       execute_files_actions(command_info, replacement) unless command_info.files_action.empty?
       execute_barrier(command_info) if command_info.barrier
       result[:qmp_result] = execute_qmp_command(command_info, replacement) if command_info.qmp_command
@@ -183,13 +183,14 @@ module AutoHCK
         command_info: Models::CommandInfo,
         replacement: ReplacementMap,
         desc: String
-      ).void
+      ).returns(String)
     end
     def execute_host(command_info, replacement, desc)
       command = resolve_host_command(command_info, replacement)
       @logger.info("Running command (#{desc}) on host")
       @logger.debug("Host command: #{command}")
-      run_cmd(command, chdir: @project.workspace_path)
+      results = run_cmd(command, chdir: @project.workspace_path)
+      results.stddata['both'].join("\n")
     end
 
     sig { params(command_info: Models::CommandInfo, replacement: ReplacementMap).void }
