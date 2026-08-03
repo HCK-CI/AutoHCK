@@ -119,7 +119,12 @@ module AutoHCK
       # ran on. If any one of them fails, the step fails.
       def validate_outputs(result, step)
         outputs = guest_outputs(result)
-        return validate_output('', step) if outputs.empty?
+        if outputs.empty?
+          host_output = result[:host_output]
+          return validate_output(host_output.to_s, step, 'host') if host_output
+
+          return validate_output('', step)
+        end
 
         outputs.each { |machine, output| validate_output(output.to_s, step, machine) }
       end
