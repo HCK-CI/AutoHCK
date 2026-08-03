@@ -48,6 +48,10 @@ Usage: auto_hck.rb [common options] <command> [command options]
         --client_world_net           Attach world bridge to clients VM
         --client-ctrl-net-dev <client-ctrl-net-dev>
                                      Client VM control network device (make sure that driver is installed)
+        --client-world-net-dev <client-world-net-dev>
+                                     Client VM world network device (default: e1000e; make sure that driver is
+                                     installed). Ignored unless --client_world_net. Example: virtio-net-pci
+                                     (NetKVM world/L3)
         --attach-debug-net           Attach debug network to all VMs
         --id <id>                    Set ID for AutoHCK run
     -v, --version                    Display version information and exit
