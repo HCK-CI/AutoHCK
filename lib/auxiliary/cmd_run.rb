@@ -26,7 +26,7 @@ module AutoHCK
     def close
       if @status.nil?
         @status = Process.wait2(@pid)[1]
-        e_message = "Failed to run (PID #{@pid}): #{@cmd}"
+        e_message = "Failed to run (PID #{@pid}) (exit code #{@status.exitstatus}): #{@cmd}"
         raise CmdRunError, e_message if @exception && !@status.exitstatus.zero?
 
         log "Command finished with code #{@status.exitstatus}"
