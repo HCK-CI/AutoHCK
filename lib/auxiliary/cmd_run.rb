@@ -4,12 +4,13 @@
 module AutoHCK
   # CmdRun class
   class CmdRun
-    attr_reader :pid, :status
+    attr_reader :pid, :status, :stddata
 
     def initialize(scope, logger, *args, exception: true, **kwargs)
       @cmd = args.size == 1 ? args[0] : args.shelljoin
       @exception = exception
       @logger = logger
+      @stddata = { 'stdout' => [], 'stderr' => [], 'both' => [] }
 
       scope.transaction do |transaction|
         ResourceScope.open do |tmp|
@@ -46,7 +47,11 @@ module AutoHCK
       scope << write
 
       Thread.new do
-        read.each(chomp: true) { log "#{name}: #{_1}" }
+        read.each(chomp: true) do |data|
+          log "#{name}: #{data}"
+          @stddata[name] << data
+          @stddata['both'] << data
+        end
       ensure
         read.close
       end
