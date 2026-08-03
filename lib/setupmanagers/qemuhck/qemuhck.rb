@@ -113,7 +113,8 @@ module AutoHCK
         'discard_granularity' => test_opt.discard_granularity,
         'fs_daemon_cache_mode' => test_opt.fs_daemon_cache_mode,
         'pcie_spare_root_ports' => test_opt.pcie_spare_root_ports,
-        'ctrl_net_device' => common.client_ctrl_net_dev
+        'ctrl_net_device' => common.client_ctrl_net_dev,
+        'world_net_device' => common.client_world_net_dev
       }.compact
     end
     # rubocop:enable Metrics/AbcSize

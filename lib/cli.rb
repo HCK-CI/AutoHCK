@@ -12,6 +12,7 @@ module AutoHCK
     prop :share_on_host_path, T.nilable(String)
     prop :workspace_path, T.nilable(String)
     prop :client_ctrl_net_dev, T.nilable(String)
+    prop :client_world_net_dev, T.nilable(String)
     prop :attach_debug_net, T::Boolean, default: false
     prop :whiteboard, T.nilable(String)
 
@@ -51,6 +52,11 @@ module AutoHCK
       parser.on('--client-ctrl-net-dev <client-ctrl-net-dev>', String,
                 'Client VM control network device (make sure that driver is installed)',
                 &method(:client_ctrl_net_dev=))
+
+      parser.on('--client-world-net-dev <client-world-net-dev>', String,
+                'Client VM world network device (default: e1000e; make sure that driver is installed).',
+                'Ignored unless --client_world_net. Example: virtio-net-pci (NetKVM world/L3)',
+                &method(:client_world_net_dev=))
 
       parser.on('--attach-debug-net', TrueClass,
                 'Attach debug network to all VMs',
