@@ -5,7 +5,5 @@
 # Please instead update this file by running `bin/tapioca gem activesupport`.
 
 
-class NameError < ::StandardError
-  include ::ErrorHighlight::CoreExt
-  include ::DidYouMean::Correctable
-end
+# THIS IS AN EMPTY RBI FILE.
+# see https://github.com/Shopify/tapioca#manually-requiring-parts-of-a-gem
