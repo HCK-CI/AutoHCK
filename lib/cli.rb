@@ -15,6 +15,7 @@ module AutoHCK
     prop :client_world_net_dev, T.nilable(String)
     prop :attach_debug_net, T::Boolean, default: false
     prop :whiteboard, T.nilable(String)
+    prop :attach_devices, T::Array[String], default: []
 
     def create_parser(sub_parser)
       OptionParser.new do |parser|
@@ -79,6 +80,11 @@ module AutoHCK
       parser.on('--whiteboard <text>', String,
                 'Custom text logged, added to HTML results and JUnit properties',
                 &method(:whiteboard=))
+
+      parser.on('--attach-devices <devices_list>', Array,
+                'Comma-separated list of devices to attach to the Client system. Bypasses driver processing.',
+                'Use carefully, as invalid/duplicate devices can break the test environment.',
+                &method(:attach_devices=))
     end
     # rubocop:enable Metrics/AbcSize,Metrics/MethodLength
   end
