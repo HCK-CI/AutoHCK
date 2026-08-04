@@ -262,7 +262,7 @@ See [`lib/engines/functest/tests/cases/driver_sign_check.json`](../lib/engines/f
 
 ## Step Types
 
-> Each step object must have **exactly one** step-type field (`guest_run`, `guest_run_file`, `guest_reboot`, `host_run`, `host_run_file`, `files_action`, `qmp_command`, `qmp_wait_event`, `barrier`, `set_variable`). All other fields are optional modifiers.
+> Each step object must have **exactly one** step-type field (`guest_run`, `guest_run_file`, `guest_reboot`, `host_run`, `host_run_file`, `files_action`, `qmp_command`, `qmp_wait_event`, `wait_client_online`, `barrier`, `set_variable`). All other fields are optional modifiers.
 
 ### Common Step Fields
 
@@ -276,7 +276,7 @@ See [`lib/engines/functest/tests/cases/driver_sign_check.json`](../lib/engines/f
 | `expected_output_contains` | The step fails if the output does not contain this string. Only for `guest_run`/`guest_run_file`/`host_run`/`host_run_file`. Checked against every client the step ran on. |
 | `expected_output_matches` | The step fails if the output does not match this regex. Only for `guest_run`/`guest_run_file`/`host_run`/`host_run_file`. Checked against every client the step ran on. |
 | `expected_output_matches_encoding` | Controls regex encoding options for `expected_output_matches`. Currently only `Regexp::NOENCODING` is supported (binary match). Do not set to use default encoding. |
-| `clients` | Client ids (e.g. `[2]`) this step targets. Applies to `guest_run`/`guest_run_file`, `guest_reboot`, `files_action`, `qmp_command`, `qmp_wait_event`; `host_run`/`host_run_file` always run once on the host regardless. Omitted/empty broadcasts to every client booted for the test case. See [Multi-Client Support](#multi-client-support). |
+| `clients` | Client ids (e.g. `[2]`) this step targets. Applies to `guest_run`/`guest_run_file`, `guest_reboot`, `files_action`, `qmp_command`, `qmp_wait_event`, `wait_client_online`; `host_run`/`host_run_file` always run once on the host regardless. Omitted/empty broadcasts to every client booted for the test case. See [Multi-Client Support](#multi-client-support). |
 
 ---
 
@@ -430,6 +430,22 @@ Blocks until one of the given QEMU events is received from the client VM. `event
 | `timeout` | No | Maximum seconds to wait. Defaults to the engine `default_timeout`. |
 
 > Use `capture_output` to record which event actually fired (the full event payload, including its `event` name, is captured) so a later step can branch on it.
+
+---
+
+### `wait_client_online`
+
+Blocks until WinRM is reachable on the target client(s). Use after an intentional guest ACPI poweroff / QMP `SHUTDOWN` when the VM was started with functest `keep_alive` (QEMU restarts; Windows must finish booting before the next step or minidump collection).
+
+```json
+{
+    "desc": "Wait for client online after keep_alive QEMU restart",
+    "wait_client_online": true,
+    "timeout": 600
+}
+```
+
+If the guest never returns, the step fails (and the run stops) — dump collection stays strict and is not skipped.
 
 ---
 

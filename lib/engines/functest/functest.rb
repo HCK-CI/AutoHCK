@@ -150,7 +150,10 @@ module AutoHCK
                               'in the platform configuration'
         end
 
-        @project.setup_manager.run_functest_client(scope, client.name)
+        # Same as HCKTest run_clients(..., keep_alive: true): guest ACPI
+        # poweroff / QMP SHUTDOWN exits QEMU; restart so mid-batch cases
+        # (e.g. netkvm_hotplug_shutdown) can continue on a live client.
+        @project.setup_manager.run_functest_client(scope, client.name, { keep_alive: true })
       end
     end
 

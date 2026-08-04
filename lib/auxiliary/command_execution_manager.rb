@@ -26,7 +26,7 @@ module AutoHCK
 
     STEP_TYPE_FIELDS = T.let(%i[
       guest_run guest_run_file guest_reboot files_action host_run host_run_file
-      barrier set_variable qmp_command qmp_wait_event
+      barrier set_variable qmp_command qmp_wait_event wait_client_online
     ].freeze, T::Array[Symbol])
 
     sig { params(init_opts: T::Hash[Symbol, T.untyped]).returns(T::Hash[Symbol, T.untyped]) }
@@ -91,6 +91,7 @@ module AutoHCK
       execute_barrier(command_info) if command_info.barrier
       result[:qmp_result] = execute_qmp_command(command_info, replacement) if command_info.qmp_command
       result[:qmp_event] = execute_qmp_wait_event(command_info) if command_info.qmp_wait_event
+      execute_wait_client_online(command_info) if command_info.wait_client_online
 
       result
     end
@@ -293,6 +294,14 @@ module AutoHCK
       end
 
       outputs
+    end
+
+    sig { params(command_info: Models::CommandInfo).void }
+    def execute_wait_client_online(command_info)
+      target_machines(command_info).each do |machine_name|
+        @logger.info("Waiting for client #{machine_name} to come online")
+        @tools.wait_for_client_online(machine_name)
+      end
     end
 
     sig do
