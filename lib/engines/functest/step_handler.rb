@@ -129,6 +129,19 @@ module AutoHCK
         outputs.each { |machine, output| validate_output(output.to_s, step, machine) }
       end
 
+      def validate_output_matches(output, step)
+        encoding = nil
+        if step.expected_output_matches_encoding == 'Regexp::NOENCODING'
+          encoding = Regexp::NOENCODING
+          output = output.dup.force_encoding('BINARY')
+        end
+
+        pattern = Regexp.new(step.expected_output_matches, encoding)
+        return if output.match?(pattern)
+
+        raise EngineError, "Output validation failed#{target}: expected to match '#{pattern}'"
+      end
+
       def validate_output(output, step, machine = nil)
         target = machine ? " on #{machine}" : ''
         if step.expected_output_contains && !output.include?(step.expected_output_contains)
@@ -137,10 +150,7 @@ module AutoHCK
 
         return unless step.expected_output_matches
 
-        pattern = Regexp.new(step.expected_output_matches)
-        return if output.match?(pattern)
-
-        raise EngineError, "Output validation failed#{target}: expected to match '#{pattern}'"
+        validate_output_matches(output, step)
       end
 
       def handle_step_error(step, error_message)

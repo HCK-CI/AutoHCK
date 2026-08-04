@@ -275,6 +275,7 @@ See [`lib/engines/functest/tests/cases/driver_sign_check.json`](../lib/engines/f
 | `capture_output` | Name of a variable to store the step's output in, e.g. `"capture_output": "driver_version"` makes it available as `@driver_version@` later. Supported by `guest_run`/`guest_run_file`, `qmp_command`, `qmp_wait_event`. On a multi-client step, only the primary target's output is captured. |
 | `expected_output_contains` | The step fails if the output does not contain this string. Only for `guest_run`/`guest_run_file`/`host_run`/`host_run_file`. Checked against every client the step ran on. |
 | `expected_output_matches` | The step fails if the output does not match this regex. Only for `guest_run`/`guest_run_file`/`host_run`/`host_run_file`. Checked against every client the step ran on. |
+| `expected_output_matches_encoding` | Controls regex encoding options for `expected_output_matches`. Currently only `Regexp::NOENCODING` is supported (binary match). Do not set to use default encoding. |
 | `clients` | Client ids (e.g. `[2]`) this step targets. Applies to `guest_run`/`guest_run_file`, `guest_reboot`, `files_action`, `qmp_command`, `qmp_wait_event`; `host_run`/`host_run_file` always run once on the host regardless. Omitted/empty broadcasts to every client booted for the test case. See [Multi-Client Support](#multi-client-support). |
 
 ---
