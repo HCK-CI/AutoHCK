@@ -359,11 +359,14 @@ module AutoHCK
     def config_replacement_map
       {
         '@qemu_bin@' => @config['qemu_bin'],
+        '@qemu_img_bin@' => @config['qemu_img_bin'],
         '@ivshmem_server_bin@' => @config['ivshmem_server_bin'],
         '@fs_daemon_bin@' => @config['fs_daemon_bin'],
         '@fs_daemon_share_path@' => @config['fs_daemon_share_path'],
         '@swtpm_setup_bin@' => @config['swtpm_setup_bin'],
-        '@swtpm_bin@' => @config['swtpm_bin']
+        '@swtpm_bin@' => @config['swtpm_bin'],
+        '@images_path@' => @config['images_path'],
+        '@fs_test_image@' => @config['fs_test_image']
       }
     end
 
@@ -378,7 +381,7 @@ module AutoHCK
     end
 
     def replacement_map
-      ReplacementMap.new(@project.project_replacement_map, machine_replacement_map, {
+      ReplacementMap.new(@project.project_replacement_map, config_replacement_map, machine_replacement_map, {
                            '@client_id@' => @client_id,
                            '@test_netdev_id@' => @nm.test_device_ifname,
                            '@storage_dev_id@' => format('%02d', @sm.dev_id)
