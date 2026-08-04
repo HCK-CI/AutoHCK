@@ -48,7 +48,7 @@ module AutoHCK
 
       Thread.new do
         read.each(chomp: true) do |data|
-          log "#{name}: #{data}"
+          log "#{name}: #{data}".encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
           @stddata[name] << data
           @stddata['both'] << data
         end
