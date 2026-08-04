@@ -1,0 +1,13 @@
+{
+    "name": "snapshot_create",
+    "description": "Create a marker file in the guest and save a named VM snapshot",
+    "save_snapshot_as": "with_marker",
+    "test_steps": [
+        {
+            "desc": "Create marker file in guest",
+            "guest_run": "Set-Content -Path 'C:\\ci_marker.txt' -Value 'dummy_ci'; Write-Output 'PASS: marker file created'",
+            "expected_output_contains": "PASS:",
+            "timeout": 30
+        }
+    ]
+}

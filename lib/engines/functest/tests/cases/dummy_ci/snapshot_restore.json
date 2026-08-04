@@ -1,0 +1,13 @@
+{
+    "name": "snapshot_restore",
+    "description": "Boot from the saved snapshot and verify the marker file is present",
+    "boot_from_snapshot_tag": "with_marker",
+    "test_steps": [
+        {
+            "desc": "Verify marker file is present after restoring snapshot",
+            "guest_run": "if (Test-Path 'C:\\ci_marker.txt') { Write-Output 'PASS: marker file present in snapshot' } else { throw 'marker file missing after snapshot restore' }",
+            "expected_output_contains": "PASS:",
+            "timeout": 30
+        }
+    ]
+}
