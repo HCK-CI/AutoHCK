@@ -52,6 +52,9 @@ Usage: auto_hck.rb [common options] <command> [command options]
                                      Client VM world network device (default: e1000e; make sure that driver is
                                      installed). Ignored unless --client_world_net. Example: virtio-net-pci
                                      (NetKVM world/L3)
+        --client-world-vlan-id <vlan_id>
+                                     Create 802.1Q VLAN L3 endpoint on br_world (br_world.<id> + 10.0.<id>.1/24).
+                                     Ignored unless --client_world_net. Example: 100 (NetKVM tagged VLAN)
         --attach-debug-net           Attach debug network to all VMs
         --id <id>                    Set ID for AutoHCK run
     -v, --version                    Display version information and exit

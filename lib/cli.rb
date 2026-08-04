@@ -13,6 +13,7 @@ module AutoHCK
     prop :workspace_path, T.nilable(String)
     prop :client_ctrl_net_dev, T.nilable(String)
     prop :client_world_net_dev, T.nilable(String)
+    prop :client_world_vlan_id, T.nilable(Integer)
     prop :attach_debug_net, T::Boolean, default: false
     prop :whiteboard, T.nilable(String)
     prop :attach_devices, T::Array[String], default: []
@@ -58,6 +59,11 @@ module AutoHCK
                 'Client VM world network device (default: e1000e; make sure that driver is installed).',
                 'Ignored unless --client_world_net. Example: virtio-net-pci (NetKVM world/L3)',
                 &method(:client_world_net_dev=))
+
+      parser.on('--client-world-vlan-id <vlan_id>', Integer,
+                'Create 802.1Q VLAN L3 endpoint on br_world (br_world.<id> + 10.0.<id>.1/24).',
+                'Ignored unless --client_world_net. Example: 100 (NetKVM tagged VLAN / VIRT-95931)',
+                &method(:client_world_vlan_id=))
 
       parser.on('--attach-debug-net', TrueClass,
                 'Attach debug network to all VMs',

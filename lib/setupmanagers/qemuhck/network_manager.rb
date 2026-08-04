@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require 'open3'
+require 'shellwords'
+
 # AutoHCK module
 module AutoHCK
   # QemuMachine class
@@ -15,6 +18,7 @@ module AutoHCK
         @id = id
         @client_id = client_id
         @machine = machine
+        @qemu_options = qemu_options
         @logger = logger
         @dev_id = 0
 
@@ -137,7 +141,46 @@ module AutoHCK
 
       def world_device_command(device, bus_name, qemu_replacement_map)
         type = __method__.to_s.split('_').first
+        ensure_world_vlan_l3
         create_tap_device_command(type, device, bus_name, 'br_world', qemu_replacement_map)
+      end
+
+      # Host 802.1Q L3 peer for guest-tagged frames on br_world.
+      # Creates br_world.<vlan_id> with 10.0.<vlan_id>.1/24 (vlan_id 1..254).
+      # Untagged world DHCP (10.0.2.0/24) is unchanged.
+      def ensure_world_vlan_l3
+        vlan_id = @qemu_options['world_vlan_id']
+        return if vlan_id.nil?
+
+        vlan_id = Integer(vlan_id)
+        unless vlan_id.between?(1, 254)
+          raise AutoHCKError, "world_vlan_id must be 1..254 for 10.0.<id>.1/24 addressing (got #{vlan_id})"
+        end
+
+        vlan_if = "br_world.#{vlan_id}"
+        gw_cidr = "10.0.#{vlan_id}.1/24"
+
+        if File.exist?("/sys/class/net/#{vlan_if}")
+          @logger.info("World VLAN L3 already present: #{vlan_if} (#{gw_cidr})")
+          return
+        end
+
+        @logger.info("Creating world VLAN L3 endpoint #{vlan_if} #{gw_cidr}")
+        run_host_ip!(%W[link add link br_world name #{vlan_if} type vlan id #{vlan_id}])
+        run_host_ip!(%W[addr add #{gw_cidr} dev #{vlan_if}])
+        run_host_ip!(%W[link set #{vlan_if} up])
+      end
+
+      def run_host_ip!(args)
+        cmd = ['ip', *args]
+        @logger.debug("Running: #{cmd.shelljoin}")
+        stdout, stderr, status = Open3.capture3(*cmd)
+        return if status.success?
+
+        detail = [stdout, stderr].map(&:strip).reject(&:empty?).join("\n")
+        message = "Command failed: #{cmd.shelljoin}"
+        message = "#{message}\n#{detail}" unless detail.empty?
+        raise AutoHCKError, message
       end
 
       def test_device_command(device, bus_name, qemu_replacement_map)

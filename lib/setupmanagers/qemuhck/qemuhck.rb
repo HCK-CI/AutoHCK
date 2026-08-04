@@ -121,7 +121,8 @@ module AutoHCK
         'fs_daemon_cache_mode' => test_opt.fs_daemon_cache_mode,
         'pcie_spare_root_ports' => test_opt.pcie_spare_root_ports,
         'ctrl_net_device' => common.client_ctrl_net_dev,
-        'world_net_device' => common.client_world_net_dev
+        'world_net_device' => common.client_world_net_dev,
+        'world_vlan_id' => common.client_world_vlan_id
       }.compact
     end
     # rubocop:enable Metrics/AbcSize
