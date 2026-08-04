@@ -1,0 +1,30 @@
+{
+    "name": "variable_to_file",
+    "description": "Set a variable, write its value to a file in the guest, copy the file to the host, and verify its content",
+    "test_steps": [
+        {
+            "desc": "Set test variable",
+            "set_variable": { "test_value": "dummy_ci_test_data" }
+        },
+        {
+            "desc": "Write test variable value to a file in guest",
+            "guest_run": "Set-Content -Path 'C:\\ci_output.txt' -Value '@test_value@'; Write-Output 'PASS: file written'",
+            "expected_output_contains": "PASS:",
+            "timeout": 30
+        },
+        {
+            "desc": "Copy output file from guest to host workspace",
+            "files_action": [
+                {
+                    "local_path": "@workspace@/ci_output.txt",
+                    "remote_path": "C:\\ci_output.txt",
+                    "direction": "remote-to-local"
+                }
+            ]
+        },
+        {
+            "desc": "Verify file content on host contains the test variable value",
+            "host_run": "grep -qF @test_value@ ci_output.txt"
+        }
+    ]
+}

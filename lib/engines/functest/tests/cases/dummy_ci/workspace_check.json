@@ -1,0 +1,22 @@
+{
+    "name": "workspace_check",
+    "description": "Verify host workspace snapshot files, workspace path engine tag, and guest test_binaries_dir",
+    "test_steps": [
+        {
+            "desc": "Verify workspace contains snapshot qcow2 files",
+            "host_run": "ls *-snapshot.qcow2",
+            "expected_output_contains": "-snapshot.qcow2"
+        },
+        {
+            "desc": "Verify workspace path contains expected engine tag prefix",
+            "host_run": "echo $PWD",
+            "expected_output_matches": "dummy-"
+        },
+        {
+            "desc": "Verify test_binaries_dir content was uploaded to guest",
+            "guest_run": "if (Test-Path '@test_binaries_dir@\\dummy_ci_marker.txt') { Write-Output 'PASS: test binaries uploaded' } else { throw 'dummy_ci_marker.txt not found in @test_binaries_dir@' }",
+            "expected_output_contains": "PASS:",
+            "timeout": 30
+        }
+    ]
+}

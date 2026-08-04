@@ -1,0 +1,13 @@
+{
+    "name": "snapshot_clean_boot",
+    "description": "Boot from the clean base image and verify the marker file is absent",
+    "clean_boot": true,
+    "test_steps": [
+        {
+            "desc": "Verify marker file is absent after clean boot",
+            "guest_run": "if (Test-Path 'C:\\ci_marker.txt') { throw 'marker file unexpectedly present after clean boot' }; Write-Output 'PASS: no marker file on clean boot'",
+            "expected_output_contains": "PASS:",
+            "timeout": 30
+        }
+    ]
+}
