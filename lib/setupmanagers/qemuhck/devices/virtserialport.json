@@ -1,0 +1,11 @@
+{
+  "name": "virtserialport",
+  "need_pci_bus": false,
+  "define_variables": {
+    "@serial_socket@": "serial_socket@run_id@_@client_id@"
+  },
+  "command_line": [
+    "-chardev socket,path=@serial_socket@,server=on,wait=off,id=serial_chardev_@client_id@",
+    "-device virtserialport,chardev=serial_chardev_@client_id@,name=org.qemu.guest_agent.0"
+  ]
+}
