@@ -30,6 +30,13 @@ module AutoHCK
       create_qemuhck_log_file
     end
 
+    def initialize_devices
+      @devices = @drivers&.map(&:device)
+      @devices ||= []
+
+      @devices.concat(@project.options.common.attach_devices)
+    end
+
     def initialize_project(project)
       @project = project
 
@@ -38,8 +45,8 @@ module AutoHCK
       @logger = project.logger
 
       @drivers = project.engine.drivers
+      initialize_devices
 
-      @devices = @drivers&.map(&:device)
       @kit = @platform.kit
     end
 
