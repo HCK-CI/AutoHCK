@@ -1,5 +1,5 @@
 {
   "name": "virtio-serial-pci",
   "need_pci_bus": true,
-  "command_line": ["-device virtio-serial-pci@device_extra_param@@iommu_device_param@,bus=@bus_name@.0,id=virtio_serial_pci0"]
+  "command_line": ["-device virtio-serial-pci@device_extra_param@@virtio_vectors_param@@iommu_device_param@,bus=@bus_name@.0,id=virtio_serial_pci0"]
 }
