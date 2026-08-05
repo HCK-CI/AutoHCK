@@ -187,7 +187,8 @@ module AutoHCK
       private
 
       def create_tap_device_command(type, device, bus_name, bridge_name, qemu_replacement_map)
-        netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,downscript=no,ifname=@net_if_name@'
+        netdev_options = ',vhost=@vhost_value@,script=@net_up_script@,' \
+                         'downscript=no,ifname=@net_if_name@@netdev_mq_param@'
         network_backend = 'tap'
 
         options = {

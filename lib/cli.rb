@@ -127,6 +127,8 @@ module AutoHCK
     prop :drive_aio_state, T.nilable(String)
     prop :discard_granularity, T.nilable(String)
     prop :fs_daemon_cache_mode, T.nilable(String)
+    prop :virtio_vectors, T.nilable(Integer)
+    prop :virtio_queues, T.nilable(Integer)
     prop :pcie_spare_root_ports, T.nilable(Integer)
     prop :test_params, T::Hash[String, String], default: {}
 
@@ -332,6 +334,17 @@ module AutoHCK
       parser.on('--virtiofs-cache <mode>', %w[auto always never],
                 'Set virtiofsd cache mode for the virtio-fs device (default: always)',
                 &method(:fs_daemon_cache_mode=))
+
+      parser.on('--virtio-vectors <N>', Integer,
+                'Set MSI-X vectors on the virtio device under test.',
+                'Supported by all virtio-pci devices.',
+                'QEMU auto-assigns vectors; use this to override.',
+                &method(:virtio_vectors=))
+
+      parser.on('--virtio-queues <N>', Integer,
+                'Set virtqueues on the virtio device under test.',
+                'Supported devices: virtio-net-pci, virtio-scsi-pci, virtio-blk-pci.',
+                &method(:virtio_queues=))
 
       parser.on('--pcie-spare-root-ports <N>', Integer,
                 'Allocate N extra empty pcie-root-ports at boot for later hotplug (q35 only, default: 0)',

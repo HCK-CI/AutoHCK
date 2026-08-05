@@ -452,6 +452,37 @@ module AutoHCK
       { '@fs_daemon_cache_mode@' => mode }
     end
 
+    # Builds MQ/vectors placeholders from --virtio-queues / --virtio-vectors.
+    #
+    # @virtio_vectors_param@        : ,vectors=N  — all virtio-pci devices;
+    #                                 QEMU auto-assigns vectors when omitted
+    # @virtio_net_queues_param@     : ,mq=on        (virtio-net-pci, when queues > 1)
+    # @virtio_scsi_queues_param@    : ,num_queues=N  (virtio-scsi-pci)
+    # @virtio_blk_queues_param@     : ,num-queues=N  (virtio-blk-pci)
+    # @netdev_mq_param@             : ,queues=N      (on -netdev tap, when queues > 1)
+    def virtio_extra_param_replacement_map
+      queues  = option_config('virtio_queues')
+      vectors = option_config('virtio_vectors')
+
+      raise QemuHCKError, '--virtio-vectors must be >= 0' if vectors&.negative?
+
+      {
+        '@virtio_vectors_param@' => vectors ? ",vectors=#{vectors}" : '',
+        '@virtio_net_queues_param@' => net_mq_queues_param(queues),
+        '@virtio_scsi_queues_param@' => queues ? ",num_queues=#{queues}" : '',
+        '@virtio_blk_queues_param@' => queues ? ",num-queues=#{queues}" : '',
+        '@netdev_mq_param@' => netdev_mq_queues_param(queues)
+      }
+    end
+
+    def net_mq_queues_param(queues)
+      queues && queues > 1 ? ',mq=on' : ''
+    end
+
+    def netdev_mq_queues_param(queues)
+      queues && queues > 1 ? ",queues=#{queues}" : ''
+    end
+
     def numa_replacement_map
       return {} unless option_config('numa_state')
 
@@ -518,6 +549,7 @@ module AutoHCK
                                              options_replacement_map,
                                              discard_granularity_replacement_map,
                                              fs_daemon_cache_mode_replacement_map,
+                                             virtio_extra_param_replacement_map,
                                              device_define_variables,
                                              numa_replacement_map,
                                              @define_variables)
