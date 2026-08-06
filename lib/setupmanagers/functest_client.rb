@@ -26,7 +26,7 @@ module AutoHCK
     def reboot_clean
       @logger.info("Rebooting client #{@name} from a clean image")
       @runner = @setup_manager.power_cycle_client(@scope, @name, create_snapshot: true)
-      reconnect
+      prepare_machine(@tools)
     end
 
     # Boots a fresh VM from a previously saved snapshot tag.
