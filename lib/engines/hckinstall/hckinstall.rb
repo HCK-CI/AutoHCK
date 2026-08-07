@@ -7,16 +7,22 @@ module AutoHCK
   class HCKInstall
     extend T::Sig
     include Helper
+    include InstallDuringSetup
 
     attr_reader :platform
 
     PLATFORMS_JSON_DIR = 'lib/engines/hcktest/platforms'
     CONFIG_JSON = 'lib/engines/hckinstall/hckinstall.json'
-    ISO_JSON = 'lib/engines/hckinstall/iso.json'
     KIT_JSON_DIR = 'lib/engines/hckinstall/kits'
-    FW_JSON = 'lib/setupmanagers/qemuhck/fw.json'
     DRIVERS_JSON_DIR = 'lib/engines/hcktest/drivers'
     ENGINE_MODE = 'install'
+
+    # Answer-file rendering (read_iso, product_key_xml, load_fw_disk_config,
+    # build_answer_file_path, build_client_answer_file_path, client_platform_arch,
+    # create_client_answer_files) is provided by InstallDuringSetup.
+    def setup_scripts_workspace
+      @workspace_hlk_setup_scripts_path
+    end
 
     def initialize(project)
       @project = project
@@ -53,14 +59,6 @@ module AutoHCK
       Models::HLKPlatform.from_json_file(platform_json, logger)
     end
 
-    def read_iso(iso_name)
-      iso = Json.read_json(ISO_JSON, @logger)
-      @logger.info("Loading ISO info for: #{iso_name}")
-      res = iso[iso_name]
-      @logger.fatal("ISO info for #{iso_name} does not exist") unless res
-      res || raise(InvalidConfigFile, "ISO info for #{iso_name} does not exist")
-    end
-
     sig { params(kit_name: String).returns(Models::Kit) }
     def read_kit(kit_name)
       kit_json = "#{KIT_JSON_DIR}/#{kit_name}.json"
@@ -73,7 +71,6 @@ module AutoHCK
       @config = Json.read_json(CONFIG_JSON, @logger)
 
       @hck_setup_scripts_path_template = Pathname.new(File.expand_path('./setup-scripts', __dir__))
-      @answer_files_path_template = Pathname.new(File.expand_path('./answer-files', __dir__))
       @workspace_hlk_setup_scripts_path = Pathname.new(@project.workspace_path).join('hck-setup-scripts')
 
       @answer_files = @config['answer_files']
@@ -347,58 +344,12 @@ module AutoHCK
       installers.find { File.exist? _1 }
     end
 
-    sig { params(product_key: T.nilable(String)).returns(String) }
-    def product_key_xml(product_key)
-      product_key == '' || product_key.nil? ? '' : "<Key>#{product_key}</Key>"
-    end
-
-    sig { params(file: String, disk_config: String).returns(Pathname) }
-    def build_answer_file_path(file, disk_config)
-      paths = [
-        @answer_files_path_template.join("#{file}.#{disk_config}.in"),
-        @answer_files_path_template.join("#{file}.in")
-      ]
-
-      paths.each do |path|
-        @logger.debug("Looking for answer file at #{path}")
-        return path if File.exist?(path)
-      end
-
-      raise(InvalidConfigFile, "Answer file for #{file} with disk config #{disk_config} does not exist")
-    end
-
-    def load_fw_disk_config(fw_type)
-      fws = Json.read_json(FW_JSON, @logger)
-      @logger.info("Loading FW: #{fw_type}")
-      res = fws[fw_type]
-
-      unless res
-        @logger.fatal("#{@fw_name} does not exist")
-        raise(InvalidConfigFile, "#{@fw_name} does not exist")
-      end
-
-      res['disk_config']
-    end
-
     def build_studio_answer_file_path(file)
       fw_type = @project.setup_manager.studio_option_config('fw_type')
 
       disk_config = load_fw_disk_config(fw_type)
 
       build_answer_file_path(file, disk_config)
-    end
-
-    def build_client_answer_file_path(file, client_name)
-      fw_type = @project.setup_manager.client_option_config(client_name, 'fw_type')
-
-      disk_config = load_fw_disk_config(fw_type)
-
-      build_answer_file_path(file, disk_config)
-    end
-
-    def client_platform_arch(client_name)
-      client = @project.engine_platform.clients.values.find { |c| c.name == client_name }
-      client&.arch || @project.engine_platform.client_arch || Project::DEFAULT_ARCH
     end
 
     def create_studio_answer_files
@@ -440,38 +391,13 @@ module AutoHCK
                            @workspace_hlk_setup_scripts_path.join('drivers'))
     end
 
-    def create_client_answer_files_for_client(client_name)
-      client = @client_iso_infos[client_name]['client']
-      if client.nil?
-        @logger.fatal('Client ISO config is invalid, missing "client" section')
-        raise(InvalidConfigFile, 'Client ISO config is invalid, missing "client" section')
-      end
-      @logger.debug("Creating client answer files for #{client_name}")
-
-      product_key = client['product_key']
-
-      replacement_list = {
-        '@WINDOWS_IMAGE_NAME@' => client['windows_image_names'],
-        '@PRODUCT_KEY@' => product_key,
-        '@PRODUCT_KEY_XML@' => product_key_xml(product_key),
-        '@HOST_TYPE@' => 'client',
-        '@DEFAULT_PASSWORD@' => @project.config['windows_password'],
-        '@PROCESSOR_ARCHITECTURE@' => client_platform_arch(client_name)
-      }
-      @answer_files.each do |file|
-        file_gsub(build_client_answer_file_path(file, client_name),
-                  @workspace_hlk_setup_scripts_path.join(file),
-                  replacement_list)
-      end
-    end
-
     def prepare_client_drives
       @logger.info('HCKInstall: Prepare client drives')
 
       copy_drivers if @need_copy_drivers
 
       @clients_name.each do |client_name|
-        create_client_answer_files_for_client(client_name)
+        create_client_answer_files(client_name)
         create_iso(@setup_client_isos[client_name], [@workspace_hlk_setup_scripts_path], ['Kits'])
         @project.setup_manager.create_client_image(client_name)
       end

@@ -1,0 +1,11 @@
+{
+  "name": "installtest",
+  "description": "Install-during-setup test engine — fresh OS install with driver verification",
+  "test_definitions_path": "lib/engines/functest/tests",
+  "default_timeout": 300,
+  "install_timeout": 10800,
+  "answer_files": [
+    "autounattend.xml",
+    "unattend.xml"
+  ]
+}

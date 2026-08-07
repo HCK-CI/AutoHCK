@@ -174,6 +174,7 @@ module AutoHCK
       create_snapshot: true,
       boot_from_snapshot: false,
       boot_from_tag: nil,
+      boot_image_override: nil,
       attach_iso_list: [],
       dump_only: false,
       secure: false
@@ -884,6 +885,10 @@ module AutoHCK
 
     def create_image
       @sm.create_boot_image
+    end
+
+    def create_image_at(path)
+      @sm.create_boot_image_at(path)
     end
 
     def save_image_metadata(metadata)

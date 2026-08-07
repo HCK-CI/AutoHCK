@@ -124,8 +124,8 @@ module AutoHCK
     # For actions scoped to one machine: each call opens its own WinRM
     # connection (see RToolsHCK#machine_connection), so different machines
     # can run concurrently; only same-machine calls are serialized.
-    def act_with_tools_on_machine(machine, &)
-      process_tools_result(@machine_locks.for_machine(machine).synchronize { @tools.unsynchronized(&) })
+    def act_with_tools_on_machine(machine, &block)
+      process_tools_result(@machine_locks.for_machine(machine).synchronize { @tools.unsynchronized(&block) })
     end
 
     def process_tools_result(results)

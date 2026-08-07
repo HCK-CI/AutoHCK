@@ -438,7 +438,8 @@ module AutoHCK
       @sub_parser ||= {
         'test' => test.create_parser('test'),
         'install' => install.create_parser,
-        'functest' => test.create_parser('functest')
+        'functest' => test.create_parser('functest'),
+        'installtest' => test.create_parser('installtest')
       }
     end
 

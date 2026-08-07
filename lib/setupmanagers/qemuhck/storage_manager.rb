@@ -66,6 +66,10 @@ module AutoHCK
         create_image(@boot_image_path, 150, IMAGE_FORMAT)
       end
 
+      def create_boot_image_at(path)
+        create_image(path, 150, IMAGE_FORMAT)
+      end
+
       def save_image_metadata(metadata)
         metadata[:checksum] = Digest::SHA256.file(@boot_image_path).hexdigest
 
@@ -127,10 +131,21 @@ module AutoHCK
           return
         end
 
+        if run_opts[:boot_image_override]
+          create_snapshot_from(run_opts[:boot_image_override], boot_snapshot_path) if run_opts[:create_snapshot]
+          return
+        end
+
         create_boot_snapshot if run_opts[:create_snapshot]
       end
 
       def boot_device_image_path(run_opts)
+        if run_opts[:boot_image_override]
+          return boot_snapshot_path if run_opts[:create_snapshot]
+
+          return run_opts[:boot_image_override]
+        end
+
         return boot_snapshot_path if run_opts[:boot_from_tag] || run_opts[:create_snapshot] ||
                                      run_opts[:boot_from_snapshot]
 

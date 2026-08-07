@@ -257,6 +257,10 @@ module AutoHCK
       @clients_vm[name].create_image
     end
 
+    def create_client_image_at(name, path)
+      @clients_vm[name].create_image_at(path)
+    end
+
     def save_client_image_metadata(name, metadata)
       @clients_vm[name].save_image_metadata(metadata)
     end
@@ -319,6 +323,11 @@ module AutoHCK
     def run_functest_client(scope, name, run_opts = nil)
       @clients ||= {}
       @clients[name] = FunctestClient.new(self, scope, name, run_opts)
+    end
+
+    def run_installtest_client(scope, name, run_opts = nil)
+      @clients ||= {}
+      @clients[name] = InstallTestClient.new(self, scope, name, run_opts)
     end
 
     def client_replacement_map(name)
