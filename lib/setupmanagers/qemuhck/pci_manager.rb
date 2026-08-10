@@ -11,9 +11,11 @@ module AutoHCK
 
       def initialize(logger)
         @logger = logger
-        @dev_id = 0
+        reset
+      end
 
-        # First free PCI slot, chassis and address
+      def reset
+        @dev_id = 0
         @pci_slot = 4
         @pci_chassis = 2
         @pci_addr = 5
