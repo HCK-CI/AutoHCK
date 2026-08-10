@@ -87,22 +87,48 @@ module AutoHCK
       tests
     end
 
+    # rubocop:disable Metrics/CyclomaticComplexity, Metrics/AbcSize
+    def engine_setup_manager_callback(machine_name, action)
+      client = @clients.find { |c| c.name == machine_name }
+      raise EngineError, "No client found for machine #{machine_name}" unless client
+
+      case action
+      when Models::EngineSetupManagerActions::Shutdown
+        @tools.shutdown_machine(machine_name)
+      when Models::EngineSetupManagerActions::PowerOff
+        client.stop_client
+      when Models::EngineSetupManagerActions::PowerOn
+        client.start_client
+      when Models::EngineSetupManagerActions::PowerOnWait
+        client.start_client(wait: true)
+      when Models::EngineSetupManagerActions::Reboot
+        @tools.restart_machine(machine_name)
+      when Models::EngineSetupManagerActions::RebootWait
+        @tools.restart_machine_and_wait(machine_name)
+      when Models::EngineSetupManagerActions::ValidatePowerDown
+        raise 'Client must be powered down, but it is online' if client.client_alive?
+      when Models::EngineSetupManagerActions::ValidatePowerOn
+        raise 'Client must be powered on, but it is offline' unless client.client_alive?
+      end
+    end
+    # rubocop:enable Metrics/CyclomaticComplexity, Metrics/AbcSize
+
     # rubocop:disable Metrics/AbcSize
     def run
       @logger.info('Starting functest engine')
       validate_tests_selected!
 
       ResourceScope.open do |scope|
-        clients = boot_clients(scope)
-        raise AutoHCKError, 'No clients booted for the selected tests' if clients.empty?
+        @clients = boot_clients(scope)
+        raise AutoHCKError, 'No clients booted for the selected tests' if @clients.empty?
 
-        tools = build_tools(clients)
-        prepare_clients(clients, tools)
-        command_execution_manager = build_command_execution_manager(tools, clients)
+        @tools = build_tools(@clients)
+        prepare_clients(@clients, @tools)
+        command_execution_manager = build_command_execution_manager(@tools, @clients)
 
         run_context = Functest::TestExecutor::RunContext.new(
-          clients: clients,
-          tools: tools,
+          clients: @clients,
+          tools: @tools,
           command_execution_manager: command_execution_manager
         )
         @executor = Functest::TestExecutor.new(self, run_context)
@@ -172,7 +198,8 @@ module AutoHCK
         tools: tools,
         machines: clients.map(&:name),
         init_opts: {
-          reboot_strategy: CommandExecutionManager::RebootStrategy[:WinrmPoll]
+          reboot_strategy: CommandExecutionManager::RebootStrategy[:WinrmPoll],
+          engine_setup_manager_callback: method(:engine_setup_manager_callback)
         }
       )
     end

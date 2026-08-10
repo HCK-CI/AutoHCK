@@ -59,6 +59,26 @@ module AutoHCK
       const :timeout, T.nilable(Integer)
     end
 
+    class EngineSetupManagerActions < T::Enum
+      extend T::Sig
+
+      enums do
+        Shutdown = new('shutdown')
+        PowerOff = new('power-off')
+        PowerOn = new('power-on')
+        PowerOnWait = new('power-on-wait')
+        Reboot = new('reboot')
+        RebootWait = new('reboot-wait')
+        ValidatePowerDown = new('validate-power-down')
+        ValidatePowerOn = new('validate-power-on')
+      end
+
+      sig { returns(String) }
+      def to_s
+        serialize
+      end
+    end
+
     # Unified command/step descriptor for HCK test hooks, post-start commands,
     # and functest JSON steps.
     class CommandInfo < T::Struct
@@ -81,6 +101,7 @@ module AutoHCK
       const :set_variable, T.nilable(T::Hash[String, String])
       const :qmp_command, T.nilable(QmpCommandConfig)
       const :qmp_wait_event, T.nilable(QmpWaitEventConfig)
+      const :engine_setup_manager_action, T.nilable(EngineSetupManagerActions)
 
       const :expected_output_contains, T.nilable(String)
       const :expected_output_matches, T.nilable(String)

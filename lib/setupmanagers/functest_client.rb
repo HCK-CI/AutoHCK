@@ -15,11 +15,35 @@ module AutoHCK
       @setup_manager = setup_manager
       @scope = scope
       @name = name
+      @run_opts = run_opts
       @logger.info("Starting functest client #{name}")
-      @runner = setup_manager.run_client(scope, name, run_opts)
+      start_client
       scope << self
       @replacement_map = @project.project_replacement_map.merge(setup_manager.client_replacement_map(name))
       @winrm_addr = lookup_winrm_addr
+    end
+
+    def start_client(wait: false)
+      @logger.info("Starting client #{@name}")
+      @run_opts ||= {}
+      # Reuse existing snapshot, if previously started
+      if @runner
+        @run_opts[:create_snapshot] = false
+        @run_opts[:boot_from_snapshot] = true
+      end
+      @runner = @setup_manager.run_client(@scope, @name, @run_opts) unless client_alive?
+      reconnect if wait
+    end
+
+    def stop_client
+      @logger.info("Stopping client #{@name}")
+      @setup_manager.stop_client(@name)
+    end
+
+    def client_alive?
+      return false if @runner.nil?
+
+      @runner.alive?
     end
 
     # Boots a fresh VM from the clean base image, discarding current state.
