@@ -98,6 +98,10 @@ module AutoHCK
         @qemu_thread.join(...)
       end
 
+      def alive?
+        @qemu_thread.alive?
+      end
+
       def soft_abort
         SOFT_ABORT_RETRIES.times do
           try_with_qmp(&:powerdown)

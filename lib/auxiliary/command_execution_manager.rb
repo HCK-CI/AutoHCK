@@ -21,12 +21,13 @@ module AutoHCK
     INIT_OPTS_DEFAULTS = T.let({
       reboot_strategy: RebootStrategy[:FixedSleep],
       reboot_callback: nil,
+      engine_setup_manager_callback: nil,
       default_timeout: DEFAULT_TIMEOUT
     }.freeze, T::Hash[Symbol, T.untyped])
 
     STEP_TYPE_FIELDS = T.let(%i[
       guest_run guest_run_file guest_reboot files_action host_run host_run_file
-      barrier set_variable qmp_command qmp_wait_event
+      barrier set_variable qmp_command qmp_wait_event engine_setup_manager_action
     ].freeze, T::Array[Symbol])
 
     sig { params(init_opts: T::Hash[Symbol, T.untyped]).returns(T::Hash[Symbol, T.untyped]) }
@@ -59,6 +60,7 @@ module AutoHCK
 
       @reboot_strategy = init_opts[:reboot_strategy]
       @reboot_callback = init_opts[:reboot_callback]
+      @engine_setup_manager_callback = init_opts[:engine_setup_manager_callback]
       @default_timeout = init_opts[:default_timeout]
 
       # Default machines for a step with no `clients` field; narrowed per
@@ -79,7 +81,7 @@ module AutoHCK
         replacement: ReplacementMap
       ).returns(T::Hash[Symbol, T.untyped])
     end
-    # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity
+    # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
     def execute(command_info, replacement: ReplacementMap.new)
       desc = command_desc(command_info)
       result = T.let({ desc: desc }, T::Hash[Symbol, T.untyped])
@@ -91,10 +93,11 @@ module AutoHCK
       execute_barrier(command_info) if command_info.barrier
       result[:qmp_result] = execute_qmp_command(command_info, replacement) if command_info.qmp_command
       result[:qmp_event] = execute_qmp_wait_event(command_info) if command_info.qmp_wait_event
+      execute_engine_setup_manager_action(command_info) if command_info.engine_setup_manager_action
 
       result
     end
-    # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity
+    # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
     sig { params(machine_name: String).returns(ReplacementMap) }
     def machine_replacement_map(machine_name)
@@ -248,6 +251,18 @@ module AutoHCK
         value.map { |v| coerce_numeric_qmp_values(v) }
       else
         value
+      end
+    end
+
+    sig { params(command_info: Models::CommandInfo).void }
+    def execute_engine_setup_manager_action(command_info)
+      action = T.must(command_info.engine_setup_manager_action)
+      unless @engine_setup_manager_callback
+        raise EngineError, "No engine setup manager callback provided for action: #{action}"
+      end
+
+      target_machines(command_info).each do |machine_name|
+        @engine_setup_manager_callback.call(machine_name, action)
       end
     end
 
