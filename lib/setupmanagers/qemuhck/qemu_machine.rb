@@ -694,6 +694,7 @@ module AutoHCK
 
     def process_device_commands
       @device_commands = []
+      @pcim.reset
 
       process_hck_network_command
       process_storage_command
