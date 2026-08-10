@@ -6,6 +6,7 @@
         "dummy_ci/snapshot_clean_boot",
         "dummy_ci/snapshot_restore",
         "dummy_ci/workspace_check",
-        "dummy_ci/variable_to_file"
+        "dummy_ci/variable_to_file",
+        "dummy_ci/engine_setup_manager_action"
     ]
 }

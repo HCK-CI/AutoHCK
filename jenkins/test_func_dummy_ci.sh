@@ -19,5 +19,5 @@ bin/auto_hck --verbose functest \
     --commit "${GITHUB_COMMIT}"
 
 cat "${AUTO_HCK_WORKSPACE_PATH}/latest/functest_results.json"
-# Check that all 5 test cases passed
-grep -e '"passed": 5,' "${AUTO_HCK_WORKSPACE_PATH}/latest/functest_results.json"
+# Check that all 6 test cases passed
+grep -e '"passed": 6,' "${AUTO_HCK_WORKSPACE_PATH}/latest/functest_results.json"
