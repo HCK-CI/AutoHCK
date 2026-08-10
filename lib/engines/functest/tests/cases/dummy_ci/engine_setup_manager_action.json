@@ -1,0 +1,94 @@
+{
+    "name": "engine_setup_manager_action",
+    "description": "",
+    "test_system_ref": "",
+    "timeout": 3500,
+    "test_steps": [
+        {
+            "desc": "Create file on guest",
+            "guest_run": "New-Item -Path C:\\guest_test.txt -ItemType File -Force",
+            "expected_output_contains": "guest_test.txt",
+            "timeout": 5
+        },
+        {
+            "desc": "Power off Client from engine",
+            "engine_setup_manager_action": "power-off",
+            "timeout": 120
+        },
+        {
+            "desc": "Power on Client from engine",
+            "engine_setup_manager_action": "power-on",
+            "timeout": 600
+        },
+        {
+            "desc": "Power on Client from engine again (should not fail)",
+            "engine_setup_manager_action": "power-on",
+            "timeout": 600
+        },
+        {
+            "desc": "Sleep 120 seconds to give time for the client to power up",
+            "host_run": "sleep 120",
+            "timeout": 125
+        },
+        {
+            "desc": "Check file on guest (make sure we booted from snapshot)",
+            "guest_run": "Test-Path C:\\guest_test.txt",
+            "expected_output_contains": "True",
+            "timeout": 5
+        },
+        {
+            "desc": "Power off Client from engine",
+            "engine_setup_manager_action": "power-off",
+            "timeout": 120
+        },
+        {
+            "desc": "Power on Client from engine and wait for it to boot",
+            "engine_setup_manager_action": "power-on-wait",
+            "timeout": 600
+        },
+        {
+            "desc": "Check file on guest (make sure we booted from snapshot)",
+            "guest_run": "Test-Path C:\\guest_test.txt",
+            "expected_output_contains": "True",
+            "timeout": 5
+        },
+        {
+            "desc": "Reboot client from engine",
+            "engine_setup_manager_action": "reboot-wait",
+            "timeout": 600
+        },
+        {
+            "desc": "Check file on guest (make sure we rebooted to the same snapshot)",
+            "guest_run": "Test-Path C:\\guest_test.txt",
+            "expected_output_contains": "True",
+            "timeout": 5
+        },
+        {
+            "desc": "Power off client from guest (no wait)",
+            "guest_run": "shutdown \/s \/t 0",
+            "timeout": 600
+        },
+        {
+            "desc": "Sleep 120 seconds to give time for the client to power down",
+            "host_run": "sleep 120",
+            "timeout": 125
+        },
+        {
+            "desc": "Validate power down from engine",
+            "engine_setup_manager_action": "validate-power-down",
+            "timeout": 600
+        }
+    ],
+    "cleanup": [
+        {
+            "desc": "power-on-wait",
+            "engine_setup_manager_action": "power-on-wait",
+            "timeout": 600
+        },
+        {
+            "desc": "validate power on",
+            "engine_setup_manager_action": "validate-power-on",
+            "timeout": 600
+        }
+    ]
+}
