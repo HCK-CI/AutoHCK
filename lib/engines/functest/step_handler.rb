@@ -7,6 +7,9 @@ module AutoHCK
     class StepHandler
       STEP_TYPE_FIELDS = CommandExecutionManager::STEP_TYPE_FIELDS
 
+      # Set after a `parallel` step; nil for every other step type.
+      attr_reader :last_branch_results
+
       def initialize(project, command_execution_manager, context, default_timeout:)
         @project = project
         @command_execution_manager = command_execution_manager
@@ -16,6 +19,7 @@ module AutoHCK
       end
 
       def execute_step(step, step_index)
+        @last_branch_results = nil
         desc = @context.substitute_variables(step.desc || "Step #{step_index + 1}")
         @logger.info("Executing: #{desc}")
 
@@ -23,6 +27,12 @@ module AutoHCK
 
         if step.set_variable
           execute_set_variable(step)
+          return
+        end
+
+        if step.parallel
+          validate_step_type!(step, desc)
+          execute_parallel(step, timeout)
           return
         end
 
@@ -41,6 +51,13 @@ module AutoHCK
       end
 
       private
+
+      def execute_parallel(step, timeout)
+        runner = ParallelBranchRunner.new(@project, @command_execution_manager, @context, @logger, @default_timeout)
+        Timeout.timeout(timeout) { runner.run(step) }
+      ensure
+        @last_branch_results = runner&.branch_results
+      end
 
       def validate_step_type!(step, desc)
         types = STEP_TYPE_FIELDS.select { |field| step.step_type_active?(field) }

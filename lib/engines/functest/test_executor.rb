@@ -14,6 +14,12 @@ module AutoHCK
 
       RunContext = Struct.new(:clients, :tools, :command_execution_manager, keyword_init: true)
 
+      # Parallel-step constraints; see docs/Functest-Engine.md for details.
+      # Step types allowed inside a parallel branch.
+      PARALLEL_ALLOWED_STEP_TYPES = %i[
+        guest_run guest_run_file files_action host_run host_run_file qmp_command qmp_wait_event
+      ].freeze
+
       # rubocop:disable Metrics/AbcSize
       def initialize(engine, run_context)
         @project = engine.project
@@ -92,10 +98,10 @@ module AutoHCK
           description: test.description,
           test_system_ref: test.test_system_ref,
           timeout: test.timeout,
-          pre_test_commands: test.pre_test_commands.map(&:dup),
+          pre_test_commands: test.pre_test_commands.map(&:deep_dup),
           cycles: test.cycles,
-          test_steps: test.test_steps.map(&:dup),
-          cleanup: test.cleanup.map(&:dup),
+          test_steps: test.test_steps.map(&:deep_dup),
+          cleanup: test.cleanup.map(&:deep_dup),
           clients: test.clients.dup,
           clean_boot: test.clean_boot,
           boot_from_snapshot_tag: test.boot_from_snapshot_tag,
@@ -169,24 +175,142 @@ module AutoHCK
       end
 
       # Sets CommandExecutionManager's default machines to this test's own
-      # clients. Then fails the test right away if any step (including
-      # pre_test_commands and cleanup) targets a client this test didn't
-      # declare.
+      # clients, then fails the test right away if any step (including
+      # pre_test_commands, cleanup, and parallel branches) targets an
+      # undeclared client or violates a parallel execution constraint.
       def prepare_test_clients!(test)
         raise EngineError, "Test '#{test.name}' has an empty clients list" if test.clients.empty?
 
         @command_execution_manager.scope_to_test(test.clients)
         validate_step_clients!(test)
+        validate_parallel_blocks!(test)
+      end
+
+      def all_steps(test)
+        test.pre_test_commands + test.test_steps + test.cleanup
       end
 
       def validate_step_clients!(test)
-        (test.pre_test_commands + test.test_steps + test.cleanup).each do |step|
-          unknown = step.clients - test.clients
-          next if unknown.empty?
+        all_steps(test).each do |step|
+          validate_single_step_clients!(step, test)
+          next unless step.parallel
 
-          raise EngineError, "Test '#{test.name}' step targets client(s) #{unknown.join(', ')} not declared " \
-                             "in this test case's own clients list (#{test.clients.join(', ')})"
+          step.parallel.branches.each_value do |branch_steps|
+            branch_steps.each { |sub_step| validate_single_step_clients!(sub_step, test) }
+          end
         end
+      end
+
+      def validate_single_step_clients!(step, test)
+        unknown = step.clients - test.clients
+        return if unknown.empty?
+
+        raise EngineError, "Test '#{test.name}' step targets client(s) #{unknown.join(', ')} not declared " \
+                           "in this test case's own clients list (#{test.clients.join(', ')})"
+      end
+
+      def validate_parallel_blocks!(test)
+        all_steps(test).each do |step|
+          validate_parallel_block!(step, test) if step.parallel
+        end
+      end
+
+      def validate_parallel_block!(step, test)
+        branches = step.parallel.branches
+        raise EngineError, "Test '#{test.name}': parallel step '#{step.desc}' has no branches" if branches.empty?
+        if branches.length < 2
+          raise EngineError, "Test '#{test.name}': parallel step '#{step.desc}' must have at least two branches"
+        end
+
+        validate_no_conflicting_action!(step)
+        validate_no_nested_parallel!(step, branches)
+        validate_allowed_step_types!(step, branches)
+        validate_no_client_overlap!(step, branches, test)
+        validate_unique_capture_output!(step, branches)
+      end
+
+      def validate_no_conflicting_action!(step)
+        fields = CommandExecutionManager::STEP_TYPE_FIELDS - [:parallel]
+        active = fields.select { |field| step.step_type_active?(field) }
+        return if active.empty?
+
+        raise EngineError, "Step '#{step.desc}': 'parallel' cannot be combined with other step type " \
+                           "field(s): #{active.join(', ')}"
+      end
+
+      def validate_no_nested_parallel!(step, branches)
+        branches.each do |branch_name, branch_steps|
+          next unless branch_steps.any?(&:parallel)
+
+          raise EngineError, "Parallel step '#{step.desc}': branch '#{branch_name}' contains a nested " \
+                             'parallel block, which is not supported'
+        end
+      end
+
+      def validate_allowed_step_types!(step, branches)
+        branches.each do |branch_name, branch_steps|
+          branch_steps.each do |sub_step|
+            active = CommandExecutionManager::STEP_TYPE_FIELDS.select { |field| sub_step.step_type_active?(field) }
+            unless active.one?
+              raise EngineError, "Parallel step '#{step.desc}': branch '#{branch_name}' step must contain " \
+                                 "exactly one step type (found: #{active.join(', ')})"
+            end
+
+            disallowed = active - PARALLEL_ALLOWED_STEP_TYPES
+            next if disallowed.empty?
+
+            raise EngineError, "Parallel step '#{step.desc}': branch '#{branch_name}' contains a forbidden " \
+                               "step type (#{disallowed.join(', ')} not allowed inside parallel branches)"
+          end
+        end
+      end
+
+      def validate_no_client_overlap!(step, branches, test)
+        owner_by_client = {}
+        branches.each do |branch_name, branch_steps|
+          client_ids = branch_steps.flat_map { |sub_step| guest_targeted_clients(sub_step, test) }.uniq
+          raise_client_overlap!(step, branch_name, client_ids, owner_by_client)
+          client_ids.each { |client_id| owner_by_client[client_id] = branch_name }
+        end
+      end
+
+      def raise_client_overlap!(step, branch_name, client_ids, owner_by_client)
+        overlap = client_ids.select { |client_id| owner_by_client.key?(client_id) }
+        return if overlap.empty?
+
+        conflicts = overlap.map { |client_id| "#{client_id} (branch '#{owner_by_client[client_id]}')" }.join(', ')
+        raise EngineError, "Parallel step '#{step.desc}': branch '#{branch_name}' targets client(s) already " \
+                           "targeted by another branch in the same parallel step: #{conflicts}"
+      end
+
+      # Host-only steps target no client. An empty `clients` list broadcasts
+      # to every client declared for the test, same as
+      # CommandExecutionManager's own default.
+      def guest_targeted_clients(sub_step, test)
+        return [] unless sub_step.guest_run || sub_step.guest_run_file || sub_step.files_action.any? ||
+                         sub_step.qmp_command || sub_step.qmp_wait_event
+
+        sub_step.clients.empty? ? test.clients : sub_step.clients
+      end
+
+      # Rejects a capture_output name only when two *different* branches own
+      # it; the same branch reusing a name across its own sequential steps
+      # (last write wins) is normal and not a race.
+      def validate_unique_capture_output!(step, branches)
+        duplicates = capture_output_owners(branches).select { |_name, owners| owners.length > 1 }.keys
+        return if duplicates.empty?
+
+        raise EngineError, "Parallel step '#{step.desc}': duplicate capture_output variable name(s) " \
+                           "across branches: #{duplicates.join(', ')}"
+      end
+
+      # Maps each capture_output name to the set of branches that use it.
+      def capture_output_owners(branches)
+        owners_by_name = Hash.new { |hash, name| hash[name] = Set.new }
+        branches.each do |branch_name, branch_steps|
+          branch_steps.filter_map(&:capture_output).each { |name| owners_by_name[name] << branch_name }
+        end
+        owners_by_name
       end
 
       def execute_test_steps(test, result)
@@ -250,6 +374,9 @@ module AutoHCK
         step_result[:error] = e.message
         @logger.error("  FAIL: #{desc} - #{e.message}")
         raise
+      ensure
+        branch_results = @step_handler.last_branch_results
+        step_result[:branches] = branch_results if branch_results
       end
 
       def log_section(title)

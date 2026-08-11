@@ -263,7 +263,7 @@ See [`lib/engines/functest/tests/cases/driver_sign_check.json`](../lib/engines/f
 
 ## Step Types
 
-> Each step object must have **exactly one** step-type field (`guest_run`, `guest_run_file`, `guest_reboot`, `host_run`, `host_run_file`, `files_action`, `qmp_command`, `qmp_wait_event`, `barrier`, `set_variable`). All other fields are optional modifiers.
+> Each step object must have **exactly one** step-type field (`guest_run`, `guest_run_file`, `guest_reboot`, `host_run`, `host_run_file`, `files_action`, `qmp_command`, `qmp_wait_event`, `barrier`, `set_variable`, `parallel`). All other fields are optional modifiers.
 
 ### Common Step Fields
 
@@ -461,6 +461,73 @@ Multiple variables can be set in a single step:
     "set_variable": { "disk_number": "2", "bus_slot": "0x04" }
 }
 ```
+
+---
+
+### `parallel`
+
+Runs two or more named branches at the same time, each one in its own thread. Inside a branch, its steps still run one after another, same as normal `test_steps`. The engine always waits for every branch to finish (or stop) before moving on to the next step.
+
+Here's an example with two branches, one on the host and one on the guest:
+
+```json
+{
+    "desc": "Say hello from host and guest at the same time",
+    "parallel": {
+        "branches": {
+            "host_branch": [
+                { "desc": "Say hello from host", "host_run": "echo 'hello from host'" }
+            ],
+            "guest_branch": [
+                { "desc": "Say hello from guest", "guest_run": "Write-Output 'hello from guest'" }
+            ]
+        }
+    }
+}
+```
+
+#### `parallel` Fields
+
+| Field | Required | Description |
+|---|---|---|
+| `branches` | Yes | An object mapping a branch name to its own ordered list of steps. Every branch runs at the same time as every other branch in the block. |
+| `fail_fast` | No | Default: `true`. If a branch fails, every other still-running branch is stopped too (a branch always finishes the step it's currently on first, then stops before starting its next one). Set to `false` to let every branch run to the end no matter what fails elsewhere. Either way, the `parallel` step only fails once every branch has stopped. |
+
+The step's own `timeout` (engine default if unset) is the deadline for the **whole block**, not just one branch — a branch's own steps still keep their own `timeout` inside that. If the deadline is hit, any branches still running are stopped right away and the step fails with a timeout error.
+
+#### Constraints
+
+These are checked before the test's own steps start running, so a bad `parallel` block always fails immediately with a clear error, instead of failing partway through a real run:
+
+- A `parallel` block needs at least two branches.
+- Every branch step must resolve to exactly one step type (same rule as any other step), and it must be one of the types allowed inside a parallel branch.
+- Two branches can't target the same client. A branch "targets" whatever clients its `guest_run`/`guest_run_file`/`files_action`/`qmp_command`/`qmp_wait_event` steps target. `host_run`/`host_run_file` don't target a client, so any number of branches can run those at once.
+- A branch can't contain another `parallel` step. No nesting.
+- A branch can't use `guest_reboot` or `set_variable`. Do these outside the `parallel` block instead.
+- `capture_output` names must be different across every branch in the block. Two branches capturing to the same name is almost always a mistake, so it's rejected up front instead of letting one silently overwrite the other. Reusing a name across sequential steps within the *same* branch is fine.
+- A `parallel` step can't also have another step-type field, like `guest_run`, on the same step object.
+
+#### Variable capture
+
+While a branch is running, its `capture_output` values are only visible to later steps in that same branch — other branches can't see them yet. When the block completes without timing out, captured variables from branches that did not fail are added to the shared test context and become available to every later step (this is safe because of the uniqueness rule above). Captures from a failed branch are discarded; if the whole block times out, no branch's captures are published.
+
+#### Result reporting
+
+In `functest_results.json`, a `parallel` step also gets a `branches` key showing what each branch did:
+
+```json
+{
+    "index": 3,
+    "description": "Say hello from host and guest at the same time",
+    "status": "passed",
+    "branches": {
+        "host_branch": { "status": "passed", "steps": [ { "index": 0, "description": "Say hello from host", "status": "passed", "start_time": "...", "end_time": "...", "duration": 0.05 } ] },
+        "guest_branch": { "status": "passed", "steps": [ { "index": 0, "description": "Say hello from guest", "status": "passed", "start_time": "...", "end_time": "...", "duration": 0.08 } ] }
+    }
+}
+```
+
+A branch that `fail_fast` stopped early (because another branch failed first) gets `"status": "cancelled"` instead, with whatever steps it managed to run before stopping (possibly none). A branch still running when the whole block's own timeout expires gets `"status": "timeout"`, likewise with whatever steps it managed to finish first.
 
 ---
 

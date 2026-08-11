@@ -2,8 +2,10 @@
 # frozen_string_literal: true
 
 require_relative 'test_context'
+require_relative 'branch_context'
 require_relative 'test_loader'
 require_relative 'step_handler'
+require_relative 'parallel_branch_runner'
 require_relative 'test_executor'
 
 module AutoHCK
