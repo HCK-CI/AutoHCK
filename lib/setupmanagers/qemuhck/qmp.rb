@@ -44,6 +44,11 @@ module AutoHCK
         cached = find_cached_event(name, accepted)
         return cached if cached
 
+        run_cmd('query-status')
+
+        cached = find_cached_event(name, accepted)
+        return cached if cached
+
         wait_for_new_event(name, accepted, timeout)
       end
 
@@ -57,12 +62,19 @@ module AutoHCK
       def wait_for_new_event(name, accepted, timeout)
         Timeout.timeout(timeout) do
           loop do
-            response = JSON.parse(@socket_internal.readline)
-            @logger.debug("Received QMP message: #{response}")
-            return response if accepted.include?(response[name])
+            if @socket_internal.wait_readable(2)
+              response = JSON.parse(@socket_internal.readline)
+              @logger.debug("Received QMP message: #{response}")
+              return response if accepted.include?(response[name])
 
-            @events << response if response.key?('event')
-            raise(QMPError, response['error'].to_s) if response.key?('error')
+              @events << response if response.key?('event')
+              raise(QMPError, response['error'].to_s) if response.key?('error')
+            else
+              run_cmd('query-status')
+
+              cached = find_cached_event(name, accepted)
+              return cached if cached
+            end
           end
         end
       end
