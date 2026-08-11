@@ -262,6 +262,12 @@ module AutoHCK
       raise ToolsHCKError, 'Unimplemented method: restart_machine_and_wait'
     end
 
+    # Poll until WinRM is reachable. FunctestTools implements this; used by
+    # the wait_client_online step after ACPI poweroff + keep_alive restart.
+    def wait_for_client_online(_machine)
+      raise ToolsHCKError, 'Unimplemented method: wait_for_client_online'
+    end
+
     def restart_machine(machine)
       retries ||= 0
       act_with_tools { _1.machine_shutdown(machine, restart: true) }

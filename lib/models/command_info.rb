@@ -81,6 +81,9 @@ module AutoHCK
       const :set_variable, T.nilable(T::Hash[String, String])
       const :qmp_command, T.nilable(QmpCommandConfig)
       const :qmp_wait_event, T.nilable(QmpWaitEventConfig)
+      # Block until WinRM is reachable again (e.g. after ACPI poweroff when
+      # the VM was started with keep_alive and QEMU has restarted).
+      const :wait_client_online, T::Boolean, default: false
 
       const :expected_output_contains, T.nilable(String)
       const :expected_output_matches, T.nilable(String)

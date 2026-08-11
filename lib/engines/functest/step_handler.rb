@@ -52,7 +52,7 @@ module AutoHCK
         value = step.public_send(field)
         case field
         when :files_action then value.any?
-        when :guest_reboot then value == true
+        when :guest_reboot, :wait_client_online then value == true
         when :set_variable then value.is_a?(Hash) && !value.empty?
         when :guest_run, :guest_run_file, :host_run, :host_run_file, :barrier
           value.is_a?(String) ? !value.empty? : !value.nil?
