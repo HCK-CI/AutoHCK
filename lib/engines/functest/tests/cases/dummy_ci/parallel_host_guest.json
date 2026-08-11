@@ -1,0 +1,37 @@
+{
+    "name": "parallel_host_guest",
+    "description": "Run a host command and a guest command in parallel, then verify both branches completed and the guest branch's captured variable was merged after the block",
+    "test_steps": [
+        {
+            "desc": "Run host and guest commands at the same time",
+            "parallel": {
+                "branches": {
+                    "host_branch": [
+                        {
+                            "desc": "Create marker file on host",
+                            "host_run": "touch parallel_ci_host_marker"
+                        }
+                    ],
+                    "guest_branch": [
+                        {
+                            "desc": "Run command in guest",
+                            "guest_run": "Write-Output 'guest_branch_done'",
+                            "capture_output": "guest_marker",
+                            "timeout": 30
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "desc": "Verify host branch created its marker file",
+            "host_run": "test -f parallel_ci_host_marker && echo 'PASS: host marker present'",
+            "expected_output_contains": "PASS:"
+        },
+        {
+            "desc": "Verify guest branch's captured variable is available after the parallel block",
+            "host_run": "test '@guest_marker@' = 'guest_branch_done' && echo 'PASS: guest marker present'",
+            "expected_output_contains": "PASS:"
+        }
+    ]
+}
