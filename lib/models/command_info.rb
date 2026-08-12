@@ -136,5 +136,22 @@ module AutoHCK
         end
       end
     end
+
+    # A `parallel` step's named branches that run concurrently. See
+    # docs/Functest-Engine.md for the schema and constraints.
+    class ParallelBlock < T::Struct
+      extend T::Sig
+
+      const :branches, T::Hash[String, T::Array[CommandInfo]]
+
+      # true: the first failure cancels the other branches. false: every
+      # branch runs to completion. Either way, the first failure (by
+      # declaration order) is what gets re-raised.
+      const :fail_fast, T::Boolean, default: true
+    end
+
+    class CommandInfo
+      prop :parallel, T.nilable(ParallelBlock)
+    end
   end
 end
