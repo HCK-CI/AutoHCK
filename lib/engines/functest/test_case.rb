@@ -55,7 +55,7 @@ module AutoHCK
         new_test_steps = []
         cycles.times do |cycle|
           test_steps.each do |step|
-            new_step = step.dup
+            new_step = step.deep_dup
             new_step.desc = "[Cycle #{cycle + 1}] #{step.desc}"
             new_test_steps << new_step
           end
