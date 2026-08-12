@@ -89,29 +89,12 @@ module AutoHCK
           'currentcount' => passed + failed + 1, 'total' => total }
       end
 
-      # rubocop:disable Metrics/AbcSize
-      # There is no way to reduce the ABC size of this method without losing clarity.
       def create_local_test_copy(test)
-        TestCase.new(
-          name: test.name,
-          display_name: test.display_name,
-          description: test.description,
-          test_system_ref: test.test_system_ref,
-          timeout: test.timeout,
-          pre_test_commands: test.pre_test_commands.map(&:deep_dup),
-          cycles: test.cycles,
-          test_steps: test.test_steps.map(&:deep_dup),
-          cleanup: test.cleanup.map(&:deep_dup),
-          clients: test.clients.dup,
-          clean_boot: test.clean_boot,
-          boot_from_snapshot_tag: test.boot_from_snapshot_tag,
-          save_snapshot_as: test.save_snapshot_as
-        ).tap do |test_local|
+        test.deep_dup.tap do |test_local|
           test_local.add_auto_index
           test_local.apply_cycles_to_steps
         end
       end
-      # rubocop:enable Metrics/AbcSize
 
       def record_test(test)
         start_time = Time.now

@@ -37,6 +37,11 @@ module AutoHCK
         name.gsub(/[^\w\-.]/, '_').gsub(/(^_|_$)/, '')
       end
 
+      sig { returns(TestCase) }
+      def deep_dup
+        TestCase.from_hash(serialize)
+      end
+
       sig { void }
       def add_auto_index
         pre_test_commands.each_with_index do |step, index|
