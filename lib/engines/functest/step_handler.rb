@@ -43,22 +43,9 @@ module AutoHCK
       private
 
       def validate_step_type!(step, desc)
-        types = STEP_TYPE_FIELDS.select { |field| step_type_set?(step, field) }
+        types = STEP_TYPE_FIELDS.select { |field| step.step_type_active?(field) }
         raise EngineError, "No step type set in: #{desc}" if types.empty?
         raise EngineError, "Multiple step types set (#{types.join(', ')}) in: #{desc}" if types.length > 1
-      end
-
-      def step_type_set?(step, field)
-        value = step.public_send(field)
-        case field
-        when :files_action then value.any?
-        when :guest_reboot then value == true
-        when :set_variable then value.is_a?(Hash) && !value.empty?
-        when :guest_run, :guest_run_file, :host_run, :host_run_file, :barrier
-          value.is_a?(String) ? !value.empty? : !value.nil?
-        else
-          !value.nil?
-        end
       end
 
       def execute_set_variable(step)
