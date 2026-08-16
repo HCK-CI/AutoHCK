@@ -1,5 +1,6 @@
 {
     "name": "balloon_service",
+    "display_name": "Balloon service can be installed and uninstalled",
     "description": "Install, verify, and uninstall the virtio-balloon Windows service (blnsvr.exe)",
     "test_system_ref": "VIRT-251",
     "timeout": 300,

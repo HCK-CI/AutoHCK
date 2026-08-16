@@ -1,5 +1,6 @@
 {
     "name": "driver_package_check",
+    "display_name": "Driver package Authenticode signatures are valid",
     "description": "Verify Authenticode signatures of the @driver_module@ driver package (.sys, .cat) before installation",
     "timeout": 60,
     "test_steps": [

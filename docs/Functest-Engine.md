@@ -217,7 +217,8 @@ A test case defines an ordered sequence of steps and optional cleanup steps. Cas
 
 | Field | Required | Description |
 |---|---|---|
-| `name` | Yes | Test case name; shown in results and log output |
+| `name` | Yes | Machine identifier for the test; used in log output, result file names, and suite/CLI references |
+| `display_name` | No | Human-friendly label shown in HTML and JUnit reports instead of `name`. Falls back to `name` when omitted. |
 | `description` | No | Human-readable description |
 | `test_system_ref` | No | Reference to an issue or ticket |
 | `extra_software` | No | List of software packages to install on the guest before any tests run |

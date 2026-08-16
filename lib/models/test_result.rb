@@ -11,6 +11,7 @@ module AutoHCK
       include HLK::TestResultStatusPredicates
 
       const :name,             String
+      const :display_name,     T.nilable(String), default: nil
       const :status,           HLK::TestResultStatus, override: true
       const :executionstate,   HLK::ExecutionState
       const :execution_time,   Float
@@ -39,6 +40,7 @@ module AutoHCK
       def self.from_functest(result_hash)
         new(
           name: result_hash[:name],
+          display_name: result_hash[:display_name],
           status: case result_hash[:status]
                   when 'not_run' then HLK::TestResultStatus::NotRun
                   when 'running' then HLK::TestResultStatus::Running
