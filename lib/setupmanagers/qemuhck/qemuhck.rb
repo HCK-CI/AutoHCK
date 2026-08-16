@@ -117,6 +117,7 @@ module AutoHCK
         'fs_test_image_format' => test_opt.fs_test_image_format,
         'net_test_speed' => test_opt.net_test_speed,
         'drive_aio_state' => test_opt.drive_aio_state,
+        'discard_unmap' => test_opt.discard_unmap,
         'discard_granularity' => test_opt.discard_granularity,
         'fs_daemon_cache_mode' => test_opt.fs_daemon_cache_mode,
         'virtio_vectors' => test_opt.virtio_vectors,

@@ -426,11 +426,19 @@ module AutoHCK
     DISCARD_GRANULARITY_FORMAT = /\A(\d+)([KMG])?\z/i
     DISCARD_GRANULARITY_UNITS = { 'K' => 1024, 'M' => 1024**2, 'G' => 1024**3 }.freeze
 
-    # Sets discard=unmap and discard_granularity (in bytes) on the virtio-blk-pci
-    # device, when the discard_granularity option is configured.
+    # Sets discard=unmap on drive backends that include @drive_discard_param@
+    # (currently virtio-blk-pci and virtio-scsi-pci) when --discard-unmap is active.
+    # Implied automatically by --discard-granularity via the CLI setter.
+    def drive_discard_replacement_map
+      unmap = option_config('discard_unmap')
+      { '@drive_discard_param@' => (unmap ? ',discard=unmap' : '') }
+    end
+
+    # Sets discard_granularity (in bytes) on the virtio-blk-pci device when
+    # --discard-granularity is given.
     def discard_granularity_replacement_map
       value = option_config('discard_granularity')
-      return { '@drive_discard_param@' => '', '@blk_discard_granularity_param@' => '' } if value.nil?
+      return { '@blk_discard_granularity_param@' => '' } if value.nil?
 
       match = DISCARD_GRANULARITY_FORMAT.match(value.to_s)
       unless match
@@ -440,10 +448,7 @@ module AutoHCK
 
       bytes = match[1].to_i * DISCARD_GRANULARITY_UNITS.fetch(match[2]&.upcase, 1)
 
-      {
-        '@drive_discard_param@' => ',discard=unmap',
-        '@blk_discard_granularity_param@' => ",discard_granularity=#{bytes}"
-      }
+      { '@blk_discard_granularity_param@' => ",discard_granularity=#{bytes}" }
     end
 
     FS_DAEMON_CACHE_MODES = %w[auto always never].freeze
@@ -551,6 +556,7 @@ module AutoHCK
                                              machine_replacement_map,
                                              memory_replacement_map,
                                              options_replacement_map,
+                                             drive_discard_replacement_map,
                                              discard_granularity_replacement_map,
                                              fs_daemon_cache_mode_replacement_map,
                                              virtio_extra_param_replacement_map,
