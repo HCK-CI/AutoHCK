@@ -125,12 +125,18 @@ module AutoHCK
     prop :category, T.nilable(String)
     prop :testcase, T.nilable(String)
     prop :drive_aio_state, T.nilable(String)
+    prop :discard_unmap, T::Boolean, default: false
     prop :discard_granularity, T.nilable(String)
     prop :fs_daemon_cache_mode, T.nilable(String)
     prop :virtio_vectors, T.nilable(Integer)
     prop :virtio_queues, T.nilable(Integer)
     prop :pcie_spare_root_ports, T.nilable(Integer)
     prop :test_params, T::Hash[String, String], default: {}
+
+    def apply_discard_granularity(value)
+      self.discard_unmap = true if value
+      self.discard_granularity = value
+    end
 
     def aio_native=(value)
       raise(AutoHCKError, '--aio-native cannot be combined with --aio-threads') if value && drive_aio_state == 'threads'
@@ -326,10 +332,14 @@ module AutoHCK
                 'Use aio=threads for virtual disks (forces cache=none, cannot combine with --aio-native)',
                 &method(:aio_threads=))
 
+      parser.on('--discard-unmap', TrueClass,
+                'Enable discard=unmap on all virtual drives (virtio-blk-pci and virtio-scsi-pci)',
+                &method(:discard_unmap=))
+
       parser.on('--discard-granularity <size>', String,
-                'Set discard_granularity on virtio-blk-pci devices and discard=unmap on their drive',
+                'Set discard_granularity on virtio-blk-pci devices (implies --discard-unmap)',
                 'Size can be a plain byte count or use a K/M/G suffix (e.g. 4096, 4K, 256K, 32M)',
-                &method(:discard_granularity=))
+                &method(:apply_discard_granularity))
 
       parser.on('--virtiofs-cache <mode>', %w[auto always never],
                 'Set virtiofsd cache mode for the virtio-fs device (default: always)',
