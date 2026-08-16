@@ -24,7 +24,7 @@
         <system-err><%= auto_hck_log %></system-err>
 
         <% engine_test_steps.each do |test_step| %>
-            <testcase name="<%= test_step.name %>" classname="HLKTest" time="<%= test_step.execution_time %>">
+            <testcase name="<%= test_step.display_name || test_step.name %>" classname="HLKTest" time="<%= test_step.execution_time %>">
                 <% unless test_step.last_result.nil? %>
                     <system-out><%= JSON.pretty_generate(test_step.last_result) %></system-out>
                 <% end %>

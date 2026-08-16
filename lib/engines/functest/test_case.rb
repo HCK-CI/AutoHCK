@@ -9,6 +9,7 @@ module AutoHCK
       extend Models::JsonHelper
 
       const :name, String
+      const :display_name, T.nilable(String)
       const :description, T.nilable(String)
       const :test_system_ref, T.nilable(String)
       const :timeout, T.nilable(Integer)

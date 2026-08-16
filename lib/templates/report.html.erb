@@ -97,8 +97,8 @@
                         <% end %>
                             <th scope="row"><%= row %></th>
                             <td>
-                                <% unless test.url.nil? %><a href="<%= test.url %>"><% end %>
-                                <%= test.name %>
+                                <% unless test.url.nil? %><a href="<%= ERB::Util.html_escape(test.url) %>"><% end %>
+                                <span title="<%= ERB::Util.html_escape(test.name) %>"><%= ERB::Util.html_escape(test.display_name || test.name) %></span>
                                 <% unless test.url.nil? %></a><% end %>
                             </td>
                             <td><%= test.estimatedruntime %></td>

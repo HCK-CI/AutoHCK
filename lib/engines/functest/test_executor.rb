@@ -36,13 +36,17 @@ module AutoHCK
         log_section("Starting test: #{test.name}")
         @logger.info("Description: #{@context.substitute_variables(test.description)}") if test.description
 
-        @results << empty_test_result(test.name, test.description) unless @results.any? { |r| r[:name] == test.name }
+        if @results.none? { |r| r[:name] == test.name }
+          @results << empty_test_result(test.name, test.description, display_name: test.display_name)
+        end
         record_test(test)
       end
 
       def execute_tests(tests)
         @logger.info("Executing #{tests.length} test(s)")
-        @results += tests.map { |test| empty_test_result(test.name, test.description) }
+        @results += tests.map do |test|
+          empty_test_result(test.name, test.description, display_name: test.display_name)
+        end
         tests.each { |test| execute_test(test) }
         summary
       end
@@ -64,8 +68,9 @@ module AutoHCK
 
       private
 
-      def empty_test_result(name, description)
-        { name: name, description: description, status: 'not_run', duration: 0, dump_path: nil }
+      def empty_test_result(name, description, display_name: nil)
+        { name: name, display_name: display_name, description: description,
+          status: 'not_run', duration: 0, dump_path: nil }
       end
 
       def tests_stats
@@ -83,6 +88,7 @@ module AutoHCK
       def create_local_test_copy(test)
         TestCase.new(
           name: test.name,
+          display_name: test.display_name,
           description: test.description,
           test_system_ref: test.test_system_ref,
           timeout: test.timeout,

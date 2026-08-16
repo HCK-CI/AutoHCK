@@ -1,5 +1,6 @@
 {
     "name": "driver_signtool_check",
+    "display_name": "Driver catalog integrity verified via signtool",
     "description": "Verify @driver_module@ catalog integrity using signtool — requires extra_software signtool",
     "timeout": 120,
     "test_steps": [
