@@ -19,7 +19,7 @@ module AutoHCK
       'manjaro' => :arch
     }.freeze
 
-    sig { params(logger: T.untyped).void }
+    sig { params(logger: T.any(MultiLogger, ::Logger)).void }
     def initialize(logger)
       @logger = logger
       @distro_info = detect_distro
