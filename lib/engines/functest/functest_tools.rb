@@ -20,12 +20,13 @@ module AutoHCK
     end
 
     # Restart the VM and block until WinRM is reachable again.
-    # Waits WINRM_SETTLE_SLEEP seconds before and after the port check so the
-    # WinRM service has time to fully start before we send the first command.
+    # First waits for WinRM to go down (machine is actually offline), then
+    # waits for it to come back up. This prevents a false positive when the
+    # guest OS shuts down slowly (e.g. with Driver Verifier enabled) and WinRM
+    # is still reachable when we start polling.
     def restart_machine_and_wait(machine)
       restart_machine(machine)
-      @logger.info("Sleeping #{WINRM_SETTLE_SLEEP}s for #{machine} to begin shutdown...")
-      sleep WINRM_SETTLE_SLEEP
+      wait_for_machine_winrm_down(machine)
       wait_for_machine_winrm(machine)
       @logger.info("#{machine} is back after reboot")
     end
@@ -38,6 +39,20 @@ module AutoHCK
     end
 
     private
+
+    def wait_for_machine_winrm_down(machine)
+      addr = @clients_addrs[machine][:addr]
+      port = @clients_addrs[machine][:port] || @config['winrm_port'] || 5985
+      @logger.info("Waiting for #{machine} to go offline...")
+      deadline = Time.now + WAIT_WINRM_TIMEOUT
+      while winrm_port_open?(addr, port)
+        raise RestartMachineError, "#{machine} did not go offline within #{WAIT_WINRM_TIMEOUT}s" \
+          if Time.now > deadline
+
+        sleep WAIT_WINRM_INTERVAL
+      end
+      @logger.debug("#{machine} is now offline")
+    end
 
     def wait_for_machine_winrm(machine)
       addr = @clients_addrs[machine][:addr]
