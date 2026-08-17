@@ -80,7 +80,7 @@
         },
         {
           "desc": "Set HSP watcher to start on any user logon and reboot to activate",
-          "guest_run": "New-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run' -Name 'AutoHCK_UIWatcher' -Value '\"C:\\Program Files (x86)\\AutoIt3\\AutoIt3.exe\" \"C:\\UIAgent\\autoit\\hsp_watcher.au3\"' -PropertyType String -Force",
+          "guest_run": "$autoit = if (Test-Path 'C:\\Program Files (x86)\\AutoIt3\\AutoIt3.exe') { 'C:\\Program Files (x86)\\AutoIt3\\AutoIt3.exe' } else { 'C:\\Program Files\\AutoIt3\\AutoIt3.exe' }; New-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run' -Name 'AutoHCK_UIWatcher' -Value ('\"{0}\" \"{1}\"' -f $autoit, 'C:\\UIAgent\\autoit\\hsp_watcher.au3') -PropertyType String -Force",
           "guest_reboot": true
         }
       ],
