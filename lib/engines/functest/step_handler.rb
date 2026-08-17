@@ -18,9 +18,9 @@ module AutoHCK
         @default_timeout = default_timeout
       end
 
-      def execute_step(step, step_index)
+      def execute_step(step)
         @last_branch_results = nil
-        desc = @context.substitute_variables(step.desc || "Step #{step_index + 1}")
+        desc = @context.substitute_variables(step.desc)
         @logger.info("Executing: #{desc}")
 
         timeout = step.timeout || @default_timeout

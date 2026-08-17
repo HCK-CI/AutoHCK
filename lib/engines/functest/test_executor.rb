@@ -340,7 +340,7 @@ module AutoHCK
         desc = @context.substitute_variables(step.desc)
         start_time = Time.now
         step_result = { index: index, description: desc, status: 'running', start_time: start_time.utc.iso8601 }
-        run_step(step, index, step_result, desc)
+        run_step(step, step_result, desc)
         step_result
       ensure
         end_time = Time.now
@@ -348,8 +348,8 @@ module AutoHCK
         step_result[:duration] = end_time - start_time
       end
 
-      def run_step(step, index, step_result, desc)
-        @step_handler.execute_step(step, index)
+      def run_step(step, step_result, desc)
+        @step_handler.execute_step(step)
         step_result[:status] = 'passed'
         @logger.info("  PASS: #{desc}")
       rescue StandardError => e
@@ -373,9 +373,9 @@ module AutoHCK
 
         @logger.info('Running pre-test commands...')
         desc = nil
-        test.pre_test_commands.each_with_index do |step, index|
+        test.pre_test_commands.each do |step|
           desc = @context.substitute_variables(step.desc)
-          @step_handler.execute_step(step, index)
+          @step_handler.execute_step(step)
         rescue StandardError => e
           @logger.error("  FAIL: Pre-test command failed (#{desc}): #{e.message}")
           raise
@@ -386,8 +386,8 @@ module AutoHCK
         return if test.cleanup.empty?
 
         @logger.info('Running cleanup steps...')
-        test.cleanup.each_with_index do |step, index|
-          @step_handler.execute_step(step, index)
+        test.cleanup.each do |step|
+          @step_handler.execute_step(step)
         rescue StandardError => e
           @logger.warn("Cleanup step failed (ignoring): #{e.message}")
         end
@@ -411,9 +411,10 @@ module AutoHCK
         return if cmds.empty?
 
         @logger.info('Running extension pre-test commands...')
+        desc = nil
         cmds.each_with_index do |step, index|
           desc = @context.substitute_variables("[Extension pre-test step #{index + 1}] #{step.desc}")
-          @step_handler.execute_step(step, index)
+          @step_handler.execute_step(step)
         rescue StandardError => e
           @logger.error("  FAIL: Extension pre-test command failed (#{desc}): #{e.message}")
           raise
@@ -425,9 +426,10 @@ module AutoHCK
         return if cmds.empty?
 
         @logger.info('Running extension post-test commands...')
+        desc = nil
         cmds.each_with_index do |step, index|
           desc = @context.substitute_variables("[Extension post-test step #{index + 1}] #{step.desc}")
-          @step_handler.execute_step(step, index)
+          @step_handler.execute_step(step)
         rescue StandardError => e
           @logger.error("  FAIL: Extension post-test command failed (#{desc}): #{e.message}")
           raise

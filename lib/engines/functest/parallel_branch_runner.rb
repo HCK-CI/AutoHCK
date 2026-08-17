@@ -97,9 +97,9 @@ module AutoHCK
       # Runs and times one sub-step, turning a failure into a step result
       # instead of raising.
       def execute_branch_step(branch_handler, branch, sub_step, index)
-        desc = branch.context.substitute_variables(sub_step.desc || "Step #{index + 1}")
+        desc = branch.context.substitute_variables(sub_step.desc)
         start_time = Time.now
-        status, error = run_sub_step(branch_handler, branch.name, sub_step, index, desc)
+        status, error = run_sub_step(branch_handler, branch.name, sub_step, desc)
         end_time = Time.now
 
         { index: index, description: desc, status: status, error: error, start_time: start_time.utc.iso8601,
@@ -108,8 +108,8 @@ module AutoHCK
 
       # Runs one sub-step, turning a failure into a [status, error message]
       # pair instead of raising.
-      def run_sub_step(branch_handler, branch_name, sub_step, index, desc)
-        branch_handler.execute_step(sub_step, index)
+      def run_sub_step(branch_handler, branch_name, sub_step, desc)
+        branch_handler.execute_step(sub_step)
         @logger.info("  [#{branch_name}] PASS: #{desc}")
         ['passed', nil]
       rescue StandardError => e
