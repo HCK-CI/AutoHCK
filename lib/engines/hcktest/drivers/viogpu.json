@@ -34,7 +34,7 @@
         },
         {
           "desc": "Set EDID watcher to start on any user logon and reboot to activate",
-          "guest_run": "New-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run' -Name 'AutoHCK_EDIDWatcher' -Value '\"C:\\Program Files (x86)\\AutoIt3\\AutoIt3.exe\" \"C:\\UIAgent\\autoit\\edid_watcher.au3\"' -PropertyType String -Force",
+          "guest_run": "$autoit = if (Test-Path 'C:\\Program Files (x86)\\AutoIt3\\AutoIt3.exe') { 'C:\\Program Files (x86)\\AutoIt3\\AutoIt3.exe' } else { 'C:\\Program Files\\AutoIt3\\AutoIt3.exe' }; New-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run' -Name 'AutoHCK_EDIDWatcher' -Value ('\"{0}\" \"{1}\"' -f $autoit, 'C:\\UIAgent\\autoit\\edid_watcher.au3') -PropertyType String -Force",
           "guest_reboot": true
         }
       ],
@@ -62,7 +62,7 @@
         },
         {
           "desc": "Set HPD watcher to start on any user logon and reboot to activate",
-          "guest_run": "New-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run' -Name 'AutoHCK_HPDWatcher' -Value '\"C:\\Program Files (x86)\\AutoIt3\\AutoIt3.exe\" \"C:\\UIAgent\\autoit\\hpd_watcher.au3\"' -PropertyType String -Force",
+          "guest_run": "$autoit = if (Test-Path 'C:\\Program Files (x86)\\AutoIt3\\AutoIt3.exe') { 'C:\\Program Files (x86)\\AutoIt3\\AutoIt3.exe' } else { 'C:\\Program Files\\AutoIt3\\AutoIt3.exe' }; New-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run' -Name 'AutoHCK_HPDWatcher' -Value ('\"{0}\" \"{1}\"' -f $autoit, 'C:\\UIAgent\\autoit\\hpd_watcher.au3') -PropertyType String -Force",
           "guest_reboot": true
         }
       ],
@@ -91,7 +91,7 @@
         },
         {
           "desc": "Set Multimon watcher to start on any user logon and reboot to activate",
-          "guest_run": "New-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run' -Name 'AutoHCK_MultimonWatcher' -Value '\"C:\\Program Files (x86)\\AutoIt3\\AutoIt3.exe\" \"C:\\UIAgent\\autoit\\multimon_watcher.au3\"' -PropertyType String -Force",
+          "guest_run": "$autoit = if (Test-Path 'C:\\Program Files (x86)\\AutoIt3\\AutoIt3.exe') { 'C:\\Program Files (x86)\\AutoIt3\\AutoIt3.exe' } else { 'C:\\Program Files\\AutoIt3\\AutoIt3.exe' }; New-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run' -Name 'AutoHCK_MultimonWatcher' -Value ('\"{0}\" \"{1}\"' -f $autoit, 'C:\\UIAgent\\autoit\\multimon_watcher.au3') -PropertyType String -Force",
           "guest_reboot": true
         }
       ],
