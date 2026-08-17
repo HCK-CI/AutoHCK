@@ -18,6 +18,7 @@ module AutoHCK
         @default_timeout = default_timeout
       end
 
+      # rubocop:disable Metrics/AbcSize
       def execute_step(step)
         @last_branch_results = nil
         desc = @context.substitute_variables(step.desc)
@@ -25,22 +26,12 @@ module AutoHCK
 
         timeout = step.timeout || @default_timeout
 
-        if step.set_variable
-          execute_set_variable(step)
-          return
-        end
+        return execute_set_variable(step) if step.set_variable
 
-        if step.parallel
-          validate_step_type!(step, desc)
-          execute_parallel(step, timeout)
-          return
-        end
+        return execute_parallel(step, desc, timeout) if step.parallel
 
         # Skip timeout for files_action steps
-        if step.files_action.any?
-          execute_and_handle(step, desc)
-          return
-        end
+        return execute_and_handle(step, desc) if step.files_action.any?
 
         Timeout.timeout(timeout) { execute_and_handle(step, desc) }
       rescue Timeout::Error
@@ -49,10 +40,13 @@ module AutoHCK
         @logger.error("Step failed: #{desc} - #{e.message}")
         handle_step_error(step, e.message)
       end
+      # rubocop:enable Metrics/AbcSize
 
       private
 
-      def execute_parallel(step, timeout)
+      def execute_parallel(step, desc, timeout)
+        validate_step_type!(step, desc)
+
         runner = ParallelBranchRunner.new(@project, @command_execution_manager, @context, @logger, @default_timeout)
         Timeout.timeout(timeout) { runner.run(step) }
       ensure
