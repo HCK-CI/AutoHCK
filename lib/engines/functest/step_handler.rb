@@ -141,7 +141,7 @@ module AutoHCK
         outputs.each { |machine, output| validate_output(output.to_s, step, machine) }
       end
 
-      def validate_output_matches(output, step)
+      def validate_output_matches(output, step, target)
         encoding = nil
         if step.expected_output_matches_encoding == 'Regexp::NOENCODING'
           encoding = Regexp::NOENCODING
@@ -162,7 +162,7 @@ module AutoHCK
 
         return unless step.expected_output_matches
 
-        validate_output_matches(output, step)
+        validate_output_matches(output, step, target)
       end
 
       def handle_step_error(step, error_message)
