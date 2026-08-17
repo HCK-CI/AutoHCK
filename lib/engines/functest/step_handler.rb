@@ -149,6 +149,7 @@ module AutoHCK
         end
 
         pattern = Regexp.new(step.expected_output_matches, encoding)
+        @logger.debug("Compiled expected_output_matches pattern: #{pattern}")
         return if output.match?(pattern)
 
         raise EngineError, "Output validation failed#{target}: expected to match '#{pattern}'"
