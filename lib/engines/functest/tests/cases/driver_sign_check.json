@@ -1,5 +1,6 @@
 {
     "name": "driver_sign_check",
+    "display_name": "Installed driver is digitally signed",
     "description": "Verify the installed driver .sys is digitally signed (@driver_module@)",
     "test_system_ref": "VIRT-200",
     "timeout": 720,

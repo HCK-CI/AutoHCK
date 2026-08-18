@@ -111,6 +111,47 @@ module AutoHCK
       # JSON's clients map. Empty (default) broadcasts to every client in
       # the current test case.
       const :clients, T::Array[Integer], default: []
+
+      # `dup` is shallow, so array/hash fields would stay shared with the
+      # original. Round-tripping through serialize/from_hash rebuilds every
+      # field (including nested structs) as a new object.
+      sig { returns(CommandInfo) }
+      def deep_dup
+        CommandInfo.from_hash(serialize)
+      end
+
+      # Whether the given step-type field (see
+      # CommandExecutionManager::STEP_TYPE_FIELDS) is set on this step.
+      sig { params(field: Symbol).returns(T::Boolean) }
+      def step_type_active?(field)
+        value = public_send(field)
+        case field
+        when :files_action then value.any?
+        when :guest_reboot then value == true
+        when :set_variable then value.is_a?(Hash) && !value.empty?
+        when :guest_run, :guest_run_file, :host_run, :host_run_file, :barrier
+          value.is_a?(String) ? !value.empty? : !value.nil?
+        else
+          !value.nil?
+        end
+      end
+    end
+
+    # A `parallel` step's named branches that run concurrently. See
+    # docs/Functest-Engine.md for the schema and constraints.
+    class ParallelBlock < T::Struct
+      extend T::Sig
+
+      const :branches, T::Hash[String, T::Array[CommandInfo]]
+
+      # true: the first failure cancels the other branches. false: every
+      # branch runs to completion. Either way, the first failure (by
+      # declaration order) is what gets re-raised.
+      const :fail_fast, T::Boolean, default: true
+    end
+
+    class CommandInfo
+      prop :parallel, T.nilable(ParallelBlock)
     end
   end
 end

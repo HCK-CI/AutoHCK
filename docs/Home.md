@@ -98,7 +98,8 @@ Usage: auto_hck.rb test [test options]
                                      Has effect only when testing storage drivers.
         --aio-native                  Use aio=native for virtual disks (forces cache=none, cannot combine with --aio-threads)
         --aio-threads                 Use aio=threads for virtual disks (forces cache=none, cannot combine with --aio-native)
-        --discard-granularity <size>  Set discard_granularity on virtio-blk-pci devices and discard=unmap on their drive
+        --discard-unmap               Enable discard=unmap on all virtual drives (virtio-blk-pci and virtio-scsi-pci)
+        --discard-granularity <size>  Set discard_granularity on virtio-blk-pci devices (implies --discard-unmap)
                                      Size can be a plain byte count or use a K/M/G suffix (e.g. 4096, 4K, 256K, 32M)
         --virtiofs-cache <mode>       Set virtiofsd cache mode for the virtio-fs device (default: always)
         --pcie-spare-root-ports <N>   Allocate N extra empty pcie-root-ports at boot for later hotplug (q35 only, default: 0)

@@ -1,12 +1,13 @@
 {
     "name": "dummy",
-    "description": "Dummy CI test suite for functest engine validation: snapshot lifecycle, workspace inspection, and variable-to-file",
+    "description": "Dummy CI test suite for functest engine validation: snapshot lifecycle, workspace inspection, variable-to-file, and parallel steps",
     "tests": [
         "dummy_ci/snapshot_create",
         "dummy_ci/snapshot_clean_boot",
         "dummy_ci/snapshot_restore",
         "dummy_ci/workspace_check",
         "dummy_ci/variable_to_file",
-        "dummy_ci/engine_setup_manager_action"
+        "dummy_ci/engine_setup_manager_action",
+        "dummy_ci/parallel_host_guest"
     ]
 }

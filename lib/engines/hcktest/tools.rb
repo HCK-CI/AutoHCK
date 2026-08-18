@@ -27,6 +27,7 @@ module AutoHCK
       end
 
       connect(conn)
+      @machine_locks = MachineLocks.new
     end
 
     # A custom ToolsHCK error exception
@@ -75,6 +76,26 @@ module AutoHCK
       def synchronize
         @mutex.synchronize { yield @delegate }
       end
+
+      # For calls that open their own connection per invocation (see
+      # #act_with_tools_on_machine) and so don't need this object's lock.
+      def unsynchronized
+        yield @delegate
+      end
+    end
+
+    # Hands out one mutex per machine name, created on first use. Lets
+    # actions on different machines run concurrently while still
+    # serializing actions against the same machine.
+    class MachineLocks
+      def initialize
+        @mutex = Mutex.new
+        @locks = {}
+      end
+
+      def for_machine(machine)
+        @mutex.synchronize { @locks[machine] ||= Mutex.new }
+      end
     end
 
     def connect(conn)
@@ -97,8 +118,17 @@ module AutoHCK
     end
 
     def act_with_tools(&)
-      results = @tools.synchronize(&)
+      process_tools_result(@tools.synchronize(&))
+    end
 
+    # For actions scoped to one machine: each call opens its own WinRM
+    # connection (see RToolsHCK#machine_connection), so different machines
+    # can run concurrently; only same-machine calls are serialized.
+    def act_with_tools_on_machine(machine, &)
+      process_tools_result(@machine_locks.for_machine(machine).synchronize { @tools.unsynchronized(&) })
+    end
+
+    def process_tools_result(results)
       if results['result'] == 'Failure'
         failure_message = ''
         failure_message = prep_stream_for_log(results['message']) if results['message']
@@ -185,7 +215,7 @@ module AutoHCK
 
     def run_on_machine(machine, desc, cmd)
       retries ||= 0
-      act_with_tools { _1.run_on_machine(machine, cmd) }
+      act_with_tools_on_machine(machine) { _1.run_on_machine(machine, cmd) }
     rescue ToolsHCKError => e
       @logger.warn(e.message)
       unless (retries += 1) < ACTION_RETRIES
@@ -200,7 +230,7 @@ module AutoHCK
 
     def upload_to_machine(machine, l_directory, r_directory = nil)
       retries ||= 0
-      act_with_tools { _1.upload_to_machine(machine, l_directory, r_directory) }
+      act_with_tools_on_machine(machine) { _1.upload_to_machine(machine, l_directory, r_directory) }
     rescue ToolsHCKError => e
       @logger.warn(e.message)
       raise UploadToMachineError, "Upload to machine #{machine} failed" unless (retries += 1) < ACTION_RETRIES
@@ -224,7 +254,7 @@ module AutoHCK
 
     def download_from_machine(machine, r_path, l_path)
       retries ||= 0
-      act_with_tools { _1.download_from_machine(machine, r_path, l_path) }
+      act_with_tools_on_machine(machine) { _1.download_from_machine(machine, r_path, l_path) }
     rescue ToolsHCKError => e
       @logger.warn(e.message)
       raise DownloadFromMachineError, "Download from machine #{machine} failed" unless (retries += 1) < ACTION_RETRIES
@@ -236,7 +266,7 @@ module AutoHCK
 
     def exists_on_machine?(machine, r_path)
       retries ||= 0
-      act_with_tools { _1.exists_on_machine?(machine, r_path) }
+      act_with_tools_on_machine(machine) { _1.exists_on_machine?(machine, r_path) }
     rescue ToolsHCKError => e
       @logger.warn(e.message)
       raise ExistsOnMachineError, "Checking exists on machine #{machine} failed" unless (retries += 1) < ACTION_RETRIES
@@ -248,7 +278,7 @@ module AutoHCK
 
     def delete_on_machine(machine, r_path)
       retries ||= 0
-      act_with_tools { _1.delete_on_machine(machine, r_path) }
+      act_with_tools_on_machine(machine) { _1.delete_on_machine(machine, r_path) }
     rescue ToolsHCKError => e
       @logger.warn(e.message)
       raise DeleteOnMachineError, "delete_on_machine #{machine} failed" unless (retries += 1) < ACTION_RETRIES
@@ -264,7 +294,7 @@ module AutoHCK
 
     def restart_machine(machine)
       retries ||= 0
-      act_with_tools { _1.machine_shutdown(machine, restart: true) }
+      act_with_tools_on_machine(machine) { _1.machine_shutdown(machine, restart: true) }
     rescue ToolsHCKError => e
       @logger.warn(e.message)
       raise RestartMachineError, "Restarting machine #{machine} failed" unless (retries += 1) < ACTION_RETRIES
@@ -276,7 +306,7 @@ module AutoHCK
 
     def shutdown_machine(machine)
       retries ||= 0
-      act_with_tools { _1.machine_shutdown(machine) }
+      act_with_tools_on_machine(machine) { _1.machine_shutdown(machine) }
     rescue ToolsHCKError => e
       @logger.warn(e.message)
       raise ShutdownMachineError, "Shuting down machine #{machine} failed" unless (retries += 1) < ACTION_RETRIES
@@ -288,7 +318,7 @@ module AutoHCK
 
     def get_machine_system_info(machine, output_format = 'CSV')
       retries ||= 0
-      act_with_tools { _1.get_machine_system_info(machine, output_format) }
+      act_with_tools_on_machine(machine) { _1.get_machine_system_info(machine, output_format) }
     rescue ToolsHCKError => e
       @logger.warn(e.message)
       unless (retries += 1) < ACTION_RETRIES
@@ -324,7 +354,9 @@ module AutoHCK
 
     def install_machine_driver_package(machine, method, driver_path, file, options = {})
       retries ||= 0
-      act_with_tools { _1.install_machine_driver_package(machine, method, driver_path, file, options) }
+      act_with_tools_on_machine(machine) do |tools|
+        tools.install_machine_driver_package(machine, method, driver_path, file, options)
+      end
     rescue ToolsHCKError => e
       @logger.warn(e.message)
       unless (retries += 1) < ACTION_RETRIES

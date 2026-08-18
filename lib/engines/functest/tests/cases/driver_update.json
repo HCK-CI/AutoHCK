@@ -1,5 +1,6 @@
 {
     "name": "driver_update",
+    "display_name": "Driver can be uninstalled and reinstalled",
     "description": "Uninstall and reinstall @driver_module@ from the driver package",
     "test_system_ref": "VIRT-201",
     "timeout": 600,

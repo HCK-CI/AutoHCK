@@ -9,6 +9,7 @@ module AutoHCK
       extend Models::JsonHelper
 
       const :name, String
+      const :display_name, T.nilable(String)
       const :description, T.nilable(String)
       const :test_system_ref, T.nilable(String)
       const :timeout, T.nilable(Integer)
@@ -36,6 +37,11 @@ module AutoHCK
         name.gsub(/[^\w\-.]/, '_').gsub(/(^_|_$)/, '')
       end
 
+      sig { returns(TestCase) }
+      def deep_dup
+        TestCase.from_hash(serialize)
+      end
+
       sig { void }
       def add_auto_index
         pre_test_commands.each_with_index do |step, index|
@@ -44,6 +50,8 @@ module AutoHCK
 
         test_steps.each_with_index do |step, index|
           step.desc = "[Step #{index + 1}] #{step.desc}"
+          parallel = step.parallel
+          label_branch_steps(parallel, "Step #{index + 1}") if parallel
         end
       end
 
@@ -54,13 +62,36 @@ module AutoHCK
         new_test_steps = []
         cycles.times do |cycle|
           test_steps.each do |step|
-            new_step = step.dup
+            new_step = step.deep_dup
             new_step.desc = "[Cycle #{cycle + 1}] #{step.desc}"
+            parallel = new_step.parallel
+            prefix_branch_steps(parallel, "Cycle #{cycle + 1}") if parallel
             new_test_steps << new_step
           end
         end
 
         self.test_steps = new_test_steps
+      end
+
+      private
+
+      # Labels parallel sub-steps with the step's own label plus branch name
+      # and position, e.g. "[Step 4][guest_client #1] ...".
+      sig { params(parallel: Models::ParallelBlock, step_label: String).void }
+      def label_branch_steps(parallel, step_label)
+        parallel.branches.each do |branch_name, branch_steps|
+          branch_steps.each_with_index do |sub_step, sub_index|
+            sub_step.desc = "[#{step_label}][#{branch_name} ##{sub_index + 1}] #{sub_step.desc}"
+          end
+        end
+      end
+
+      # Prepends the cycle label to already-labeled parallel sub-steps.
+      sig { params(parallel: Models::ParallelBlock, label: String).void }
+      def prefix_branch_steps(parallel, label)
+        parallel.branches.each_value do |branch_steps|
+          branch_steps.each { |sub_step| sub_step.desc = "[#{label}] #{sub_step.desc}" }
+        end
       end
     end
   end
