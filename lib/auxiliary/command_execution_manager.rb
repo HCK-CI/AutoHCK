@@ -12,6 +12,11 @@ module AutoHCK
     DEFAULT_FILE_ACTION_REMOTE_PATH = 'C:\\'
     DEFAULT_FILE_ACTION_LOCAL_PATH = '@workspace@'
     DEFAULT_TIMEOUT = 300
+    # Lets guest_run_file dot-source .ps1 files on Restricted guests (e.g. Win10 x86).
+    GUEST_RUN_FILE_POLICY_BYPASS = T.let(
+      "Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force\n",
+      String
+    )
 
     RebootStrategy = T.let({
       FixedSleep: :fixed_sleep,
@@ -319,7 +324,7 @@ module AutoHCK
     end
     def resolve_guest_command(command_info, machine_name, replacement)
       command = if command_info.guest_run_file
-                  read_script_file(T.must(command_info.guest_run_file))
+                  "#{GUEST_RUN_FILE_POLICY_BYPASS}#{read_script_file(T.must(command_info.guest_run_file))}"
                 else
                   T.must(command_info.guest_run)
                 end
