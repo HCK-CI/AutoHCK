@@ -69,6 +69,7 @@ module AutoHCK
         PowerOnWait = new('power-on-wait')
         Reboot = new('reboot')
         RebootWait = new('reboot-wait')
+        WaitPowerDown = new('wait-power-down')
         ValidatePowerDown = new('validate-power-down')
         ValidatePowerOn = new('validate-power-on')
       end
