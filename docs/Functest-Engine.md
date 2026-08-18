@@ -300,6 +300,10 @@ Runs an inline command on the client VM via WinRM.
 
 Reads a local script file and executes its content on the client VM. The path is relative to the AutoHCK root.
 
+AutoHCK prepends `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force` so the script can
+dot-source files already on the guest when the image policy is Restricted (for example Win10 x86).
+The override lasts only for that WinRM session; the guest policy is not changed.
+
 ```json
 {
     "desc": "Verify driver is signed",
