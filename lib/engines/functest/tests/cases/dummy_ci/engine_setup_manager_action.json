@@ -69,8 +69,8 @@
             "timeout": 600
         },
         {
-            "desc": "Sleep 120 seconds to give time for the client to power down",
-            "host_run": "sleep 120",
+            "desc": "Wait 120 seconds to give time for the client to power down",
+            "engine_setup_manager_action": "wait-power-down",
             "timeout": 125
         },
         {

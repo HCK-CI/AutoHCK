@@ -89,7 +89,7 @@ module AutoHCK
       tests
     end
 
-    # rubocop:disable Metrics/CyclomaticComplexity, Metrics/AbcSize
+    # rubocop:disable Metrics/CyclomaticComplexity, Metrics/AbcSize, Metrics/PerceivedComplexity, Metrics/MethodLength
     def engine_setup_manager_callback(machine_name, action)
       client = @clients.find { |c| c.name == machine_name }
       raise EngineError, "No client found for machine #{machine_name}" unless client
@@ -107,13 +107,15 @@ module AutoHCK
         @tools.restart_machine(machine_name)
       when Models::EngineSetupManagerActions::RebootWait
         @tools.restart_machine_and_wait(machine_name)
+      when Models::EngineSetupManagerActions::WaitPowerDown
+        sleep 5 if client.client_alive?
       when Models::EngineSetupManagerActions::ValidatePowerDown
         raise 'Client must be powered down, but it is online' if client.client_alive?
       when Models::EngineSetupManagerActions::ValidatePowerOn
         raise 'Client must be powered on, but it is offline' unless client.client_alive?
       end
     end
-    # rubocop:enable Metrics/CyclomaticComplexity, Metrics/AbcSize
+    # rubocop:enable Metrics/CyclomaticComplexity, Metrics/AbcSize, Metrics/PerceivedComplexity, Metrics/MethodLength
 
     # rubocop:disable Metrics/AbcSize
     def run
