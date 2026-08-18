@@ -4,7 +4,7 @@
     @driver_module@.sys is Signed — mirrors KAR/avocado win_sigverif.
 
 .DESCRIPTION
-    Requires suite extra_software: ["autoit"]. The test case uploads common
+    Requires suite or case extra_software: ["autoit"]. The test case uploads common
     helpers, sigverif.au3, and sigverif_worker.ps1 via files_action.
 
     This launcher only hops to the interactive desktop via

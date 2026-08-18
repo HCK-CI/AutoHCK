@@ -4,7 +4,7 @@
 
 .DESCRIPTION
     Intended to run inside an interactive session (e.g. after
-    Invoke-InteractiveSession.ps1). Requires suite extra_software: ["autoit"].
+    Invoke-InteractiveSession.ps1). Requires suite or case extra_software: ["autoit"].
 
     Usage: upload this script (and Invoke-InteractiveSession.ps1 if needed) from
     lib/engines/functest/tests/scripts/common/ via the case files_action step to
@@ -17,8 +17,11 @@
     Max seconds to wait for AutoIt to exit (and optional -WaitForFile).
 
 .PARAMETER WaitForFile
-    If set, keep waiting until this file appears or TimeoutSec elapses
-    (even after AutoIt exits). Success requires the file to exist.
+    If set, success requires this file to exist. The helper waits until
+    AutoIt has exited and the file is present, or TimeoutSec elapses.
+
+.PARAMETER ScriptArgs
+    Extra arguments forwarded to the AutoIt script ($CmdLine[1] ...).
 
 .PARAMETER MinimizeWindows
     Call Shell.Application MinimizeAll before starting AutoIt.
@@ -34,6 +37,8 @@ param(
     [int]$TimeoutSec = 180,
 
     [string]$WaitForFile = '',
+
+    [string[]]$ScriptArgs = @(),
 
     [switch]$MinimizeWindows,
 
@@ -74,7 +79,7 @@ function Get-AutoItPath {
 
 $autoIt = Get-AutoItPath
 if (-not $autoIt) {
-    Write-Output 'FAIL: AutoIt not found (suite extra_software autoit required)'
+    Write-Output 'FAIL: AutoIt not found (suite or case extra_software autoit required)'
     exit 1
 }
 if (-not (Test-Path $Au3Path)) {
@@ -92,16 +97,19 @@ if ($MinimizeWindows) {
     }
 }
 
-Write-AutoItLog ("Running: $autoIt $Au3Path")
-$p = Start-Process -FilePath $autoIt -ArgumentList ('"' + $Au3Path + '"') -PassThru
+$argList = @('"' + $Au3Path + '"')
+if ($ScriptArgs) { $argList += $ScriptArgs }
+Write-AutoItLog ("Running: $autoIt $($argList -join ' ')")
+$p = Start-Process -FilePath $autoIt -ArgumentList $argList -PassThru
 
 $killedOnTimeout = $false
 $deadline = (Get-Date).AddSeconds($TimeoutSec)
 while ((Get-Date) -lt $deadline) {
-    if ($WaitForFile -and (Test-Path $WaitForFile)) { break }
-    if ($p.HasExited -and -not $WaitForFile) { break }
-    # With -WaitForFile: keep polling until the file appears or deadline,
-    # even if AutoIt has already exited.
+    $null = $p.Refresh()
+    if ($p.HasExited) {
+        if (-not $WaitForFile -or (Test-Path $WaitForFile)) { break }
+        # AutoIt already exited; keep polling for the output file until deadline.
+    }
     Start-Sleep -Seconds 2
 }
 
@@ -113,13 +121,16 @@ if (-not $p.HasExited) {
     Write-AutoItLog ("AutoIt exit code=$($p.ExitCode)")
 }
 
-if ($WaitForFile) {
-    if (-not (Test-Path $WaitForFile)) {
-        Write-Output "FAIL: expected output file not created: $WaitForFile"
-        exit 1
-    }
-} elseif ($killedOnTimeout) {
-    Write-Output "FAIL: AutoIt killed after timeout (${TimeoutSec}s) with no -WaitForFile"
+if ($WaitForFile -and -not (Test-Path $WaitForFile)) {
+    Write-Output "FAIL: expected output file not created: $WaitForFile"
+    exit 1
+}
+if ($killedOnTimeout) {
+    Write-Output "FAIL: AutoIt killed after timeout (${TimeoutSec}s)"
+    exit 1
+}
+if ($p.ExitCode -ne 0) {
+    Write-Output "FAIL: AutoIt exited $($p.ExitCode) ($Au3Path)"
     exit 1
 }
 

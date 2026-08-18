@@ -44,6 +44,7 @@ if (Test-Path $sigverifLog) {
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $autoItHelper `
     -Au3Path $au3 `
     -TimeoutSec $scanTimeoutSec `
+    -ScriptArgs $scanTimeoutSec `
     -WaitForFile $sigverifLog `
     -MinimizeWindows `
     -LogPath $workerLog
@@ -63,18 +64,23 @@ foreach ($line in ($logText -split [Environment]::NewLine)) {
     }
 }
 
-$pattern = '(?im)^\s*' + [regex]::Escape($driverSys) + '.*\s{2,}Signed\b'
+function Test-SigverifSignedLine([string]$Line, [string]$DriverSys) {
+    $esc = [regex]::Escape($DriverSys)
+    # Complete filename token, not a substring of another filename.
+    if ($Line -notmatch "(?i)(?<![A-Za-z0-9._-])$esc(?![A-Za-z0-9._-])") {
+        return $false
+    }
+    if ($Line -match '(?i)\bNot\s+Signed\b') { return $false }
+    if ($Line -match '(?i)\bUnsigned\b') { return $false }
+    return ($Line -match '(?i)\bSigned\b')
+}
+
 $ok = $false
-if ($logText -match $pattern) {
-    $ok = $true
-    Add-Content -Path $workerLog -Value ("Matched: $driverSys ... Signed")
-} else {
-    foreach ($line in ($logText -split [Environment]::NewLine)) {
-        if (($line -match [regex]::Escape($driverSys)) -and ($line -match '\bSigned\b')) {
-            $ok = $true
-            Add-Content -Path $workerLog -Value ("Matched (fallback): $line")
-            break
-        }
+foreach ($line in ($logText -split [Environment]::NewLine)) {
+    if (Test-SigverifSignedLine $line $driverSys) {
+        $ok = $true
+        Add-Content -Path $workerLog -Value ("Matched: $line")
+        break
     }
 }
 

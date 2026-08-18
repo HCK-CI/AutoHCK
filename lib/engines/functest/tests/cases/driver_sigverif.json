@@ -3,6 +3,7 @@
     "description": "Verify @driver_module@.sys is Signed via Windows File Signature Verification GUI (sigverif + AutoIt), mirrors KAR win_sigverif",
     "test_system_ref": "VIRT-SIGVERIF",
     "timeout": 1320,
+    "extra_software": ["autoit"],
     "test_steps": [
         {
             "desc": "Upload common interactive/AutoIt helpers, sigverif.au3, and worker",
