@@ -38,20 +38,17 @@ module AutoHCK
         send_cmd(cmd, arguments)
       end
 
-      # accepted is an array of acceptable values; this returns as soon as
-      # any one of them is seen.
+      # Drain stale matching events from the cache, then block until a
+      # fresh event arrives on the QMP socket.
       def wait_for(name, accepted, timeout = 60)
-        cached = find_cached_event(name, accepted)
-        return cached if cached
-
+        drain_cached_events(name, accepted)
         wait_for_new_event(name, accepted, timeout)
       end
 
       private
 
-      def find_cached_event(name, accepted)
-        index = @events.index { |e| accepted.include?(e[name]) }
-        @events.delete_at(index) if index
+      def drain_cached_events(name, accepted)
+        @events.reject! { |e| accepted.include?(e[name]) }
       end
 
       def wait_for_new_event(name, accepted, timeout)
