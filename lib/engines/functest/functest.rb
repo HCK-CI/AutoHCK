@@ -17,7 +17,7 @@ module AutoHCK
     DRIVERS_JSON_DIR = 'lib/engines/hcktest/drivers'
     EXTENSIONS_JSON_DIR = 'lib/engines/hcktest/extensions'
 
-    attr_reader :project, :logger, :drivers, :extensions
+    attr_reader :project, :logger, :drivers, :extensions, :suite
 
     def default_timeout
       @config['default_timeout']

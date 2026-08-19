@@ -23,6 +23,7 @@ module AutoHCK
       const :tests, T::Array[String]
       const :requirements, SuiteRequirements, factory: -> { SuiteRequirements.new }
       const :reject_test_names, T::Array[String], default: []
+      const :known_issues, T::Array[KnownIssue], default: []
     end
   end
 end

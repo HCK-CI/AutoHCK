@@ -35,6 +35,8 @@ module AutoHCK
         @results = []
         @current_test = nil
         @created_tags = Set.new
+        @known_issues = engine.suite&.known_issues || []
+        @platform_name = engine.project.options.test.platform
       end
       # rubocop:enable Metrics/AbcSize
 
@@ -59,17 +61,18 @@ module AutoHCK
 
       def summary
         total = @results.length
-        passed = @results.count { |r| r[:status] == 'passed' }
-        failed = @results.count { |r| r[:status] == 'failed' }
+        passed, failed, passed_with_known_issue = result_counts
 
         @logger.info('')
         log_section('TEST SUMMARY')
-        @logger.info("Total:  #{total}")
-        @logger.info("Passed: #{passed}")
-        @logger.info("Failed: #{failed}")
+        @logger.info("Total:               #{total}")
+        @logger.info("Passed:              #{passed}")
+        @logger.info("Passed (known issue): #{passed_with_known_issue}") if passed_with_known_issue.positive?
+        @logger.info("Failed:              #{failed}")
         @logger.info('-' * 80)
 
-        { total: total, passed: passed, failed: failed, results: @results }
+        { total: total, passed: passed, failed: failed,
+          passed_with_known_issue: passed_with_known_issue, results: @results }
       end
 
       private
@@ -81,12 +84,22 @@ module AutoHCK
 
       def tests_stats
         total = @results.length
-        passed = @results.count { |r| r[:status] == 'passed' }
-        failed = @results.count { |r| r[:status] == 'failed' }
+        passed, failed, passed_with_known_issue = result_counts
 
         { 'current' => @current_test, 'passed' => passed,
-          'failed' => failed, 'inqueue' => total - passed - failed,
-          'currentcount' => passed + failed + 1, 'total' => total }
+          'passed_with_known_issue' => passed_with_known_issue,
+          'failed' => failed, 'inqueue' => total - passed - passed_with_known_issue - failed,
+          'currentcount' => passed + passed_with_known_issue + failed + 1, 'total' => total }
+      end
+
+      # [passed, failed, passed_with_known_issue] counts. A result counts as
+      # passed/failed only when it has no known_issue; known_issue results are
+      # reported separately regardless of their underlying pass/fail status.
+      def result_counts
+        passed = @results.count { |r| r[:status] == 'passed' && r[:known_issue].nil? }
+        failed = @results.count { |r| r[:status] == 'failed' && r[:known_issue].nil? }
+        passed_with_known_issue = @results.count { |r| !r[:known_issue].nil? }
+        [passed, failed, passed_with_known_issue]
       end
 
       def create_local_test_copy(test)
@@ -115,6 +128,7 @@ module AutoHCK
         @project.update_test_stats(tests_stats)
       end
 
+      # rubocop:disable Metrics/AbcSize
       def finalize_result(result, test, start_time)
         run_cleanup(test)
         begin
@@ -129,9 +143,12 @@ module AutoHCK
         result[:end_time] = end_time.utc.iso8601
         result[:duration] = end_time - start_time
 
+        apply_known_issue_if_failed(test.name, result)
+
         @results.find { |r| r[:name] == test.name }.merge!(result)
         save_result(result, test)
       end
+      # rubocop:enable Metrics/AbcSize
 
       def save_result(result, test)
         r_name = "Result_#{test.safe_name}.json"
@@ -404,6 +421,26 @@ module AutoHCK
           regex = (@extension_test_regexes[config] ||= Regexp.union(config.tests.map { Regexp.new(_1) }))
           regex.match?(test_name)
         end.flat_map(&type)
+      end
+
+      # Suite-declared known issues matching this test name and the current
+      # platform. An empty `platforms` list on the entry matches every platform.
+      def matching_known_issues(test_name)
+        @known_issues.select do |known_issue|
+          regex = Regexp.union(known_issue.tests.map { Regexp.new(_1) })
+          regex.match?(test_name) &&
+            (known_issue.platforms.empty? || known_issue.platforms.include?(@platform_name))
+        end
+      end
+
+      def apply_known_issue_if_failed(test_name, result)
+        return unless result[:status] == 'failed'
+
+        known_issue = matching_known_issues(test_name).first
+        return unless known_issue
+
+        @logger.info("Test '#{test_name}' failed but has a known issue: #{known_issue.reason}")
+        result[:known_issue] = known_issue.reason
       end
 
       def run_extension_pre_test_commands(test_name)
