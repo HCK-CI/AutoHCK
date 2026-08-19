@@ -187,6 +187,7 @@ A suite is an ordered list of test case references, plus optional metadata. Suit
 | `requirements.drivers` | No | Informational only — not enforced at runtime |
 | `requirements.platforms` | No | Informational only — not enforced at runtime |
 | `reject_test_names` | No | Test case names to always skip when running this suite. Ignored if `--reject-test-names` is passed on the CLI. |
+| `known_issues` | No | Test cases that are known to fail; see [Known Issues](#known-issues) below. |
 
 ### Example
 
@@ -207,6 +208,32 @@ See [`lib/engines/functest/tests/suites/balloon_driver_tests.json`](../lib/engin
         "platforms": [ "Win10x64", "Win2019x64" ]
     }
 }
+```
+
+### Known Issues
+
+Some test cases are known to fail for reasons unrelated to the driver or feature under test. `known_issues` lets a suite declare these ahead of time: a failing test case that matches an entry is reported as **passed with errata** instead of a genuine failure, while still recording why.
+
+Each entry is checked against a test case only after that test case has actually failed — it never masks a step's failure while the test is running, it only changes how the final result is reported.
+
+| Field | Required | Description |
+|---|---|---|
+| `tests` | Yes | List of regexes matched against the test case `name` field (same matching style as extensions' `tests_config`). |
+| `platforms` | No | Platform names (e.g. `"Win2022x64"`) this known issue applies to. Empty (default) matches every platform. |
+| `reason` | Yes | Human-readable explanation of the known issue, shown in the JUnit/HTML reports. |
+
+> `tests` matches the `name` field inside the test case JSON, **not** the path used in a suite. A test at `balloon/balloon_service` has `name` = `balloon_service`.
+
+Granularity is per test case: a test case either matches a known issue or it doesn't.
+
+```json
+"known_issues": [
+    {
+        "tests": ["balloon_service"],
+        "platforms": ["Win2022x64"],
+        "reason": "Balloon service test - known failure on Win2022"
+    }
+]
 ```
 
 ## Test Case Format

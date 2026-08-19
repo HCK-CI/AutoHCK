@@ -51,7 +51,7 @@ module AutoHCK
           executionstate: HLK::ExecutionState::NotRunning,
           execution_time: result_hash[:duration].to_f,
           is_skipped: false,
-          errata: nil,
+          errata: result_hash[:known_issue],
           last_result: result_hash,
           dump_path: result_hash[:dump_path],
           url: nil,
