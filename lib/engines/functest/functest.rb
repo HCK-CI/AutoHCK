@@ -108,7 +108,7 @@ module AutoHCK
       when Models::EngineSetupManagerActions::RebootWait
         @tools.restart_machine_and_wait(machine_name)
       when Models::EngineSetupManagerActions::WaitPowerDown
-        sleep 5 if client.client_alive?
+        sleep 5 while client.client_alive?
       when Models::EngineSetupManagerActions::ValidatePowerDown
         raise 'Client must be powered down, but it is online' if client.client_alive?
       when Models::EngineSetupManagerActions::ValidatePowerOn
