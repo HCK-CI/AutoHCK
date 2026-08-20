@@ -4,6 +4,7 @@
     "description": "Uninstall and reinstall @driver_module@ from the driver package",
     "test_system_ref": "VIRT-201",
     "timeout": 600,
+    "extra_software": ["devcon"],
     "test_steps": [
         {
             "desc": "Confirm @driver_module@ is currently installed",
@@ -33,8 +34,8 @@
         },
         {
             "desc": "Reinstall driver from uploaded package",
-            "guest_run": "pnputil -i -a C:\\AutoHCK\\driver_reinstall\\@driver_inf@",
-            "expected_output_matches": "(?i)(successfully installed|driver package added|0 error)",
+            "guest_run_file": "lib/engines/functest/tests/scripts/reinstall_driver.ps1",
+            "expected_output_contains": "PASS:",
             "timeout": 120
         },
         {
