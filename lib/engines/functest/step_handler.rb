@@ -142,7 +142,8 @@ module AutoHCK
           output = output.dup.force_encoding('BINARY')
         end
 
-        pattern = Regexp.new(step.expected_output_matches, encoding)
+        matches = @context.substitute_variables(step.expected_output_matches)
+        pattern = Regexp.new(matches, encoding)
         @logger.debug("Compiled expected_output_matches pattern: #{pattern}")
         return if output.match?(pattern)
 
