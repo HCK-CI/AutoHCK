@@ -1,0 +1,41 @@
+{
+    "name": "driver_sigverif",
+    "description": "Verify @driver_module@.sys is Signed via Windows File Signature Verification GUI (sigverif + AutoIt), mirrors KAR win_sigverif",
+    "test_system_ref": "VIRT-SIGVERIF",
+    "timeout": 1320,
+    "extra_software": ["autoit"],
+    "test_steps": [
+        {
+            "desc": "Upload common interactive/AutoIt helpers, sigverif.au3, and worker",
+            "files_action": [
+                {
+                    "local_path": "lib/engines/functest/tests/scripts/common/Invoke-InteractiveSession.ps1",
+                    "remote_path": "C:\\AutoHCK\\common\\Invoke-InteractiveSession.ps1",
+                    "direction": "local-to-remote"
+                },
+                {
+                    "local_path": "lib/engines/functest/tests/scripts/common/Invoke-AutoIt.ps1",
+                    "remote_path": "C:\\AutoHCK\\common\\Invoke-AutoIt.ps1",
+                    "direction": "local-to-remote"
+                },
+                {
+                    "local_path": "lib/engines/functest/tests/scripts/sigverif.au3",
+                    "remote_path": "C:\\AutoHCK\\sigverif.au3",
+                    "direction": "local-to-remote"
+                },
+                {
+                    "local_path": "lib/engines/functest/tests/scripts/sigverif_worker.ps1",
+                    "remote_path": "C:\\AutoHCK\\sigverif_worker.ps1",
+                    "direction": "local-to-remote"
+                }
+            ],
+            "timeout": 120
+        },
+        {
+            "desc": "Run sigverif GUI via AutoIt and confirm @driver_module@.sys is Signed",
+            "guest_run_file": "lib/engines/functest/tests/scripts/run_sigverif_gui.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 1200
+        }
+    ]
+}
