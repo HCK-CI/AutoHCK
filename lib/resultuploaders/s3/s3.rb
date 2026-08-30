@@ -37,7 +37,14 @@ module AutoHCK
       @filenames = []
     end
 
-    def html_url; end
+    # Public URL of the results.html test report, suitable for direct
+    # browser viewing. Returns nil until the report has been uploaded,
+    # so callers fall back to `url` instead of a not-yet-existing object.
+    def html_url
+      return unless @filenames.include?(Project::RESULT_REPORT_HTML)
+
+      @bucket.object("#{@path}/#{Project::RESULT_REPORT_HTML}").public_url
+    end
 
     # The current exception handling only logs errors without any additional recovery or fallback mechanisms.
     # Rescue only Aws::Errors::ServiceError and Seahorse::Client::NetworkingError,
