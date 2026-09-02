@@ -57,6 +57,8 @@ module AutoHCK
         @qmp = QMP.new(scope, @run_name, @logger)
         qemu = @machine.run_qemu(scope, @qmp, pgroup:)
         @logger.info("#{@run_name} started with PID #{qemu.pid}")
+        # Auto negotiate QMP to allow receiving events before any command is sent
+        @qmp.negotiate
         qemu
       end
 
