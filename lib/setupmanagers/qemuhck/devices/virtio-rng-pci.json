@@ -1,5 +1,7 @@
 {
   "name": "virtio-rng-pci",
   "need_pci_bus": true,
-  "command_line": ["-device virtio-rng-pci@device_extra_param@@virtio_vectors_param@@iommu_device_param@,bus=@bus_name@.0"]
+  "command_line": [
+	  "-object rng-random,id=rng0,filename=/dev/urandom",
+	  "-device virtio-rng-pci,rng=rng0@device_extra_param@@virtio_vectors_param@@iommu_device_param@,bus=@bus_name@.0"]
 }
