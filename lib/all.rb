@@ -80,6 +80,7 @@ module AutoHCK
   autoload_relative :QMPError, 'setupmanagers/qemuhck/exceptions'
   autoload_relative :ReplacementMap, 'auxiliary/replacement_map'
   autoload_relative :ResourceScope, 'auxiliary/resource_scope'
+  autoload_relative :ThreadScope, 'auxiliary/thread_scope'
   autoload_relative :ResultUploader, 'resultuploaders/result_uploader'
   autoload_relative :Session, 'session'
   autoload_relative :SetupManager, 'setupmanagers/setupmanager'
