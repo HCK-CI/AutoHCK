@@ -11,6 +11,7 @@ module AutoHCK
       @exception = exception
       @logger = logger
       @stddata = { 'stdout' => [], 'stderr' => [], 'both' => [] }
+      @pipe_threads = []
 
       scope.transaction do |transaction|
         ResourceScope.open do |tmp|
@@ -27,6 +28,7 @@ module AutoHCK
     def close
       if @status.nil?
         @status = Process.wait2(@pid)[1]
+        @pipe_threads.each(&:join)
         e_message = "Failed to run (PID #{@pid}) (exit code #{@status.exitstatus}): #{@cmd}"
         raise CmdRunError, e_message if @exception && !@status.exitstatus.zero?
 
@@ -46,7 +48,7 @@ module AutoHCK
       read, write = IO.pipe
       scope << write
 
-      Thread.new do
+      thread = Thread.new do
         read.each(chomp: true) do |data|
           log "#{name}: #{data}".encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
           @stddata[name] << data
@@ -55,6 +57,7 @@ module AutoHCK
       ensure
         read.close
       end
+      @pipe_threads << thread
 
       write
     end
