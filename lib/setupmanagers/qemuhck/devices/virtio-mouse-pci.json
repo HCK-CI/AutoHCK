@@ -1,5 +1,6 @@
 {
   "name": "virtio-mouse-pci",
+  "type": "mouse",
   "need_pci_bus": true,
   "command_line": ["-device virtio-mouse-pci@device_extra_param@@virtio_vectors_param@@iommu_device_param@,bus=@bus_name@.0"]
 }

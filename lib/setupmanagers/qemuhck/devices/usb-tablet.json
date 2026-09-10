@@ -1,0 +1,5 @@
+{
+  "name": "usb-tablet",
+  "type": "mouse",
+  "command_line": ["-device usb-tablet"]
+}

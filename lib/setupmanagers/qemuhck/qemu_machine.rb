@@ -655,10 +655,15 @@ module AutoHCK
 
     sig { params(device_infos: T::Array[Models::QemuHCKDevice]).void }
     def add_missing_default_devices(device_infos)
-      return if device_infos.any? { |d| d.type == 'vga' }
+      unless device_infos.any? { |d| d.type == 'vga' }
+        vga_info = read_device(@config['platforms_defaults']['vga_device'])
+        device_infos << vga_info
+      end
 
-      vga_info = read_device(@config['platforms_defaults']['vga_device'])
-      device_infos << vga_info
+      return if device_infos.any? { |d| d.type == 'mouse' }
+
+      tablet_info = read_device(@config['platforms_defaults']['tablet_device'])
+      device_infos << tablet_info
     end
 
     def process_generic_hck_network(device_key, network_command)
@@ -751,7 +756,7 @@ module AutoHCK
         '@qemu_bin@ -enable-kvm -machine @machine_options@ ',
         '-m @memory@,maxmem=@max_memory@@memory_slots@ -smp @cpu_count@,cores=@cpu_count@ ',
         '-cpu @cpu_options@ -boot menu=on,splash-time=10000 ',
-        '-nodefaults -no-user-config -usb -device usb-tablet -vnc :@vnc_id@ ',
+        '-nodefaults -no-user-config -usb -vnc :@vnc_id@ ',
         '-global kvm-pit.lost_tick_policy=discard -rtc base=localtime,clock=host,driftfix=slew ',
         '-global @disable_s3_param@=@disable_s3_value@ -global @disable_s4_param@=@disable_s4_value@ ',
         '-monitor telnet::@qemu_monitor_port@,server,nowait -monitor vc'

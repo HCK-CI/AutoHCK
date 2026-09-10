@@ -26,6 +26,7 @@
     "fw_type": "uefi",
     "boot_device": "ide-storage",
     "vga_device": "vga-std",
+    "tablet_device": "usb-tablet",
     "s3_state": true,
     "s4_state": true,
     "enlightenments_state": false,
