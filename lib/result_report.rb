@@ -39,22 +39,20 @@ module AutoHCK
       }
     end
 
+    def count_status(run_steps, status = nil, errata: false)
+      run_steps.count do |t|
+        (status.nil? || t.send(status)) &&
+          (errata ? !t.errata.nil? : true) &&
+          t.executionstate == Models::HLK::ExecutionState::NotRunning
+      end
+    end
+
     def test_stats(test_steps)
       run_steps = test_steps.reject(&:is_skipped)
-      passed_with_errata = run_steps.count do |t|
-        t.errata &&
-          t.executionstate == Models::HLK::ExecutionState::NotRunning
-      end
-      passed = run_steps.count do |t|
-        t.passed? &&
-          t.errata.nil? &&
-          t.executionstate == Models::HLK::ExecutionState::NotRunning
-      end
-      failed = run_steps.count do |t|
-        t.failed? &&
-          t.errata.nil? &&
-          t.executionstate == Models::HLK::ExecutionState::NotRunning
-      end
+      passed_with_errata = count_status(run_steps, nil, errata: true)
+      passed = count_status(run_steps, :passed?)
+      failed = count_status(run_steps, :failed?)
+
       total = run_steps.count
       skipped = test_steps.count(&:is_skipped)
 

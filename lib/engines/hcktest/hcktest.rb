@@ -286,8 +286,10 @@ module AutoHCK
     def pause_run_if_needed(exception = nil)
       test_options = @project.options.test
 
+      # @tests is created in prepare_tests method
+      # so it always exists. So we can use @tests.tests instead of @tests&.tests
       auto_manual_need = test_options.auto_manual &&
-                         (!exception.nil? || @tests&.tests&.any?(&:failed?))
+                         (!exception.nil? || @tests.tests&.any?(&:failed?))
 
       @logger.debug("Switch to manual mode check: manual=#{test_options.manual} auto_manual_need=#{auto_manual_need}")
       return unless test_options.manual || auto_manual_need
