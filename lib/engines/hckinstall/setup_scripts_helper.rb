@@ -58,6 +58,13 @@ module AutoHCK
       end
     end
 
+    # This method processes config and replaces values with PowerShell variables
+    # There is no way to reduce the length of this method
+    # without just creating a new method for each value type
+    # that makes the code more complex and less readable
+    # These are just the value types that are supported
+    # and should be kept together for readability
+    # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
     sig { params(workspace_hlk_setup_scripts_path: Pathname, config: T::Hash[Symbol, T.untyped]).void }
     def create_setup_scripts_config(workspace_hlk_setup_scripts_path, config)
       validate_setup_scripts_config(config)
@@ -84,5 +91,6 @@ module AutoHCK
         end
       end
     end
+    # rubocop:enable Metrics/AbcSize,Metrics/MethodLength
   end
 end

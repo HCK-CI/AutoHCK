@@ -100,7 +100,12 @@ module AutoHCK
       options
     end
 
-    # rubocop:disable Metrics/AbcSize
+    # There is no way to reduce the length of this method
+    # without just creating a new method for each option
+    # that makes the code more complex and less readable
+    # These are just the options that are used for all clients
+    # and should be kept together for readability
+    # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
     def client_vm_common_options
       common = @project.options.common
       test_opt = @project.options.test
@@ -127,7 +132,7 @@ module AutoHCK
         'world_net_device' => common.client_world_net_dev
       }.compact
     end
-    # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/AbcSize,Metrics/MethodLength
 
     sig { params(client_info: Models::HLKClient, index: Integer).returns(T::Hash[String, T.untyped]) }
     def client_vm_options(client_info, index)
