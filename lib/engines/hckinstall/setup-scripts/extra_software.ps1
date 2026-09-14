@@ -2,6 +2,26 @@ $ErrorActionPreference = "Stop"
 
 . "$PSScriptRoot\auxiliary.ps1"
 
+function Get-ProcessorArchConfigName {
+    switch ($env:PROCESSOR_ARCHITECTURE) {
+        'AMD64' { return 'amd64' }
+        'x86' { return 'x86' }
+        'ARM64' { return 'arm64' }
+        default { return $env:PROCESSOR_ARCHITECTURE.ToLower() }
+    }
+}
+
+function Get-ArchConfigVariants {
+    param ([String]$Arch)
+
+    $archName = $Arch.ToLower()
+    $variants = @($archName)
+    if ($archName -eq 'amd64') { $variants += 'x64' }
+    if ($archName -eq 'x64') { $variants += 'amd64' }
+
+    return $variants | Select-Object -Unique
+}
+
 function Get-ExtraSoftwareConfig {
     param ([PSCustomObject]$Directory)
 
@@ -12,10 +32,14 @@ function Get-ExtraSoftwareConfig {
         $full_kit = "${KITTYPE}${HLKKITVER}".ToLower()
     }
 
-    $config_list = @(
-        "${Directory}\${full_kit}-config.json",
-        "${Directory}\config.json"
-    )
+    $arch = Get-ProcessorArchConfigName
+    $config_list = @()
+    foreach ($archVariant in (Get-ArchConfigVariants $arch)) {
+        $config_list += "${Directory}\${full_kit}-${archVariant}-config.json"
+        $config_list += "${Directory}\${archVariant}-config.json"
+    }
+    $config_list += "${Directory}\${full_kit}-config.json"
+    $config_list += "${Directory}\config.json"
 
     foreach ($config_name in $config_list) {
         if (Test-Path -Path "$config_name" -PathType Leaf) {
