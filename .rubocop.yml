@@ -17,11 +17,15 @@ Style/Documentation:
 Naming/PredicateMethod:
   Enabled: False
 
+# Prefer using blocks for directive scopes
+Style/DirectiveScope:
+  Enabled: False
+
 # Excluding spec files
 AllCops:
   NewCops: enable
   TargetRubyVersion: 3.3.7
   Exclude:
-    - 'spec/*'
+    - 'spec/**/*'
     - 'vendor/**/*'
     - '.git/**/*'
