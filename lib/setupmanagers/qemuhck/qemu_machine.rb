@@ -328,6 +328,8 @@ module AutoHCK
       apply_drive_aio_state
       validate_drive_aio_state
       apply_cpu_options_config
+      validate_vsm_state
+      apply_vsm_state
     end
 
     def apply_drive_aio_state
@@ -360,6 +362,21 @@ module AutoHCK
       end
 
       extra.split(',').each { |opt| @cpu_options << opt unless opt.empty? }
+    end
+
+    # This VSM configuration is supported only for 64-bit Windows guests.
+    def validate_vsm_state
+      return unless option_config('vsm_state')
+      return unless option_config('arch') == 'x86'
+
+      raise QemuHCKError, 'vsm_state is not supported for x86 (32-bit) guests'
+    end
+
+    # The IOMMU device already enables SMM, so do not add it twice.
+    def apply_vsm_state
+      return unless option_config('vsm_state')
+
+      @machine_options |= ['smm=on'] unless option_config('viommu_state')
     end
 
     def config_replacement_map
