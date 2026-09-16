@@ -33,6 +33,25 @@
             ]
         }
     },
+    "vsm_state": {
+        "true": {
+            "cpu_options": [
+                "-vmx",
+                "hv_vpindex",
+                "hv_synic",
+                "hv_vsm",
+                "hv_stimer",
+                "hv_vapic",
+                "hv_time",
+                "hv-stimer-direct",
+                "hv-xmm-input",
+                "hv-xmm-output",
+                "hv_tlbflush",
+                "hv-tlbflush-ext",
+                "hv_ipi"
+            ]
+        }
+    },
     "vhost_state": {
         "true": {
             "define_variables": {
