@@ -104,14 +104,33 @@
         "true": {
             "post_start_commands": [
                 {
-                    "desc": "Enable VBS on the guest (Reboot required)",
-                    "guest_run": "Set-ItemProperty -Path 'HKLM:\\\\SYSTEM\\\\CurrentControlSet\\\\Control\\\\DeviceGuard' -Name 'EnableVirtualizationBasedSecurity' -Value 1",
+                    "desc": "Enable VBS on the guest",
+                    "guest_run": "New-Item -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\DeviceGuard' -Force -ErrorAction Stop | Out-Null; New-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\DeviceGuard' -Name 'EnableVirtualizationBasedSecurity' -Value 1 -PropertyType DWord -Force -ErrorAction Stop | Out-Null"
+                },
+                {
+                    "desc": "Enable HVCI (Hypervisor Enforced Code Integrity) scenario",
+                    "guest_run": "New-Item -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\DeviceGuard\\Scenarios\\HypervisorEnforcedCodeIntegrity' -Force -ErrorAction Stop | Out-Null; New-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\DeviceGuard\\Scenarios\\HypervisorEnforcedCodeIntegrity' -Name 'Enabled' -Value 1 -PropertyType DWord -Force -ErrorAction Stop | Out-Null"
+                },
+                {
+                    "desc": "Enable Credential Guard without UEFI lock",
+                    "guest_run": "New-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Lsa' -Name 'LsaCfgFlags' -Value 2 -PropertyType DWord -Force -ErrorAction Stop | Out-Null"
+                },
+                {
+                    "desc": "Set hypervisor launch type to auto (Reboot required)",
+                    "guest_run": "bcdedit /set hypervisorlaunchtype auto; if ($LASTEXITCODE -ne 0) { throw \"bcdedit failed with exit code $LASTEXITCODE\" }",
                     "guest_reboot": true
                 },
                 {
-                    "desc": "Check Virtualization Based Security Status",
-                    "guest_run": "(Get-CimInstance -ClassName Win32_DeviceGuard -Namespace root\\Microsoft\\Windows\\DeviceGuard).VirtualizationBasedSecurityStatus -eq 2",
-                    "guest_reboot": false
+                    "desc": "Verify VBS is running",
+                    "guest_run": "$deviceGuard = Get-CimInstance -ClassName Win32_DeviceGuard -Namespace root\\Microsoft\\Windows\\DeviceGuard -ErrorAction Stop; if ($deviceGuard.VirtualizationBasedSecurityStatus -ne 2) { throw \"VBS is not running. VirtualizationBasedSecurityStatus: $($deviceGuard.VirtualizationBasedSecurityStatus)\" }; Write-Output 'VBS is running'"
+                },
+                {
+                    "desc": "Verify HVCI is configured and running",
+                    "guest_run": "$deviceGuard = Get-CimInstance -ClassName Win32_DeviceGuard -Namespace root\\Microsoft\\Windows\\DeviceGuard -ErrorAction Stop; $configured = @($deviceGuard.SecurityServicesConfigured); $running = @($deviceGuard.SecurityServicesRunning); if (2 -notin $configured) { throw \"HVCI is not configured. SecurityServicesConfigured: $($configured -join ', ')\" }; if (2 -notin $running) { throw \"HVCI is not running. SecurityServicesRunning: $($running -join ', ')\" }; Write-Output 'HVCI is configured and running'"
+                },
+                {
+                    "desc": "Verify Credential Guard is configured and running",
+                    "guest_run": "$deviceGuard = Get-CimInstance -ClassName Win32_DeviceGuard -Namespace root\\Microsoft\\Windows\\DeviceGuard -ErrorAction Stop; $configured = @($deviceGuard.SecurityServicesConfigured); $running = @($deviceGuard.SecurityServicesRunning); if (1 -notin $configured) { throw \"Credential Guard is not configured. SecurityServicesConfigured: $($configured -join ', ')\" }; if (1 -notin $running) { throw \"Credential Guard is not running. SecurityServicesRunning: $($running -join ', ')\" }; Write-Output 'Credential Guard is configured and running'"
                 }
             ]
         }

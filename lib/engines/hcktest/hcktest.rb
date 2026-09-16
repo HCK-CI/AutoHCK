@@ -155,8 +155,6 @@ module AutoHCK
       logger.info("Loading platform: #{platform_name}")
       platform = Models::HLKPlatform.from_json_file("#{PLATFORMS_JSON_DIR}/#{platform_name}.json", logger)
 
-      platform.clients_options.vbs_state ||= options.test.enable_vbs
-
       if options.test.svvp
         svvp_info = Models::SVVPConfig.from_json_file(SVVP_JSON, logger)
         platform.clients_options.merge!(svvp_info.clients_options)
