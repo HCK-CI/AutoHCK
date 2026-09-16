@@ -80,6 +80,7 @@ module AutoHCK
       install_drivers
       copy_test_binaries
       @project.extra_sw_manager.install_software_after_driver(@tools, @name)
+      run_post_start_commands
     end
 
     def close
@@ -87,6 +88,29 @@ module AutoHCK
     end
 
     private
+
+    # Run guest setup commands from QemuHCK after the client is ready.
+    # Functest uses these commands to enable and check VBS.
+    def post_start_commands
+      @setup_manager.client_post_start_commands.select(&:guest_run)
+    end
+
+    def run_post_start_commands
+      post_start_commands&.each do |command|
+        command_execution_manager.execute(command)
+      end
+    end
+
+    def command_execution_manager
+      @command_execution_manager ||= CommandExecutionManager.new(
+        project: @project,
+        tools: @tools,
+        machines: [@name],
+        init_opts: {
+          reboot_strategy: CommandExecutionManager::RebootStrategy[:WinrmPoll]
+        }
+      )
+    end
 
     def reconnect
       @tools.wait_for_client_online(@name)

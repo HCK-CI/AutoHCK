@@ -255,7 +255,7 @@ module AutoHCK
                 &method(:reject_test_names=))
 
       parser.on('--enable-vbs', TrueClass,
-                'Enable VBS state for clients',
+                'Enable Windows guest VBS, HVCI, and Credential Guard on clients',
                 &method(:enable_vbs=))
 
       parser.on('--reject-report-sections <reject_report_sections>', Array,

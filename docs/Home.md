@@ -81,7 +81,12 @@ Usage: auto_hck.rb test [test options]
                                      Use custom user text playlist
         --reject-test-names <reject_test_names>
                                      Use custom CI text ignore list
-        --enable-vbs                 Enable VBS state for clients
+        --enable-vbs                 Enable VBS, HVCI, and Credential Guard on clients: sets the guest registry
+                                     keys, enables hypervisor launch (bcdedit), reboots, and verifies that VBS
+                                     and both security services are configured and running. Requires
+                                     hypervisor-level support, e.g. a VSM platform
+                                     (e.g. -p Win2025x64_gui_vsm) providing the required Hyper-V VSM CPU
+                                     features, SMM, and TPM TIS device.
         --reject-report-sections <reject_report_sections>
                                      List of section to reject from HTML results
                                      (use "--reject-report-sections=help" to list sections)
