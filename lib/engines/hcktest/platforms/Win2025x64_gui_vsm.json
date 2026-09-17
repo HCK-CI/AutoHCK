@@ -6,7 +6,8 @@
   "tpm_state": true,
   "enlightenments_state": true,
   "clients_options": {
-    "vsm_state": true
+    "vsm_state": true,
+    "secure_boot": true
   },
   "st_image": "HLK2025.qcow2",
   "clients": {
@@ -15,14 +16,14 @@
       "cpus": 4,
       "memory_gb": 8,
       "winrm_addr":  "192.168.100.2",
-      "image": "HLK2025-C1-Win2025x64-gui-vsm.qcow2"
+      "image": "HLK2025-C1-Win2025x64-gui.qcow2"
     },
     "c2": {
       "name": "CL2",
       "cpus": 4,
       "memory_gb": 8,
       "winrm_addr":  "192.168.100.3",
-      "image": "HLK2025-C2-Win2025x64-gui-vsm.qcow2"
+      "image": "HLK2025-C2-Win2025x64-gui.qcow2"
     }
   }
 }
