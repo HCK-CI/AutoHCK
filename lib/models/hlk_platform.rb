@@ -11,6 +11,7 @@ module AutoHCK
       prop :enlightenments_state, T.nilable(T::Boolean)
       prop :vbs_state, T.nilable(T::Boolean)
       prop :vsm_state, T.nilable(T::Boolean)
+      prop :secure_boot, T.nilable(T::Boolean)
       prop :ctrl_net_device, T.nilable(String)
       prop :fw_type, T.nilable(String)
 
@@ -22,6 +23,7 @@ module AutoHCK
         self.enlightenments_state = other.enlightenments_state unless other.enlightenments_state.nil?
         self.vbs_state = other.vbs_state unless other.vbs_state.nil?
         self.vsm_state = other.vsm_state unless other.vsm_state.nil?
+        self.secure_boot = other.secure_boot unless other.secure_boot.nil?
         self.ctrl_net_device = other.ctrl_net_device unless other.ctrl_net_device.nil?
         self.fw_type = other.fw_type unless other.fw_type.nil?
       end

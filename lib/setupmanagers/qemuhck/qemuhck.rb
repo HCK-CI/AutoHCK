@@ -284,13 +284,20 @@ module AutoHCK
     end
 
     def run_client(scope, name, run_opts = nil)
-      @clients_vm_runners[name] = @clients_vm[name].run(scope, run_opts)
+      @clients_vm_runners[name] = @clients_vm[name].run(scope, client_run_opts(run_opts))
     end
 
     # Stops the client's VM (if running) and boots a new one with run_opts.
     def power_cycle_client(scope, name, run_opts = nil)
       stop_client(name)
-      @clients_vm_runners[name] = @clients_vm[name].run(scope, run_opts)
+      @clients_vm_runners[name] = @clients_vm[name].run(scope, client_run_opts(run_opts))
+    end
+
+    def client_run_opts(run_opts)
+      options = run_opts.to_h.dup
+      secure_boot = @platform.clients_options.secure_boot
+      options[:secure] = secure_boot unless secure_boot.nil? || options.key?(:secure)
+      options
     end
 
     # Stops the client's VM without deleting its disk, so the disk can
