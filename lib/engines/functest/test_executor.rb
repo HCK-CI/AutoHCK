@@ -20,6 +20,16 @@ module AutoHCK
         guest_run guest_run_file files_action host_run host_run_file qmp_command qmp_wait_event
       ].freeze
 
+      # Client-facing branch steps are exclusive per interface. Different
+      # interfaces can safely target the same client at the same time.
+      PARALLEL_CLIENT_INTERFACES = {
+        guest_run: :winrm,
+        guest_run_file: :winrm,
+        files_action: :winrm,
+        qmp_command: :qmp,
+        qmp_wait_event: :qmp
+      }.freeze
+
       # rubocop:disable Metrics/AbcSize
       def initialize(engine, run_context)
         @project = engine.project
@@ -225,7 +235,7 @@ module AutoHCK
         validate_no_conflicting_action!(step)
         validate_no_nested_parallel!(step, branches)
         validate_allowed_step_types!(step, branches)
-        validate_no_client_overlap!(step, branches, test)
+        validate_no_client_interface_overlap!(step, branches, test)
         validate_unique_capture_output!(step, branches)
       end
 
@@ -265,32 +275,41 @@ module AutoHCK
         end
       end
 
-      def validate_no_client_overlap!(step, branches, test)
-        owner_by_client = {}
+      def validate_no_client_interface_overlap!(step, branches, test)
+        owner_by_target = {}
         branches.each do |branch_name, branch_steps|
-          client_ids = branch_steps.flat_map { |sub_step| guest_targeted_clients(sub_step, test) }.uniq
-          raise_client_overlap!(step, branch_name, client_ids, owner_by_client)
-          client_ids.each { |client_id| owner_by_client[client_id] = branch_name }
+          targets = branch_steps.flat_map { |sub_step| client_interface_targets(sub_step, test) }.uniq
+          raise_client_interface_overlap!(step, branch_name, targets, owner_by_target)
+          targets.each { |target| owner_by_target[target] = branch_name }
         end
       end
 
-      def raise_client_overlap!(step, branch_name, client_ids, owner_by_client)
-        overlap = client_ids.select { |client_id| owner_by_client.key?(client_id) }
+      def raise_client_interface_overlap!(step, branch_name, targets, owner_by_target)
+        overlap = targets.select { |target| owner_by_target.key?(target) }
         return if overlap.empty?
 
-        conflicts = overlap.map { |client_id| "#{client_id} (branch '#{owner_by_client[client_id]}')" }.join(', ')
-        raise EngineError, "Parallel step '#{step.desc}': branch '#{branch_name}' targets client(s) already " \
-                           "targeted by another branch in the same parallel step: #{conflicts}"
+        conflicts = overlap.map do |client_id, interface|
+          "#{client_id} via #{interface} (branch '#{owner_by_target[[client_id, interface]]}')"
+        end.join(', ')
+        raise EngineError, "Parallel step '#{step.desc}': branch '#{branch_name}' targets client interface(s) " \
+                           "already targeted by another branch in the same parallel step: #{conflicts}"
       end
 
-      # Host-only steps target no client. An empty `clients` list broadcasts
-      # to every client declared for the test, same as
+      # Host-only steps target no client interface. An empty `clients` list
+      # broadcasts to every client declared for the test, same as
       # CommandExecutionManager's own default.
-      def guest_targeted_clients(sub_step, test)
-        return [] unless sub_step.guest_run || sub_step.guest_run_file || sub_step.files_action.any? ||
-                         sub_step.qmp_command || sub_step.qmp_wait_event
+      def client_interface_targets(sub_step, test)
+        interface = parallel_client_interface(sub_step)
+        return [] unless interface
 
-        sub_step.clients.empty? ? test.clients : sub_step.clients
+        client_ids = sub_step.clients.empty? ? test.clients : sub_step.clients
+        client_ids.map { |client_id| [client_id, interface] }
+      end
+
+      def parallel_client_interface(sub_step)
+        PARALLEL_CLIENT_INTERFACES.find do |step_type, _interface|
+          sub_step.step_type_active?(step_type)
+        end&.last
       end
 
       # Rejects a capture_output name only when two *different* branches own

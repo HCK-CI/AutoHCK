@@ -532,7 +532,7 @@ These are checked before the test's own steps start running, so a bad `parallel`
 
 - A `parallel` block needs at least two branches.
 - Every branch step must resolve to exactly one step type (same rule as any other step), and it must be one of the types allowed inside a parallel branch.
-- Two branches can't target the same client. A branch "targets" whatever clients its `guest_run`/`guest_run_file`/`files_action`/`qmp_command`/`qmp_wait_event` steps target. `host_run`/`host_run_file` don't target a client, so any number of branches can run those at once.
+- Two branches can't target the same client through the same interface. `guest_run`/`guest_run_file`/`files_action` use the WinRM interface, while `qmp_command`/`qmp_wait_event` use the QMP interface. Different interfaces can target the same client concurrently, so a WinRM branch and a QMP branch can operate on one guest at the same time. `host_run`/`host_run_file` don't target a client interface, so any number of branches can run those at once.
 - A branch can't contain another `parallel` step. No nesting.
 - A branch can't use `guest_reboot` or `set_variable`. Do these outside the `parallel` block instead.
 - `capture_output` names must be different across every branch in the block. Two branches capturing to the same name is almost always a mistake, so it's rejected up front instead of letting one silently overwrite the other. Reusing a name across sequential steps within the *same* branch is fine.
