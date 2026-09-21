@@ -157,6 +157,7 @@ module AutoHCK
     prop :fs_daemon_cache_mode, T.nilable(String)
     prop :virtio_vectors, T.nilable(Integer)
     prop :virtio_queues, T.nilable(Integer)
+    prop :virtio_mode, T.nilable(String)
     prop :pcie_spare_root_ports, T.nilable(Integer)
     prop :test_params, T::Hash[String, String], default: {}
 
@@ -382,6 +383,13 @@ module AutoHCK
                 'Set virtqueues on the virtio device under test.',
                 'Supported devices: virtio-net-pci, virtio-scsi-pci, virtio-blk-pci.',
                 &method(:virtio_queues=))
+
+      parser.on('--virtio-mode <mode>', String,
+                'Virtio PCI transport: modern, legacy, or transitional.',
+                'Sets disable-legacy/disable-modern on the driver device under test (-d) only.') do |mode|
+        QemuMachine::VirtioMode.validate!(mode)
+        self.virtio_mode = mode
+      end
 
       parser.on('--pcie-spare-root-ports <N>', Integer,
                 'Allocate N extra empty pcie-root-ports at boot for later hotplug (q35 only, default: 0)',

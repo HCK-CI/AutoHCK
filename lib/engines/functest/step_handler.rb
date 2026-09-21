@@ -93,8 +93,17 @@ module AutoHCK
           @context.set_variable(step.capture_output, captured)
           @logger.debug("Captured '#{step.capture_output}': #{captured.to_s[0..100]}")
         end
+        validate_virtio_mode_qtree! if step.virtio_mode_qtree_verify
 
         validate_outputs(result, step)
+      end
+
+      def validate_virtio_mode_qtree!
+        qtree = @context.substitute_variables('@qtree_info@')
+        device_type = @context.substitute_variables('@virtio_qtree_device_type@')
+        mode = @context.substitute_variables('@virtio_mode@')
+        QemuMachine::VirtioMode.validate_qtree!(qtree, device_type, mode)
+        @logger.info('PASS: virtio mode in qtree matches --virtio-mode')
       end
 
       def guest_outputs(result)
