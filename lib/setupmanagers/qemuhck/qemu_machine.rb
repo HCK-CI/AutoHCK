@@ -209,7 +209,6 @@ module AutoHCK
       @devices_list = []
       @device_commands = []
       @machine_options = %w[@machine_name@]
-      @device_extra_param = []
       @cpu_options = %w[@cpu@]
       @drive_cache_options = []
       @define_variables = {}
@@ -418,11 +417,26 @@ module AutoHCK
     def options_replacement_map
       {
         '@machine_options@' => (@machine_options + device_machine_options).join(','),
-        '@device_extra_param@' => @device_extra_param.join,
+        '@device_options@' => '',
         '@iommu_device_param@' => device_iommu_device_param.join,
         '@cpu_options@' => @cpu_options.join(','),
         '@drive_cache_options@' => @drive_cache_options.join
       }
+    end
+
+    # Formats CLI --device-option values for @device_options@ in device JSON.
+    # Always includes a leading comma when options are present (QEMU property style).
+    sig { params(device_name: String).returns(T::Hash[String, String]) }
+    def device_options_replacement_map(device_name)
+      options = @options['device_options']
+      raw = options.is_a?(Hash) ? options[device_name].to_s : ''
+      raw = raw.delete_prefix(',')
+      { '@device_options@' => raw.empty? ? '' : ",#{raw}" }
+    end
+
+    sig { params(device_info: Models::QemuHCKDevice).returns(ReplacementMap) }
+    def device_command_replacement_map(device_info)
+      full_replacement_map.merge(device_options_replacement_map(device_info.name))
     end
 
     DISCARD_GRANULARITY_FORMAT = /\A(\d+)([KMG])?\z/i
@@ -592,7 +606,7 @@ module AutoHCK
     end
 
     def normalize_lists
-      [@device_commands, @machine_options, @device_extra_param,
+      [@device_commands, @machine_options,
        @cpu_options, @drive_cache_options].each do |arr|
         arr.flatten!
         arr.compact!
@@ -601,11 +615,8 @@ module AutoHCK
 
     sig { params(device_info: Models::QemuHCKDevice, bus_name: T.nilable(String)).returns(String) }
     def regular_device_command(device_info, bus_name = nil)
-      replacement_map = if bus_name.nil?
-                          full_replacement_map
-                        else
-                          full_replacement_map.merge({ '@bus_name@' => bus_name })
-                        end
+      replacement_map = device_command_replacement_map(device_info)
+      replacement_map = replacement_map.merge({ '@bus_name@' => bus_name }) unless bus_name.nil?
 
       dirty_cmd = device_info.command_line.join(' ')
       replacement_map.create_cmd(dirty_cmd)
@@ -624,12 +635,13 @@ module AutoHCK
     sig { params(device_info: Models::QemuHCKDevice).void }
     def process_device_command(device_info)
       bus_name = generate_device_bus(device_info, @machine['bus_name'])
+      replacement_map = device_command_replacement_map(device_info)
 
       dev = case device_info.type
             when 'network'
-              @nm.test_device_command(device_info, bus_name, full_replacement_map)
+              @nm.test_device_command(device_info, bus_name, replacement_map)
             when 'storage'
-              @sm.test_device_command(device_info, bus_name, full_replacement_map)
+              @sm.test_device_command(device_info, bus_name, replacement_map)
             else
               regular_device_command(device_info, bus_name)
             end
@@ -645,6 +657,8 @@ module AutoHCK
       device_info = read_device(@config['transfer_net_device'])
       bus_name = generate_device_bus(device_info, @machine['bus_name'])
 
+      # Transfer device is internal one,
+      # so we don't need to apply device command replacement map
       dev = @nm.transfer_device_command(device_info,
                                         @config['share_on_host_net'],
                                         path,
@@ -671,12 +685,15 @@ module AutoHCK
       device_info = read_device(option_config(device_key))
       bus_name = generate_device_bus(device_info, @machine['bus_name'])
 
-      dev = @nm.public_send(network_command, device_info, bus_name, full_replacement_map)
+      dev = @nm.public_send(network_command, device_info, bus_name,
+                            device_command_replacement_map(device_info))
       @device_commands << dev
     end
 
     def process_hck_network_command
       device_info = read_device(option_config('ctrl_net_device'))
+      # Control device is internal one,
+      # so we don't need to apply device command replacement map
       dev = @nm.control_device_command(device_info, full_replacement_map)
       @device_commands << dev
 
@@ -693,7 +710,8 @@ module AutoHCK
       device_info = read_device(option_config('boot_device'))
       bus_name = generate_device_bus(device_info, @machine['bus_name'])
 
-      dev, @image_path = @sm.boot_device_command(device_info, @run_opts, bus_name, full_replacement_map)
+      dev, @image_path = @sm.boot_device_command(device_info, @run_opts, bus_name,
+                                                 device_command_replacement_map(device_info))
       @device_commands << dev
 
       devs = @sm.iso_commands(@run_opts, full_replacement_map)

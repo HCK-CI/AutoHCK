@@ -2,7 +2,7 @@
   "name": "ivshmem-doorbell",
   "command_line": [
     "-chardev socket,path=@ivshmem_socket@,id=ivshmemid",
-    "-device ivshmem-doorbell@device_extra_param@,chardev=ivshmemid"
+    "-device ivshmem-doorbell@device_options@,chardev=ivshmemid"
   ],
   "define_variables": {
     "@ivshmem_socket@": "ivshmem_socket_@run_id@_@client_id@"
