@@ -31,4 +31,32 @@ describe AutoHCK::QemuMachine do
         end
     end
   end
+
+  describe '#device_options_replacement_map' do
+    let(:machine) { described_class.allocate }
+
+    before do
+      machine.instance_variable_set(:@options, {
+                                      'device_options' => {
+                                        'virtio-net-pci' => 'disable-legacy=on,disable-modern=off',
+                                        'virtio-blk-pci' => ',discard_granularity=4096'
+                                      }
+                                    })
+    end
+
+    it 'prepends a comma when options are present' do
+      expect(machine.send(:device_options_replacement_map, 'virtio-net-pci'))
+        .to eq('@device_options@' => ',disable-legacy=on,disable-modern=off')
+    end
+
+    it 'does not double the leading comma' do
+      expect(machine.send(:device_options_replacement_map, 'virtio-blk-pci'))
+        .to eq('@device_options@' => ',discard_granularity=4096')
+    end
+
+    it 'returns an empty string when the device has no options' do
+      expect(machine.send(:device_options_replacement_map, 'e1000e'))
+        .to eq('@device_options@' => '')
+    end
+  end
 end

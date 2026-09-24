@@ -16,6 +16,28 @@ module AutoHCK
     prop :attach_debug_net, T::Boolean, default: false
     prop :whiteboard, T.nilable(String)
     prop :attach_devices, T::Array[String], default: []
+    prop :device_options, T::Hash[String, String], default: {}
+
+    # Parses QEMU-style DEVICE,prop=value[,prop=value...] and concatenates
+    # when the same DEVICE is specified more than once.
+    sig { params(spec: String).void }
+    def apply_device_option(spec)
+      device, options = parse_device_option_spec(spec)
+      existing = device_options[device]
+      merged = existing.nil? || existing.empty? ? options : "#{existing},#{options}"
+      self.device_options = device_options.merge(device => merged)
+    end
+
+    sig { params(spec: String).returns([String, String]) }
+    def parse_device_option_spec(spec)
+      parts = spec.split(',', 2)
+      if parts.size < 2 || parts[0].to_s.empty? || parts[1].to_s.empty?
+        raise AutoHCKError, "Invalid --device-option format: #{spec} " \
+                            '(expected DEVICE,prop=value[,prop=value...])'
+      end
+
+      [T.must(parts[0]), T.must(parts[1]).delete_prefix(',')]
+    end
 
     def create_parser(sub_parser)
       OptionParser.new do |parser|
@@ -85,6 +107,11 @@ module AutoHCK
                 'Comma-separated list of devices to attach to the Client system. Bypasses driver processing.',
                 'Use carefully, as invalid/duplicate devices can break the test environment.',
                 &method(:attach_devices=))
+
+      parser.on('--device-option DEVICE,prop=value[,...]', String,
+                'Add QEMU device properties for DEVICE (can be repeated; concatenated per device).',
+                'Example: --device-option virtio-net-pci,disable-legacy=on',
+                &method(:apply_device_option))
     end
     # rubocop:enable Metrics/AbcSize,Metrics/MethodLength
   end

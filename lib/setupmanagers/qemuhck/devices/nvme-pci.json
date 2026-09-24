@@ -10,7 +10,7 @@
   ],
   "command_line": [
     "-drive file=@image_path@,if=none,format=@image_format@,id=nvme_@run_id@_@client_id@@drive_cache_options@",
-    "-device nvme,drive=nvme_@run_id@_@client_id@,serial=@client_id@nvme@run_id@@bootindex@,bus=@bus_name@.0@device_extra_param@@iommu_device_param@",
+    "-device nvme,drive=nvme_@run_id@_@client_id@,serial=@client_id@nvme@run_id@@bootindex@,bus=@bus_name@.0@device_options@@iommu_device_param@",
     "-chardev socket,id=nvme_qmp,path=@nvme_qmp_socket@,server=on,wait=off",
     "-mon chardev=nvme_qmp,mode=control"
   ]
