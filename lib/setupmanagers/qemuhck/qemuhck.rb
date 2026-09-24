@@ -16,7 +16,7 @@ module AutoHCK
 
     QEMUHCK_INFO_LOG_FILE = 'qemuhck.txt'
     OPT_NAMES = %w[viommu_state s3_state s4_state enlightenments_state vhost_state machine_type fw_type cpu
-                   ctrl_net_device vbs_state tpm_state numa_state pcie_spare_root_ports].freeze
+                   ctrl_net_device vbs_state tpm_state numa_state pcie_spare_root_ports vsm_state].freeze
 
     def initialize(project)
       @platform = T.let(project.engine_platform, Models::HLKPlatform)
@@ -128,6 +128,8 @@ module AutoHCK
         'virtio_vectors' => test_opt.virtio_vectors,
         'virtio_queues' => test_opt.virtio_queues,
         'pcie_spare_root_ports' => test_opt.pcie_spare_root_ports,
+        # Do not override the platform's vbs_state when the CLI flag is absent.
+        'vbs_state' => test_opt.enable_vbs ? true : nil,
         'ctrl_net_device' => common.client_ctrl_net_dev,
         'world_net_device' => common.client_world_net_dev,
         'device_options' => common.device_options
@@ -288,13 +290,20 @@ module AutoHCK
     end
 
     def run_client(scope, name, run_opts = nil)
-      @clients_vm_runners[name] = @clients_vm[name].run(scope, run_opts)
+      @clients_vm_runners[name] = @clients_vm[name].run(scope, client_run_opts(run_opts))
     end
 
     # Stops the client's VM (if running) and boots a new one with run_opts.
     def power_cycle_client(scope, name, run_opts = nil)
       stop_client(name)
-      @clients_vm_runners[name] = @clients_vm[name].run(scope, run_opts)
+      @clients_vm_runners[name] = @clients_vm[name].run(scope, client_run_opts(run_opts))
+    end
+
+    def client_run_opts(run_opts)
+      options = run_opts.to_h.dup
+      secure_boot = @platform.clients_options.secure_boot
+      options[:secure] = secure_boot unless secure_boot.nil? || options.key?(:secure)
+      options
     end
 
     # Stops the client's VM without deleting its disk, so the disk can
