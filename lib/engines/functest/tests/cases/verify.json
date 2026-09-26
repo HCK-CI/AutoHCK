@@ -1,0 +1,31 @@
+{
+    "name": "verify",
+    "display_name": "virtio_mode.verify",
+    "description": "tp-qemu virtio_mode: strict qtree + guest; mode from --virtio-mode",
+    "test_system_ref": "VIRT-204",
+    "timeout": 180,
+    "test_steps": [
+        {
+            "desc": "Reboot so device under test is fully bound",
+            "guest_reboot": true,
+            "timeout": 120
+        },
+        {
+            "desc": "Verify virtio mode in QEMU qtree (tp-qemu verify_virtio_mode_qtree)",
+            "qmp_command": {
+                "execute": "human-monitor-command",
+                "arguments": { "command-line": "info qtree" }
+            },
+            "capture_output": "qtree_info",
+            "virtio_mode_qtree_verify": true,
+            "timeout": 30
+        },
+        {
+            "desc": "Verify virtio mode from guest HardwareID / MEM range",
+            "guest_run_file": "lib/engines/functest/tests/scripts/check_virtio_mode_guest.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 60
+        }
+    ]
+}
+
