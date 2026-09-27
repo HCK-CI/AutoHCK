@@ -13,6 +13,7 @@ module AutoHCK
     autoload_relative :QMP, 'qmp'
     autoload_relative :StorageManager, 'storage_manager'
     autoload_relative :PciManager, 'pci_manager'
+    autoload_relative :VirtioMode, 'virtio_mode'
 
     # Runner is a class that represents a run.
     class Runner
@@ -434,9 +435,11 @@ module AutoHCK
       { '@device_options@' => raw.empty? ? '' : ",#{raw}" }
     end
 
-    sig { params(device_info: Models::QemuHCKDevice).returns(ReplacementMap) }
-    def device_command_replacement_map(device_info)
-      full_replacement_map.merge(device_options_replacement_map(device_info.name))
+    sig { params(device_info: Models::QemuHCKDevice, apply_virtio_mode: T::Boolean).returns(ReplacementMap) }
+    def device_command_replacement_map(device_info, apply_virtio_mode: false)
+      full_replacement_map
+        .merge(device_options_replacement_map(device_info.name))
+        .merge(device_virtio_mode_replacement_map(apply: apply_virtio_mode))
     end
 
     DISCARD_GRANULARITY_FORMAT = /\A(\d+)([KMG])?\z/i
@@ -497,6 +500,28 @@ module AutoHCK
         '@virtio_scsi_queues_param@' => queues ? ",num_queues=#{queues}" : '',
         '@virtio_blk_queues_param@' => queues ? ",num-queues=#{queues}" : '',
         '@netdev_mq_param@' => netdev_mq_queues_param(queues)
+      }
+    end
+
+    def virtio_mode_replacement_map
+      {
+        '@virtio_dut_mode_param@' => ''
+      }
+    end
+
+    def virtio_mode_dut_device_names
+      Array(option_config('virtio_mode_dut_devices')).compact
+    end
+
+    def apply_virtio_mode_to_device?(device_name)
+      virtio_mode_dut_device_names.include?(device_name)
+    end
+
+    def device_virtio_mode_replacement_map(apply:)
+      suffix = apply ? VirtioMode.qemu_device_suffix(option_config('virtio_mode')) : ''
+
+      {
+        '@virtio_dut_mode_param@' => suffix
       }
     end
 
@@ -576,6 +601,7 @@ module AutoHCK
                                              discard_granularity_replacement_map,
                                              fs_daemon_cache_mode_replacement_map,
                                              virtio_extra_param_replacement_map,
+                                             virtio_mode_replacement_map,
                                              device_define_variables,
                                              numa_replacement_map,
                                              @define_variables)
@@ -615,7 +641,10 @@ module AutoHCK
 
     sig { params(device_info: Models::QemuHCKDevice, bus_name: T.nilable(String)).returns(String) }
     def regular_device_command(device_info, bus_name = nil)
-      replacement_map = device_command_replacement_map(device_info)
+      replacement_map = device_command_replacement_map(
+        device_info,
+        apply_virtio_mode: apply_virtio_mode_to_device?(device_info.name)
+      )
       replacement_map = replacement_map.merge({ '@bus_name@' => bus_name }) unless bus_name.nil?
 
       dirty_cmd = device_info.command_line.join(' ')
@@ -635,7 +664,10 @@ module AutoHCK
     sig { params(device_info: Models::QemuHCKDevice).void }
     def process_device_command(device_info)
       bus_name = generate_device_bus(device_info, @machine['bus_name'])
-      replacement_map = device_command_replacement_map(device_info)
+      replacement_map = device_command_replacement_map(
+        device_info,
+        apply_virtio_mode: apply_virtio_mode_to_device?(device_info.name)
+      )
 
       dev = case device_info.type
             when 'network'
@@ -663,7 +695,7 @@ module AutoHCK
                                         @config['share_on_host_net'],
                                         path,
                                         bus_name,
-                                        full_replacement_map)
+                                        device_command_replacement_map(device_info))
       @device_commands << dev
     end
 
@@ -693,8 +725,8 @@ module AutoHCK
     def process_hck_network_command
       device_info = read_device(option_config('ctrl_net_device'))
       # Control device is internal one,
-      # so we don't need to apply device command replacement map
-      dev = @nm.control_device_command(device_info, full_replacement_map)
+      # so we don't need to apply virtio mode
+      dev = @nm.control_device_command(device_info, device_command_replacement_map(device_info))
       @device_commands << dev
 
       process_optional_hck_network
@@ -710,8 +742,13 @@ module AutoHCK
       device_info = read_device(option_config('boot_device'))
       bus_name = generate_device_bus(device_info, @machine['bus_name'])
 
-      dev, @image_path = @sm.boot_device_command(device_info, @run_opts, bus_name,
-                                                 device_command_replacement_map(device_info))
+      dev, @image_path = @sm.boot_device_command(
+        device_info, @run_opts, bus_name,
+        device_command_replacement_map(
+          device_info,
+          apply_virtio_mode: apply_virtio_mode_to_device?(device_info.name)
+        )
+      )
       @device_commands << dev
 
       devs = @sm.iso_commands(@run_opts, full_replacement_map)
