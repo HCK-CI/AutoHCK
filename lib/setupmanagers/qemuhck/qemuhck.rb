@@ -127,6 +127,8 @@ module AutoHCK
         'fs_daemon_cache_mode' => test_opt.fs_daemon_cache_mode,
         'virtio_vectors' => test_opt.virtio_vectors,
         'virtio_queues' => test_opt.virtio_queues,
+        'virtio_mode' => test_opt.virtio_mode,
+        'virtio_mode_dut_devices' => @drivers&.map(&:device)&.uniq,
         'pcie_spare_root_ports' => test_opt.pcie_spare_root_ports,
         'ctrl_net_device' => common.client_ctrl_net_dev,
         'world_net_device' => common.client_world_net_dev,
