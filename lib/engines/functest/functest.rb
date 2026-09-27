@@ -29,6 +29,7 @@ module AutoHCK
       @project.append_multilog("#{project.engine_tag}.log")
       @config = load_engine_config
       @drivers = load_drivers
+      validate_virtio_mode_drivers!
       @tests = init_tests
       @extensions = find_extensions
       prepare_extra_sw
@@ -267,6 +268,13 @@ module AutoHCK
       remaining
     end
 
+    def validate_virtio_mode_drivers!
+      mode = @project.options.test.virtio_mode
+      return if mode.nil? || mode.to_s.empty?
+
+      QemuMachine::VirtioMode.validate_devices_for_mode!(mode, @drivers.map(&:device))
+    end
+
     # Loads Models::Driver objects for the drivers listed on the CLI, skipping
     # infrastructure devices (same filtering as hcktest).
     def load_drivers
@@ -323,6 +331,11 @@ module AutoHCK
       context.set_variable('test_binaries_path', test_binaries_path) if test_binaries_path
 
       set_driver_context_variables(context, @drivers.first)
+      virtio_mode = @project.options.test.virtio_mode
+      context.set_variable('virtio_mode', virtio_mode) if virtio_mode
+      drv = @drivers.first
+      context.set_variable('virtio_qtree_device_type', drv.device) if drv&.device
+
       apply_platform_context_variables(context)
 
       @project.options.test.test_params.each do |key, value|
