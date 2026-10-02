@@ -107,6 +107,8 @@ module AutoHCK
       const :expected_output_contains, T.nilable(String)
       const :expected_output_matches, T.nilable(String)
       const :expected_output_matches_encoding, T.nilable(String)
+      const :virtio_mode_qtree_verify, T::Boolean, default: false
+
 
       # Client ids (e.g. 1, 2) this step targets, by position in the platform
       # JSON's clients map. Empty (default) broadcasts to every client in
