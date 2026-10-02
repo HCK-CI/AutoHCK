@@ -1,9 +1,9 @@
 {
     "name": "parallel_host_guest",
-    "description": "Run a host command and a guest command in parallel, then verify both branches completed and the guest branch's captured variable was merged after the block",
+    "description": "Run host, guest WinRM, and guest QMP commands in parallel, including WinRM and QMP against the same client, then verify the captured results",
     "test_steps": [
         {
-            "desc": "Run host and guest commands at the same time",
+            "desc": "Run host, guest WinRM, and guest QMP commands at the same time",
             "parallel": {
                 "branches": {
                     "host_branch": [
@@ -17,6 +17,15 @@
                             "desc": "Run command in guest",
                             "guest_run": "Write-Output 'guest_branch_done'",
                             "capture_output": "guest_marker",
+                            "timeout": 30
+                        }
+                    ],
+                    "qmp_branch": [
+                        {
+                            "desc": "Query VM status via QMP on the same client targeted by the WinRM branch",
+                            "qmp_command": {
+                                "execute": "query-status"
+                            },
                             "timeout": 30
                         }
                     ]
