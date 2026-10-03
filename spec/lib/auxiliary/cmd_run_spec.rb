@@ -72,6 +72,16 @@ describe AutoHCK::CmdRun, :linux_process do
         expect(cmd.close.exitstatus).to eq(1)
       end
     end
+
+    it 'buffers all stdout before close returns (pipe reader threads joined)' do
+      AutoHCK::ResourceScope.open([]) do |scope|
+        cmd = new_cmd(scope, '/bin/bash', '-c',
+                      'for i in $(seq 1 50); do echo "line $i"; sleep 0.01; done; echo PASS: done')
+        cmd.close
+        expect(cmd.stddata['stdout']).to include('PASS: done')
+        expect(cmd.stddata['stdout'].size).to be >= 51
+      end
+    end
   end
 
   describe 'spawn options' do
