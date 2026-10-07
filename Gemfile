@@ -17,10 +17,13 @@ gem 'json', '~> 2.21'
 gem 'mono_logger'
 gem 'octokit'
 gem 'openssl', require: false
-gem 'rtoolsHCK', git: 'https://github.com/HCK-CI/rtoolsHCK.git', ref: 'v0.7.3'
 gem 'rubyzip'
 gem 'sentry-ruby'
 gem 'sorbet-runtime'
+
+# rtoolsHCK dependencies
+gem 'winrm',      '= 2.3.9'
+gem 'winrm-fs',   '= 1.3.5'
 
 group :development, :test do
   gem 'sorbet', require: false
