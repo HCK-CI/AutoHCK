@@ -331,10 +331,15 @@ module AutoHCK
     end
 
     def apply_platform_context_variables(context)
-      client = @project.engine_platform.clients.values.first
-      return unless client&.memory_gb
+      platform = @project.engine_platform
+      client = platform.clients.values.first
 
-      context.set_variable('vm_memory_gb', client.memory_gb.to_s)
+      context.set_variable('vm_memory_gb', client.memory_gb.to_s) if client&.memory_gb
+
+      # Prefer client.arch, then platform.client_arch, then amd64.
+      guest_arch = client&.arch || platform.client_arch || Project::DEFAULT_ARCH
+      context.set_variable('guest_arch', guest_arch)
+      @logger.info("Test context: guest_arch=#{guest_arch}")
     end
 
     def set_driver_context_variables(context, drv)
