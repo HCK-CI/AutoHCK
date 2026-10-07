@@ -5,15 +5,29 @@
 # Please instead update this file by running `bin/tapioca gem winrm-fs`.
 
 
-# source://winrm-fs//lib/winrm-fs/exceptions.rb#18
+# Copyright 2015 Shawn Neal <sneal@sneal.net>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# pkg:gem/winrm-fs#lib/winrm-fs/exceptions.rb:18
 module WinRM; end
 
 # WinRM File System
 #
-# source://winrm-fs//lib/winrm-fs/exceptions.rb#19
+# pkg:gem/winrm-fs#lib/winrm-fs/exceptions.rb:19
 module WinRM::FS; end
 
-# source://winrm-fs//lib/winrm-fs/core/tmp_zip.rb#27
+# pkg:gem/winrm-fs#lib/winrm-fs/core/tmp_zip.rb:27
 module WinRM::FS::Core; end
 
 # Object which can upload one or more files or directories to a remote
@@ -33,17 +47,16 @@ module WinRM::FS::Core; end
 # @author Fletcher Nichol <fnichol@nichol.ca>
 # @author Matt Wrock <matt@mattwrock.com>
 #
-# source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#62
+# pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:61
 class WinRM::FS::Core::FileTransporter
   # Creates a FileTransporter given a PowerShell object.
   #
   # @param shell [PowerShell] a winrm PowerShell object
-  # @return [FileTransporter] a new instance of FileTransporter
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#66
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:65
   def initialize(shell, opts = T.unsafe(nil)); end
 
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#120
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:120
   def close; end
 
   # Uploads a collection of files and/or directories to the remote host.
@@ -54,12 +67,12 @@ class WinRM::FS::Core::FileTransporter
   # * progress yields block like net-scp progress
   # * final API: def upload(locals, remote, _options = {}, &_progress)
   #
-  # @param locals [Array<String>, String, StringIO] one or more
+  # @param locals [Array<String>,String,StringIO] one or more
   #   local file or directory paths, StringIO objects also accepted
   # @param remote [String] the base destination path on the remote host
   # @return [Hash] report hash, keyed by the local SHA1 digest
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#85
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:85
   def upload(locals, remote); end
 
   private
@@ -69,22 +82,22 @@ class WinRM::FS::Core::FileTransporter
   # containing the contents of the directory and any file-related data
   # such as SHA1 digest, size, etc. will be referring to the Zip file.
   #
-  # @api private
   # @param hash [Hash] hash to be mutated
   # @param dir [String] directory path to be Zipped and added
   # @param remote [String] path to destination on remote host
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#182
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:182
   def add_directory_hash!(hash, dir, remote); end
 
   # Adds an entry to a files Hash (keyed by local SHA1 digest) for a file.
   #
-  # @api private
   # @param hash [Hash] hash to be mutated
   # @param local [String, StringIO] file path or StringIO object
   # @param remote [String] path to destination on remote host
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#203
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:203
   def add_file_hash!(hash, local, remote); end
 
   # Runs the check_files PowerShell script against a collection of
@@ -92,41 +105,40 @@ class WinRM::FS::Core::FileTransporter
   # its results as a CSV-formatted report which is converted into a Ruby
   # Hash.
   #
-  # @api private
   # @param files [Hash] files hash, keyed by the local SHA1 digest
   # @return [Hash] a report hash, keyed by the local SHA1 digest
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#220
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:220
   def check_files(files); end
 
   # Constructs a collection of destination path/SHA1 checksum pairs as a
   # String representation of the contents of a PowerShell Hash Table.
   #
-  # @api private
   # @param files [Hash] files hash, keyed by the local SHA1 digest
   # @return [String] the inner contents of a PowerShell Hash Table
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#233
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:233
   def check_files_ps_hash(files); end
 
   # Ensure that only a single StringIO object is uploaded at a time
   # This is necessary because the contents of the buffer will be written
   # to the destination.
-  #
-  # @api private
   # @param locals [Array<String,StringIO>] a collection of local files,
   #   directories or StringIO objects
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#351
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:351
   def check_locals_array(locals); end
 
   # Performs any final cleanup on the report Hash and removes any
   # temporary files/resources used in the upload task.
   #
-  # @api private
   # @param files [Hash] a files hash
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#252
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:252
   def cleanup(files); end
 
   # Returns a formatted string representing a duration in seconds.
@@ -134,7 +146,7 @@ class WinRM::FS::Core::FileTransporter
   # @param total [Integer] the total number of seconds
   # @return [String] a formatted string of the form (XmYY.00s)
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#307
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:307
   def duration(total); end
 
   # Runs the extract_files PowerShell script against a collection of
@@ -143,90 +155,90 @@ class WinRM::FS::Core::FileTransporter
   # Hash. The script will not be invoked if there are no zip files
   # present in the incoming files Hash.
   #
-  # @api private
   # @param files [Hash] files hash, keyed by the local SHA1 digest
   # @return [Hash] a report hash, keyed by the local SHA1 digest
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#269
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:269
   def extract_files(files); end
 
   # Constructs a collection of temporary file/destination path pairs for
   # all zipped folders as a String representation of the contents of a
   # PowerShell Hash Table.
   #
-  # @api private
   # @param files [Hash] files hash, keyed by the local SHA1 digest
   # @return [String] the inner contents of a PowerShell Hash Table
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#290
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:290
   def extract_files_ps_hash(files); end
 
+  # @return [#debug,#debug?] the logger
   # @api private
-  # @return [#debug, #debug?] the logger
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#138
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:138
   def logger; end
 
   # Contructs a Hash of files or directories, keyed by the local SHA1
   # digest. Each file entry has a source and destination set, at a
   # minimum.
   #
-  # @api private
   # @param locals [Array<String,StringIO>] a collection of local files,
   #   directories or StringIO objects
   # @param remote [String] the base destination path on the remote host
   # @return [Hash] files hash, keyed by the local SHA1 digest
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#323
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:323
   def make_files_hash(locals, remote); end
 
-  # @api private
   # @return [Integer] the maximum number of bytes to send per request
   #   when streaming a file. This is optimized to send as much data
   #   as allowed in a single PSRP fragment
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#148
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:148
   def max_encoded_write; end
 
   # Destructively merges a report Hash into an existing files Hash.
   # **Note:** this method mutates the files Hash.
   #
-  # @api private
   # @param files [Hash] files hash, keyed by the local SHA1 digest
   # @param report [Hash] report hash, keyed by the local SHA1 digest
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#382
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:382
   def merge_with_report!(files, report); end
 
-  # @api private
   # @param depth [Integer] number of padding characters (default: `0`)
   # @return [String] a whitespace padded string of the given length
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#389
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:389
   def pad(depth = T.unsafe(nil)); end
 
   # Parses response of a PowerShell script or CMD command which contains
   # a CSV-formatted document in the standard output stream.
   #
-  # @api private
   # @param output [WinRM::Output] output object with stdout, stderr, and
   #   exit code
   # @return [Hash] report hash, keyed by the local SHA1 digest
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#400
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:400
   def parse_response(output); end
 
   # Converts a Ruby hash into a PowerShell hash table, represented in a
   # String.
   #
-  # @api private
   # @param obj [Object] source Hash or object when used in recursive
   #   calls
   # @param depth [Integer] padding depth, used in recursive calls
   #   (default: `0`)
   # @return [String] a PowerShell hash table
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#429
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:431
   def ps_hash(obj, depth = T.unsafe(nil)); end
 
   # Examines the files and corrects the file destination if it is
@@ -234,26 +246,26 @@ class WinRM::FS::Core::FileTransporter
   # will have the base name of the source file appended. This only
   # applies to file uploads and not to folder uploads.
   #
-  # @api private
   # @param files [Hash] files hash, keyed by the local SHA1 digest
   # @return [Hash] a report hash, keyed by the local SHA1 digest
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#167
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:167
   def reconcile_destinations!(files); end
 
-  # @api private
   # @return [String] the SHA1 digest of a local file or StringIO
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#368
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:368
   def sha1sum(local); end
 
-  # @api private
   # @return [Winrm::Shells::Powershell] a WinRM Powershell shell
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#142
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:142
   def shell; end
 
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#495
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:497
   def stream_command(encoded_bytes); end
 
   # Uploads an IO stream to a Base64-encoded destination file.
@@ -266,75 +278,75 @@ class WinRM::FS::Core::FileTransporter
   # while not loading the entire file into memory first, then Base64
   # encoding it--duplicating the file in memory again.
   #
-  # @api private
   # @param input_io [#read] a readable stream or object to be uploaded
   # @param dest [String] path to the destination file on the remote host
-  # @return [Integer, Integer] the number of resulting upload chunks and
+  # @return [Integer,Integer] the number of resulting upload chunks and
   #   the number of bytes transferred to the remote host
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#454
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:456
   def stream_upload(input_io, dest); end
 
   # Uploads a local file.
   #
-  # @api private
   # @param src [String, StringIO] path to a local file or StringIO object
   # @param dest [String] path to the file on the remote host
-  # @return [Integer, Integer] the number of resulting upload chunks and
+  # @return [Integer,Integer] the number of resulting upload chunks and
   #   the number of bytes transferred to the remote host
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#510
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:512
   def stream_upload_file(src, dest, &block); end
 
   # Uploads a collection of "dirty" files to the remote host as
   # Base64-encoded temporary files. A "dirty" file is one which has the
   # `"chk_dirty"` option set to `"True"` in the incoming files Hash.
   #
-  # @api private
   # @param files [Hash] files hash, keyed by the local SHA1 digest
   # @return [Hash] a report hash, keyed by the local SHA1 digest
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#539
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:541
   def stream_upload_files(files); end
 
   # Total by byte count to be transferred.
   # Calculates count based on the sum of base64 encoded content size
   # of all files base 64 that are dirty.
   #
-  # @api private
   # @param files [Hash] files hash, keyed by the local SHA1 digest
   # @return [Fixnum] total byte size
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#564
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:566
   def total_base64_transfer_size(files); end
 end
 
-# @api private
 # @return [String] the Array pack template for Base64 encoding a stream
 #   of data
+# @api private
 #
-# source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#129
+# pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:129
 WinRM::FS::Core::FileTransporter::BASE64_PACK = T.let(T.unsafe(nil), String)
 
-# @api private
 # @return [String] the directory where temporary upload artifacts are
 #   persisted
+# @api private
 #
-# source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#134
+# pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:134
 WinRM::FS::Core::FileTransporter::TEMP_UPLOAD_DIRECTORY = T.let(T.unsafe(nil), String)
 
 # Wrapped exception for any internally raised WinRM-related errors.
 #
 # @author Fletcher Nichol <fnichol@nichol.ca>
 #
-# source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#35
+# pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:34
 class WinRM::FS::Core::FileTransporterFailed < ::WinRM::WinRMError; end
 
 # A temporary Zip file for a given directory.
 #
 # @author Fletcher Nichol <fnichol@nichol.ca>
 #
-# source://winrm-fs//lib/winrm-fs/core/tmp_zip.rb#31
+# pkg:gem/winrm-fs#lib/winrm-fs/core/tmp_zip.rb:31
 class WinRM::FS::Core::TmpZip
   # Contructs a new Zip file for the given directory.
   #
@@ -362,6 +374,7 @@ class WinRM::FS::Core::TmpZip
   #   # - src/alpha.txt
   #   # - src/beta.txt
   #   # - src/sub/charlie.txt
+  #
   # @example Excluding the base directory in the zip file
   #
   #   TmpZip.new("/path/to/src/")
@@ -369,81 +382,76 @@ class WinRM::FS::Core::TmpZip
   #   # - alpha.txt
   #   # - beta.txt
   #   # - sub/charlie.txt
-  # @param dir [String, Pathname, #to_s] path to the directory
-  # @param logger [#debug, #debug?] an optional logger/ui object that
-  #   responds to `#debug` and `#debug?` (default `nil`)
-  # @return [TmpZip] a new instance of TmpZip
   #
-  # source://winrm-fs//lib/winrm-fs/core/tmp_zip.rb#70
+  # @param dir [String,Pathname,#to_s] path to the directory
+  # @param logger [#debug,#debug?] an optional logger/ui object that
+  #   responds to `#debug` and `#debug?` (default `nil`)
+  #
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/tmp_zip.rb:70
   def initialize(dir, logger = T.unsafe(nil)); end
 
   # @return [Pathname] path to zip file
   #
-  # source://winrm-fs//lib/winrm-fs/core/tmp_zip.rb#79
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/tmp_zip.rb:80
   def path; end
 
   # Unlinks (deletes) the zip file from the filesystem.
   #
-  # source://winrm-fs//lib/winrm-fs/core/tmp_zip.rb#84
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/tmp_zip.rb:85
   def unlink; end
 
   private
 
-  # doesn't have any of those ~ in it
-  #
-  # @api private
   # @return [Pathname] the pathname object representing dirname that
+  # doesn't have any of those ~ in it
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/tmp_zip.rb#105
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/tmp_zip.rb:106
   def clean_dirname(dir); end
 
-  # @api private
   # @return [Pathname] the directory used to create the Zip file
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/tmp_zip.rb#92
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/tmp_zip.rb:93
   def dir; end
 
-  # @api private
   # @return [Array<Pathname] all recursive files under the base
-  # directory, excluding directories] Array<Pathname] all recursive files under the base
   #   directory, excluding directories
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/tmp_zip.rb#115
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/tmp_zip.rb:116
   def entries; end
 
-  # @api private
-  #
-  # source://winrm-fs//lib/winrm-fs/core/tmp_zip.rb#121
-  def log_subject; end
-
-  # @api private
   # @return [#debug] the logger
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/tmp_zip.rb#96
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/tmp_zip.rb:97
   def logger; end
 
   # Adds all file entries to the Zip output stream.
   #
-  # @api private
   # @param zos [Zip::OutputStream] zip output stream
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/tmp_zip.rb#129
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/tmp_zip.rb:124
   def produce_zip_entries(zos); end
 
   # Writes out a temporary Zip file.
   #
   # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/tmp_zip.rb#145
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/tmp_zip.rb:140
   def write_zip; end
 
-  # source://winrm-fs//lib/winrm-fs/core/tmp_zip.rb#152
+  # rubyzip 3.x takes optional Entry arguments as keywords
+  #
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/tmp_zip.rb:148
   def zip_entry(entry_path); end
 
-  # @api private
   # @return [IO] the Zip file IO
+  # @api private
   #
-  # source://winrm-fs//lib/winrm-fs/core/tmp_zip.rb#100
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/tmp_zip.rb:101
   def zip_io; end
 end
 
@@ -452,147 +460,138 @@ end
 # constructor where an incoming IO is duplicated, leading to races
 # on flushing the final stream to disk.
 #
-# @api private
 # @author Fletcher Nichol <fnichol@nichol.ca>
+# @api private
 #
-# source://winrm-fs//lib/winrm-fs/core/tmp_zip.rb#168
+# pkg:gem/winrm-fs#lib/winrm-fs/core/tmp_zip.rb:163
 class WinRM::FS::Core::TmpZip::NoDupIO < ::SimpleDelegator
-  # @api private
   # @return [self] returns self and does *not* return a duplicate
   #   object
   #
-  # source://winrm-fs//lib/winrm-fs/core/tmp_zip.rb#171
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/tmp_zip.rb:166
   def dup; end
 end
 
 # Exception for the case where upload source contains more than one
 # StringIO object, or a combination of file/directory paths and StringIO object
 #
-# source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#40
+# pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:39
 class WinRM::FS::Core::UploadSourceError < ::StandardError
-  # @return [UploadSourceError] a new instance of UploadSourceError
-  #
-  # source://winrm-fs//lib/winrm-fs/core/file_transporter.rb#41
+  # pkg:gem/winrm-fs#lib/winrm-fs/core/file_transporter.rb:40
   def initialize(msg = T.unsafe(nil)); end
 end
 
 # Perform file transfer operations between a local machine and winrm endpoint
 #
-# source://winrm-fs//lib/winrm-fs/file_manager.rb#25
+# pkg:gem/winrm-fs#lib/winrm-fs/file_manager.rb:25
 class WinRM::FS::FileManager
   # Creates a new FileManager instance
+  # @param [WinRM::Connection] WinRM web connection client
   #
-  # @param WinRM [WinRM::Connection] web connection client
-  # @return [FileManager] a new instance of FileManager
-  #
-  # source://winrm-fs//lib/winrm-fs/file_manager.rb#28
+  # pkg:gem/winrm-fs#lib/winrm-fs/file_manager.rb:28
   def initialize(connection); end
 
-  # source://winrm-fs//lib/winrm-fs/file_manager.rb#88
+  # pkg:gem/winrm-fs#lib/winrm-fs/file_manager.rb:88
   def _output_from_file(remote_path, chunk_size, index); end
 
-  # source://winrm-fs//lib/winrm-fs/file_manager.rb#93
+  # pkg:gem/winrm-fs#lib/winrm-fs/file_manager.rb:93
   def _write_file(tofd, output); end
 
   # Gets the SHA1 checksum of the specified file if it exists,
   # otherwise ''
+  # @param [String] The remote file path
+  # @parms [String] The digest method
   #
-  # @param The [String] remote file path
-  #
-  # source://winrm-fs//lib/winrm-fs/file_manager.rb#37
+  # pkg:gem/winrm-fs#lib/winrm-fs/file_manager.rb:37
   def checksum(path, digest = T.unsafe(nil)); end
 
   # Create the specifed directory recursively
-  #
-  # @param The [String] remote dir to create
+  # @param [String] The remote dir to create
   # @return [Boolean] True if successful, otherwise false
   #
-  # source://winrm-fs//lib/winrm-fs/file_manager.rb#46
+  # pkg:gem/winrm-fs#lib/winrm-fs/file_manager.rb:46
   def create_dir(path); end
 
   # Deletes the file or directory at the specified path
-  #
-  # @param The [String] path to remove
+  # @param [String] The path to remove
   # @return [Boolean] True if successful, otherwise False
   #
-  # source://winrm-fs//lib/winrm-fs/file_manager.rb#55
+  # pkg:gem/winrm-fs#lib/winrm-fs/file_manager.rb:55
   def delete(path); end
 
   # Downloads the specified remote file to the specified local path
+  # @param [String] The full path on the remote machine
+  # @param [String] The full path to write the file to locally
   #
-  # @param The [String] full path on the remote machine
-  # @param The [String] full path to write the file to locally
-  #
-  # source://winrm-fs//lib/winrm-fs/file_manager.rb#65
+  # pkg:gem/winrm-fs#lib/winrm-fs/file_manager.rb:65
   def download(remote_path, local_path, chunk_size = T.unsafe(nil), first = T.unsafe(nil)); end
 
   # Checks to see if the given path exists on the target file system.
-  #
-  # @param The [String] full path to the directory or file
+  # @param [String] The full path to the directory or file
   # @return [Boolean] True if the file/dir exists, otherwise false.
   #
-  # source://winrm-fs//lib/winrm-fs/file_manager.rb#106
+  # pkg:gem/winrm-fs#lib/winrm-fs/file_manager.rb:106
   def exists?(path); end
 
   # Gets the current user's TEMP directory on the remote system, for example
   # 'C:/Windows/Temp'
-  #
   # @return [String] Full path to the temp directory
   #
-  # source://winrm-fs//lib/winrm-fs/file_manager.rb#115
+  # pkg:gem/winrm-fs#lib/winrm-fs/file_manager.rb:115
   def temp_dir; end
 
   # Upload one or more local files and directories to a remote directory
-  #
   # @example copy a single file to a winrm endpoint
   #
   #   file_manager.upload('/Users/sneal/myfile.txt', 'c:/foo/myfile.txt')
+  #
   # @example copy a single directory to a winrm endpoint
   #
   #   file_manager.upload('c:/dev/my_dir', '$env:AppData')
-  # @param A [String] path to a local directory or file that will be copied
-  #   to the remote Windows box.
-  # @param The [String] target directory or file
-  #   This path may contain powershell style environment variables
-  # @return [Fixnum] The total number of bytes copied
-  # @yieldparam Number [Fixnum] of bytes copied in current payload sent to the winrm endpoint
-  # @yieldparam The [Fixnum] total number of bytes to be copied
-  # @yieldparam Path [String] of file being copied
-  # @yieldparam Target [String] path on the winrm endpoint
   #
-  # source://winrm-fs//lib/winrm-fs/file_manager.rb#139
+  # @param [String] A path to a local directory or file that will be copied
+  #   to the remote Windows box.
+  # @param [String] The target directory or file
+  #   This path may contain powershell style environment variables
+  # @yieldparam [Fixnum] Number of bytes copied in current payload sent to the winrm endpoint
+  # @yieldparam [Fixnum] The total number of bytes to be copied
+  # @yieldparam [String] Path of file being copied
+  # @yieldparam [String] Target path on the winrm endpoint
+  # @return [Fixnum] The total number of bytes copied
+  #
+  # pkg:gem/winrm-fs#lib/winrm-fs/file_manager.rb:139
   def upload(local_path, remote_path, &block); end
 
   private
 
-  # source://winrm-fs//lib/winrm-fs/file_manager.rb#161
+  # pkg:gem/winrm-fs#lib/winrm-fs/file_manager.rb:161
   def download_dir(remote_path, local_path, chunk_size, first); end
 
-  # source://winrm-fs//lib/winrm-fs/file_manager.rb#152
+  # pkg:gem/winrm-fs#lib/winrm-fs/file_manager.rb:152
   def ps_run(cmd); end
 end
 
 # PS1 scripts
 #
-# source://winrm-fs//lib/winrm-fs/scripts/scripts.rb#23
+# pkg:gem/winrm-fs#lib/winrm-fs/scripts/scripts.rb:23
 module WinRM::FS::Scripts
   class << self
-    # source://winrm-fs//lib/winrm-fs/scripts/scripts.rb#25
+    # pkg:gem/winrm-fs#lib/winrm-fs/scripts/scripts.rb:25
     def render(template, context); end
   end
 end
 
 # Error that occurs when a file download fails
 #
-# source://winrm-fs//lib/winrm-fs/exceptions.rb#27
+# pkg:gem/winrm-fs#lib/winrm-fs/exceptions.rb:27
 class WinRM::FS::WinRMDownloadError < ::WinRM::FS::WinRMFSError; end
 
 # WinRM-FS base class for errors
 #
-# source://winrm-fs//lib/winrm-fs/exceptions.rb#21
+# pkg:gem/winrm-fs#lib/winrm-fs/exceptions.rb:21
 class WinRM::FS::WinRMFSError < ::StandardError; end
 
 # Error that occurs when a file upload fails
 #
-# source://winrm-fs//lib/winrm-fs/exceptions.rb#24
+# pkg:gem/winrm-fs#lib/winrm-fs/exceptions.rb:24
 class WinRM::FS::WinRMUploadError < ::WinRM::FS::WinRMFSError; end
