@@ -12,6 +12,8 @@ gem 'dropbox_api'
 gem 'erubi'
 gem 'filelock'
 gem 'httpclient'
+# json 3.0 rejects the positional options hash that multi_json still passes to JSON.parse.
+gem 'json', '~> 2.21'
 gem 'mono_logger'
 gem 'octokit'
 gem 'openssl', require: false
