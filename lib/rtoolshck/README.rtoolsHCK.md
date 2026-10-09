@@ -11,17 +11,9 @@ Follow these instructions to install and start using rtoolsHCK.
 
 What things you need to install the gem
 
-* [net-telnet](https://github.com/ruby/net-telnet)
 * [winrm](https://github.com/WinRb/WinRM)
 * [winrm-fs](https://github.com/WinRb/winrm-fs)
 
-### Installing
-
-Execute this command in the git clone's directory
-```
-rake build
-rake install
-```
 ## Usage
 
 ### Initialization options
@@ -33,7 +25,7 @@ A hash that contains:
 | :addr | Controller machine's IP address<br>**(default: 127.0.0.1)**
 | :user | The user name to use in order to connect via winrm to the guest<br>**(default: Administrator)**
 | :pass | The password of the user name specified<br>**(default: PASSWORD)**
-| :winrm_ports | The clients winrm connection ports as a hash<br>(example: { 'Client' => port, ... })<br>**(default: { 'Cl1' => 4001, 'Cl2' => 4002 })**
+| :clients_addrs | The clients winrm connection ports as a hash<br>(example: { 'Client' => { addr: '192.168.0.18', port: 4001 }, ... })<br>**(default: { 'CL1' => { addr: '192.168.100.2' }, 'CL2' => { addr: '192.168.100.3' } })**
 | :json | JSON format the output of the action methods<br>**(default: true)**
 | :timeout | The action's timeout in seconds<br>**(default: 60)**
 | :log_to_stdout | Log to STDOUT switch<br>**(default: false)**
@@ -58,7 +50,7 @@ init_opts = {
   outp_dir: './fethced_files'
 }
 
-rtoolsHCK_session = RToolsHCK::new(init_opts)
+rtoolsHCK_session = AutoHCK::RToolsHCK::new(init_opts)
 
 rtoolsHCK_session.create_pool('test')
 rtoolsHCK_session.list_pools
@@ -82,7 +74,7 @@ init_opts = {
   outp_dir: './fethced_files'
 }
 
-rtoolsHCK_session = RToolsHCK::new(init_opts)
+rtoolsHCK_session = AutoHCK::RToolsHCK::new(init_opts)
 
 rtoolsHCK_session.machine_shutdown('cl1-win10x64')
 rtoolsHCK_session.machine_shutdown('cl2-win10x64')

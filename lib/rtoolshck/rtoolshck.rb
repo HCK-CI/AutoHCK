@@ -1015,7 +1015,9 @@ module AutoHCK
     end
 
     def package_progression_loop(current, maximum, handler)
-      current += maximum / PROGRESSION_RATE_DIVIDER
+      step = [maximum / PROGRESSION_RATE_DIVIDER, 1].max
+      current = [current + step, maximum].min
+
       return current if current >= maximum
 
       steps = @toolshck_ether.cmd(current.to_s).split("\n")

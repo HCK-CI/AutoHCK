@@ -59,7 +59,9 @@ module AutoHCK
     end
 
     def start_server_with_log_fetcher
-      log_l_path = "#{@outp_dir}/#{Time.now.strftime('%d-%m-%Y_%H_%M_%S')}_toolsHCK.log"
+      log_l_path = File.join(@outp_dir,
+                             "#{Time.now.strftime('%d-%m-%Y_%H_%M_%S')}_toolsHCK.log")
+
       File.open(log_l_path, 'a') do |file|
         @winrm_ps.send_pipeline_command(process_script) do |message|
           if message.parsed_data.respond_to?(:output)

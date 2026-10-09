@@ -84,6 +84,7 @@ module AutoHCK
     end
 
     def wait_for_client_acceptance
+      @ether&.close
       @ether = connect
 
       unless fetch_output_with_timeout(@connection_timeout).eql?('START')
@@ -106,7 +107,7 @@ module AutoHCK
 
     def fetch_output_with_timeout(timeout)
       Timeout.timeout(timeout) do
-        until @ether.ready?; end
+        sleep 1 until @ether.ready?
 
         length = @ether.readline.rstrip.to_i
 
@@ -119,7 +120,7 @@ module AutoHCK
     def fetch(length)
       data = ''
       while data.length != length
-        until @ether.ready?; end
+        sleep 1 until @ether.ready?
 
         read_length = [ETHER_BUFFER_SIZE, length - data.length].min
         data += @ether.read_nonblock(read_length)
@@ -138,13 +139,14 @@ module AutoHCK
 
     def close
       logger('debug', 'ether/close') { 'closing ether' }
-      if @ether && !cmd('exit', ETHER_EXIT_TIMEOUT).eql?('END')
+      if @loaded && @ether && !cmd('exit', ETHER_EXIT_TIMEOUT).eql?('END')
         e_message = 'closing failed'
         raise EtherError.new('ether/close'), e_message
       end
     ensure
       logger('debug', 'ether/close') { 'closed' }
       @ether&.close
+      @ether = nil
       unload_server
     end
 
