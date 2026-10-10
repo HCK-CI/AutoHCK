@@ -7,16 +7,18 @@
   "clients": {
     "c1": {
       "name": "CL1",
+      "role": "dut",
       "cpus": 4,
       "memory_gb": 2,
-      "winrm_addr":  "192.168.100.2",
+      "winrm_addr": "192.168.100.2",
       "image": "HLK1607-C1-Win2016x64.qcow2"
     },
     "c2": {
       "name": "CL2",
+      "role": "support",
       "cpus": 4,
       "memory_gb": 2,
-      "winrm_addr":  "192.168.100.3",
+      "winrm_addr": "192.168.100.3",
       "image": "HLK1607-C2-Win2016x64.qcow2"
     }
   }
