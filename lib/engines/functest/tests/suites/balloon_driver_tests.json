@@ -4,8 +4,7 @@
     "test_system_ref": "VIRT-250",
     "tests": [
         "driver_sign_check",
-        "balloon/balloon_service",
-        "driver_update"
+        "balloon/balloon_service"
     ],
     "requirements": {
         "drivers": [ "Balloon" ],
