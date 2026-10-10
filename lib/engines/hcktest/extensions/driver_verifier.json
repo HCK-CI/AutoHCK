@@ -11,7 +11,8 @@
         },
         {
           "desc": "Reboot to activate Driver Verifier settings",
-          "guest_reboot": true
+          "guest_reboot": true,
+          "timeout": 900
         }
       ],
       "post_test_commands": [
@@ -23,7 +24,8 @@
         },
         {
           "desc": "Reboot to deactivate Driver Verifier settings",
-          "guest_reboot": true
+          "guest_reboot": true,
+          "timeout": 900
         }
       ]
     }
