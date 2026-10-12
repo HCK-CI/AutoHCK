@@ -130,6 +130,12 @@ module AutoHCK
       )
 
       @project.extra_sw_manager.copy_to_setup_scripts(@workspace_hlk_setup_scripts_path)
+
+      # OpenSSH ships as a built-in extra-software package so SFTP file transfer
+      # works on every platform; fetch its arch-matched payload into the ISO.
+      @project.extra_sw_manager.prepare_bundled_software(
+        'openssh', @workspace_hlk_setup_scripts_path, @project.engine_platform.kit, ENGINE_MODE
+      )
     end
 
     def validate_paths
