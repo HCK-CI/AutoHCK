@@ -56,6 +56,7 @@ module AutoHCK
       @operation_timeout = init_opts[:operation_timeout]
       @connection_timeout = init_opts[:connection_timeout]
       @r_script_file = init_opts[:r_script_file]
+      @file_manager = init_opts[:file_manager]
     end
 
     def server_init_opts
@@ -65,6 +66,7 @@ module AutoHCK
         connection_timeout: @connection_timeout,
         outp_dir: @outp_dir,
         r_script_file: @r_script_file,
+        file_manager: @file_manager,
         log_to_stdout: @log_to_stdout,
         logger: @logger
       }

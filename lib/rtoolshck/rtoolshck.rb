@@ -2,6 +2,7 @@
 
 require_relative 'exceptions'
 require_relative 'ether'
+require_relative 'ssh_file_manager'
 
 # rubocop:disable Metrics/ClassLength, Metrics/ParameterLists
 
@@ -64,11 +65,27 @@ module AutoHCK
     WINRM_RETRY_INTERVAL = 60
     WINRM_DEFAULT_PORT = 5985
     ETHER_DEFAULT_PORT = 4000
+    SSH_DEFAULT_PORT = 22
+    SSH_CONNECTION_RETRY = 3
+
+    # Connection failures must surface as action failures. Tools retries those;
+    # swallowing them skips the retry path. Net::SSH::Exception, IOError, and the
+    # Errno classes cover SSH/SFTP drops, direct client connects, and reboots.
+    SSH_ACTION_ERRORS = [
+      RToolsHCKError,
+      Net::SSH::Exception,
+      Errno::ECONNREFUSED,
+      Errno::EHOSTUNREACH,
+      Errno::ETIMEDOUT,
+      Errno::ECONNRESET,
+      IOError
+    ].freeze
 
     # Progression rate divider, used for the synchronization with the controller
     PROGRESSION_RATE_DIVIDER = 30
     # toolsHCK connection timeout in seconds
     TOOLSHCK_CONNECTION_TIMEOUT = 60
+    SSH_CONNECTION_TIMEOUT = TOOLSHCK_CONNECTION_TIMEOUT
 
     # Actions that can be performed in no_studio mode (client-only actions)
     CLIENT_ACTIONS = %i[
@@ -247,15 +264,18 @@ module AutoHCK
     def do_initialize(init_opts)
       load_outp_dir(init_opts[:outp_dir])
       load_instance_variables(init_opts)
+      @machine_fs = {}
       if @no_studio
         logger('debug', 'initialize') { "no-studio mode: clients=#{@clients_addrs.keys}" }
       else
         logger('debug', 'initialize') { "#{@user}:#{@pass}@#{@addr}" }
         load_winrm_ps
-        load_winrm_fs
+        load_studio_fs
         start_studio_services
         load_toolshck
       end
+      # Client SSH is probed lazily on first FS use — guests may not be reachable yet at init
+      # (e.g. functest Tools is constructed before prepare_machine waits for WinRM).
       @closed = false
     end
 
@@ -348,13 +368,90 @@ module AutoHCK
       raise WinrmPSRunError.new(where), "Machine #{machine} reset connection."
     end
 
-    def load_winrm_fs
-      logger('debug', 'initialize/load_winrm_fs') do
-        'creating winrm file manager instance'
+    def ssh_logger_proc
+      ->(level, progname = nil, &block) { logger(level, progname, &block) }
+    end
+
+    def warn_winrm_fs_fallback(label, reason)
+      logger('warn', 'initialize/ssh_fs') do
+        "#{reason} for #{label}, winrm-fs will be used " \
+          '(winrm-fs is deprecated for file transfer)'
       end
+    end
+
+    def build_ssh_file_manager(addr)
+      SshFileManager.new(
+        addr: addr,
+        user: @user,
+        pass: @pass,
+        port: SSH_DEFAULT_PORT,
+        timeout: SSH_CONNECTION_TIMEOUT,
+        logger_proc: ssh_logger_proc
+      )
+    end
+
+    def try_ssh_file_manager(addr, label)
+      attempt = 0
+      manager = nil
+      begin
+        attempt += 1
+        manager = build_ssh_file_manager(addr)
+        manager.temp_dir # connectivity probe
+        logger('info', 'initialize/ssh_fs') { "SSH OK for #{label}, using SFTP for file transfer" }
+        manager
+      rescue StandardError => e
+        manager&.close
+        manager = nil
+        if attempt < SSH_CONNECTION_RETRY
+          logger('warn', 'initialize/ssh_fs') do
+            "SSH probe failed for #{label} (attempt #{attempt}/#{SSH_CONNECTION_RETRY}): #{e.message}"
+          end
+          retry
+        end
+        warn_winrm_fs_fallback(label, "SSH unavailable after #{SSH_CONNECTION_RETRY} attempts (#{e.message})")
+        nil
+      end
+    end
+
+    def ssh_file_manager_for(addr, label)
+      if addr.nil? || addr.to_s.empty?
+        warn_winrm_fs_fallback(label, 'SSH probe skipped: address is missing')
+        return nil
+      end
+
+      logger('info', 'initialize/ssh_fs') { "probing SSH for #{label} at #{addr}:#{SSH_DEFAULT_PORT}" }
+      try_ssh_file_manager(addr, label)
+    end
+
+    def load_studio_fs
+      logger('debug', 'initialize/ssh_fs') { 'selecting studio file transfer backend' }
+      @winrm_fs = ssh_file_manager_for(@addr, 'studio')
+      if @winrm_fs
+        logger('info', 'initialize/ssh_fs') { 'studio file manager: SSH/SFTP' }
+        return
+      end
+
+      logger('debug', 'initialize/load_winrm_fs') { 'creating winrm file manager instance' }
       @winrm_fs = WinRM::FS::FileManager.new(@connection)
-      logger('info', 'initialize/load_winrm_fs') do
-        'winrm file manager instance created!'
+      logger('info', 'initialize/load_winrm_fs') { 'studio file manager: winrm-fs' }
+    end
+
+    def machine_file_manager(machine)
+      @machine_fs[machine] ||= begin
+        clients_addr = @clients_addrs[machine]
+        if clients_addr.nil?
+          raise RToolsHCKError.new('machine_file_manager'),
+                "Unknown machine '#{machine}'. Available machines: #{@clients_addrs.keys.join(', ')}"
+        end
+
+        ssh_fm = ssh_file_manager_for(clients_addr[:addr], machine)
+        if ssh_fm
+          logger('info', 'initialize/ssh_fs') { "client #{machine} file manager: SSH/SFTP" }
+          ssh_fm
+        else
+          logger('info', 'initialize/load_winrm_fs') { "client #{machine} file manager: winrm-fs" }
+          WinRM::FS::FileManager.new(machine_connection(machine))
+        end
       end
     end
 
@@ -371,6 +468,7 @@ module AutoHCK
         connection_timeout: TOOLSHCK_CONNECTION_TIMEOUT,
         outp_dir: @outp_dir,
         r_script_file: @r_script_file,
+        file_manager: @winrm_fs,
         log_to_stdout: @log_to_stdout,
         logger: @logger
       }
@@ -431,11 +529,7 @@ module AutoHCK
       log_action_call(action, block.binding)
       handle_exceptions do
         yield
-      # We can have ECONNREFUSED error due to direct connection to
-      # clients instead of proxy through studio
-      # We can have EHOSTUNREACH error due to network issues or machine rebooting
-      # Safety catch this exception, the action wrapper will retry if needed
-      rescue RToolsHCKError, Errno::ECONNREFUSED, Errno::EHOSTUNREACH => e
+      rescue *SSH_ACTION_ERRORS => e
         action_exception_handler(e)
       end
     end
@@ -1299,10 +1393,10 @@ module AutoHCK
     private
 
     def do_upload_to_machine(machine, l_directory, r_directory = nil)
-      fm = WinRM::FS::FileManager.new(machine_connection(machine))
+      fm = machine_file_manager(machine)
       r_directory ||= "#{fm.temp_dir}/#{SecureRandom.uuid}"
       fm.upload(l_directory, r_directory) do |cb, tb, lp, rp|
-        # TODO: Check transfer
+        # transfer progress is logged by SshFileManager when SSH is used
       end
       r_directory
     rescue HTTPClient::KeepAliveDisconnected
@@ -1311,9 +1405,9 @@ module AutoHCK
     end
 
     def do_download_from_machine(machine, r_path, l_path)
-      fm = WinRM::FS::FileManager.new(machine_connection(machine))
+      fm = machine_file_manager(machine)
       fm.download(r_path, l_path) do |cb, tb, lp, rp|
-        # TODO: Check transfer
+        # transfer progress is logged by SshFileManager when SSH is used
       end
       l_path
     rescue HTTPClient::KeepAliveDisconnected
@@ -1322,16 +1416,14 @@ module AutoHCK
     end
 
     def do_exists_on_machine?(machine, r_path)
-      fm = WinRM::FS::FileManager.new(machine_connection(machine))
-      fm.exists?(r_path)
+      machine_file_manager(machine).exists?(r_path)
     rescue HTTPClient::KeepAliveDisconnected
       where = "#{machine}/winrm/run"
       raise WinrmPSRunError.new(where), "Machine #{machine} reset connection."
     end
 
     def do_delete_on_machine(machine, r_path)
-      fm = WinRM::FS::FileManager.new(machine_connection(machine))
-      fm.delete(r_path)
+      machine_file_manager(machine).delete(r_path)
     rescue HTTPClient::KeepAliveDisconnected
       where = "#{machine}/winrm/run"
       raise WinrmPSRunError.new(where), "Machine #{machine} reset connection."
@@ -1472,8 +1564,12 @@ module AutoHCK
     def reconnect
       handle_action_exceptions(__method__) do
         priv_close
-        load_winrm_ps
-        load_toolshck
+        @machine_fs = {}
+        unless @no_studio
+          load_winrm_ps
+          load_studio_fs
+          load_toolshck
+        end
         @json ? { 'result' => 'Success' } : true
       end
     end
@@ -1481,10 +1577,20 @@ module AutoHCK
     private
 
     def priv_close
+      unload_file_managers
       return if @no_studio
 
       unload_toolshck
       unload_winrm_ps
+    end
+
+    def unload_file_managers
+      @machine_fs&.each_value { |fm| fm.close if fm.respond_to?(:close) }
+      @machine_fs = {}
+      @winrm_fs.close if @winrm_fs.respond_to?(:close)
+      @winrm_fs = nil
+    rescue StandardError => e
+      log_exception(e, 'warn')
     end
 
     def unload_winrm_ps
@@ -1545,6 +1651,7 @@ module AutoHCK
         unload_toolshck
         shutdown
         unload_winrm_ps
+        unload_file_managers
         logger('info', 'close_and_shutdown') { 'done!' }
         @closed = true
         @json ? { 'result' => 'Success' } : true
