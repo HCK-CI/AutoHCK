@@ -1,0 +1,29 @@
+{
+  "name": "Win10_2004x64_vsm",
+  "client_iso": "Win10_2004x64",
+  "kit": "HLK2004",
+  "setupmanager": "qemuhck",
+  "tpm_state": true,
+  "enlightenments_state": true,
+  "clients_options": {
+    "vsm_state": true,
+    "secure_boot": true
+  },
+  "st_image": "HLK2004.qcow2",
+  "clients": {
+    "c1": {
+      "name": "CL1",
+      "cpus": 4,
+      "memory_gb": 4,
+      "winrm_addr": "192.168.100.2",
+      "image": "HLK2004-C1-Win10_2004x64.qcow2"
+    },
+    "c2": {
+      "name": "CL2",
+      "cpus": 4,
+      "memory_gb": 4,
+      "winrm_addr": "192.168.100.3",
+      "image": "HLK2004-C2-Win10_2004x64.qcow2"
+    }
+  }
+}
