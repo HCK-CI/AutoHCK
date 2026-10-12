@@ -19,7 +19,7 @@ module AutoHCK
       connection = WinRM::Connection.new(@winrm_connection_options)
 
       @winrm_ps = connection.shell(:powershell)
-      @winrm_fs = WinRM::FS::FileManager.new(connection)
+      @file_manager ||= WinRM::FS::FileManager.new(connection)
 
       check_script_file
       load_toolshck_server
@@ -38,12 +38,13 @@ module AutoHCK
       @connection_timeout = init_opts[:connection_timeout]
       @outp_dir = init_opts[:outp_dir]
       @r_script_file = init_opts[:r_script_file]
+      @file_manager = init_opts[:file_manager]
     end
 
     def check_script_file
       logger('debug', 'server/check_script_file') { 'checking script file on remote' }
       deploy_script_file
-      unless @winrm_fs.exists?(@r_script_file)
+      unless @file_manager.exists?(@r_script_file)
         raise ServerError.new('server/check_script_file'),
               'toolsHCK.ps1 script was not found on remote.'
       end
@@ -53,8 +54,8 @@ module AutoHCK
     def deploy_script_file
       tools_hck = File.expand_path('../rtoolshck/toolsHCK.ps1', __dir__)
       logger('debug', 'server/deploy_script_file') { 'deploying script file on remote' }
-      @winrm_fs.delete(@r_script_file)
-      @winrm_fs.upload(tools_hck, @r_script_file)
+      @file_manager.delete(@r_script_file)
+      @file_manager.upload(tools_hck, @r_script_file)
       logger('debug', 'server/deploy_script_file') { 'deployed' }
     end
 
