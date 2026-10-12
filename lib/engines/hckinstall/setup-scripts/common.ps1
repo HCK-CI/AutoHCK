@@ -75,6 +75,60 @@ function Enable-RemoteDesktop {
     Write-Output "Remote Desktop has been enabled"
 }
 
+function Enable-OpenSSHServer {
+    Write-Output "Installing and configuring OpenSSH Server..."
+    try {
+        $capabilityName = "OpenSSH.Server~~~~0.0.1.0"
+        $installed = $false
+
+        # Prefer Install-WindowsFeature when available (Windows Server).
+        if (Get-Command Install-WindowsFeature -ErrorAction SilentlyContinue) {
+            $feature = Get-WindowsFeature -Name "OpenSSH-Server" -ErrorAction SilentlyContinue
+            if (($null -ne $feature) -and (-not $feature.Installed)) {
+                Install-WindowsFeature -Name "OpenSSH-Server" | Out-Null
+                $installed = $true
+            } elseif (($null -ne $feature) -and $feature.Installed) {
+                $installed = $true
+            }
+        }
+
+        # Fall back to Windows Capability (client SKUs and older Server builds).
+        if (-not $installed) {
+            $capability = Get-WindowsCapability -Online -Name $capabilityName -ErrorAction SilentlyContinue
+            if (($null -eq $capability) -or ($capability.State -ne "Installed")) {
+                Add-WindowsCapability -Online -Name $capabilityName | Out-Null
+            }
+        }
+
+        # Start sshd first: on a fresh capability install sshd_config does not
+        # exist until the service generates it on first start.
+        Set-Service -Name "sshd" -StartupType Automatic
+        Start-Service -Name "sshd"
+
+        # Allow Administrator password authentication, then restart so it applies.
+        $sshdConfigPath = Join-Path $env:ProgramData "ssh\sshd_config"
+        if (Test-Path -Path $sshdConfigPath) {
+            $passwordAuthSet = $false
+            $lines = @(Get-Content -Path $sshdConfigPath)
+            for ($i = 0; $i -lt $lines.Count; $i++) {
+                if ($lines[$i] -match '^\s*#?\s*PasswordAuthentication\s+') {
+                    $lines[$i] = "PasswordAuthentication yes"
+                    $passwordAuthSet = $true
+                }
+            }
+            if (-not $passwordAuthSet) {
+                $lines += "PasswordAuthentication yes"
+            }
+            Set-Content -Path $sshdConfigPath -Value $lines
+            Restart-Service -Name "sshd"
+        }
+
+        Write-Output "OpenSSH Server has been enabled"
+    } catch {
+        Write-Warning "Failed to install or configure OpenSSH Server: $($_.Exception.Message)"
+    }
+}
+
 function Disable-UserAccountControl {
     Write-Output "Disabling User Account Control (UAC)..."
 
