@@ -70,6 +70,11 @@ module AutoHCK
         @logger.info("Passed (known issue): #{passed_with_known_issue}") if passed_with_known_issue.positive?
         @logger.info("Failed:              #{failed}")
         @logger.info('-' * 80)
+        @results.each do |result|
+          status = result[:status].to_s.capitalize
+          @logger.info(format('%<status>-20s %<name>s', status: "#{status}:", name: result[:name]))
+        end
+        @logger.info('-' * 80)
 
         { total: total, passed: passed, failed: failed,
           passed_with_known_issue: passed_with_known_issue, results: @results }
