@@ -11,16 +11,9 @@ module AutoHCK
       @exception = exception
       @logger = logger
       @stddata = { 'stdout' => [], 'stderr' => [], 'both' => [] }
-      @pipe_threads = []
 
       scope.transaction do |transaction|
-        ResourceScope.open do |tmp|
-          out = pipe(tmp, 'stdout')
-          err = pipe(tmp, 'stderr')
-          @pid = spawn(*args, out:, err:, pgroup: 0, **kwargs)
-          transaction << self
-        end
-
+        spawn_command(transaction, args, kwargs)
         log "Run command: #{@cmd}"
       end
     end
@@ -28,7 +21,6 @@ module AutoHCK
     def close
       if @status.nil?
         @status = Process.wait2(@pid)[1]
-        @pipe_threads.each(&:join)
         e_message = "Failed to run (PID #{@pid}) (exit code #{@status.exitstatus}): #{@cmd}"
         raise CmdRunError, e_message if @exception && !@status.exitstatus.zero?
 
@@ -44,6 +36,17 @@ module AutoHCK
       @logger.info("CmdRun PID:#{@pid}") { message }
     end
 
+    def spawn_command(transaction, args, kwargs)
+      ResourceScope.open do |tmp|
+        out, th1 = pipe(tmp, 'stdout')
+        err, th2 = pipe(tmp, 'stderr')
+        @pid = spawn(*args, out:, err:, pgroup: 0, **kwargs)
+        transaction << ThreadScope.new(th2)
+        transaction << ThreadScope.new(th1)
+        transaction << self
+      end
+    end
+
     def pipe(scope, name)
       read, write = IO.pipe
       scope << write
@@ -57,9 +60,8 @@ module AutoHCK
       ensure
         read.close
       end
-      @pipe_threads << thread
 
-      write
+      [write, thread]
     end
   end
 end

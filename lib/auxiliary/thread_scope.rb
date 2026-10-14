@@ -8,6 +8,10 @@ module AutoHCK
     end
 
     def close
+      return unless @thread.alive?
+
+      return if @thread.join(1)
+
       @thread.kill
       @thread.join
     end
