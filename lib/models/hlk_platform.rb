@@ -63,6 +63,7 @@ module AutoHCK
       const :client_arch, T.nilable(String)
       const :clients, T::Hash[String, HLKClient]
       const :extra_software, T::Array[String], default: []
+      const :attach_devices, T::Array[String], default: []
 
       # client_id is the client's 1-based position in the clients map.
       sig { params(client_id: Integer).returns(T.nilable(HLKClient)) }

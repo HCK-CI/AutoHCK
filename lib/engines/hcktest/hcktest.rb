@@ -158,6 +158,7 @@ module AutoHCK
       if options.test.svvp
         svvp_info = Models::SVVPConfig.from_json_file(SVVP_JSON, logger)
         platform.clients_options.merge!(svvp_info.clients_options)
+        platform.attach_devices.concat(svvp_info.attach_devices)
       end
 
       platform

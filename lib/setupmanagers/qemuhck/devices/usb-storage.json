@@ -3,18 +3,17 @@
   "type": "storage",
   "need_pci_bus": true,
   "define_variables": {
-    "@usb_stick_image@": "@workspace@/usb_stick_@run_id@_@client_id@.qcow2"
+    "@usb_stick_image@": "@workspace@/usb_stick_@bus_name@_@run_id@_@client_id@.qcow2"
   },
   "pre_start_commands": [
     "rm -f @usb_stick_image@",
     "@qemu_img_bin@ create -f qcow2 @usb_stick_image@ 16G"
   ],
   "command_line": [
-    "-device qemu-xhci,id=usbstick_xhci_@client_id@,bus=@bus_name@.0",
-    "-drive file=@usb_stick_image@,if=none,format=qcow2,id=usbstick_@run_id@_@client_id@",
-    "-device usb-storage,bus=usbstick_xhci_@client_id@.0,drive=usbstick_@run_id@_@client_id@,removable=on,serial=@client_id@usb@run_id@,bootindex=0"
+    "-device qemu-xhci,id=usbstick_xhci_@bus_name@_@client_id@,bus=@bus_name@.0",
+    "-drive file=@usb_stick_image@,if=none,format=qcow2,id=usbstick_@bus_name@_@run_id@_@client_id@",
+    "-device usb-storage,bus=usbstick_xhci_@bus_name@_@client_id@.0,drive=usbstick_@bus_name@_@run_id@_@client_id@,removable=on,serial=@client_id@usb@run_id@,bootindex=0"
   ],
   "post_stop_commands": [
-    "rm -f @usb_stick_image@"
   ]
 }

@@ -6,6 +6,9 @@
     "fwcfg64",
     "tpm"
   ],
+  "attach_devices": [
+    "usb-storage"
+  ],
   "clients_options": {
     "ctrl_net_device": "virtio-net-pci",
     "viommu_state": true
