@@ -87,6 +87,9 @@ GEM
     mutex_m (0.3.0)
     net-http (0.9.1)
       uri (>= 0.11.1)
+    net-sftp (4.0.0)
+      net-ssh (>= 5.0.0, < 8.0.0)
+    net-ssh (7.3.6)
     netrc (0.11.0)
     nori (2.9.1)
       bigdecimal
@@ -232,6 +235,8 @@ DEPENDENCIES
   httpclient
   json (~> 2.21)
   mono_logger
+  net-sftp
+  net-ssh
   octokit
   openssl
   rspec

@@ -52,6 +52,7 @@ function Stage-One {
 
     Enable-PowerShellRemoting
     Enable-NtpServer
+    Enable-OpenSSHServer
 
     if ($ENABLERDP) {
         Enable-RemoteDesktop

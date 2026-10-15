@@ -11,9 +11,9 @@ module AutoHCK
   # Adds restart_machine_and_wait — shuts down the VM and polls WinRM
   # until it comes back up, replacing hcktest's Studio-based return_when_client_up.
   class FunctestTools < Tools
-    WINRM_SETTLE_SLEEP = 15
     WAIT_WINRM_TIMEOUT = 600
     WAIT_WINRM_INTERVAL = 10
+    WINRM_READY_CMD = 'Test-Path C:\\'
 
     def initialize(project, clients_addrs)
       super(project, no_studio: true, clients_addrs: clients_addrs)
@@ -65,7 +65,30 @@ module AutoHCK
 
         sleep WAIT_WINRM_INTERVAL
       end
-      sleep WINRM_SETTLE_SLEEP
+      wait_for_machine_winrm_command(machine, deadline)
+    end
+
+    # TCP open only means the listener accepted a connection. Keep probing until
+    # a real WinRM command succeeds so we do not race a still-booting guest.
+    def wait_for_machine_winrm_command(machine, deadline)
+      @logger.info("Waiting for WinRM command readiness on #{machine}...")
+      loop do
+        begin
+          # Bypass Tools#run_on_machine retries (90s sleep) — poll on our interval.
+          act_with_tools_on_machine(machine) { _1.run_on_machine(machine, WINRM_READY_CMD) }
+          return
+        rescue StandardError => e
+          # Port can be open while WinRM/shell is still coming up; keep polling.
+          @logger.debug("WinRM command not ready on #{machine}: #{e.class}: #{e.message}")
+        end
+
+        if Time.now > deadline
+          raise RestartMachineError,
+                "WinRM not command-ready on #{machine} after #{WAIT_WINRM_TIMEOUT}s"
+        end
+
+        sleep WAIT_WINRM_INTERVAL
+      end
     end
 
     def winrm_port_open?(addr, port)
