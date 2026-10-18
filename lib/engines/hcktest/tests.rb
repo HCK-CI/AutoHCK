@@ -17,7 +17,6 @@ module AutoHCK
       TOOLS_ACTION_SLEEP = 5
       QUEUE_TEST_TIMEOUT = '00:15:00'
       RUNNING_TEST_TIMEOUT = '00:15:00'
-      SUMMARY_LOG_FILE = 'logs.txt'
       STUDIO_PACKAGE_ASSETS_PATH = 'C:\\AutoHCK\\PackageAssets'
 
       def initialize(client, project, target, tools, aux_clients: {})
@@ -310,18 +309,27 @@ module AutoHCK
         @logger.info('Test results uploaded via the result uploader')
       end
 
-      def summary_rejected_test_log
-        @playlist.rejected_test.reduce('') do |sum, test|
-          sum + "Skipped: #{test.name} [#{test.estimatedruntime}]\n"
+      def summary_rejected_test_entries
+        @playlist.rejected_test.map do |test|
+          {
+            status: 'Skipped',
+            name: test.name,
+            runtime: test.estimatedruntime
+          }
         end
       end
 
-      def summary_results_log
-        @tests.reduce('') do |sum, test|
+      def summary_results_entries
+        @tests.map do |test|
           extra_info = test.dump_path ? '(with Minidump)' : ''
           status = test.ex_status || test.status
 
-          sum + "#{status}: #{test.name} [#{test.estimatedruntime}]#{extra_info}#{format_times(test)}\n"
+          {
+            status: status.to_s,
+            name: test.name,
+            runtime: test.estimatedruntime,
+            extra: "#{extra_info}#{format_times(test)}"
+          }
         end
       end
 
@@ -338,12 +346,8 @@ module AutoHCK
       end
 
       def update_summary_results_log
-        logs = summary_rejected_test_log
-        logs += summary_results_log
-
-        @logger.info('Tests results logs updated via the result uploader')
-        @project.result_uploader.update_file_content(logs, SUMMARY_LOG_FILE)
-        File.write("#{@project.workspace_path}/#{SUMMARY_LOG_FILE}", logs)
+        entries = summary_rejected_test_entries + summary_results_entries
+        TestSummaryLog.write(@project, TestSummaryLog.format_lines(entries), logger: @logger)
       end
 
       sig do
