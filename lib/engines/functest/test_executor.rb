@@ -6,6 +6,8 @@ module AutoHCK
     # per step and per test, runs cleanup regardless of outcome, and produces
     # a summary hash written to functest_results.json.
     class TestExecutor
+      include Helper
+
       attr_reader :results, :context
 
       def test_results
@@ -65,6 +67,7 @@ module AutoHCK
         @results += tests.map do |test|
           empty_test_result(test.name, test.description, display_name: test.display_name)
         end
+        update_summary_results_log
         tests.each { |test| execute_test(test) }
         summary
       end
@@ -86,6 +89,41 @@ module AutoHCK
       end
 
       private
+
+      def summary_results_entries
+        @results.map do |result|
+          {
+            status: summary_status(result),
+            name: result[:name],
+            runtime: seconds_to_time(result[:duration].to_i),
+            extra: summary_extra(result)
+          }
+        end
+      end
+
+      def summary_extra(result)
+        extra = result[:dump_path] ? '(with Minidump)' : ''
+        extra += " [Started time: #{result[:start_time]}]" if result[:start_time]
+        extra += " [Finished time: #{result[:end_time]}]" if result[:end_time]
+        extra
+      end
+
+      def summary_status(result)
+        return 'Passed (known issue)' if result[:known_issue]
+        return 'Passed' if result[:status] == 'passed'
+        return 'Failed' if result[:status] == 'failed'
+        return 'Running' if result[:status] == 'running'
+
+        'NotRun'
+      end
+
+      def update_summary_results_log
+        TestSummaryLog.write(
+          @project,
+          TestSummaryLog.format_lines(summary_results_entries),
+          logger: @logger
+        )
+      end
 
       def empty_test_result(name, description, display_name: nil)
         { name: name, display_name: display_name, description: description,
@@ -127,6 +165,7 @@ module AutoHCK
         raise EngineError, "Result placeholder not found for #{test_name}" unless result
 
         result.merge!({ status: 'running', steps: [], start_time: start_time.utc.iso8601 })
+        update_summary_results_log
         @project.generate_result_report
         test_local = create_local_test_copy(test)
         run_test_steps(test_local, result)
@@ -164,6 +203,8 @@ module AutoHCK
         r_name = "Result_#{test.safe_name}.json"
         File.write("#{@project.workspace_path}/#{r_name}", JSON.pretty_generate(result))
         @project.result_uploader.upload_file("#{@project.workspace_path}/#{r_name}", r_name)
+
+        update_summary_results_log
 
         @project.generate_result_report
         @project.generate_junit
