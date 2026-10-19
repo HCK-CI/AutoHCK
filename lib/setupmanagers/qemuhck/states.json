@@ -29,7 +29,8 @@
                 "hv_spinlocks=0x1FFF",
                 "hv_relaxed",
                 "hv_vapic",
-                "hv_time"
+                "hv_time",
+                "hv-vendor-id=KVMKVMKVM"
             ]
         }
     },
