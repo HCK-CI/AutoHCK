@@ -49,6 +49,7 @@ module AutoHCK
       %w[ip link add br_test type bridge],
       %w[ip link set br_test up],
       %w[ip link add br_debug type bridge],
+      %w[ip addr add 192.168.102.100/24 dev br_debug],
       %w[ip link set br_debug up]
     ].each do |cmd|
       $stderr.write "[ns_unshared] Running (wait spawn): #{cmd.join(' ')}\n" if ENV['AUTOHCK_NS_VERBOSE']
@@ -56,6 +57,18 @@ module AutoHCK
       raise $CHILD_STATUS.to_s unless $CHILD_STATUS.success?
     rescue StandardError
       raise "#{cmd}: command failed"
+    end
+
+    debug_dhcp = %w[dnsmasq --no-daemon --conf-file=/dev/null --port=0 --user=root
+                    --interface=br_debug --bind-interfaces
+                    --dhcp-range=192.168.102.200,192.168.102.220,255.255.255.0,1h
+                    --dhcp-option=3 --dhcp-option=6 --dhcp-leasefile=debug_dhcp.leases
+                    --log-facility=- --log-dhcp]
+    begin
+      $stderr.write "[ns_unshared] Running (spawn): #{debug_dhcp.join(' ')}\n" if ENV['AUTOHCK_NS_VERBOSE']
+      spawn(*debug_dhcp, out: File::NULL, err: 'debug_dhcp.log')
+    rescue Errno::ENOENT
+      $stderr.write "[ns_unshared] dnsmasq not found, no DHCP on the debug network\n"
     end
 
     $stdout.write '1'
