@@ -171,6 +171,7 @@ module AutoHCK
 
       def all_tests_configs
         @project.engine.config.tests_config +
+          @project.engine.svvp_tests_config +
           @project.engine.drivers.flat_map(&:tests_config) +
           @project.engine.extensions.flat_map(&:tests_config)
       end

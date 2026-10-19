@@ -148,6 +148,10 @@ module AutoHCK
       @project.options.test.svvp ? svvp_target : whql_target
     end
 
+    def svvp_tests_config
+      @svvp_info&.tests_config || []
+    end
+
     def svvp_target
       primary_entry = @platform_clients.primary_entry
       raise InvalidConfigFile, 'SVVP platform is missing a sut client' if primary_entry.nil?
@@ -219,12 +223,17 @@ module AutoHCK
     end
 
     def command_execution_manager
-      client, support = @clients.values
       @command_execution_manager ||= CommandExecutionManager.new(
         project: @project,
         tools: @studio.tools,
-        machines: [client.name, support&.name].compact
-      )
+        machines: @clients.values.map(&:name)
+      ).tap { |manager| manager.scope_to_test(driver_client_ids) }
+    end
+
+    def driver_client_ids
+      @platform_clients.entries.each_with_index.filter_map do |entry, index|
+        index + 1 if @clients.key?(entry['name']) && !@platform_clients.pool_only?(entry['name'])
+      end
     end
 
     def configure_and_synchronize_clients

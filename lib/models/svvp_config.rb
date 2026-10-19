@@ -19,6 +19,8 @@ module AutoHCK
       const :reject_test_names, T.nilable(T::Array[String])
       const :sequence_test_names, T::Array[String], default: []
       const :attach_devices, T::Array[String], default: []
+
+      const :tests_config, T::Array[TestConfig], default: []
     end
   end
 end
