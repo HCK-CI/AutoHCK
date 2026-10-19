@@ -16,7 +16,8 @@ module AutoHCK
 
     QEMUHCK_INFO_LOG_FILE = 'qemuhck.txt'
     OPT_NAMES = %w[viommu_state s3_state s4_state enlightenments_state vhost_state machine_type fw_type cpu
-                   ctrl_net_device vbs_state tpm_state numa_state pcie_spare_root_ports vsm_state].freeze
+                   ctrl_net_device vbs_state tpm_state numa_state pcie_spare_root_ports
+                   vsm_state attach_debug_net].freeze
 
     def initialize(project)
       @platform = T.let(project.engine_platform, Models::HLKPlatform)
@@ -117,7 +118,7 @@ module AutoHCK
         'logger' => @logger,
         'iso_path' => @project.config['iso_path'],
         'client_world_net' => common.client_world_net,
-        'attach_debug_net' => common.attach_debug_net,
+        'attach_debug_net' => common.attach_debug_net ? true : nil,
         'share_on_host_path' => common.share_on_host_path,
         'boot_device' => test_opt.boot_device,
         'fs_test_image_format' => test_opt.fs_test_image_format,
