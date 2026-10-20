@@ -19,6 +19,10 @@ module AutoHCK
 
     attr_reader :project, :logger, :drivers, :extensions, :suite
 
+    def attach_devices
+      @tests.flat_map(&:attach_devices).uniq
+    end
+
     def default_timeout
       @config['default_timeout']
     end

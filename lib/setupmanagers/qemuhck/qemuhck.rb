@@ -35,6 +35,15 @@ module AutoHCK
       @devices ||= []
 
       @devices.concat(@project.options.common.attach_devices)
+      @devices.concat(engine_attach_devices)
+      @devices.uniq!
+    end
+
+    def engine_attach_devices
+      engine = @project.engine
+      return [] unless engine.respond_to?(:attach_devices)
+
+      engine.attach_devices
     end
 
     def initialize_project(project)
