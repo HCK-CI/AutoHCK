@@ -13,13 +13,7 @@ module AutoHCK
       @stddata = { 'stdout' => [], 'stderr' => [], 'both' => [] }
 
       scope.transaction do |transaction|
-        ResourceScope.open do |tmp|
-          out = pipe(tmp, 'stdout')
-          err = pipe(tmp, 'stderr')
-          @pid = spawn(*args, out:, err:, pgroup: 0, **kwargs)
-          transaction << self
-        end
-
+        spawn_command(transaction, args, kwargs)
         log "Run command: #{@cmd}"
       end
     end
@@ -42,11 +36,22 @@ module AutoHCK
       @logger.info("CmdRun PID:#{@pid}") { message }
     end
 
+    def spawn_command(transaction, args, kwargs)
+      ResourceScope.open do |tmp|
+        out, th1 = pipe(tmp, 'stdout')
+        err, th2 = pipe(tmp, 'stderr')
+        @pid = spawn(*args, out:, err:, pgroup: 0, **kwargs)
+        transaction << ThreadScope.new(th2)
+        transaction << ThreadScope.new(th1)
+        transaction << self
+      end
+    end
+
     def pipe(scope, name)
       read, write = IO.pipe
       scope << write
 
-      Thread.new do
+      thread = Thread.new do
         read.each(chomp: true) do |data|
           log "#{name}: #{data}".encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
           @stddata[name] << data
@@ -56,7 +61,7 @@ module AutoHCK
         read.close
       end
 
-      write
+      [write, thread]
     end
   end
 end
