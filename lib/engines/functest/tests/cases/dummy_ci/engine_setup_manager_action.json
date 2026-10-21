@@ -26,15 +26,15 @@
             "timeout": 600
         },
         {
-            "desc": "Sleep 120 seconds to give time for the client to power up",
-            "host_run": "sleep 120",
-            "timeout": 125
+            "desc": "Sleep 600 seconds to give time for the client to power up",
+            "host_run": "sleep 600",
+            "timeout": 605
         },
         {
             "desc": "Check file on guest (make sure we booted from snapshot)",
             "guest_run": "Test-Path C:\\guest_test.txt",
             "expected_output_contains": "True",
-            "timeout": 5
+            "timeout": 30
         },
         {
             "desc": "Power off Client from engine",
@@ -50,7 +50,7 @@
             "desc": "Check file on guest (make sure we booted from snapshot)",
             "guest_run": "Test-Path C:\\guest_test.txt",
             "expected_output_contains": "True",
-            "timeout": 5
+            "timeout": 30
         },
         {
             "desc": "Reboot client from engine",
@@ -61,7 +61,7 @@
             "desc": "Check file on guest (make sure we rebooted to the same snapshot)",
             "guest_run": "Test-Path C:\\guest_test.txt",
             "expected_output_contains": "True",
-            "timeout": 5
+            "timeout": 30
         },
         {
             "desc": "Power off client from guest (no wait)",

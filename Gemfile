@@ -22,6 +22,8 @@ gem 'sentry-ruby'
 gem 'sorbet-runtime'
 
 # rtoolsHCK dependencies
+gem 'net-sftp'
+gem 'net-ssh'
 gem 'winrm',      '= 2.4.1'
 gem 'winrm-fs',   '= 1.3.7'
 
