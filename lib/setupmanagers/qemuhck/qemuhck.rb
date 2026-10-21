@@ -34,6 +34,7 @@ module AutoHCK
       @devices = @drivers&.map(&:device)
       @devices ||= []
 
+      @devices.concat(@platform.attach_devices)
       @devices.concat(@project.options.common.attach_devices)
     end
 

@@ -6,6 +6,9 @@
     "fwcfg64",
     "tpm"
   ],
+  "attach_devices": [
+    "usb-storage"
+  ],
   "clients_options": {
     "ctrl_net_device": "virtio-net-pci",
     "viommu_state": true
@@ -29,7 +32,6 @@
     "__Windows_Server_2022_reject_test_names",
     "UEFI GOP mode test",
     "USB Generic HID Test",
-    "Boot from USB (ServerOperating System)",
     "Secure Boot Manual Logo Test",
     "Debug Capability Test (Logo)",
     "LoadGen Server Stress - Run First - Set Machine Policies",
