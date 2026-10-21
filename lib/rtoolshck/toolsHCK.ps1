@@ -1310,7 +1310,7 @@ function queuetest {
         $supData = ConvertFrom-Json $sup
         $MachineSet = $WntdTest.GetMachineRole()
 
-        $roleAliases = @{ 'MasterClient' = 'MC'; 'StressClient' = 'SC' }
+        $roleAliases = @{ 'MasterClient' = 'MC'; 'StressClient' = 'SC'; 'DebugHost' = 'MC' }
 
         foreach ($Role in $MachineSet.Roles) {
             $existing = [System.Collections.Generic.List[object]]::new()
