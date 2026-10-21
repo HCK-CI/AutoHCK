@@ -319,7 +319,13 @@ module AutoHCK
       def summary_results_log
         @tests.reduce('') do |sum, test|
           extra_info = test.dump_path ? '(with Minidump)' : ''
-          status = test.ex_status || test.status
+          status = if test.ex_status
+                     test.ex_status
+                   elsif test.executionstate == Models::HLK::ExecutionState::Running
+                     Models::HLK::TestResultStatus::Running
+                   else
+                     test.status
+                   end
 
           sum + "#{status}: #{test.name} [#{test.estimatedruntime}]#{extra_info}#{format_times(test)}\n"
         end
