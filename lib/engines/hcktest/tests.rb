@@ -400,8 +400,8 @@ module AutoHCK
       def handle_finished_test_result(test, test_result)
         collect_test_memory_dump(test)
         print_test_results(test, test_result)
-        archive_test_results(test, test_result)
         test.finished_at = DateTime.now
+        archive_test_results(test, test_result)
         test.last_result = test_result
         apply_errata_if_failed(test)
       end
