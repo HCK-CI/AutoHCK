@@ -1,0 +1,31 @@
+{
+  "name": "Win11_26H2x64_vsm",
+  "client_iso": "Win11_26H2x64",
+  "kit": "",
+  "setupmanager": "qemuhck",
+  "tpm_state": true,
+  "enlightenments_state": true,
+  "clients_options": {
+    "vsm_state": true,
+    "secure_boot": true
+  },
+  "st_image": "HLK11_26H2.qcow2",
+  "clients": {
+    "c1": {
+      "name": "CL1",
+      "role": "dut",
+      "cpus": 4,
+      "memory_gb": 8,
+      "winrm_addr": "192.168.100.2",
+      "image": "HLK11_26H2-C1-Win11_26H2x64.qcow2"
+    },
+    "c2": {
+      "name": "CL2",
+      "role": "support",
+      "cpus": 4,
+      "memory_gb": 8,
+      "winrm_addr": "192.168.100.3",
+      "image": "HLK11_26H2-C2-Win11_26H2x64.qcow2"
+    }
+  }
+}
