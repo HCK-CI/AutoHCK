@@ -17,7 +17,6 @@ module AutoHCK
       TOOLS_ACTION_SLEEP = 5
       QUEUE_TEST_TIMEOUT = '00:15:00'
       RUNNING_TEST_TIMEOUT = '00:15:00'
-      SUMMARY_LOG_FILE = 'logs.txt'
       STUDIO_PACKAGE_ASSETS_PATH = 'C:\\AutoHCK\\PackageAssets'
 
       def initialize(client, project, target, tools, aux_clients: {})
@@ -310,40 +309,36 @@ module AutoHCK
         @logger.info('Test results uploaded via the result uploader')
       end
 
-      def summary_rejected_test_log
-        @playlist.rejected_test.reduce('') do |sum, test|
-          sum + "Skipped: #{test.name} [#{test.estimatedruntime}]\n"
+      def summary_rejected_test_entries
+        @playlist.rejected_test.map do |test|
+          {
+            status: 'Skipped',
+            name: test.name,
+            estimationtime: test.estimatedruntime
+          }
         end
       end
 
-      def summary_results_log
-        @tests.reduce('') do |sum, test|
-          extra_info = test.dump_path ? '(with Minidump)' : ''
+      def summary_results_entries
+        @tests.map do |test|
           status = test.ex_status || test.status
 
-          sum + "#{status}: #{test.name} [#{test.estimatedruntime}]#{extra_info}#{format_times(test)}\n"
+          {
+            status: status.to_s,
+            name: test.name,
+            runtime: test.finished_at ? seconds_to_time(test.execution_time) : nil,
+            estimationtime: test.estimatedruntime,
+            minidump: !test.dump_path.nil?,
+            started_at: test.started_at,
+            finished_at: test.finished_at,
+            extra: test.queued_at ? " [Queued time: #{test.queued_at}]" : nil
+          }
         end
-      end
-
-      sig { params(test: Models::HLK::Test).returns(String) }
-      def format_times(test)
-        queued_at = test.queued_at
-        queued_at_str = queued_at ? " [Queued time: #{queued_at}]" : ''
-        started_at = test.started_at
-        started_at_str = started_at ? " [Started time: #{started_at}]" : ''
-        finished_at = test.finished_at
-        finished_at_str = finished_at ? " [Finished time: #{finished_at}]" : ''
-
-        "#{queued_at_str}#{started_at_str}#{finished_at_str}"
       end
 
       def update_summary_results_log
-        logs = summary_rejected_test_log
-        logs += summary_results_log
-
-        @logger.info('Tests results logs updated via the result uploader')
-        @project.result_uploader.update_file_content(logs, SUMMARY_LOG_FILE)
-        File.write("#{@project.workspace_path}/#{SUMMARY_LOG_FILE}", logs)
+        entries = summary_rejected_test_entries + summary_results_entries
+        TestSummaryLog.write(@project, entries)
       end
 
       sig do
