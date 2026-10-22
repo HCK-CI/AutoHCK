@@ -6,6 +6,8 @@ module AutoHCK
     # per step and per test, runs cleanup regardless of outcome, and produces
     # a summary hash written to functest_results.json.
     class TestExecutor
+      include Helper
+
       attr_reader :results, :context
 
       def test_results
@@ -55,7 +57,8 @@ module AutoHCK
         @logger.info("Description: #{@context.substitute_variables(test.description)}") if test.description
 
         if @results.none? { |r| r[:name] == test.name }
-          @results << empty_test_result(test.name, test.description, display_name: test.display_name)
+          @results << empty_test_result(test.name, test.description,
+                                        display_name: test.display_name, timeout: test.timeout)
         end
         record_test(test)
       end
@@ -63,8 +66,10 @@ module AutoHCK
       def execute_tests(tests)
         @logger.info("Executing #{tests.length} test(s)")
         @results += tests.map do |test|
-          empty_test_result(test.name, test.description, display_name: test.display_name)
+          empty_test_result(test.name, test.description,
+                            display_name: test.display_name, timeout: test.timeout)
         end
+        update_summary_results_log
         tests.each { |test| execute_test(test) }
         summary
       end
@@ -87,9 +92,37 @@ module AutoHCK
 
       private
 
-      def empty_test_result(name, description, display_name: nil)
+      def summary_results_entries
+        @results.map do |result|
+          {
+            status: summary_status(result),
+            name: result[:name],
+            runtime: result[:end_time] ? seconds_to_time(result[:duration].round) : nil,
+            estimationtime: result[:timeout] ? seconds_to_time(result[:timeout].to_i) : nil,
+            minidump: !result[:dump_path].nil?,
+            started_at: result[:start_time],
+            finished_at: result[:end_time]
+          }
+        end
+      end
+
+      def summary_status(result)
+        return 'Passed (known issue)' if result[:known_issue]
+        return 'Passed' if result[:status] == 'passed'
+        return 'Failed' if result[:status] == 'failed'
+        return 'Running' if result[:status] == 'running'
+
+        'NotRun'
+      end
+
+      def update_summary_results_log
+        TestSummaryLog.write(@project, summary_results_entries)
+      end
+
+      def empty_test_result(name, description, display_name: nil, timeout: nil)
         { name: name, display_name: display_name, description: description,
-          status: 'not_run', duration: 0, dump_path: nil }
+          status: 'not_run', duration: 0, dump_path: nil,
+          timeout: timeout }
       end
 
       def tests_stats
@@ -127,6 +160,7 @@ module AutoHCK
         raise EngineError, "Result placeholder not found for #{test_name}" unless result
 
         result.merge!({ status: 'running', steps: [], start_time: start_time.utc.iso8601 })
+        update_summary_results_log
         @project.generate_result_report
         test_local = create_local_test_copy(test)
         run_test_steps(test_local, result)
@@ -164,6 +198,8 @@ module AutoHCK
         r_name = "Result_#{test.safe_name}.json"
         File.write("#{@project.workspace_path}/#{r_name}", JSON.pretty_generate(result))
         @project.result_uploader.upload_file("#{@project.workspace_path}/#{r_name}", r_name)
+
+        update_summary_results_log
 
         @project.generate_result_report
         @project.generate_junit
