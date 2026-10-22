@@ -67,6 +67,7 @@ module AutoHCK
   autoload_relative :InvalidPathError, 'exceptions'
   autoload_relative :JUnit, 'junit'
   autoload_relative :ResultReport, 'result_report'
+  autoload_relative :TestSummaryLog, 'test_summary_log'
   autoload_relative :RToolsHCK, 'rtoolshck/rtoolshck'
   autoload_relative :RToolsHCKError, 'rtoolshck/exceptions'
   autoload_relative :RToolsHCKConnectionError, 'rtoolshck/exceptions'
