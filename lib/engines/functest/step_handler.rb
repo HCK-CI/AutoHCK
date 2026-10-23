@@ -30,8 +30,8 @@ module AutoHCK
 
         return execute_parallel(step, desc, timeout) if step.parallel
 
-        # Skip timeout for files_action steps
-        return execute_and_handle(step, desc) if step.files_action.any?
+        # Skip timeout for file transfer steps
+        return execute_and_handle(step, desc) if step.files_action.any? || step.files_transfer.any?
 
         Timeout.timeout(timeout) { execute_and_handle(step, desc) }
       rescue Timeout::Error
