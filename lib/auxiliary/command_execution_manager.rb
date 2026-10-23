@@ -11,6 +11,7 @@ module AutoHCK
     SLEEP_AFTER_REBOOT = 60
     DEFAULT_FILE_ACTION_REMOTE_PATH = 'C:\\'
     DEFAULT_FILE_ACTION_LOCAL_PATH = '@workspace@'
+    FILES_TRANSFER_REMOTE_PATH = 'C:\\AutoHCK'
     DEFAULT_TIMEOUT = 300
     # Lets guest_run_file dot-source .ps1 files on Restricted guests (e.g. Win10 x86).
     GUEST_RUN_FILE_POLICY_BYPASS = T.let(
@@ -31,7 +32,7 @@ module AutoHCK
     }.freeze, T::Hash[Symbol, T.untyped])
 
     STEP_TYPE_FIELDS = T.let(%i[
-      guest_run guest_run_file guest_reboot files_action host_run host_run_file
+      guest_run guest_run_file guest_reboot files_action files_transfer host_run host_run_file
       barrier set_variable qmp_command qmp_wait_event engine_setup_manager_action parallel
     ].freeze, T::Array[Symbol])
 
@@ -88,6 +89,8 @@ module AutoHCK
     end
     # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
     def execute(command_info, replacement: ReplacementMap.new)
+      command_info = command_info.deep_dup
+      command_info.files_transfer_to_files_action!(FILES_TRANSFER_REMOTE_PATH) unless command_info.files_transfer.empty?
       desc = command_desc(command_info)
       result = T.let({ desc: desc }, T::Hash[Symbol, T.untyped])
 

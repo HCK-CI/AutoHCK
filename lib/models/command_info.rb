@@ -96,6 +96,7 @@ module AutoHCK
       const :guest_run_file, T.nilable(String)
       const :guest_reboot, T::Boolean, default: false
       const :files_action, T::Array[FileActionConfig], default: []
+      const :files_transfer, T::Array[String], default: []
       const :host_run, T.nilable(String)
       const :host_run_file, T.nilable(String)
       const :barrier, T.nilable(String)
@@ -121,13 +122,37 @@ module AutoHCK
         CommandInfo.from_hash(serialize)
       end
 
+      sig { params(destination: String).void }
+      def files_transfer_to_files_action!(destination)
+        files_action.concat(files_transfer.map do |local_path|
+          FileActionConfig.new(
+            local_path: local_path,
+            remote_path: "#{destination}\\#{File.basename(local_path)}",
+            direction: FileActionDirection::LocalToRemote
+          )
+        end)
+        files_transfer.clear
+      end
+
+      sig { params(destination: String).returns(T::Array[CommandInfo]) }
+      def files_transfer_cleanup_commands(destination)
+        files_transfer.map do |local_path|
+          remote_path = "#{destination}\\#{File.basename(local_path)}".gsub("'", "''")
+          CommandInfo.new(
+            desc: "Remove #{File.basename(local_path)} uploaded by #{desc}",
+            clients: clients,
+            guest_run: "Remove-Item -LiteralPath '#{remote_path}' -Recurse -Force -ErrorAction Stop"
+          )
+        end
+      end
+
       # Whether the given step-type field (see
       # CommandExecutionManager::STEP_TYPE_FIELDS) is set on this step.
       sig { params(field: Symbol).returns(T::Boolean) }
       def step_type_active?(field)
         value = public_send(field)
         case field
-        when :files_action then value.any?
+        when :files_action, :files_transfer then value.any?
         when :guest_reboot then value == true
         when :set_variable then value.is_a?(Hash) && !value.empty?
         when :guest_run, :guest_run_file, :host_run, :host_run_file, :barrier
