@@ -11,6 +11,7 @@ module AutoHCK
     SLEEP_AFTER_REBOOT = 60
     DEFAULT_FILE_ACTION_REMOTE_PATH = 'C:\\'
     DEFAULT_FILE_ACTION_LOCAL_PATH = '@workspace@'
+    FILES_TRANSFER_REMOTE_PATH = 'C:\\AutoHCK'
     DEFAULT_TIMEOUT = 300
     # Lets guest_run_file dot-source .ps1 files on Restricted guests (e.g. Win10 x86).
     GUEST_RUN_FILE_POLICY_BYPASS = T.let(
@@ -31,7 +32,7 @@ module AutoHCK
     }.freeze, T::Hash[Symbol, T.untyped])
 
     STEP_TYPE_FIELDS = T.let(%i[
-      guest_run guest_run_file guest_reboot files_action host_run host_run_file
+      guest_run guest_run_file guest_reboot files_action files_transfer host_run host_run_file
       barrier set_variable qmp_command qmp_wait_event engine_setup_manager_action parallel
     ].freeze, T::Array[Symbol])
 
@@ -67,6 +68,7 @@ module AutoHCK
       @reboot_callback = init_opts[:reboot_callback]
       @engine_setup_manager_callback = init_opts[:engine_setup_manager_callback]
       @default_timeout = init_opts[:default_timeout]
+      @files_transfer_cleanup_paths = {}
 
       # Default machines for a step with no `clients` field; narrowed per
       # test case by #scope_to_test.
@@ -95,6 +97,7 @@ module AutoHCK
       execute_guest_reboot(command_info, desc) if command_info.guest_reboot
       result[:host_output] = execute_host(command_info, replacement, desc) if host_command?(command_info)
       execute_files_actions(command_info, replacement) unless command_info.files_action.empty?
+      execute_files_transfer(command_info, replacement) unless command_info.files_transfer.empty?
       execute_barrier(command_info) if command_info.barrier
       result[:qmp_result] = execute_qmp_command(command_info, replacement) if command_info.qmp_command
       result[:qmp_event] = execute_qmp_wait_event(command_info) if command_info.qmp_wait_event
@@ -123,6 +126,13 @@ module AutoHCK
     sig { params(command_info: Models::CommandInfo).returns(T.nilable(String)) }
     def primary_machine(command_info)
       target_machines(command_info).first
+    end
+
+    sig { returns(T::Hash[String, T::Array[String]]) }
+    def take_files_transfer_cleanup_paths
+      paths = @files_transfer_cleanup_paths
+      @files_transfer_cleanup_paths = {}
+      paths
     end
 
     private
@@ -214,6 +224,65 @@ module AutoHCK
           @file_action_handler.handle(machine_name, action)
         end
       end
+    end
+
+    sig { params(command_info: Models::CommandInfo, replacement: ReplacementMap).void }
+    def execute_files_transfer(command_info, replacement)
+      target_machines(command_info).each do |machine_name|
+        transfer_command = files_transfer_to_files_action(command_info, machine_name, replacement)
+        transfer_command.files_action.each do |action|
+          destination_path = files_transfer_destination_path(action)
+          if @tools.exists_on_machine?(machine_name, destination_path)
+            raise EngineError, "files_transfer destination already exists: #{destination_path}"
+          end
+
+          @files_transfer_cleanup_paths[machine_name] ||= []
+          @files_transfer_cleanup_paths[machine_name] << destination_path
+          @file_action_handler.handle(machine_name, action)
+        end
+      end
+    end
+
+    sig do
+      params(
+        command_info: Models::CommandInfo,
+        machine_name: String,
+        replacement: ReplacementMap
+      ).returns(Models::CommandInfo)
+    end
+    def files_transfer_to_files_action(command_info, machine_name, replacement)
+      map = replacement_map_for(machine_name, replacement, command_info)
+            .merge({ '@client_name@' => machine_name })
+      local_paths = command_info.files_transfer.map { |path| map.replace(path) }
+      destination_paths = files_transfer_destination_paths(local_paths)
+      Models::CommandInfo.new(
+        desc: command_info.desc,
+        clients: command_info.clients,
+        files_action: local_paths.zip(destination_paths).map do |local_path, destination_path|
+          Models::FileActionConfig.new(
+            local_path: local_path,
+            remote_path: File.directory?(local_path) ? FILES_TRANSFER_REMOTE_PATH : destination_path,
+            direction: Models::FileActionDirection::LocalToRemote
+          )
+        end
+      )
+    end
+
+    sig { params(local_paths: T::Array[String]).returns(T::Array[String]) }
+    def files_transfer_destination_paths(local_paths)
+      basenames = local_paths.map { |path| File.basename(path) }
+      duplicates = basenames.group_by(&:downcase).select { |_basename, paths| paths.length > 1 }.values.flatten
+      unless duplicates.empty?
+        raise EngineError, "files_transfer contains duplicate destination name(s): #{duplicates.uniq.join(', ')}"
+      end
+
+      basenames.map { |basename| "#{FILES_TRANSFER_REMOTE_PATH}\\#{basename}" }
+    end
+
+    sig { params(action: Models::FileActionConfig).returns(String) }
+    def files_transfer_destination_path(action)
+      local_path = T.must(action.local_path)
+      "#{FILES_TRANSFER_REMOTE_PATH}\\#{File.basename(local_path)}"
     end
 
     sig do
