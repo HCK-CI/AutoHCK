@@ -12,6 +12,7 @@ module AutoHCK
       attr_reader :tests, :clients_system_info
 
       HANDLE_TESTS_POLLING_INTERVAL = 60
+      INTERACTIVE_POLLING_INTERVAL = 5
       APPLYING_FILTERS_INTERVAL = 50
       TOOLS_ACTION_RETRIES = 5
       TOOLS_ACTION_SLEEP = 5
@@ -180,6 +181,7 @@ module AutoHCK
         all_tests_configs
           .select { |test_config| Regexp.union(test_config.tests.map { Regexp.new(_1) }).match?(test_name) }
           .select { |test_config| test_config.kits.empty? || test_config.kits.include?(@client.kit) }
+          .select { |test_config| !test_config.svvp_only || @project.options.test.svvp }
           .flat_map(&config)
       end
 
@@ -194,6 +196,15 @@ module AutoHCK
 
       def test_errata(test_name)
         select_test_config(test_name, :errata).compact.first
+      end
+
+      def nvram_profile(test_name)
+        return nil unless @project.options.test.svvp
+
+        profiles = select_test_config(test_name, :nvram_profile).compact.uniq
+        raise EngineError, "Conflicting NVRAM profiles for #{test_name}" if profiles.size > 1
+
+        profiles.first
       end
 
       sig { params(test: Models::HLK::Test, type: Symbol, replacement: ReplacementMap).void }
@@ -472,25 +483,61 @@ module AutoHCK
         handle_finished_test_results(@new_done_test_results)
       end
 
-      def handle_test_running
+      # Track HLK progress while interactive tests respond to guest requests.
+      def handle_test_running(controller: nil)
         running = T.let(nil, T.nilable(Models::HLK::Test))
+        last_status_poll = T.let(nil, T.nilable(Float))
+        controller&.start
         @project.generate_result_report
 
         until @project.run_terminated
           @project.check_run_termination
           # Update tests results to get the latest status of the tests
-          update_tests
-          reset_clients_to_ready_state
-          check_new_finished_results
-          check_test_queued_time
-          check_test_duration_time
-          if current_test != running
-            running = current_test
-            on_test_start(running) if running
-          end
-          break if all_tests_finished?
+          now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+          if last_status_poll.nil? || now - last_status_poll >= HANDLE_TESTS_POLLING_INTERVAL
+            update_tests
+            reset_clients_to_ready_state
+            check_new_finished_results
+            check_test_queued_time
+            check_test_duration_time
+            if current_test != running
+              running = current_test
+              on_test_start(running) if running
+            end
+            break if all_tests_finished?
 
-          sleep HANDLE_TESTS_POLLING_INTERVAL
+            last_status_poll = Process.clock_gettime(Process::CLOCK_MONOTONIC).to_f
+          end
+
+          controller&.poll
+          sleep(controller ? INTERACTIVE_POLLING_INTERVAL : HANDLE_TESTS_POLLING_INTERVAL)
+        end
+      ensure
+        controller&.close
+      end
+
+      # Provide live interaction for SVVP tests that require it.
+      def mid_test_controller(test)
+        names = select_test_config(test.name, :mid_test_controller).compact.uniq
+        return nil if names.empty? || !@project.options.test.svvp
+
+        if names.size > 1
+          raise EngineError, "Multiple mid-test controllers configured for #{test.name}: #{names.join(', ')}"
+        end
+
+        case names.first
+        when 'secure_boot_manual'
+          unless @project.engine_platform.setupmanager == 'qemuhck'
+            raise EngineError, 'Secure Boot manual controller requires qemuhck'
+          end
+
+          index = @project.engine_platform.clients.values.index { |client| client.name == @client.name }
+          raise EngineError, "Cannot resolve client id for #{@client.name}" unless index
+
+          SecureBootManualController.new(project: @project, tools: @tools, client_name: @client.name,
+                                         client_id: index + 1, logger: @logger)
+        else
+          raise EngineError, "Unknown mid-test controller: #{names.first}"
         end
       end
 
@@ -574,21 +621,35 @@ module AutoHCK
         build_system_info(support_sysinfo)
       end
 
-      sig { params(test: Models::HLK::Test, run_number: Integer, run_count: Integer).void }
-      def one_test_run(test, run_number, run_count)
+      # Keep temporary firmware changes within one test run.
+      sig do
+        params(test: Models::HLK::Test, run_number: Integer, run_count: Integer, scope: T.nilable(ResourceScope)).void
+      end
+      def one_test_run(test, run_number, run_count, scope: nil)
         replacement = @replacement_map.merge(
           '@safe_test_name@' => test.safe_name,
           '@run_number@' => run_number.to_s
         )
 
-        run_test_commands(test, :pre_test_commands, replacement)
+        profile = nvram_profile(test.name)
+        if profile
+          environment = NvramProfile.new(project: @project, tools: @tools, client: @client,
+                                         target: @target, scope: scope)
+          environment.run(profile, cleanup: -> { run_test_commands(test, :post_test_commands, replacement) }) do
+            queue_and_run_test(test, run_number, run_count, replacement)
+          end
+        else
+          queue_and_run_test(test, run_number, run_count, replacement)
+          run_test_commands(test, :post_test_commands, replacement)
+        end
+      end
 
+      def queue_and_run_test(test, run_number, run_count, replacement)
+        run_test_commands(test, :pre_test_commands, replacement)
         test_str = "run #{run_number}/#{run_count} #{test.name} (#{test.id})"
         @logger.info("Adding to queue: #{test_str}")
         queue_test(test, wait: true)
-        handle_test_running
-
-        run_test_commands(test, :post_test_commands, replacement)
+        handle_test_running(controller: mid_test_controller(test))
       end
 
       sig { params(current_run_tests: T::Array[Models::HLK::Test]).returns(T::Array[Models::HLK::Test]) }
@@ -616,8 +677,8 @@ module AutoHCK
         end
       end
 
-      sig { params(current_run_tests: T::Array[Models::HLK::Test]).void }
-      def retry_tests(current_run_tests)
+      sig { params(current_run_tests: T::Array[Models::HLK::Test], scope: T.nilable(ResourceScope)).void }
+      def retry_tests(current_run_tests, scope: nil)
         loop do
           tests_to_retry = select_tests_for_retry(current_run_tests)
           break if tests_to_retry.empty?
@@ -626,7 +687,7 @@ module AutoHCK
 
           tests_to_retry.each do |test|
             run_id = test.run_count + test.retried_times + 1
-            one_test_run(test, run_id, run_id)
+            one_test_run(test, run_id, run_id, scope: scope)
             test.retried_times += 1
 
             break if @project.run_terminated
@@ -644,15 +705,21 @@ module AutoHCK
         @project.generate_junit
       end
 
-      sig { params(tests: T::Array[Models::HLK::Test]).void }
-      def run(tests)
+      sig { params(tests: T::Array[Models::HLK::Test], scope: T.nilable(ResourceScope)).void }
+      def run(tests, scope: nil)
         load_clients_system_info
         update_summary_results_log
+        return if @project.run_terminated || tests.empty?
+
+        run_group(tests, scope: scope)
+      end
+
+      def run_group(tests, scope:)
         tests.each do |test|
           run_count = test.run_count
 
           (1..run_count).each do |run_number|
-            one_test_run(test, run_number, run_count)
+            one_test_run(test, run_number, run_count, scope: scope)
 
             break if @project.run_terminated
           end
@@ -662,7 +729,7 @@ module AutoHCK
 
         return if @project.run_terminated
 
-        retry_tests(tests) unless @project.options.test.auto_retry_failed_tests.zero?
+        retry_tests(tests, scope: scope) unless @project.options.test.auto_retry_failed_tests.zero?
       end
     end
   end
