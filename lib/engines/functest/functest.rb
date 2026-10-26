@@ -14,6 +14,7 @@ module AutoHCK
     extend T::Sig
     include Helper
 
+    PLATFORMS_JSON_DIR = 'lib/engines/hcktest/platforms'
     DRIVERS_JSON_DIR = 'lib/engines/hcktest/drivers'
     EXTENSIONS_JSON_DIR = 'lib/engines/hcktest/extensions'
 
@@ -57,11 +58,12 @@ module AutoHCK
 
     def self.platform(logger, options)
       platform_name = options.test.platform
-      platform_json = File.join(
-        File.dirname(__FILE__),
-        '../hcktest/platforms',
-        "#{platform_name}.json"
-      )
+      # Use the repo-relative path (matching HCKTest::PLATFORMS_JSON_DIR) so that
+      # override.json keyed by "lib/engines/hcktest/platforms/<name>.json" is
+      # merged in by Helper::Json.read_json. Building an absolute path via
+      # File.dirname(__FILE__) produced a key that never matched the override,
+      # so image path overrides (e.g. pool subdir prefixes) were silently dropped.
+      platform_json = "#{PLATFORMS_JSON_DIR}/#{platform_name}.json"
 
       raise InvalidConfigFile, "Platform configuration not found: #{platform_json}" unless File.exist?(platform_json)
 
