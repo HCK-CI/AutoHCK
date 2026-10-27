@@ -14,6 +14,7 @@ module AutoHCK
       const :test_system_ref, T.nilable(String)
       const :timeout, T.nilable(Integer)
       const :extra_software, T::Array[String], default: []
+      const :attach_devices, T::Array[String], default: []
       const :pre_test_commands, T::Array[Models::CommandInfo], default: []
       const :cycles, Integer, default: 1
       prop :test_steps, T::Array[Models::CommandInfo]
