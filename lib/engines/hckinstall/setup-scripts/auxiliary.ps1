@@ -5,6 +5,7 @@ $STUDIOIP = "${CONTROLNET}.1"
 $KITTYPE = "HLK"
 $HLKKITVER = 1809
 $REMOVEGUI = $false
+$SKIPHLKINSTALL = $false
 $DEBUG = $false
 $ENABLERDP = $true
 $STAGEFILE = "$env:ProgramData\HLK-setup-stage.txt"

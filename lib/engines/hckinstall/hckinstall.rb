@@ -69,6 +69,11 @@ module AutoHCK
       Models::Kit.from_json_file(kit_json, @logger)
     end
 
+    sig { returns(T::Boolean) }
+    def platform_has_kit?
+      !@project.engine_platform.kit.empty?
+    end
+
     def init_config
       @config = Json.read_json(CONFIG_JSON, @logger)
 
@@ -108,22 +113,27 @@ module AutoHCK
     end
 
     def init_iso_info
-      studio_iso = studio_iso_name(@project.engine_platform.kit)
-      @logger.info("Studio ISO name is #{studio_iso}")
-      @studio_iso_info = read_iso(studio_iso)
-      @setup_studio_iso = Pathname.new(@project.workspace_path).join('setup-studio.iso')
+      if platform_has_kit?
+        studio_iso = studio_iso_name(@project.engine_platform.kit)
+        @logger.info("Studio ISO name is #{studio_iso}")
+        @studio_iso_info = read_iso(studio_iso)
+        @setup_studio_iso = Pathname.new(@project.workspace_path).join('setup-studio.iso')
+      else
+        @logger.info('Platform has no HLK kit; studio installation will be skipped')
+      end
 
       init_clients_iso_info
     end
 
     def init_class_variables
       @iso_path = Pathname.new(@project.config['iso_path'])
-      @kit_info = read_kit(@project.engine_platform.kit)
+      @kit_info = platform_has_kit? ? read_kit(@project.engine_platform.kit) : nil
       @clients_name = @project.engine_platform.clients.values.map(&:name)
     end
 
     def prepare_extra_sw
-      @extra_software = [*@kit_info.extra_software, *@project.engine_platform.extra_software]
+      kit_extra = @kit_info&.extra_software || []
+      @extra_software = [*kit_extra, *@project.engine_platform.extra_software]
 
       @project.extra_sw_manager.prepare_software_packages(
         @extra_software, @project.engine_platform.kit, ENGINE_MODE
@@ -134,10 +144,12 @@ module AutoHCK
 
     def validate_paths
       normalize_paths
-      studio_iso_full_path = @iso_path.join(@studio_iso_info['path'])
-      unless File.exist?(studio_iso_full_path)
-        @logger.fatal("Studio ISO path #{studio_iso_full_path} is not valid")
-        raise(InvalidPathError, "Studio ISO path #{studio_iso_full_path} is not valid")
+      if platform_has_kit?
+        studio_iso_full_path = @iso_path.join(@studio_iso_info['path'])
+        unless File.exist?(studio_iso_full_path)
+          @logger.fatal("Studio ISO path #{studio_iso_full_path} is not valid")
+          raise(InvalidPathError, "Studio ISO path #{studio_iso_full_path} is not valid")
+        end
       end
 
       @client_iso_infos.each do |iso_name, iso_info|
@@ -150,7 +162,7 @@ module AutoHCK
     end
 
     def normalize_paths
-      @studio_iso_info['path'].chomp!('/')
+      @studio_iso_info['path'].chomp!('/') if @studio_iso_info
       @client_iso_infos.each_value { |info| info['path'].chomp!('/') }
     end
 
@@ -265,7 +277,7 @@ module AutoHCK
       return unless client
 
       ResourceScope.open do |scope|
-        run_studio(scope, [], keep_alive: true)
+        run_studio(scope, [], keep_alive: true) if platform_has_kit?
 
         cl = @clients_name.map do |c|
           [c, run_client(scope, c, snapshot: false, secure: false)]
@@ -310,22 +322,31 @@ module AutoHCK
 
     def prepare_setup_scripts_config
       kit_type, kit_version = parse_kit_info
+      skip_hlk_install = !platform_has_kit?
 
       options_install = @project.options.install
       config = {
         kit_type:,
         hlk_kit_ver: kit_version,
+        skip_hlk_install:,
         debug: options_install.debug,
         no_reboot_after_bugcheck: options_install.no_reboot_after_bugcheck,
         vmnames: ['STUDIO'] + @clients_name.map(&:upcase)
       }
 
-      prepare_kit_installer(kit_type, kit_version)
+      if platform_has_kit?
+        prepare_kit_installer(kit_type, kit_version)
+      else
+        @kit_is_iso = false
+        @logger.info('Skipping HLK kit installer preparation (platform has no kit)')
+      end
       create_setup_scripts_config(@workspace_hlk_setup_scripts_path, config)
     end
 
     sig { returns([String, String]) }
     def parse_kit_info
+      return ['', ''] unless platform_has_kit?
+
       kit_string = @project.engine_platform.kit
       kit_type = kit_string[0..2] || ''
       kit_version = kit_type == 'HCK' ? '' : (kit_string[3..] || '')
@@ -482,6 +503,8 @@ module AutoHCK
     end
 
     def plan_studio
+      return false unless platform_has_kit?
+
       return true unless @project.setup_manager.check_studio_image_exist
 
       if @project.options.install.force
