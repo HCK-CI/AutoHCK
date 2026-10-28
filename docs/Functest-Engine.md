@@ -300,7 +300,7 @@ See [`lib/engines/functest/tests/cases/driver_sign_check.json`](../lib/engines/f
 | `timeout` | Step timeout in seconds; overrides the engine default of 300s. Not applicable to `files_action` steps — file transfers run without a timeout. |
 | `ignore_errors` | If `true`, a failure in this step does not abort the test. Useful for optional steps in `test_steps`. Default: `false`. |
 | `variables` | Maps `@placeholder@` strings to existing context variable names for extra substitution within this step. |
-| `capture_output` | Name of a variable to store the step's output in, e.g. `"capture_output": "driver_version"` makes it available as `@driver_version@` later. Supported by `guest_run`/`guest_run_file`, `qmp_command`, `qmp_wait_event`. On a multi-client step, only the primary target's output is captured. |
+| `capture_output` | Name of a variable to store the step's output in, e.g. `"capture_output": "driver_version"` makes it available as `@driver_version@` later. Supported by `guest_run`/`guest_run_file`, `host_run`/`host_run_file`, `qmp_command`, and `qmp_wait_event`. On a multi-client step, only the primary target's output is captured. |
 | `expected_output_contains` | The step fails if the output does not contain this string. Only for `guest_run`/`guest_run_file`/`host_run`/`host_run_file`. Checked against every client the step ran on. |
 | `expected_output_matches` | The step fails if the output does not match this regex. Only for `guest_run`/`guest_run_file`/`host_run`/`host_run_file`. Checked against every client the step ran on. |
 | `expected_output_matches_encoding` | Controls regex encoding options for `expected_output_matches`. Currently only `Regexp::NOENCODING` is supported (binary match). Do not set to use default encoding. |
@@ -357,7 +357,7 @@ Reboots the client VM and waits for it to come back online before proceeding.
 
 ### `host_run`
 
-Runs a command on the host machine running AutoHCK. The command runs with the workspace as its working directory, so relative paths resolve inside the workspace. Pass/fail is determined by the command's exit code (non-zero exit fails the step) or by `expected_output_contains`/`expected_output_matches` patterns; `capture_output` is not supported here.
+Runs a command on the host machine running AutoHCK. The command runs with the workspace as its working directory, so relative paths resolve inside the workspace. Pass/fail is determined by the command's exit code (non-zero exit fails the step) or by `expected_output_contains`/`expected_output_matches` patterns. When `capture_output` is set, the command's output is stored in the named variable for later use.
 
 ```json
 {
