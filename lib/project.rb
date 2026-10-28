@@ -117,7 +117,7 @@ module AutoHCK
     def run
       generate_result_report
       generate_junit
-      @engine.run
+      @engine_exit_code = @engine.run
     end
 
     def prep_stream_for_log(stream)
@@ -341,7 +341,8 @@ module AutoHCK
       return if query_mode?
 
       @logger.debug('Closing AutoHCK project')
-      # If the session is still :running, derive outcome from completed test steps (vs framework :error / :canceled).
+      # If the session is still :running, derive outcome from the engine run
+      # and the completed test steps (vs framework :error / :canceled).
       @status = completion_status_from_test_steps if @status == :running
       generate_result_report
       generate_junit
@@ -352,16 +353,28 @@ module AutoHCK
     private
 
     def completion_status_from_test_steps
+      # Engines like functest report an aborted run (e.g. a failure during
+      # client setup, before any test step ran) through a non-zero exit code
+      # instead of raising an exception. Treat that as a failed session even
+      # when no test step recorded a failure.
+      return :failed if engine_run_failed?
+
       return :passed unless engine.respond_to?(:test_steps)
 
-      failed = engine.test_steps.any? do |step|
+      any_test_step_failed? ? :failed : :passed
+    end
+
+    def any_test_step_failed?
+      engine.test_steps.any? do |step|
         !step.is_skipped &&
           step.errata.nil? &&
           step.failed? &&
           step.executionstate == Models::HLK::ExecutionState::NotRunning
       end
+    end
 
-      failed ? :failed : :passed
+    def engine_run_failed?
+      !@engine_exit_code.nil? && !@engine_exit_code.zero?
     end
   end
 end
