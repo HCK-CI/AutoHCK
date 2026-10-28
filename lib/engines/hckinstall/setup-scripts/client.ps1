@@ -62,7 +62,11 @@ function Stage-One {
 function Stage-Two {
     Set-NewStage -Stage "Three"
 
-    Configure-TimeSync 
+    if ($SKIPHLKINSTALL -ne $true) {
+        Configure-TimeSync
+    } else {
+        Write-Output "Skipping time sync with studio (platform has no HLK kit)..."
+    }
 
     Write-Output "Setting TestSigning on..."
     Execute-Command -Path "bcdedit.exe" -Arguments "/set testsigning on"
@@ -75,30 +79,34 @@ function Stage-Two {
 function Stage-Three {
     Set-NewStage -Stage "Four"
 
-    do {
-        Write-Output "Waiting for ping to $($VMNAMES[0])..."
-        # The correct parameter is -ComputerName for PowerShell v5.1. The parameter changed to -TargetName in PowerShell v6.
-        # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/test-connection?view=powershell-7.1
-        # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/test-connection?view=powershell-5.1
-        $pingStatus = Test-Connection -ComputerName "$($VMNAMES[0])" -Quiet
-    } until ($pingStatus)
+    if ($SKIPHLKINSTALL -eq $true) {
+        Write-Output "Skipping $KITTYPE client installation (platform has no HLK kit)..."
+    } else {
+        do {
+            Write-Output "Waiting for ping to $($VMNAMES[0])..."
+            # The correct parameter is -ComputerName for PowerShell v5.1. The parameter changed to -TargetName in PowerShell v6.
+            # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/test-connection?view=powershell-7.1
+            # https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/test-connection?view=powershell-5.1
+            $pingStatus = Test-Connection -ComputerName "$($VMNAMES[0])" -Quiet
+        } until ($pingStatus)
 
-    Write-Output "Copying $KITTYPE client installation from studio to client..."
+        Write-Output "Copying $KITTYPE client installation from studio to client..."
 
-    $clientInstallerFolder = "$env:TEMP\Client"
-    Copy-Item -Path "\\$($VMNAMES[0])\${KITTYPE}Install\Client" -Destination "$clientInstallerFolder" -Recurse
+        $clientInstallerFolder = "$env:TEMP\Client"
+        Copy-Item -Path "\\$($VMNAMES[0])\${KITTYPE}Install\Client" -Destination "$clientInstallerFolder" -Recurse
 
-    Write-Output "Starting $KITTYPE client installation..."
-    # HLK Installer
-    if (Test-Path -Path "$clientInstallerFolder\setup.cmd") {
-        & "$clientInstallerFolder\setup.cmd" "/qb" "ICFAGREE=Yes"
+        Write-Output "Starting $KITTYPE client installation..."
+        # HLK Installer
+        if (Test-Path -Path "$clientInstallerFolder\setup.cmd") {
+            & "$clientInstallerFolder\setup.cmd" "/qb" "ICFAGREE=Yes"
+        }
+        # HCK Installer
+        if (Test-Path -Path "$clientInstallerFolder\setup.exe") {
+            & "$clientInstallerFolder\setup.exe" "/qb" "ICFAGREE=Yes"
+        }
+
+        Write-Output "$KITTYPE client setup has finished..."
     }
-    # HCK Installer
-    if (Test-Path -Path "$clientInstallerFolder\setup.exe") {
-        & "$clientInstallerFolder\setup.exe" "/qb" "ICFAGREE=Yes"
-    }
-
-    Write-Output "$KITTYPE client setup has finished..."
 
     if ($REMOVEGUI -eq $TRUE) {
         Remove-WindowsGUI

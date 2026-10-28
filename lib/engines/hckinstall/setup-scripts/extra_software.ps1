@@ -25,10 +25,12 @@ function Get-ArchConfigVariants {
 function Get-ExtraSoftwareConfig {
     param ([PSCustomObject]$Directory)
 
-    if ($KITTYPE -eq 'HCK') {
+    # No HLK kit on platform: full_kit stays null; lookup uses arch-specific *-config.json paths.
+    if ($SKIPHLKINSTALL -eq $true) {
+        $full_kit = $null
+    } elseif ($KITTYPE -eq 'HCK') {
         $full_kit = "${KITTYPE}".ToLower()
-    }
-    else {
+    } else {
         $full_kit = "${KITTYPE}${HLKKITVER}".ToLower()
     }
 

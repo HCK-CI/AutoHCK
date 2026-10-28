@@ -10,6 +10,7 @@ module AutoHCK
     SUPPORTED_CONFIG = {
       kit_type: '',
       hlk_kit_ver: '',
+      skip_hlk_install: '',
       remove_gui: '',
       debug: '',
       no_reboot_after_bugcheck: '',
