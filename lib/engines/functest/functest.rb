@@ -128,14 +128,12 @@ module AutoHCK
         @clients = boot_clients(scope)
         raise AutoHCKError, 'No clients booted for the selected tests' if @clients.empty?
 
-        @tools = build_tools(@clients)
-        prepare_clients(@clients, @tools)
-        command_execution_manager = build_command_execution_manager(@tools, @clients)
+        @tools = build_tools
+        prepare_clients
 
         run_context = Functest::TestExecutor::RunContext.new(
-          clients: @clients,
-          tools: @tools,
-          command_execution_manager: command_execution_manager
+          clients: @clients, tools: @tools,
+          command_execution_manager: build_command_execution_manager
         )
         @executor = Functest::TestExecutor.new(self, run_context)
         setup_test_context(@executor.context)
@@ -182,22 +180,22 @@ module AutoHCK
     end
 
     # One FunctestTools instance, shared by every booted client.
-    def build_tools(clients)
-      clients_addrs = clients.to_h { |client| [client.name, client.winrm_addr] }
+    def build_tools
+      clients_addrs = @clients.to_h { |client| [client.name, client.winrm_addr] }
       FunctestTools.new(@project, clients_addrs)
     end
 
     # Gets every client ready (wait online, install software/drivers)
-    def prepare_clients(clients, tools)
-      threads = clients.map { |client| Thread.new { client.prepare_machine(tools) } }
+    def prepare_clients
+      threads = @clients.map { |client| Thread.new { client.prepare_machine(@tools) } }
       threads.each(&:join)
     end
 
-    def build_command_execution_manager(tools, clients)
+    def build_command_execution_manager
       CommandExecutionManager.new(
         project: @project,
-        tools: tools,
-        machines: clients.map(&:name),
+        tools: @tools,
+        machines: @clients.map(&:name),
         init_opts: {
           reboot_strategy: CommandExecutionManager::RebootStrategy[:WinrmPoll],
           engine_setup_manager_callback: method(:engine_setup_manager_callback)
