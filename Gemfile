@@ -22,7 +22,7 @@ gem 'sentry-ruby'
 gem 'sorbet-runtime'
 
 # rtoolsHCK dependencies
-gem 'winrm',      '= 2.4.1'
+gem 'winrm',      '2.4.2'
 gem 'winrm-fs',   '= 1.3.7'
 
 group :development, :test do
