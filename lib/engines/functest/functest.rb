@@ -143,15 +143,10 @@ module AutoHCK
 
         pause_run_if_needed(summary)
         generate_results(summary)
-        summary[:failed].zero? ? 0 : 1
       rescue StandardError => e
         pause_run_if_needed(nil, e)
         raise
       end
-    rescue StandardError => e
-      @logger.error("Functest engine failed: #{e.message}")
-      @logger.error(T.must(e.backtrace).join("\n"))
-      1
     end
     # rubocop:enable Metrics/AbcSize
 
