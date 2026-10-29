@@ -15,6 +15,10 @@ function Configure-TimeSync {
 function Stage-One {
     Set-NewStage -Stage "Two"
 
+    # Do before disabling Windows Update because it may require WU to 
+    # download features/components that are required for OpenSSH Server.
+    Enable-OpenSSHServer
+
     Allow-InsecureGuestAuth
     Disable-ServerManagerStartupPopup
     Disable-WindowsFirewall
