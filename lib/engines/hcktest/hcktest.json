@@ -11,6 +11,69 @@
       "secure": true
     },
     {
+      "tests": ["Secure Boot Manual Logo Test"],
+      "svvp_only": true,
+      "nvram_profile": "uefi_secure_boot_setup",
+      "skip_retry": true,
+      "mid_test_controller": "secure_boot_manual",
+      "pre_test_commands": [
+        {
+          "desc": "Clear stale Secure Boot manual popup state",
+          "clients": [1],
+          "guest_run": "New-Item -ItemType Directory -Path 'C:\\AutoHCK\\SecureBootManual' -Force | Out-Null; Remove-Item -LiteralPath 'C:\\AutoHCK\\SecureBootManual\\request.json', 'C:\\AutoHCK\\SecureBootManual\\ack.json', 'C:\\AutoHCK\\SecureBootManual\\round_id.txt', 'C:\\AutoHCK\\SecureBootManual\\prepare_attempted.txt', 'C:\\AutoHCK\\SecureBootManual\\ufd2_msft.json' -Force -ErrorAction SilentlyContinue; exit 0"
+        },
+        {
+          "desc": "Set iospy StartOverride for Secure Boot Manual Logo Test",
+          "clients": [1],
+          "guest_run": "reg.exe add HKLM\\SYSTEM\\CurrentControlSet\\Services\\iospy\\StartOverride /v 0 /t REG_DWORD /d 3 /f; if ($LASTEXITCODE -ne 0) { throw 'Failed to set iospy StartOverride' }"
+        },
+        {
+          "desc": "Set MSDMFilt StartOverride for Secure Boot Manual Logo Test",
+          "clients": [1],
+          "guest_run": "reg.exe add HKLM\\SYSTEM\\CurrentControlSet\\Services\\MSDMFilt\\StartOverride /v 0 /t REG_DWORD /d 3 /f; if ($LASTEXITCODE -ne 0) { throw 'Failed to set MSDMFilt StartOverride' }"
+        },
+        {
+          "desc": "Upload Secure Boot manual popup watcher",
+          "clients": [1],
+          "files_action": [
+            {
+              "local_path": "lib/engines/hcktest/scripts/autoit/secure_boot_manual_watcher.au3",
+              "remote_path": "C:\\UIAgent\\autoit\\secure_boot_manual_watcher.au3",
+              "direction": "local-to-remote"
+            },
+            {
+              "local_path": "lib/engines/hcktest/scripts/prepare_secure_boot_ufds.ps1",
+              "remote_path": "C:\\UIAgent\\autoit\\prepare_secure_boot_ufds.ps1",
+              "direction": "local-to-remote"
+            },
+            {
+              "local_path": "lib/engines/hcktest/scripts/change_secure_boot_ufd2.ps1",
+              "remote_path": "C:\\UIAgent\\autoit\\change_secure_boot_ufd2.ps1",
+              "direction": "local-to-remote"
+            }
+          ]
+        },
+        {
+          "desc": "Set Secure Boot watcher to start on any user logon and reboot to activate",
+          "clients": [1],
+          "guest_run": "$autoit = if (Test-Path 'C:\\Program Files (x86)\\AutoIt3\\AutoIt3.exe') { 'C:\\Program Files (x86)\\AutoIt3\\AutoIt3.exe' } else { 'C:\\Program Files\\AutoIt3\\AutoIt3.exe' }; if (-not (Test-Path -LiteralPath $autoit)) { throw 'AutoIt is not installed on CL01' }; New-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run' -Name 'AutoHCK_SecureBootManualWatcher' -Value ('\"{0}\" \"{1}\"' -f $autoit, 'C:\\UIAgent\\autoit\\secure_boot_manual_watcher.au3') -PropertyType String -Force",
+          "guest_reboot": true
+        }
+      ],
+      "post_test_commands": [
+        {
+          "desc": "Stop Secure Boot manual popup watcher",
+          "clients": [1],
+          "guest_run": "Remove-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run' -Name 'AutoHCK_SecureBootManualWatcher' -ErrorAction SilentlyContinue; Get-CimInstance Win32_Process | Where-Object { $_.Name -like 'AutoIt3*.exe' -and $_.CommandLine -like '*secure_boot_manual_watcher.au3*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }; exit 0"
+        }
+      ]
+    },
+    {
+      "tests": ["UEFI GOP mode test"],
+      "svvp_only": true,
+      "nvram_profile": "uefi_gop_1024x768"
+    },
+    {
       "tests": [
         "USB Type-C ACPI Validation"
       ],

@@ -247,6 +247,54 @@ module AutoHCK
       set_machine_ready
     end
 
+    # Confirm a restarted client returns to its original HLK registration.
+    def wait_for_existing_target(target)
+      @logger.info("Waiting for #{@name} to return to its existing HLK pool and target")
+      deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + CLIENT_COOLDOWN_TIMEOUT
+      last_error = nil
+      loop do
+        begin
+          verify_existing_target(target)
+          @logger.info("#{@name} Ready in original pool #{@project.engine_tag}; target #{target.fetch('key')} retained")
+          return
+        rescue StandardError => e
+          last_error = e
+        end
+        break if Process.clock_gettime(Process::CLOCK_MONOTONIC) >= deadline
+
+        sleep 5
+      end
+      raise ClientRunError, "#{@name} did not return to its existing HLK pool/target: #{last_error}"
+    end
+
+    # Confirm the guest and its existing HLK target are ready for testing.
+    def verify_existing_target(target)
+      tag = @project.engine_tag
+      @tools.act_with_tools_on_machine(@name) { _1.run_on_machine(@name, '$env:COMPUTERNAME') }
+      machine = existing_pool_machine(tag)
+      raise ClientRunError, "#{@name} is not in pool #{tag}" unless machine
+
+      if machine['state'] == 'NotReady'
+        @tools.act_with_tools { _1.set_machine_state(@name, tag, 'ready', Tools::SET_MACHINE_READY_TIMEOUT) }
+        machine = existing_pool_machine(tag)
+        raise ClientRunError, "#{@name} is not in pool #{tag}" unless machine
+      end
+      raise ClientRunError, "#{@name} state is #{machine['state']}" unless machine['state'] == 'Ready'
+
+      targets = @tools.act_with_tools { _1.list_machine_targets(@name, tag) }
+      raise ClientRunError, 'Original HLK target is missing' unless targets.any? { _1['key'] == target.fetch('key') }
+
+      # Confirm the project still recognizes the target.
+      @tools.act_with_tools { _1.list_tests(target.fetch('key'), tag, @name, tag) }
+    end
+
+    def existing_pool_machine(tag)
+      pools = @tools.act_with_tools(&:list_pools)
+      pools.find { |item| item['name'] == tag }&.fetch('machines')&.find do |item|
+        item['name']&.casecmp?(@name)
+      end
+    end
+
     def close
       @logger.info("Exiting HLKClient #{@name}")
       @cooldown_thread&.exit

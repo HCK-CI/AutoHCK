@@ -10,6 +10,9 @@ module AutoHCK
     include Helper
 
     autoload_relative :Tests, 'tests'
+    autoload_relative :SecureBootManualController, 'secure_boot_manual_controller'
+    autoload_relative :SecureBootSerialRound, 'secure_boot_serial_round'
+    autoload_relative :NvramProfile, 'nvram_profile'
 
     attr_reader :config, :drivers, :platform, :extensions, :platform_clients
 
@@ -402,7 +405,7 @@ module AutoHCK
         prepare_tests
 
         @logger.info('Client ready, running basic tests')
-        @tests.run(@test_list - group_tests_by_config.values.flatten)
+        @tests.run(@test_list - group_tests_by_config.values.flatten, scope: scope)
 
         pause_run_if_needed
       rescue StandardError => e
@@ -418,7 +421,7 @@ module AutoHCK
           run_clients_and_configure_setup(scope, group => true, create_snapshot: false, boot_from_snapshot: true)
 
           @logger.info("Clients ready, running #{group} tests")
-          @tests.run(tests)
+          @tests.run(tests, scope: scope)
 
           pause_run_if_needed
         rescue StandardError => e

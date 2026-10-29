@@ -21,6 +21,7 @@ module AutoHCK
     def initialize(project)
       @platform = T.let(project.engine_platform, Models::HLKPlatform)
       initialize_project project
+      check_pending_nvram_transitions
 
       @clients_vm = {}
       @clients_vm_runners = {}
@@ -107,13 +108,14 @@ module AutoHCK
     # These are just the options that are used for all clients
     # and should be kept together for readability
     # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
-    def client_vm_common_options
+    def client_vm_common_options(client_info)
       common = @project.options.common
       test_opt = @project.options.test
+      role_devices = @platform.clients_options.attach_devices_by_role&.fetch(client_info.role.to_s, []) || []
       {
         'id' => @id.to_i,
         'workspace_path' => @workspace_path,
-        'devices_list' => @devices,
+        'devices_list' => @devices + role_devices,
         'logger' => @logger,
         'iso_path' => @project.config['iso_path'],
         'client_world_net' => common.client_world_net,
@@ -147,7 +149,7 @@ module AutoHCK
         'cpu_count' => client_info.cpus,
         'memory_gb' => client_info.memory_gb,
         'arch' => client_info.arch || @platform.client_arch || Project::DEFAULT_ARCH
-      }.merge(client_vm_common_options))
+      }.merge(client_vm_common_options(client_info)))
     end
 
     def initialize_clients_vm
@@ -282,8 +284,16 @@ module AutoHCK
       @studio_vm.run(scope, run_opts)
     end
 
-    def run_hypervisor_client_command(name, cmd, arguments = nil)
-      @clients_vm_runners[name].qmp.run_cmd(cmd, arguments)
+    # Provide the current QEMU session for safe firmware actions.
+    def hypervisor_client_session(name)
+      @clients_vm_runners[name]&.qmp
+    end
+
+    def run_hypervisor_client_command(name, cmd, arguments = nil, session: nil)
+      current = hypervisor_client_session(name)
+      raise QMPError, 'QEMU session unavailable or replaced' if current.nil? || (session && !current.equal?(session))
+
+      current.run_cmd(cmd, arguments)
     end
 
     def wait_for_hypervisor_client_event(name, events, timeout: 60)
@@ -291,13 +301,42 @@ module AutoHCK
     end
 
     def run_client(scope, name, run_opts = nil)
+      check_pending_nvram_transitions
       @clients_vm_runners[name] = @clients_vm[name].run(scope, client_run_opts(run_opts))
+    end
+
+    # Protect the workspace from reuse after an unfinished NVRAM transition.
+    def check_pending_nvram_transitions
+      pending = Dir.glob(File.join(@workspace_path, 'nvram_transition_*.pending.json'))
+      return if pending.empty?
+
+      raise AutoHCKError, "Unfinished NVRAM transition; inspect before reusing this workspace: #{pending.join(', ')}"
+    end
+
+    def client_nvram_path(name)
+      File.expand_path(@clients_vm.fetch(name).fw.fetch('nvram'))
+    end
+
+    def select_client_nvram(name, path)
+      @clients_vm.fetch(name).select_nvram(path)
+    end
+
+    # Restart a client with selected NVRAM while preserving its test environment.
+    def restart_client_with_nvram(scope, name, path)
+      machine = @clients_vm.fetch(name)
+      options = machine.run_opts.merge(create_snapshot: false, boot_from_snapshot: true)
+      @clients_vm_runners.fetch(name).keep_snapshot
+      stop_client(name)
+      machine.select_nvram(path)
+      # Allow the current NVRAM transition to complete its client restarts.
+      @clients_vm_runners[name] = machine.run(scope, client_run_opts(options))
     end
 
     # Stops the client's VM (if running) and boots a new one with run_opts.
     def power_cycle_client(scope, name, run_opts = nil)
+      check_pending_nvram_transitions
       stop_client(name)
-      @clients_vm_runners[name] = @clients_vm[name].run(scope, client_run_opts(run_opts))
+      run_client(scope, name, run_opts)
     end
 
     def client_run_opts(run_opts)
