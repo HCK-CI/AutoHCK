@@ -282,7 +282,22 @@ module AutoHCK
     end
 
     def run_hypervisor_client_command(name, cmd, arguments = nil)
-      @clients_vm_runners[name].qmp.run_cmd(cmd, arguments)
+      qmp = @clients_vm_runners[name].qmp
+      arguments = add_iommu_device_arguments(name, cmd, arguments)
+      qmp.run_cmd(cmd, arguments)
+    end
+
+    def add_iommu_device_arguments(name, cmd, arguments)
+      return arguments unless cmd == 'device_add' && arguments
+
+      driver = arguments['driver']
+      return arguments unless driver
+
+      iommu_arguments = @clients_vm[name].iommu_device_arguments(driver)
+      return arguments if iommu_arguments.empty?
+
+      @logger.debug("Adding IOMMU properties to hotplugged #{driver} device")
+      iommu_arguments.merge(arguments)
     end
 
     def wait_for_hypervisor_client_event(name, events, timeout: 60)
