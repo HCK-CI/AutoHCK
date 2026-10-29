@@ -6,6 +6,18 @@ AutoHCK is a tool for automating HCK/HLK test suites used for WHQL certification
 
 See all details in [wiki](https://github.com/HCK-CI/AutoHCK/blob/master/docs/Home.md)
 
+## Exit codes
+
+`bin/auto_hck` exits with one of the following codes, so callers can tell a
+test verdict apart from a framework failure without parsing the result
+artifacts (`results.yaml`, `junit.xml`, `functest_results.json`):
+
+| Code | Meaning |
+| ---- | ------- |
+| `0`  | Run completed and passed, or nothing was run (query mode, diff checker skip). |
+| `1`  | Run aborted or canceled: uncaught exception (framework error) or interrupt. Generally retry-worthy. |
+| `2`  | Run completed but one or more tests failed. Final verdict, not retry-worthy. |
+
 ## Authors
 
 * **Lior Haim** - *Development* - [Daynix Computing LTD](https://github.com/Daynix)

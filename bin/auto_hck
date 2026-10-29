@@ -40,7 +40,14 @@ module AutoHCK
         estack = e.backtrace.map { |line| "\n   -- #{line.rstrip}" }.join
         warn "fatal: (#{e.class}) #{e.message}#{estack}"
       end
-      exit(1)
+      exit(AutoHCK::EXIT_ERROR)
     end
+
+    # ResourceScope's ensure has run Project#close by now, finalizing the
+    # session status from the completed test steps. Exit with the verdict so
+    # callers can tell a completed-but-failed run (EXIT_TEST_FAILED) from a
+    # framework abort (EXIT_ERROR, raised above) without parsing the result
+    # artifacts.
+    exit(AutoHCK.exit_code_for(@project.status)) if @project
   end
 end
