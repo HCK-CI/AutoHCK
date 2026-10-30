@@ -108,13 +108,14 @@ module AutoHCK
     # These are just the options that are used for all clients
     # and should be kept together for readability
     # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
-    def client_vm_common_options
+    def client_vm_common_options(client_info)
       common = @project.options.common
       test_opt = @project.options.test
+      role_devices = @platform.clients_options.attach_devices_by_role&.fetch(client_info.role.to_s, []) || []
       {
         'id' => @id.to_i,
         'workspace_path' => @workspace_path,
-        'devices_list' => @devices,
+        'devices_list' => @devices + role_devices,
         'logger' => @logger,
         'iso_path' => @project.config['iso_path'],
         'client_world_net' => common.client_world_net,
@@ -148,7 +149,7 @@ module AutoHCK
         'cpu_count' => client_info.cpus,
         'memory_gb' => client_info.memory_gb,
         'arch' => client_info.arch || @platform.client_arch || Project::DEFAULT_ARCH
-      }.merge(client_vm_common_options))
+      }.merge(client_vm_common_options(client_info)))
     end
 
     def initialize_clients_vm
