@@ -177,6 +177,7 @@ module AutoHCK
       boot_from_snapshot: false,
       boot_from_tag: nil,
       attach_iso_list: [],
+      temporary_devices: [],
       dump_only: false,
       secure: false
     }.freeze
@@ -202,6 +203,7 @@ module AutoHCK
       @devices_list.flatten!
       @devices_list.compact!
       @device_infos = load_devices
+      @base_device_infos = @device_infos.dup.freeze
     end
 
     def define_local_variables
@@ -758,6 +760,15 @@ module AutoHCK
       device_infos
     end
 
+    def temporary_device_names
+      @run_opts.fetch(:temporary_devices, []).uniq - @devices_list
+    end
+
+    # Keep additional test devices limited to the current VM run.
+    def load_run_devices
+      @device_infos = @base_device_infos + temporary_device_names.map { |device| read_device(device) }
+    end
+
     def process_device_commands
       @device_commands = []
       @pcim.reset
@@ -855,7 +866,7 @@ module AutoHCK
         format_dump_config_line('Machine type', '@machine_name@'),
         format_dump_config_line('QEMU binary', '@qemu_bin@'),
         format_dump_config_line('FW type', @fw_name),
-        format_dump_config_line('Test devices', @devices_list.join(', ')),
+        format_dump_config_line('Test devices', (@devices_list + temporary_device_names).join(', ')),
         format_dump_config_line('VM ID', '@client_id@'),
         format_dump_config_line('VM image', @image_path),
         format_dump_config_line('VM VCPU', '@cpu@'),
@@ -1009,13 +1020,19 @@ module AutoHCK
       create_run_script(file_name, content.join)
     end
 
-    def run(scope, run_opts = nil)
+    def prepare_run(run_opts)
+      raise QemuRunError, 'Cannot start QEMU while it is already running' if @runner&.alive?
+
       @run_opts = validate_run_opts(run_opts.to_h)
       @keep_alive = @run_opts[:keep_alive]
 
+      load_run_devices
       process_device_commands
       normalize_lists
+    end
 
+    def run(scope, run_opts = nil)
+      prepare_run(run_opts)
       if @run_opts[:dump_only]
         dump_commands
       else

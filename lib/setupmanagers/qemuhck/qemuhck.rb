@@ -314,9 +314,9 @@ module AutoHCK
     end
 
     # Restart a client with selected NVRAM while preserving its test environment.
-    def restart_client_with_nvram(scope, name, path)
+    def restart_client_with_nvram(scope, name, path, temporary_devices: [])
       machine = @clients_vm.fetch(name)
-      options = machine.run_opts.merge(create_snapshot: false, boot_from_snapshot: true)
+      options = machine.run_opts.merge(create_snapshot: false, boot_from_snapshot: true, temporary_devices:)
       @clients_vm_runners.fetch(name).keep_snapshot
       stop_client(name)
       machine.select_nvram(path)
