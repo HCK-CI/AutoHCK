@@ -12,6 +12,7 @@ module AutoHCK
       attr_reader :tests, :clients_system_info
 
       HANDLE_TESTS_POLLING_INTERVAL = 60
+      INTERACTIVE_POLLING_INTERVAL = 5
       APPLYING_FILTERS_INTERVAL = 50
       TOOLS_ACTION_RETRIES = 5
       TOOLS_ACTION_SLEEP = 5
@@ -482,26 +483,67 @@ module AutoHCK
         handle_finished_test_results(@new_done_test_results)
       end
 
-      def handle_test_running
+      # Track HLK progress while interactive tests respond to guest requests.
+      def handle_test_running(controller: nil)
         running = T.let(nil, T.nilable(Models::HLK::Test))
+        last_status_poll = T.let(nil, T.nilable(Float))
+        controller&.start
         @project.generate_result_report
 
         until @project.run_terminated
           @project.check_run_termination
           # Update tests results to get the latest status of the tests
-          update_tests
-          reset_clients_to_ready_state
-          check_new_finished_results
-          check_test_queued_time
-          check_test_duration_time
-          if current_test != running
-            running = current_test
-            on_test_start(running) if running
-          end
-          break if all_tests_finished?
+          now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+          if last_status_poll.nil? || now - last_status_poll >= HANDLE_TESTS_POLLING_INTERVAL
+            update_tests
+            reset_clients_to_ready_state
+            check_new_finished_results
+            check_test_queued_time
+            check_test_duration_time
+            if current_test != running
+              running = current_test
+              on_test_start(running) if running
+            end
+            break if all_tests_finished?
 
-          sleep HANDLE_TESTS_POLLING_INTERVAL
+            last_status_poll = Process.clock_gettime(Process::CLOCK_MONOTONIC).to_f
+          end
+
+          controller&.poll
+          sleep(controller ? INTERACTIVE_POLLING_INTERVAL : HANDLE_TESTS_POLLING_INTERVAL)
         end
+      ensure
+        controller&.close
+      end
+
+      # Provide live interaction for SVVP tests that require it.
+      def mid_test_controller(test)
+        names = select_test_config(test.name, :mid_test_controller).compact.uniq
+        return nil if names.empty? || !@project.options.test.svvp
+
+        if names.size > 1
+          raise EngineError, "Multiple mid-test controllers configured for #{test.name}: #{names.join(', ')}"
+        end
+
+        name = names.first
+        case name
+        when 'secure_boot_manual'
+          build_secure_boot_manual_controller
+        else
+          raise EngineError, "Unknown mid-test controller: #{name}"
+        end
+      end
+
+      def build_secure_boot_manual_controller
+        unless @project.engine_platform.setupmanager == 'qemuhck'
+          raise EngineError, 'Secure Boot manual controller requires qemuhck'
+        end
+
+        index = @project.engine_platform.clients.values.index { |client| client.name == @client.name }
+        raise EngineError, "Cannot resolve client id for #{@client.name}" unless index
+
+        SecureBootManualController.new(project: @project, tools: @tools, client_name: @client.name,
+                                       client_id: index + 1, logger: @logger)
       end
 
       sig { params(type: String, path: T.nilable(String)).returns(T.nilable(String)) }
@@ -612,7 +654,7 @@ module AutoHCK
         test_str = "run #{run_number}/#{run_count} #{test.name} (#{test.id})"
         @logger.info("Adding to queue: #{test_str}")
         queue_test(test, wait: true)
-        handle_test_running
+        handle_test_running(controller: mid_test_controller(test))
       end
 
       sig { params(current_run_tests: T::Array[Models::HLK::Test]).returns(T::Array[Models::HLK::Test]) }
