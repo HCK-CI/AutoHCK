@@ -23,6 +23,8 @@ module AutoHCK
       const :errata, T.nilable(String), default: nil
       const :pre_test_commands, T::Array[CommandInfo], default: []
       const :post_test_commands, T::Array[CommandInfo], default: []
+      const :nvram_profile, T.nilable(String)
+      const :svvp_only, T::Boolean, default: false
     end
   end
 end
