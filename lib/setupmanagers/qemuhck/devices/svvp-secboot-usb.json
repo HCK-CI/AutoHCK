@@ -1,0 +1,20 @@
+{
+  "name": "svvp-secboot-usb",
+  "type": "usb",
+  "need_pci_bus": true,
+  "define_variables": {
+    "@svvp_ufd1_image@": "@workspace@/svvp_ufd1_@run_id@_@client_id@.qcow2",
+    "@svvp_ufd2_image@": "@workspace@/svvp_ufd2_@run_id@_@client_id@.qcow2"
+  },
+  "pre_start_commands": [
+    "test -e @svvp_ufd1_image@ || @qemu_img_bin@ create -f qcow2 @svvp_ufd1_image@ 5G",
+    "test -e @svvp_ufd2_image@ || @qemu_img_bin@ create -f qcow2 @svvp_ufd2_image@ 5G"
+  ],
+  "command_line": [
+    "-device usb-ehci,id=svvp_ehci_@client_id@,bus=@bus_name@.0",
+    "-drive file=@svvp_ufd1_image@,if=none,id=svvp_ufd1_drive_@run_id@_@client_id@,media=disk,format=qcow2,cache=none,werror=stop,rerror=stop,aio=threads",
+    "-device usb-storage,bus=svvp_ehci_@client_id@.0,drive=svvp_ufd1_drive_@run_id@_@client_id@,id=svvp_ufd1_@client_id@,serial=SVVPUFD1,removable=on",
+    "-drive file=@svvp_ufd2_image@,if=none,id=svvp_ufd2_drive_@run_id@_@client_id@,media=disk,format=qcow2,cache=none,werror=stop,rerror=stop,aio=threads",
+    "-device usb-storage,bus=svvp_ehci_@client_id@.0,drive=svvp_ufd2_drive_@run_id@_@client_id@,id=svvp_ufd2_@client_id@,serial=SVVPUFD2,removable=on"
+  ]
+}
