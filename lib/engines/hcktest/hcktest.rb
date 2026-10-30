@@ -10,6 +10,7 @@ module AutoHCK
     include Helper
 
     autoload_relative :Tests, 'tests'
+    autoload_relative :SecureBootSerialRound, 'secure_boot_serial_round'
     autoload_relative :NvramProfileDefinition, 'nvram_profile_definition'
     autoload_relative :NvramProfile, 'nvram_profile'
 
