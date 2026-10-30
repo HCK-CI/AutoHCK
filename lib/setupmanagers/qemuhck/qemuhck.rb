@@ -284,8 +284,16 @@ module AutoHCK
       @studio_vm.run(scope, run_opts)
     end
 
-    def run_hypervisor_client_command(name, cmd, arguments = nil)
-      @clients_vm_runners[name].qmp.run_cmd(cmd, arguments)
+    # Provide the current QEMU session for safe firmware actions.
+    def hypervisor_client_session(name)
+      @clients_vm_runners[name]&.qmp
+    end
+
+    def run_hypervisor_client_command(name, cmd, arguments = nil, session: nil)
+      current = hypervisor_client_session(name)
+      raise QMPError, 'QEMU session unavailable or replaced' if current.nil? || (session && !current.equal?(session))
+
+      current.run_cmd(cmd, arguments)
     end
 
     def wait_for_hypervisor_client_event(name, events, timeout: 60)
