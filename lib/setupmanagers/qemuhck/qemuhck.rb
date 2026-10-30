@@ -15,6 +15,10 @@ module AutoHCK
     attr_reader :kit, :project
 
     QEMUHCK_INFO_LOG_FILE = 'qemuhck.txt'
+    IOMMU_DEVICE_ARGUMENTS = {
+      'iommu_platform' => true,
+      'ats' => true
+    }.freeze
     OPT_NAMES = %w[viommu_state s3_state s4_state enlightenments_state vhost_state machine_type fw_type cpu
                    ctrl_net_device vbs_state tpm_state numa_state pcie_spare_root_ports vsm_state].freeze
 
@@ -24,6 +28,7 @@ module AutoHCK
 
       @clients_vm = {}
       @clients_vm_runners = {}
+      @iommu_device_param_support = {}
       @package_manager = PackageManager.new(@logger)
       initialize_studio_vm
       initialize_clients_vm
@@ -283,7 +288,32 @@ module AutoHCK
     end
 
     def run_hypervisor_client_command(name, cmd, arguments = nil)
-      @clients_vm_runners[name].qmp.run_cmd(cmd, arguments)
+      qmp = @clients_vm_runners[name].qmp
+      arguments = add_iommu_device_arguments(name, cmd, arguments)
+      qmp.run_cmd(cmd, arguments)
+    end
+
+    def add_iommu_device_arguments(name, cmd, arguments)
+      return arguments unless cmd == 'device_add' && client_option_config(name, 'viommu_state')
+      return arguments unless arguments
+
+      driver = arguments['driver']
+      return arguments unless driver && iommu_device_param_supported?(name, driver)
+
+      @logger.debug("Adding IOMMU properties to hotplugged #{driver} device")
+      IOMMU_DEVICE_ARGUMENTS.merge(arguments)
+    end
+
+    def iommu_device_param_supported?(name, driver)
+      return @iommu_device_param_support[driver] if @iommu_device_param_support.key?(driver)
+
+      devices_dir = QemuMachine::DEVICES_JSON_DIR
+      definition_exists = %w[json rb].any? { |extension| File.exist?("#{devices_dir}/#{driver}.#{extension}") }
+      device_info = @clients_vm[name].read_device(driver) if definition_exists
+
+      @iommu_device_param_support[driver] = device_info&.command_line&.any? do |command|
+        command.include?('@iommu_device_param@')
+      end || false
     end
 
     def wait_for_hypervisor_client_event(name, events, timeout: 60)
