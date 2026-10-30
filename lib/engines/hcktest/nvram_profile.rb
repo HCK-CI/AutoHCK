@@ -217,6 +217,24 @@ module AutoHCK
         @logger.warn("Profile test cleanup failed; retrying after normal NVRAM boots: #{e.message}")
       end
 
+      # Preserve serial evidence before the original firmware boots again.
+      def archive_serial
+        prefix = serial_prefix
+        source = File.join(@workspace, "uefi_serial_#{prefix}.log")
+        return unless File.file?(source)
+
+        destination = File.join(@workspace, "uefi_serial_#{prefix}_#{@transition_id}_profile.log")
+        FileUtils.cp(source, destination)
+        @logger.info("Preserved profile serial output: #{destination}")
+      rescue StandardError => e
+        @logger.error("Could not preserve profile serial output: #{e.message}")
+      end
+
+      def serial_prefix
+        index = @project.engine_platform.clients.values.index { _1.name == @client.name }
+        format('%<run>04d_%<client>02d', run: @project.id.to_i, client: index + 1)
+      end
+
       def restore(cleanup)
         restore_nvram
         cleanup_after_restore(cleanup)
@@ -226,6 +244,7 @@ module AutoHCK
       # Return the SUT to its original firmware state.
       def restore_nvram
         @manager.stop_client(@client.name)
+        archive_serial
         verify_original_nvram_hash
         record_restoring
         # Require an idle HLK target before returning to normal firmware.
