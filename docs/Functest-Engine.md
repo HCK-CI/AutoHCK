@@ -290,21 +290,21 @@ See [`lib/engines/functest/tests/cases/driver_sign_check.json`](../lib/engines/f
 
 ## Step Types
 
-> Each step object must have **exactly one** step-type field (`guest_run`, `guest_run_file`, `guest_reboot`, `host_run`, `host_run_file`, `files_action`, `qmp_command`, `qmp_wait_event`, `barrier`, `set_variable`, `parallel`). All other fields are optional modifiers.
+> Each step object must have **exactly one** step-type field (`guest_run`, `guest_run_file`, `guest_reboot`, `host_run`, `host_run_file`, `files_action`, `files_transfer`, `qmp_command`, `qmp_wait_event`, `barrier`, `set_variable`, `parallel`). All other fields are optional modifiers.
 
 ### Common Step Fields
 
 | Field | Description |
 |---|---|
 | `desc` | Human-readable description; logged and shown in results. |
-| `timeout` | Step timeout in seconds; overrides the engine default of 300s. Not applicable to `files_action` steps — file transfers run without a timeout. |
+| `timeout` | Step timeout in seconds; overrides the engine default of 300s. Not applicable to `files_action` or `files_transfer` steps — file transfers run without a timeout. |
 | `ignore_errors` | If `true`, a failure in this step does not abort the test. Useful for optional steps in `test_steps`. Default: `false`. |
 | `variables` | Maps `@placeholder@` strings to existing context variable names for extra substitution within this step. |
 | `capture_output` | Name of a variable to store the step's output in, e.g. `"capture_output": "driver_version"` makes it available as `@driver_version@` later. Supported by `guest_run`/`guest_run_file`, `qmp_command`, `qmp_wait_event`. On a multi-client step, only the primary target's output is captured. |
 | `expected_output_contains` | The step fails if the output does not contain this string. Only for `guest_run`/`guest_run_file`/`host_run`/`host_run_file`. Checked against every client the step ran on. |
 | `expected_output_matches` | The step fails if the output does not match this regex. Only for `guest_run`/`guest_run_file`/`host_run`/`host_run_file`. Checked against every client the step ran on. |
 | `expected_output_matches_encoding` | Controls regex encoding options for `expected_output_matches`. Currently only `Regexp::NOENCODING` is supported (binary match). Do not set to use default encoding. |
-| `clients` | Client ids (e.g. `[2]`) this step targets. Applies to `guest_run`/`guest_run_file`, `guest_reboot`, `files_action`, `qmp_command`, `qmp_wait_event`; `host_run`/`host_run_file` always run once on the host regardless. Omitted/empty broadcasts to every client booted for the test case. See [Multi-Client Support](#multi-client-support). |
+| `clients` | Client ids (e.g. `[2]`) this step targets. Applies to `guest_run`/`guest_run_file`, `guest_reboot`, `files_action`, `files_transfer`, `qmp_command`, `qmp_wait_event`; `host_run`/`host_run_file` always run once on the host regardless. Omitted/empty broadcasts to every client booted for the test case. See [Multi-Client Support](#multi-client-support). |
 
 ---
 
@@ -404,6 +404,37 @@ Transfer files or directories between the host and the client VM.
 | `direction` | No | `local-to-remote` to upload, `remote-to-local` to download. Default: `remote-to-local` |
 | `move` | No | If `true`, delete the source after transfer. Default: `false` (copy). |
 | `allow_missing` | No | If `true`, skip silently when the source does not exist. Default: `false` (raise error). |
+
+---
+
+### `files_transfer`
+
+Uploads a list of test files to `C:\AutoHCK`. This step type is allowed only in
+`pre_test_commands`. Each source keeps its basename, and AutoHCK removes the uploaded
+files automatically after the test cleanup and extension post-test commands run.
+An existing destination is overwritten so every test can stage its own required files.
+
+```json
+{
+    "desc": "Upload test scripts",
+    "files_transfer": [
+        "lib/engines/functest/tests/scripts/capture-driver-state.ps1",
+        "lib/engines/functest/tests/scripts/installer/validate-repair.ps1"
+    ]
+}
+```
+
+Replacement tokens in each source path are expanded separately for every target client
+before AutoHCK computes the destination basename. Paths are then passed through the
+existing `files_action` upload implementation without being rewritten; use paths relative
+to the AutoHCK root as shown above, or absolute host paths. Duplicate basenames are
+rejected because they would target the same path on the Windows client.
+With multiple clients, the files are uploaded to and automatically removed from every
+client targeted by the step. Cleanup failures are logged as warnings and do not change
+the test result.
+
+Use `files_action` instead when a test needs a custom destination, download, transfer
+during `test_steps`, or other explicit file-operation behavior.
 
 ---
 
