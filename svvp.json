@@ -12,7 +12,10 @@
   "clients_options": {
     "ctrl_net_device": "virtio-net-pci",
     "viommu_state": true,
-    "fw_type": "uefi"
+    "fw_type": "uefi",
+    "attach_devices_by_role": {
+      "sut": ["uefi-serial-log"]
+    }
   },
   "reject_test_names": [
     "__Windows_11_22H2_reject_test_names",
