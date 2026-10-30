@@ -19,7 +19,6 @@
   },
   "reject_test_names": [
     "__Windows_11_22H2_reject_test_names",
-    "Secure Boot Manual Logo Test",
     "Debug Capability Test (Logo)",
     "BitLocker Tpm+PIN+ USB and Recovery Password tests",
     "TPM 2.0 - Supplemental test",
@@ -34,7 +33,6 @@
     "Profile Interrupt Test",
     "__Windows_Server_2022_reject_test_names",
     "USB Generic HID Test",
-    "Secure Boot Manual Logo Test",
     "Debug Capability Test (Logo)",
     "LoadGen Server Stress - Run First - Set Machine Policies",
     "LoadGen Server Stress - Run Last - Reset Machine Policies",

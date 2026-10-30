@@ -6,7 +6,9 @@ module AutoHCK
   class HCKTest
     # Run SVVP tests with temporary SUT firmware settings, then restore the original state.
     class NvramProfile
+      KEY_DATABASES = %w[PK KEK db dbx].freeze
       GOP_PROFILE = 'uefi_gop_1024x768'
+      SETUP_PROFILE = 'uefi_secure_boot_setup'
       VIRT_FW_VARS = '/usr/bin/virt-fw-vars'
       # Set the firmware display mode without changing other NVRAM variables.
       GOP_VARIABLES = {
@@ -15,6 +17,26 @@ module AutoHCK
           'attr' => 7, 'data' => '0004000000030000'
         }
       }.freeze
+      # Read Secure Boot state and surface guest access errors.
+      READ_STATE = <<~POWERSHELL
+        $ErrorActionPreference = 'Stop'
+        $state = @{}
+        foreach ($name in @('SetupMode', 'SecureBoot')) {
+          $bytes = (Get-SecureBootUEFI -Name $name).Bytes
+          if ($bytes.Length -ne 1) { throw "Invalid $name variable" }
+          $state[$name] = [int]$bytes[0]
+        }
+        foreach ($name in @('PK', 'KEK', 'db', 'dbx')) {
+          try {
+            $state[$name] = [Convert]::ToBase64String((Get-SecureBootUEFI -Name $name).Bytes)
+          } catch {
+            if ($_.Exception.Message -notmatch 'Variable is currently undefined|0xC0000100') { throw }
+            $state[$name] = $null
+          }
+        }
+        $state | ConvertTo-Json -Compress
+      POWERSHELL
+
       def initialize(project:, tools:, client:, target:, scope:)
         @project = project
         @tools = tools
@@ -46,18 +68,24 @@ module AutoHCK
 
       def prepare_transition(profile)
         validate_scope
-        raise EngineError, "Unknown NVRAM profile: #{profile}" unless profile == GOP_PROFILE
+        raise EngineError, "Unknown NVRAM profile: #{profile}" unless [GOP_PROFILE, SETUP_PROFILE].include?(profile)
 
+        @profile = profile
         raise EngineError, "#{VIRT_FW_VARS} is required for #{profile}" unless File.executable?(VIRT_FW_VARS)
 
         @original = @manager.client_nvram_path(@client.name)
         @client.wait_for_existing_target(@target)
         verify_idle
+        return if gop_profile?
+
+        @baseline = read_state
+        verify_enrolled(@baseline)
       end
 
       def activate_profile
         enter_profile
         @client.wait_for_existing_target(@target)
+        verify_setup(read_state) unless gop_profile?
       end
 
       def validate_scope
@@ -65,6 +93,36 @@ module AutoHCK
                @project.engine.platform_clients.role_for(@client.name) == Models::ClientRole::Sut
           raise EngineError, 'nvram_profile requires an active qemuhck SVVP SUT scope'
         end
+      end
+
+      def gop_profile?
+        @profile == GOP_PROFILE
+      end
+
+      def read_state
+        output = @tools.act_with_tools_on_machine(@client.name) do |tools|
+          tools.run_on_machine(@client.name, READ_STATE)
+        end
+        state = JSON.parse(output)
+        unless state.is_a?(Hash) && (KEY_DATABASES + %w[SetupMode SecureBoot]).all? { state.key?(_1) }
+          raise EngineError, 'Incomplete Secure Boot variable readback'
+        end
+
+        state
+      end
+
+      def verify_enrolled(state)
+        return if state['SetupMode']&.zero? && state['SecureBoot'] == 1 &&
+                  %w[PK KEK db].all? { |name| state[name].is_a?(String) && !state[name].empty? }
+
+        raise EngineError, 'Expected enrolled Secure Boot before NVRAM transition; use uefi with secure_boot=true'
+      end
+
+      def verify_setup(state)
+        return if state['SetupMode'] == 1 && state['SecureBoot']&.zero? &&
+                  KEY_DATABASES.all? { |name| state[name].nil? || state[name] == '' }
+
+        raise EngineError, 'Clean NVRAM did not produce SetupMode=1, SecureBoot=0 and empty PK/KEK/db/dbx'
       end
 
       def verify_idle
@@ -85,10 +143,12 @@ module AutoHCK
           'temporary' => @temporary
         }
         @original_inventory = File.join(@workspace, "nvram_original_#{@transition_id}.json")
-        @temporary_inventory = File.join(@workspace, "nvram_gop_#{@transition_id}.json")
+        @temporary_inventory = File.join(@workspace, "nvram_#{gop_profile? ? 'gop' : 'setup'}_#{@transition_id}.json")
         @journal.merge!('original_inventory' => @original_inventory, 'temporary_inventory' => @temporary_inventory)
-        @settings = File.join(@workspace, "nvram_gop_settings_#{@transition_id}.json")
-        @journal['settings'] = @settings
+        if gop_profile?
+          @settings = File.join(@workspace, "nvram_gop_settings_#{@transition_id}.json")
+          @journal['settings'] = @settings
+        end
         record('prepared')
       end
 
@@ -117,13 +177,39 @@ module AutoHCK
         @logger.warn("Could not remove incomplete NVRAM journal staging file #{staging}: #{e.message}")
       end
 
+      # Attach the manual test's USB drives only while its profile is active.
+      def profile_devices
+        @profile == SETUP_PROFILE ? ['svvp-secboot-usb'] : []
+      end
+
       def enter_profile
         @manager.stop_client(@client.name)
         @journal['original_sha256'] = Digest::SHA256.file(@original).hexdigest
-        prepare_gop_nvram
+        if gop_profile?
+          prepare_gop_nvram
+        else
+          prepare_setup_nvram
+        end
         record('switching_to_profile')
-        @manager.restart_client_with_nvram(@scope, @client.name, @temporary)
+        @manager.restart_client_with_nvram(@scope, @client.name, @temporary, temporary_devices: profile_devices)
         record('profile_active')
+      end
+
+      # Clear Secure Boot keys in a copy of the SUT's current NVRAM.
+      def prepare_setup_nvram
+        original = original_inventory
+        validate_setup_keys(original)
+
+        arguments = KEY_DATABASES.flat_map { |name| ['--delete', name] }
+        run_virt_fw_vars('--input', @original, *arguments, '--output', @temporary)
+        verify_profile_copy(original.except(*KEY_DATABASES), 'Setup Mode', 'PK/KEK/db/dbx')
+        @logger.info("Setup Mode NVRAM prepared from #{@original} at #{@temporary}; PK/KEK/db/dbx absent")
+      end
+
+      def validate_setup_keys(original)
+        return if %w[PK KEK db].all? { |name| original.key?(name) }
+
+        raise EngineError, 'Enrolled NVRAM is missing PK, KEK or db'
       end
 
       # Prepare a temporary 1024x768 NVRAM copy for the GOP test.
@@ -249,8 +335,9 @@ module AutoHCK
         record_restoring
         # Require an idle HLK target before returning to normal firmware.
         verify_idle
-        @manager.restart_client_with_nvram(@scope, @client.name, @original)
+        @manager.restart_client_with_nvram(@scope, @client.name, @original, temporary_devices: [])
         @client.wait_for_existing_target(@target)
+        verify_restored_state unless gop_profile?
       rescue StandardError => e
         stop_after_transition_failure('NVRAM restoration failed', e)
         raise
@@ -268,6 +355,14 @@ module AutoHCK
       rescue StandardError => e
         # Continue recovery when a journal update fails.
         @logger.warn("Could not update NVRAM restoration journal; continuing restoration: #{e.class}: #{e.message}")
+      end
+
+      def verify_restored_state
+        restored = read_state
+        verify_enrolled(restored)
+        return if restored == @baseline
+
+        raise EngineError, 'Restored Secure Boot databases differ from the pre-test values'
       end
 
       # Keep failed guest cleanup from affecting later tests.
@@ -289,7 +384,11 @@ module AutoHCK
       def complete_transition
         record('restored_and_verified')
         File.rename(@journal_path, @journal_path.sub('.pending.json', '.completed.json'))
-        @logger.info("Original NVRAM restored on #{@client.name}; HLK target verified")
+        if gop_profile?
+          @logger.info("Original NVRAM restored on #{@client.name}; HLK target verified")
+        else
+          @logger.info("Normal NVRAM restored on #{@client.name}; SecureBoot=1, original keys and HLK target verified")
+        end
       rescue StandardError => e
         stop_after_transition_failure('Normal NVRAM restored and verified, but transition journal completion failed', e)
         raise
