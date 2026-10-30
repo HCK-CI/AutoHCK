@@ -294,6 +294,20 @@ module AutoHCK
       @clients_vm_runners[name] = @clients_vm[name].run(scope, client_run_opts(run_opts))
     end
 
+    def client_nvram_path(name)
+      File.expand_path(@clients_vm.fetch(name).fw.fetch('nvram'))
+    end
+
+    # Restart a client with selected NVRAM while preserving its test environment.
+    def restart_client_with_nvram(scope, name, path)
+      machine = @clients_vm.fetch(name)
+      options = machine.run_opts.merge(create_snapshot: false, boot_from_snapshot: true)
+      @clients_vm_runners.fetch(name).keep_snapshot
+      stop_client(name)
+      machine.select_nvram(path)
+      @clients_vm_runners[name] = machine.run(scope, client_run_opts(options))
+    end
+
     # Stops the client's VM (if running) and boots a new one with run_opts.
     def power_cycle_client(scope, name, run_opts = nil)
       stop_client(name)
