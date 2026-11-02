@@ -68,7 +68,7 @@ function Install-ClientExtraSoftwareBeforeKit {
     Get-ChildItem -Path "$EXTRASOFTWAREDIRECTORY" -Directory | ForEach-Object {
         $config = Get-ExtraSoftwareConfig -Directory "$($_.FullName)"
 
-        if ($config.install_dest -eq 'client' -And $config.install_time.kit -eq 'before') {
+        if ((@('client', 'all') -contains $config.install_dest) -And $config.install_time.kit -eq 'before') {
             Install-ExtraSoftware -Config $config -Path "$($_.FullName)"
         }
     }
@@ -80,7 +80,7 @@ function Install-ClientExtraSoftwareAfterKit {
     Get-ChildItem -Path "$EXTRASOFTWAREDIRECTORY" -Directory | ForEach-Object {
         $config = Get-ExtraSoftwareConfig -Directory "$($_.FullName)"
 
-        if ($config.install_dest -eq 'client' -And $config.install_time.kit -eq 'after') {
+        if ((@('client', 'all') -contains $config.install_dest) -And $config.install_time.kit -eq 'after') {
             Install-ExtraSoftware -Config $config -Path "$($_.FullName)"
         }
     }
@@ -92,7 +92,7 @@ function Install-StudioExtraSoftwareBeforeKit {
     Get-ChildItem -Path "$EXTRASOFTWAREDIRECTORY" -Directory | ForEach-Object {
         $config = Get-ExtraSoftwareConfig -Directory "$($_.FullName)"
 
-        if ($config.install_dest -eq 'studio' -And $config.install_time.kit -eq 'before') {
+        if ((@('studio', 'all') -contains $config.install_dest) -And $config.install_time.kit -eq 'before') {
             Install-ExtraSoftware -Config $config -Path "$($_.FullName)"
         }
     }
@@ -104,7 +104,7 @@ function Install-StudioExtraSoftwareAfterKit {
     Get-ChildItem -Path "$EXTRASOFTWAREDIRECTORY" -Directory | ForEach-Object {
         $config = Get-ExtraSoftwareConfig -Directory "$($_.FullName)"
 
-        if ($config.install_dest -eq 'studio' -And $config.install_time.kit -eq 'after') {
+        if ((@('studio', 'all') -contains $config.install_dest) -And $config.install_time.kit -eq 'after') {
             Install-ExtraSoftware -Config $config -Path "$($_.FullName)"
         }
     }
