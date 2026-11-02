@@ -68,8 +68,10 @@ module AutoHCK
     def build_host_info
       host_info = {}
       sm = @project.setup_manager
-      host_info['Host info'] = sm.host_info
 
+      return host_info if sm.nil?
+
+      host_info['Host info'] = sm.host_info
       qemu_version = sm.hypervisor_package_info
       host_info['QEMU package version'] = qemu_version unless qemu_version.nil? || qemu_version.empty?
       sm.hypervisor_dependencies_package_info.each do |info|
