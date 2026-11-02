@@ -9,6 +9,7 @@ module AutoHCK
       REQUEST_PATH = "#{DIRECTORY}\\request.json".freeze
       ACK_PATH = "#{DIRECTORY}\\ack.json".freeze
       REQUEST_ID_PATTERN = /\A[a-zA-Z0-9_-]{1,80}\z/
+      POLL_LOG_INTERVAL = 60
       BOOT_EVENTS = %w[REQUEST_UFD1 REQUEST_UFD2 CHANGE_UFD2_TO_MSFT_TEST].freeze
       QUESTIONS = {
         'RESULT_UFD1' => [1, 'pressanykey1', 'UFD #1 Boot Result',
@@ -34,6 +35,8 @@ module AutoHCK
         @regular_usb_bootindex = nil
         @stopped = false
         @last_issue = nil
+        @winrm_unavailable = false
+        @last_poll_log_at = nil
       end
 
       def configure_artifact_paths(project)
@@ -81,7 +84,15 @@ module AutoHCK
 
       # Acknowledge guest popups only when their action or result is ready.
       def poll
+        now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        log_poll = @last_poll_log_at.nil? || now - @last_poll_log_at >= POLL_LOG_INTERVAL
+        if log_poll
+          @last_poll_log_at = now
+          @logger.info("Secure Boot manual test: checking #{@client_name} for request.json")
+        end
         request = pending_request
+        @winrm_unavailable = false unless request
+        @logger.info("Secure Boot manual test: #{@client_name} request.json absent or empty") if log_poll && !request
         return unless request
 
         payload = @lock.synchronize { response_for(request) }
@@ -89,9 +100,13 @@ module AutoHCK
 
         write_ack(payload)
         mark_acknowledged(request)
+        @winrm_unavailable = false
       rescue Tools::ToolsHCKError => e
         # A guest reboot delays acknowledgement until WinRM returns.
-        @logger.debug("Secure Boot manual test: #{@client_name} WinRM unavailable: #{e.message}")
+        unless @winrm_unavailable
+          @logger.warn("Secure Boot manual test: #{@client_name} WinRM unavailable; retrying: #{e.message}")
+          @winrm_unavailable = true
+        end
       rescue StandardError => e
         report_poll_error(e)
       end
@@ -108,6 +123,10 @@ module AutoHCK
           raise ArgumentError, "Unknown Secure Boot request: #{event.inspect}"
         end
 
+        if id != @last_request_id
+          @last_request_id = id
+          @logger.info("Secure Boot manual test: received #{event} (#{id}) on #{@client_name}")
+        end
         request
       end
 

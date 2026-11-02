@@ -9,7 +9,6 @@ Global Const $g_sAckPath = $g_sDirectory & "\ack.json"
 Global Const $g_sRoundPath = $g_sDirectory & "\round_id.txt"
 Global Const $g_sLogPath = $g_sDirectory & "\watcher.log"
 Global Const $g_sPrepareScript = "C:\UIAgent\autoit\prepare_secure_boot_ufds.ps1"
-Global Const $g_sPrepareAttemptPath = $g_sDirectory & "\prepare_attempted.txt"
 Global Const $g_sChangeUfd2Script = "C:\UIAgent\autoit\change_secure_boot_ufd2.ps1"
 ; Accept both reported HLK working-directory layouts; preserve the popup path.
 Global Const $g_sZipPattern = '(?i)C:\\HLK\\(?:JobsWorkingDir|Jobs\\WorkingDir)\\Tasks\\[A-Za-z0-9_-]+\\UefiSecureBootManualTests\.zip'
@@ -43,18 +42,38 @@ WEnd
 Func PollPopups()
     Local $hBootOrder = WinGetHandle("Trigger reboot to configure BIOS boot order?")
     If $hBootOrder <> 0 Then
-        If ExpectedPopup($hBootOrder, "CONFIGURE_BOOT_ORDER") Then
-            SkipBootOrderReboot($hBootOrder)
+        If ExpectedPopup($hBootOrder, "BOOT_ORDER_OPTIONAL_REBOOT") Then
+            AcknowledgeLocalPopup($hBootOrder, "BOOT_ORDER_OPTIONAL_REBOOT", "No")
+            Return
+        EndIf
+    EndIf
+
+    Local $hRequiredReboot = WinGetHandle("Configure EFI USB Boot Option")
+    If $hRequiredReboot <> 0 Then
+        If ExpectedPopup($hRequiredReboot, "BOOT_ORDER_REQUIRED_REBOOT") Then
+            ; HLK performs a normal setup reboot. No host request or boot round.
+            AcknowledgeLocalPopup($hRequiredReboot, "BOOT_ORDER_REQUIRED_REBOOT", "OK")
+            Return
+        EndIf
+    EndIf
+
+    Local $hExtract = WinGetHandle("Unzip the Test Content")
+    If $hExtract <> 0 Then
+        If ExpectedPopup($hExtract, "EXTRACT_TEST_CONTENT") Then
+            PrepareTestContent($hExtract, "EXTRACT_TEST_CONTENT")
             Return
         EndIf
     EndIf
 
     Local $hPrepare = WinGetHandle("Prepare USB Flash Drives")
     If $hPrepare <> 0 Then
-        If ExpectedPopup($hPrepare, "PREPARE_UFDS") Then
-            PrepareUfds($hPrepare)
-            Return
-        EndIf
+        Local $aPreparePatterns = ["PREPARE_UFDS_WITH_ZIP_PATH", "PREPARE_UFDS_FROM_EXTRACTED_CONTENT"]
+        For $sPattern In $aPreparePatterns
+            If ExpectedPopup($hPrepare, $sPattern) Then
+                PrepareTestContent($hPrepare, $sPattern)
+                Return
+            EndIf
+        Next
     EndIf
 
     Local $hChangeUfd2 = WinGetHandle("Change UFD #2 to use msft_test_pressanykey.efi")
@@ -142,7 +161,7 @@ Func ExpectedPopup($hWindow, $sEvent)
         Return WinGetTitle($hWindow) == "Finished Test" And $sFinishedText == $sFinishedBody
     EndIf
 
-    If $sEvent = "CONFIGURE_BOOT_ORDER" Then
+    If $sEvent = "BOOT_ORDER_OPTIONAL_REBOOT" Then
         ; WinGetText also includes button captions. Match the entire supplied
         ; body within it, allowing only whitespace/line-wrapping differences.
         Local $sBootOrderText = StringRegExpReplace($sText, "\s+", " ")
@@ -155,6 +174,28 @@ Func ExpectedPopup($hWindow, $sEvent)
                 StringInStr($sBootOrderText, $sExpectedBody, 1) > 0
     EndIf
 
+    If $sEvent = "BOOT_ORDER_REQUIRED_REBOOT" Then
+        Local $sRebootBody = "The system will reboot when you click OK. Enter the BIOS " & _
+                "configuration and set EFI USB to be first in the boot order. " & _
+                "The system should now automatically boot from USB if a " & _
+                "bootable USB media is inserted. If USB is inserted then " & _
+                "disconnect it now.. Click OK to continue"
+        Return WinGetTitle($hWindow) == "Configure EFI USB Boot Option" And _
+                NormalizeInstructionText($sText) == $sRebootBody And PopupButton($hWindow, "OK") <> 0
+    EndIf
+
+    If $sEvent = "EXTRACT_TEST_CONTENT" Then
+        Local $sZipPath = ExtractZipPath($sText)
+        Local $sExtractBody = "Step #1: Extract files from " & $sZipPath & _
+                " to a local folder on the system. Click OK after you have extracted the files."
+        Local $sQuotedExtractBody = 'Step #1: Extract files from "' & $sZipPath & _
+                '" to a local folder on the system. Click OK after you have extracted the files.'
+        Local $sExtractText = NormalizeInstructionText($sText)
+        Return WinGetTitle($hWindow) == "Unzip the Test Content" And $sZipPath <> "" And _
+                ($sExtractText == $sExtractBody Or $sExtractText == $sQuotedExtractBody) And _
+                PopupButton($hWindow, "OK") <> 0
+    EndIf
+
     If $sEvent = "CHANGE_UFD2_TO_MSFT_TEST" Then
         Local $sNormalized = StringRegExpReplace($sText, "\s+", " ")
         Return WinGetTitle($hWindow) = "Change UFD #2 to use msft_test_pressanykey.efi" And _
@@ -165,7 +206,7 @@ Func ExpectedPopup($hWindow, $sEvent)
                 StringInStr($sNormalized, "boot from UFD #2") > 0
     EndIf
 
-    If $sEvent = "PREPARE_UFDS" Then
+    If $sEvent = "PREPARE_UFDS_WITH_ZIP_PATH" Then
         ; Match filenames and the dynamic ZIP path, not line breaks or the
         ; whole body. WinGetText may also include OK and Cancel captions.
         Return WinGetTitle($hWindow) = "Prepare USB Flash Drives" And _
@@ -175,7 +216,48 @@ Func ExpectedPopup($hWindow, $sEvent)
                 ExtractZipPath($sText) <> ""
     EndIf
 
+    If $sEvent = "PREPARE_UFDS_FROM_EXTRACTED_CONTENT" Then
+        Local $sPrepareBody = "Step #2: Perform the following steps: " & _
+                "1) Format 2 USB flash drives (UFD) as FAT32. " & _
+                "2) Label them as UFD #1 and UFD #2. " & _
+                "3) Navigate to the folder where you have extracted the files. " & _
+                "4) Copy ManualTests\apps\<arch>\pressanykey1.efi to <UFD #1>:\efi\boot\boot<arch>.efi " & _
+                "5) Copy ManualTests\apps\<arch>\pressanykey2.efi to <UFD #2>:\efi\boot\boot<arch>.efi " & _
+                "Click OK to continue"
+        Local $sArchExplanationBody = "Step #2: Perform the following steps: " & _
+                "1) Format 2 USB flash drives (UFD) as FAT32. " & _
+                "2) Label them as UFD #1 and UFD #2. " & _
+                "3) Navigate to the folder where you have extracted the files. " & _
+                "4) Copy ManualTests\apps\<arch>\pressanykey1.efi to <UFD #1>:\efi\boot\boot<arch>.efi " & _
+                "where <arch> represents the architecture of your UEFI firmware. Most PCs use the x64 UEFI architecture. " & _
+                "5) Copy ManualTests\apps\<arch>\pressanykey2.efi to <UFD #2>:\efi\boot\boot<arch>.efi. " & _
+                "Click OK to continue"
+        Local $sPrepareText = NormalizeInstructionText($sText)
+        ; This wording also appears with missing spaces around these exact
+        ; words. Keep the complete instruction comparison after correcting them.
+        Local $sArchText = StringReplace($sPrepareText, "Format2", "Format 2")
+        $sArchText = StringReplace($sArchText, "asFAT32", "as FAT32")
+        $sArchText = StringReplace($sArchText, "boot<arch>.efiwhere", "boot<arch>.efi where")
+        $sArchText = StringReplace($sArchText, "5)Copy", "5) Copy")
+        Return WinGetTitle($hWindow) == "Prepare USB Flash Drives" And _
+                ($sPrepareText == $sPrepareBody Or $sArchText == $sArchExplanationBody) And _
+                PopupButton($hWindow, "OK") <> 0
+    EndIf
+
     Return False
+EndFunc
+
+Func NormalizeInstructionText($sText)
+    ; WinGetText includes button captions as well as the instruction body.
+    Local $sNormalized = StringStripWS(StringRegExpReplace($sText, '\s+', ' '), 3)
+    $sNormalized = StringRegExpReplace($sNormalized, '^(?:&?(?:OK|Cancel)\s+)+', '')
+    Return StringRegExpReplace($sNormalized, '(?:\s+&?(?:OK|Cancel))+$', '')
+EndFunc
+
+Func PopupButton($hWindow, $sCaption)
+    Local $hButton = ControlGetHandle($hWindow, "", "[CLASS:Button; TEXT:" & $sCaption & "]")
+    If $hButton = 0 Then $hButton = ControlGetHandle($hWindow, "", "[CLASS:Button; TEXT:&" & $sCaption & "]")
+    Return $hButton
 EndFunc
 
 Func AcknowledgeFinishedTest($hWindow)
@@ -201,26 +283,24 @@ Func AcknowledgeFinishedTest($hWindow)
     EndIf
 EndFunc
 
-Func SkipBootOrderReboot($hWindow)
-    ; This is a guest-only acknowledgement, not a UFD selection request.
-    ; The insertion prompts select the requested UFD via runtime bootindex.
-    If Not ExpectedPopup($hWindow, "CONFIGURE_BOOT_ORDER") Then Return
-    Local $hNo = ControlGetHandle($hWindow, "", "[CLASS:Button; TEXT:No]")
-    If $hNo = 0 Then $hNo = ControlGetHandle($hWindow, "", "[CLASS:Button; TEXT:&No]")
-    If $hNo = 0 Then
-        LogMessage("Boot-order popup matched, but No control was not found; leaving popup open")
+Func AcknowledgeLocalPopup($hWindow, $sPattern, $sButton)
+    ; Local setup actions never publish requests or change the persisted round.
+    If Not ExpectedPopup($hWindow, $sPattern) Then Return
+    Local $hButton = PopupButton($hWindow, $sButton)
+    If $hButton = 0 Then
+        LogMessage($sPattern & " matched, but " & $sButton & " control was not found; leaving popup open")
         MarkHandled($hWindow)
         Return
     EndIf
 
     WinActivate($hWindow)
-    If Not ExpectedPopup($hWindow, "CONFIGURE_BOOT_ORDER") Then Return
+    If Not ExpectedPopup($hWindow, $sPattern) Then Return
     MarkHandled($hWindow)
-    LogMessage("Boot-order popup matched; clicking No")
-    If ControlClick($hWindow, "", $hNo) Then
-        LogMessage("Clicked No on boot-order popup; UFD selection uses runtime bootindex")
+    LogMessage($sPattern & " matched; clicking " & $sButton & " locally")
+    If ControlClick($hWindow, "", $hButton) Then
+        LogMessage("Clicked " & $sButton & " on " & $sPattern)
     Else
-        LogMessage("Boot-order popup matched, but No control was not clickable; leaving popup open")
+        LogMessage($sPattern & " matched, but " & $sButton & " control was not clickable; leaving popup open")
     EndIf
 EndFunc
 
@@ -233,66 +313,46 @@ Func ExtractZipPath($sText)
     Return $aPaths[0]
 EndFunc
 
-Func PrepareUfds($hWindow)
-    LogMessage("PREPARE_UFDS matched; checking prerequisites")
-    Local $sZipPath = ExtractZipPath(WinGetText($hWindow))
-    If $sZipPath = "" Or Not FileExists($g_sPrepareScript) Then
-        LogMessage("Cannot prepare UFDs: missing HLK ZIP path or guest preparation script")
+Func PrepareTestContent($hWindow, $sPattern)
+    If Not ExpectedPopup($hWindow, $sPattern) Then Return
+    Local $sPopupText = WinGetText($hWindow)
+    Local $sZipPath = ExtractZipPath($sPopupText)
+    Local $sAction = "ExtractAndPrepare"
+    If $sPattern = "EXTRACT_TEST_CONTENT" Then $sAction = "Extract"
+    If $sPattern = "PREPARE_UFDS_FROM_EXTRACTED_CONTENT" Then $sAction = "Prepare"
+    LogMessage($sPattern & " matched; checking prerequisites for " & $sAction)
+    If ($sAction <> "Prepare" And $sZipPath = "") Or Not FileExists($g_sPrepareScript) Then
+        LogMessage("Cannot prepare test content: missing HLK ZIP path or guest preparation script")
         MarkHandled($hWindow)
         Return
     EndIf
     If Not IsAdmin() Then
-        LogMessage("Cannot prepare UFDs: watcher is not elevated")
+        LogMessage("Cannot prepare test content: watcher is not elevated")
         MarkHandled($hWindow)
         Return
     EndIf
-    If FileExists($g_sPrepareAttemptPath) Then
-        LogMessage("UFD preparation was already attempted; leaving popup open for manual inspection")
-        MarkHandled($hWindow)
-        Return
-    EndIf
-
-    ; Persist this marker before starting the destructive format. A watcher
-    ; restart must not automatically retry a partially completed preparation.
-    Local $hMarker = FileOpen($g_sPrepareAttemptPath, $FO_OVERWRITE + $FO_UTF8_NOBOM)
-    If $hMarker = -1 Then
-        LogMessage("Cannot record UFD preparation attempt")
-        MarkHandled($hWindow)
-        Return
-    EndIf
-    Local $bWritten = FileWrite($hMarker, $sZipPath)
-    FileClose($hMarker)
-    If Not $bWritten Then
-        LogMessage("Cannot record UFD preparation attempt")
-        MarkHandled($hWindow)
-        Return
-    EndIf
-
     Local $sPowerShell = @WindowsDir & "\System32\WindowsPowerShell\v1.0\powershell.exe"
     Local $sCommand = '"' & $sPowerShell & '" -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "' & _
-            $g_sPrepareScript & '" -ZipPath "' & $sZipPath & '"'
-    LogMessage("Preparing UFDs locally from " & $sZipPath)
+            $g_sPrepareScript & '" -Action ' & $sAction
+    If $sAction <> "Prepare" Then $sCommand &= ' -ZipPath "' & $sZipPath & '"'
+    ; PowerShell owns extraction state and records the attempt before any disk
+    ; changes. Extraction alone never consumes the formatting attempt marker.
+    LogMessage("Running " & $sAction & " locally; ZIP=" & $sZipPath)
     Local $iExitCode = RunWait($sCommand, "", @SW_HIDE)
     Local $iRunError = @error
     If $iRunError Or $iExitCode <> 0 Then
-        LogMessage("UFD preparation failed (RunWait error=" & $iRunError & ", exit=" & $iExitCode & "); see prepare.log")
+        LogMessage($sAction & " failed (RunWait error=" & $iRunError & ", exit=" & $iExitCode & "); see prepare.log")
         MarkHandled($hWindow)
         Return
     EndIf
 
-    If Not WinExists($hWindow) Or Not ExpectedPopup($hWindow, "PREPARE_UFDS") Or _
-            ExtractZipPath(WinGetText($hWindow)) <> $sZipPath Then
-        LogMessage("UFD preparation succeeded, but the original popup changed before OK")
+    If Not WinExists($hWindow) Or Not ExpectedPopup($hWindow, $sPattern) Or _
+            WinGetText($hWindow) <> $sPopupText Then
+        LogMessage($sAction & " succeeded, but the original popup changed before OK")
         Return
     EndIf
-    WinActivate($hWindow)
-    MarkHandled($hWindow)
-    LogMessage("UFD preparation verified; clicking OK")
-    If ControlClick($hWindow, "", "[CLASS:Button; TEXT:OK]") Then
-        LogMessage("Prepared UFDs and clicked OK")
-    Else
-        LogMessage("Prepared UFDs, but OK control was not clickable")
-    EndIf
+    LogMessage($sAction & " verified; acknowledging " & $sPattern)
+    AcknowledgeLocalPopup($hWindow, $sPattern, "OK")
 EndFunc
 
 Func ChangeUfd2($hWindow)

@@ -20,7 +20,7 @@
         {
           "desc": "Clear stale Secure Boot manual popup state",
           "clients": [1],
-          "guest_run": "New-Item -ItemType Directory -Path 'C:\\AutoHCK\\SecureBootManual' -Force | Out-Null; Remove-Item -LiteralPath 'C:\\AutoHCK\\SecureBootManual\\request.json', 'C:\\AutoHCK\\SecureBootManual\\ack.json', 'C:\\AutoHCK\\SecureBootManual\\round_id.txt', 'C:\\AutoHCK\\SecureBootManual\\prepare_attempted.txt', 'C:\\AutoHCK\\SecureBootManual\\ufd2_msft.json' -Force -ErrorAction SilentlyContinue; exit 0"
+          "guest_run": "New-Item -ItemType Directory -Path 'C:\\AutoHCK\\SecureBootManual' -Force | Out-Null; Remove-Item -LiteralPath 'C:\\AutoHCK\\SecureBootManual\\request.json', 'C:\\AutoHCK\\SecureBootManual\\ack.json', 'C:\\AutoHCK\\SecureBootManual\\round_id.txt', 'C:\\AutoHCK\\SecureBootManual\\prepare_attempted.txt', 'C:\\AutoHCK\\SecureBootManual\\extracted_content.json', 'C:\\AutoHCK\\SecureBootManual\\extracted_content.json.tmp', 'C:\\AutoHCK\\SecureBootManual\\ufd2_msft.json' -Force -ErrorAction SilentlyContinue; exit 0"
         },
         {
           "desc": "Set iospy StartOverride for Secure Boot Manual Logo Test",

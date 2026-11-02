@@ -495,6 +495,7 @@ module AutoHCK
           # Update tests results to get the latest status of the tests
           now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
           if last_status_poll.nil? || now - last_status_poll >= HANDLE_TESTS_POLLING_INTERVAL
+            @logger.info('Secure Boot manual test: HLK status refresh started') if controller
             update_tests
             reset_clients_to_ready_state
             check_new_finished_results
@@ -507,6 +508,7 @@ module AutoHCK
             break if all_tests_finished?
 
             last_status_poll = Process.clock_gettime(Process::CLOCK_MONOTONIC).to_f
+            @logger.info('Secure Boot manual test: HLK status refresh completed') if controller
           end
 
           controller&.poll
