@@ -2539,7 +2539,7 @@ class CSV::Parser
   # +row+ and an accessor method for +row+ called unconverted_fields().  The
   # variable is set to the contents of +fields+.
   #
-  # pkg:gem/csv#lib/csv/parser.rb:1299
+  # pkg:gem/csv#lib/csv/parser.rb:1305
   def add_unconverted_fields(row, fields); end
 
   # pkg:gem/csv#lib/csv/parser.rb:811
@@ -2551,10 +2551,10 @@ class CSV::Parser
   # pkg:gem/csv#lib/csv/parser.rb:733
   def detect_row_separator(sample, cr, lf); end
 
-  # pkg:gem/csv#lib/csv/parser.rb:1270
+  # pkg:gem/csv#lib/csv/parser.rb:1276
   def emit_row(row, quoted_fields = T.unsafe(nil), &block); end
 
-  # pkg:gem/csv#lib/csv/parser.rb:1255
+  # pkg:gem/csv#lib/csv/parser.rb:1261
   def ignore_broken_line; end
 
   # pkg:gem/csv#lib/csv/parser.rb:763
@@ -2563,10 +2563,10 @@ class CSV::Parser
   # pkg:gem/csv#lib/csv/parser.rb:828
   def may_quoted?; end
 
-  # pkg:gem/csv#lib/csv/parser.rb:1210
+  # pkg:gem/csv#lib/csv/parser.rb:1216
   def parse_column_end; end
 
-  # pkg:gem/csv#lib/csv/parser.rb:1110
+  # pkg:gem/csv#lib/csv/parser.rb:1116
   def parse_column_value; end
 
   # pkg:gem/csv#lib/csv/parser.rb:797
@@ -2578,16 +2578,16 @@ class CSV::Parser
   # pkg:gem/csv#lib/csv/parser.rb:979
   def parse_quotable_loose(&block); end
 
-  # pkg:gem/csv#lib/csv/parser.rb:1040
+  # pkg:gem/csv#lib/csv/parser.rb:1046
   def parse_quotable_robust(&block); end
 
-  # pkg:gem/csv#lib/csv/parser.rb:1168
+  # pkg:gem/csv#lib/csv/parser.rb:1174
   def parse_quoted_column_value; end
 
-  # pkg:gem/csv#lib/csv/parser.rb:1224
+  # pkg:gem/csv#lib/csv/parser.rb:1230
   def parse_row_end; end
 
-  # pkg:gem/csv#lib/csv/parser.rb:1140
+  # pkg:gem/csv#lib/csv/parser.rb:1146
   def parse_unquoted_column_value; end
 
   # A set of tasks to prepare the file in order to parse it
@@ -2637,10 +2637,10 @@ class CSV::Parser
   # pkg:gem/csv#lib/csv/parser.rb:913
   def skip_needless_lines; end
 
-  # pkg:gem/csv#lib/csv/parser.rb:1261
+  # pkg:gem/csv#lib/csv/parser.rb:1267
   def start_row; end
 
-  # pkg:gem/csv#lib/csv/parser.rb:1237
+  # pkg:gem/csv#lib/csv/parser.rb:1243
   def strip_value(value); end
 
   # pkg:gem/csv#lib/csv/parser.rb:942
