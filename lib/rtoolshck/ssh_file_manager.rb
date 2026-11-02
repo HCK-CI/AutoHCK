@@ -201,11 +201,25 @@ module AutoHCK
       "#{number.round(2)} #{UNITS[exponent]}"
     end
 
+    def log_progress_step(total)
+      if total < 1 * 1024 * 1024
+        50
+      elsif total < 10 * 1024 * 1024
+        25
+      elsif total < 50 * 1024 * 1024
+        10
+      else
+        5
+      end
+    end
+
     def log_progress(total, now)
       return if total.to_i.zero?
 
+      step = log_progress_step(total)
+
       percent = Integer(100 * now / total)
-      return if percent - @last_percent < 5 && (percent != 100 || @last_percent == 100)
+      return if percent - @last_percent < step && (percent != 100 || @last_percent == 100)
 
       logger('info', 'ssh_fs/transfer') { "Transferred #{size_to_str(now)} (#{percent}%)" }
       @last_percent = percent
