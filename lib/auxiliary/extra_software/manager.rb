@@ -17,23 +17,14 @@ module AutoHCK
       @sw_configs = {}
     end
 
-    def download_software(name, config)
+    def download_software(name, config, dest_dir: nil)
       file_name = config['file_name']
-      path = Pathname.new(@ext_path).join(name).join(file_name)
+      return if file_name.nil? || file_name.to_s.empty?
 
-      if File.exist?(path)
-        @logger.info("#{file_name} already exists, download skipped")
-        return
-      end
+      path = software_file_path(name, file_name, dest_dir)
+      return if skip_existing_software_file?(file_name, path)
 
-      if config['download_url'].nil? || config['download_url'].empty?
-        msg = "#{name}: download URL and expected file '#{path}' are missing, cannot download/use software package"
-        @logger.error(msg)
-        raise(ExtraSoftwareBrokenConfig, msg)
-      end
-
-      dw = Downloader.new(@logger)
-      dw.download(config['download_url'], path)
+      Downloader.new(@logger).download(require_download_url(name, config, path), path.to_s)
     end
 
     def read_config(name, kit, arch)
@@ -101,6 +92,27 @@ module AutoHCK
       copy_extra_software(setup_scripts_path, @ext_path, @sw_names)
     end
 
+    # Prepares a built-in extra-software package that ships inside the
+    # setup-scripts template (e.g. openssh). The package already travels to the
+    # guest with the template, so only the arch-matched download artifact has to
+    # be fetched here, on the AutoHCK host, and baked into the setup ISO. This is
+    # how OpenSSH is guaranteed present on every platform without the user having
+    # to add it to any extra_software list.
+    def prepare_bundled_software(name, setup_scripts_path, kit, engine_mode)
+      base = Pathname.new(setup_scripts_path).join('extra-software', name)
+      unless Dir.exist?(base)
+        @logger.warn("Bundled software '#{name}' not found at #{base}, skipping")
+        return
+      end
+
+      platform_arches(include_studio: engine_mode == 'install').each do |arch|
+        config = read_bundled_config(name, base, kit, arch)
+        next unless config
+
+        download_software(name, config, dest_dir: base)
+      end
+    end
+
     def install_software_on_computer(sw_name, sw_config, tools, machine_name)
       @logger.info("Installing #{sw_name} on #{machine_name}")
       path = tools.upload_to_machine(machine_name, Pathname.new(@ext_path).join(sw_name))
@@ -143,6 +155,26 @@ module AutoHCK
 
     private
 
+    def software_file_path(name, file_name, dest_dir)
+      Pathname.new(dest_dir || Pathname.new(@ext_path).join(name)).join(file_name)
+    end
+
+    def skip_existing_software_file?(file_name, path)
+      return false unless File.exist?(path)
+
+      @logger.info("#{file_name} already exists, download skipped")
+      true
+    end
+
+    def require_download_url(name, config, path)
+      url = config['download_url']
+      return url unless url.nil? || url.empty?
+
+      msg = "#{name}: download URL and expected file '#{path}' are missing, cannot download/use software package"
+      @logger.error(msg)
+      raise(ExtraSoftwareBrokenConfig, msg)
+    end
+
     def sw_config_key(name, arch)
       "#{name}:#{normalize_arch(arch)}"
     end
@@ -156,8 +188,11 @@ module AutoHCK
     end
 
     def config_path_candidates(name, kit, arch)
+      config_candidates_in(Pathname.new(@ext_path).join(name), kit, arch)
+    end
+
+    def config_candidates_in(base, kit, arch)
       kit_name = kit.downcase
-      base = Pathname.new(@ext_path).join(name)
       candidates = []
 
       variants = arch_variants(arch)
@@ -166,6 +201,18 @@ module AutoHCK
       candidates += [base.join("#{kit_name}-config.json"), base.join('config.json')]
 
       candidates
+    end
+
+    def read_bundled_config(name, base, kit, arch)
+      config_candidates_in(base, kit, arch).each do |path|
+        next unless File.exist?(path)
+
+        @logger.info("Loading bundled software '#{name}' arch '#{arch}' from #{path}")
+        return Json.read_json(path.to_s, @logger)
+      end
+
+      @logger.warn("SW #{name}: no config found for arch #{arch} under #{base}")
+      nil
     end
 
     def arch_variants(arch)
