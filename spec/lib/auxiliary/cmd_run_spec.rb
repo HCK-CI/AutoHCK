@@ -72,6 +72,28 @@ describe AutoHCK::CmdRun, :linux_process do
         expect(cmd.close.exitstatus).to eq(1)
       end
     end
+
+    it 'drains all stdout before the resource scope closes' do
+      cmd = nil
+      AutoHCK::ResourceScope.open([]) do |scope|
+        cmd = new_cmd(scope, '/bin/bash', '-c',
+                      'for i in $(seq 1 50); do echo "line $i"; sleep 0.01; done; echo PASS: done')
+        cmd.close
+
+        expect(cmd.stddata['stdout']).to include('PASS: done')
+        expect(cmd.stddata['stdout'].size).to be >= 51
+      end
+    end
+
+    it 'captures output from a child that outlives the command process' do
+      AutoHCK::ResourceScope.open([]) do |scope|
+        cmd = new_cmd(scope, RbConfig.ruby, '-e',
+                      "fork { sleep 0.25; puts 'PASS: done' }; exit")
+
+        expect(cmd.close.exitstatus).to be_zero
+        expect(cmd.stddata['stdout']).to include('PASS: done')
+      end
+    end
   end
 
   describe 'spawn options' do
