@@ -1,0 +1,34 @@
+{
+  "_comment": "Use with driver_verifier: --extensions memory_leak_check,driver_verifier (order matters — leak check post commands must run before verifier is disabled)",
+  "tests_config": [
+    {
+      "tests": [".*"],
+      "post_test_commands": [
+        {
+          "desc": "Verify Driver Verifier is active (requires driver_verifier extension)",
+          "guest_run_file": "lib/engines/functest/tests/scripts/check_driver_verifier_active.ps1",
+          "expected_output_contains": "PASS:",
+          "timeout": 30
+        },
+        {
+          "desc": "Disable @driver_module@ device to trigger verifier pool check",
+          "guest_run_file": "lib/engines/functest/tests/scripts/disable_driver_device.ps1",
+          "expected_output_contains": "PASS:",
+          "timeout": 60
+        },
+        {
+          "desc": "Wait for verifier pool tag verification (BSOD on leak)",
+          "guest_run": "Start-Sleep -Seconds 10; Write-Output 'PASS: VM alive after driver unload — no pool leak detected'",
+          "expected_output_contains": "PASS:",
+          "timeout": 30
+        },
+        {
+          "desc": "Re-enable @driver_module@ device",
+          "guest_run_file": "lib/engines/functest/tests/scripts/enable_driver_device.ps1",
+          "expected_output_contains": "PASS:",
+          "timeout": 60
+        }
+      ]
+    }
+  ]
+}
