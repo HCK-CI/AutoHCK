@@ -249,7 +249,8 @@ module AutoHCK
     def coerce_numeric_qmp_values(value)
       case value
       when String
-        value.match?(/\A-?\d+\z/) ? value.to_i : value
+        normalized = value.strip
+        normalized.match?(/\A-?\d+\z/) ? normalized.to_i : value
       when Hash
         value.transform_values { |v| coerce_numeric_qmp_values(v) }
       when Array
