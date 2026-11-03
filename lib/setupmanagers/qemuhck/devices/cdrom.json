@@ -1,0 +1,14 @@
+{
+  "name": "cdrom",
+  "type": "cdrom",
+  "command_line": [
+    "-blockdev driver=file,node-name=cdrom-file0,filename=@workspace@/autohck_cdrom.iso,read-only=on",
+    "-device ide-cd,drive=cdrom-file0,id=cdrom-dev0,bus=ide.1"
+  ],
+  "pre_start_commands": [
+    "dd if=/dev/urandom of=@workspace@/cdrom_test_data bs=1M count=10 && mkisofs -o @workspace@/autohck_cdrom.iso @workspace@/cdrom_test_data"
+  ],
+  "post_stop_commands": [
+    "rm -f @workspace@/autohck_cdrom.iso @workspace@/cdrom_test_data"
+  ]
+}
