@@ -1,0 +1,54 @@
+{
+    "name": "fpr_classic_balloon_compat",
+    "display_name": "Classic balloon still tracks memory size changes with FPR off",
+    "description": "Non-regression contract: with the feature off, QEMU balloon (setmem equivalent) shrinks and grows the guest exactly as before. Directional assertions (deltas > 1.5 GB) instead of absolute values - the reclaimed amount depends on guest state.",
+    "test_system_ref": "virtio-win/kvm-guest-drivers-windows#1657",
+    "timeout": 420,
+    "test_steps": [
+        {
+            "desc": "Make sure FPR is off (classic balloon only)",
+            "guest_run": "Remove-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\BALLOON\\Parameters' -Name EnableFpr -ErrorAction SilentlyContinue; Write-Output 'PASS: EnableFpr removed'"
+        },
+        {
+            "desc": "Restart balloon device without the feature",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_restart_device.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 60
+        },
+        {
+            "desc": "Probe available memory before shrinking",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_avail_probe.ps1",
+            "capture_output": "avail_before"
+        },
+        {
+            "desc": "Shrink the guest to 6 GiB via QMP balloon",
+            "qmp_command": { "execute": "balloon", "arguments": { "value": 6442450944 } }
+        },
+        {
+            "desc": "Let the deflate/adjust settle",
+            "guest_run": "Start-Sleep -Seconds 20; Write-Output 'PASS: waited'"
+        },
+        {
+            "desc": "Probe available memory while shrunk",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_avail_probe.ps1",
+            "capture_output": "avail_mid"
+        },
+        {
+            "desc": "Grow the guest back to 8 GiB via QMP balloon",
+            "qmp_command": { "execute": "balloon", "arguments": { "value": 8589934592 } }
+        },
+        {
+            "desc": "Let the inflate back settle",
+            "guest_run": "Start-Sleep -Seconds 20; Write-Output 'PASS: waited'"
+        },
+        {
+            "desc": "Probe available memory after growing back",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_avail_probe.ps1",
+            "capture_output": "avail_after"
+        },
+        {
+            "desc": "Verify the classic balloon tracked both directions",
+            "guest_run": "if ((@avail_before@ - @avail_mid@) -gt 1536 -and (@avail_after@ - @avail_mid@) -gt 1536) { Write-Output 'PASS: classic balloon tracks setmem (before @avail_before@ MB, mid @avail_mid@ MB, after @avail_after@ MB)' } else { throw \"classic balloon did not track: before @avail_before@ MB, mid @avail_mid@ MB, after @avail_after@ MB\" }"
+        }
+    ]
+}

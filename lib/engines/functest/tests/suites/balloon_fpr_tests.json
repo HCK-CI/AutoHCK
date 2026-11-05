@@ -1,0 +1,16 @@
+{
+    "name": "balloon_fpr_tests",
+    "description": "Functional tests for balloon free page reporting (VIRTIO_BALLOON_F_PAGE_REPORTING). The feature is opt-in (EnableFpr) and needs the device to offer the bit: QEMU's balloon defaults to free-page-reporting=false, so run the suite with --device-option virtio-balloon-pci,free-page-reporting=true. All thresholds are derived from the actual RAM size (floor = max(RAM/16, 128 MB), hysteresis band = clamp(RAM/32, 256 MB, 1 GB)), so the suite runs unchanged on any guest size.",
+    "test_system_ref": "virtio-win/kvm-guest-drivers-windows#1657",
+    "tests": [
+        "balloon/fpr_default_off",
+        "balloon/fpr_optin_hold",
+        "balloon/fpr_release_under_pressure",
+        "balloon/fpr_opt_out",
+        "balloon/fpr_classic_balloon_compat"
+    ],
+    "requirements": {
+        "drivers": [ "Balloon" ],
+        "platforms": [ "Win10x64", "Win2019x64", "Win2022x64", "Win2025x64" ]
+    }
+}
