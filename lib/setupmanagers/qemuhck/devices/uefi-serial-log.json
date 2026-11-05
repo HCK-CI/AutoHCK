@@ -1,0 +1,12 @@
+{
+  "name": "uefi-serial-log",
+  "type": "serial",
+  "need_pci_bus": false,
+  "pre_start_commands": [
+    "test -w @workspace@"
+  ],
+  "command_line": [
+    "-chardev file,id=uefi_serial_@client_id@,path=@workspace@/uefi_serial_@run_id@_@client_id@.log",
+    "-serial chardev:uefi_serial_@client_id@"
+  ]
+}

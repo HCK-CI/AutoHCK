@@ -14,6 +14,7 @@ module AutoHCK
       prop :secure_boot, T.nilable(T::Boolean)
       prop :ctrl_net_device, T.nilable(String)
       prop :fw_type, T.nilable(String)
+      prop :attach_devices_by_role, T.nilable(T::Hash[String, T::Array[String]])
 
       # rubocop:disable Metrics/AbcSize
       # There is no way to reduce the ABC size of this method
@@ -26,6 +27,7 @@ module AutoHCK
         self.secure_boot = other.secure_boot unless other.secure_boot.nil?
         self.ctrl_net_device = other.ctrl_net_device unless other.ctrl_net_device.nil?
         self.fw_type = other.fw_type unless other.fw_type.nil?
+        self.attach_devices_by_role = other.attach_devices_by_role unless other.attach_devices_by_role.nil?
       end
       # rubocop:enable Metrics/AbcSize
     end
