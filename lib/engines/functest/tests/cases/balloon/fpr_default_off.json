@@ -1,0 +1,29 @@
+{
+    "name": "fpr_default_off",
+    "display_name": "FPR stays off without opt-in",
+    "description": "Default-off contract: with EnableFpr unset the traditional balloon behavior is kept - no hold runs",
+    "test_system_ref": "virtio-win/kvm-guest-drivers-windows#1657",
+    "timeout": 180,
+    "test_steps": [
+        {
+            "desc": "Remove EnableFpr to restore the default (feature off)",
+            "guest_run": "Remove-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\BALLOON\\Parameters' -Name EnableFpr -ErrorAction SilentlyContinue; Write-Output 'PASS: EnableFpr removed'"
+        },
+        {
+            "desc": "Restart balloon device to re-negotiate features",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_restart_device.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 60
+        },
+        {
+            "desc": "Give a stray hold time to become visible",
+            "guest_run": "Start-Sleep -Seconds 20; Write-Output 'PASS: waited'"
+        },
+        {
+            "desc": "Verify no hold is running (available stays high)",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_check_no_hold.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 60
+        }
+    ]
+}

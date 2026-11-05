@@ -1,0 +1,43 @@
+{
+    "name": "fpr_release_under_pressure",
+    "display_name": "Guest pressure below the release line is answered",
+    "description": "Safety contract: with pages held, guest pressure through the release line is answered - allocations keep succeeding and available settles back above the line",
+    "test_system_ref": "virtio-win/kvm-guest-drivers-windows#1657",
+    "timeout": 600,
+    "test_steps": [
+        {
+            "desc": "Enable FPR (opt-in)",
+            "guest_run": "Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\BALLOON\\Parameters' -Name EnableFpr -Value 1 -Type DWord; Write-Output 'PASS: EnableFpr=1 set'"
+        },
+        {
+            "desc": "Restart balloon device to negotiate the feature",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_restart_device.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 60
+        },
+        {
+            "desc": "Let the hold take the free memory first",
+            "guest_run": "$os = Get-CimInstance Win32_OperatingSystem; $totalMb = [math]::Round($os.TotalVisibleMemorySize / 1KB); $floor = [math]::Max([math]::Round($totalMb / 16), 128); $band = [math]::Min([math]::Max([math]::Round($totalMb / 32), 256), 1024); $gate = $floor + $band; function Send-Beacon($a, $c, $tag) { try { $t = New-Object System.Net.Sockets.TcpClient; $t.Connect('192.168.100.1', 9999); $s = $t.GetStream(); $b = [Text.Encoding]::ASCII.GetBytes(\"$tag avail=$a commit=$c floor=$floor gate=$gate band=$band\"); $s.Write($b, 0, $b.Length); $s.Close(); $t.Close() } catch { } }; $deadline = (Get-Date).AddSeconds(100); $done = $false; $a = -1; $c = -1; while ((Get-Date) -lt $deadline) { Start-Sleep -Seconds 5; $osx = Get-CimInstance Win32_OperatingSystem; $a = [math]::Round($osx.FreePhysicalMemory / 1KB); $c = [math]::Round($osx.FreeVirtualMemory / 1KB); if (($a -ge ($floor - 8)) -and ($c -ge ($floor - 8)) -and (($a -le ($gate + $band)) -or ($c -le ($gate + $band)))) { $done = $true; break } }; if ($done) { Send-Beacon $a $c 'step3_PASS'; Write-Output \"PASS: hold settled (avail $a MB, commit headroom $c MB)\" } else { Send-Beacon $a $c 'step3_FAIL'; Write-Output \"FAIL: hold out of contract (avail $a MB, commit headroom $c MB, floor $floor, gate $gate, band $band) within 100s\" }",
+            "timeout": 120
+        },
+        {
+            "desc": "Confirm pages are actually held",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_check_hold.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 60
+        },
+        {
+            "desc": "Push available through the release line and verify the answer",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_pressure_release.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 300
+        }
+    ],
+    "cleanup": [
+        {
+            "desc": "Restore the default (off) state",
+            "guest_run": "Remove-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\BALLOON\\Parameters' -Name EnableFpr -ErrorAction SilentlyContinue; Write-Output 'cleanup: EnableFpr removed'",
+            "ignore_errors": true
+        }
+    ]
+}
