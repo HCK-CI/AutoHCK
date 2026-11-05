@@ -1,5 +1,6 @@
 {
   "name": "virtio-blk-pci",
+  "iommu_platform_support": true,
   "type": "storage",
   "need_pci_bus": true,
   "define_variables": {

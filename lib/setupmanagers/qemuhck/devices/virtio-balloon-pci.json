@@ -1,5 +1,6 @@
 {
   "name": "virtio-balloon-pci",
+  "iommu_platform_support": true,
   "need_pci_bus": true,
   "command_line": ["-device virtio-balloon-pci@device_options@@virtio_vectors_param@@iommu_device_param@,bus=@bus_name@.0"]
 }
