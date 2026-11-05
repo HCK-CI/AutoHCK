@@ -14,8 +14,9 @@ module AutoHCK
       prop :secure_boot, T.nilable(T::Boolean)
       prop :ctrl_net_device, T.nilable(String)
       prop :fw_type, T.nilable(String)
+      prop :attach_debug_net, T.nilable(T::Boolean)
 
-      # rubocop:disable Metrics/AbcSize
+      # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       # There is no way to reduce the ABC size of this method
       sig { params(other: HLKPlatformClientsOptions).void }
       def merge!(other)
@@ -26,8 +27,9 @@ module AutoHCK
         self.secure_boot = other.secure_boot unless other.secure_boot.nil?
         self.ctrl_net_device = other.ctrl_net_device unless other.ctrl_net_device.nil?
         self.fw_type = other.fw_type unless other.fw_type.nil?
+        self.attach_debug_net = other.attach_debug_net unless other.attach_debug_net.nil?
       end
-      # rubocop:enable Metrics/AbcSize
+      # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
     end
 
     class HLKClient < T::Struct
