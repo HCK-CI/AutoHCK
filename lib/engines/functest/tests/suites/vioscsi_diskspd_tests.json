@@ -1,0 +1,13 @@
+  {
+      "name": "vioscsi_diskspd_tests",
+      "description": "DiskSpd performance tests for vioscsi with memory compression on/off on Windows 11",
+      "test_system_ref": "VIRT-STORAGE",
+      "tests": [
+          "diskspd_memory_compression_on",
+          "diskspd_memory_compression_off"
+      ],  
+      "requirements": {
+          "drivers": [ "vioscsi" ],
+          "platforms": [ "Win11_24H2x64", "Win11_25H2x64" ]
+      }
+  }

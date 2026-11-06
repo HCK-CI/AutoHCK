@@ -1,0 +1,49 @@
+  {
+      "name": "diskspd_memory_compression_off",
+      "display_name": "DiskSpd benchmark with memory compression disabled",
+      "description": "Run DiskSpd storage benchmark with Windows 11 memory compression disabled",
+      "test_system_ref": "VIRT-STORAGE-002",
+      "timeout": 600,
+      "test_steps": [
+          {
+              "desc": "Disable memory compression",
+              "guest_run_file": "lib/engines/functest/tests/scripts/disable_memory_compression.ps1",
+              "expected_output_contains": "PASS:",
+              "timeout": 150
+          },
+          {
+              "desc": "Reboot to ensure memory compression is inactive",
+              "guest_reboot": true
+          },
+          {
+              "desc": "Verify memory compression is disabled",
+              "guest_run_file": "lib/engines/functest/tests/scripts/get_memory_compression_status.ps1",
+              "expected_output_contains": "DISABLED",
+              "timeout": 60
+          },
+          {
+              "desc": "Install DiskSpd",
+              "guest_run_file": "lib/engines/functest/tests/scripts/install_diskspd.ps1",
+              "expected_output_contains": "PASS:",
+              "timeout": 300
+          },  
+          {
+              "desc": "Run DiskSpd benchmark (64K, 120s, 8 outstanding IO, 4 threads, 50% write, 2GB file)",
+              "guest_run_file": "lib/engines/functest/tests/scripts/run_diskspd_benchmark.ps1",
+              "expected_output_contains": "PASS:",
+              "timeout": 180
+          }   
+      ],  
+      "cleanup": [
+          {
+              "desc": "Remove DiskSpd installation",
+              "guest_run": "Remove-Item -Path C:\\AutoHCK\\diskspd -Recurse -Force -ErrorAction SilentlyContinue; Remove-Item -Path C:\\AutoHCK\\diskspd.zip -Force -ErrorAction SilentlyContinue",
+              "ignore_errors": true
+          },  
+          {
+              "desc": "Remove test file if exists",
+              "guest_run": "Remove-Item -Path C:\\testfile.dat -Force -ErrorAction SilentlyContinue",
+              "ignore_errors": true
+          }
+      ]
+  }
