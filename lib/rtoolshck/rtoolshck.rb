@@ -87,6 +87,14 @@ module AutoHCK
     TOOLSHCK_CONNECTION_TIMEOUT = 60
     SSH_CONNECTION_TIMEOUT = TOOLSHCK_CONNECTION_TIMEOUT
 
+    # winrm-fs 1.3.7 guest-side cleanup race: uploads usually extract fine
+    # (exitcode 0) but the cleanup PowerShell (rm $unpack -recurse -force) can
+    # fail with "The directory is not empty" on Windows Server 2016 guests,
+    # which the gem treats as fatal. Retry a bounded number of times before
+    # giving up; each attempt uses a fresh guest-side unpack directory.
+    UPLOAD_ATTEMPTS = 3
+    UPLOAD_RETRY_DELAY = 10
+
     # Actions that can be performed in no_studio mode (client-only actions)
     CLIENT_ACTIONS = %i[
       start_client_services
@@ -1395,13 +1403,32 @@ module AutoHCK
     def do_upload_to_machine(machine, l_directory, r_directory = nil)
       fm = machine_file_manager(machine)
       r_directory ||= "#{fm.temp_dir}/#{SecureRandom.uuid}"
-      fm.upload(l_directory, r_directory) do |cb, tb, lp, rp|
-        # transfer progress is logged by SshFileManager when SSH is used
+      attempts = 0
+      begin
+        attempts += 1
+        fm.upload(l_directory, r_directory) do |cb, tb, lp, rp|
+          # transfer progress is logged by SshFileManager when SSH is used
+        end
+      rescue HTTPClient::KeepAliveDisconnected
+        where = "#{machine}/winrm/run"
+        raise WinrmPSRunError.new(where), "Machine #{machine} reset connection."
+      rescue WinRM::FS::Core::FileTransporterFailed => e
+        # winrm-fs 1.3.7 cleanup race, see UPLOAD_ATTEMPTS. The destination
+        # directory is safe to reuse: the payload extracts before the failing
+        # cleanup step, and the gem unpacks to a new temp directory per call.
+        # Only reachable on the winrm-fs fallback path: machine_file_manager
+        # prefers SSH/SFTP, which has no guest-side cleanup step.
+        raise if attempts >= UPLOAD_ATTEMPTS
+
+        logger('warn', "#{machine}/winrm/upload") do
+          "Upload attempt #{attempts}/#{UPLOAD_ATTEMPTS} to #{r_directory} failed: " \
+            "#{e.message.lines.first&.chomp}. " \
+            "Retrying in #{UPLOAD_RETRY_DELAY}s..."
+        end
+        sleep UPLOAD_RETRY_DELAY
+        retry
       end
       r_directory
-    rescue HTTPClient::KeepAliveDisconnected
-      where = "#{machine}/winrm/run"
-      raise WinrmPSRunError.new(where), "Machine #{machine} reset connection."
     end
 
     def do_download_from_machine(machine, r_path, l_path)
