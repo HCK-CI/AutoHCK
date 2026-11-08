@@ -49,15 +49,30 @@ module AutoHCK
         @original = @manager.client_nvram_path(@client.name)
         @client.wait_for_existing_target(@target)
         verify_idle
+        return unless @definition.verify_guest_state?
+
+        @baseline = read_state
+        @definition.validate_baseline!(@baseline)
       end
 
       def activate_profile
         enter_profile
         @client.wait_for_existing_target(@target)
+        @definition.validate_active_guest_state!(read_state) if @definition.verify_guest_state?
       end
 
       def validate_environment
         raise EngineError, 'nvram_profile requires qemuhck' unless @project.engine_platform.setupmanager == 'qemuhck'
+      end
+
+      def read_state
+        output = @tools.act_with_tools_on_machine(@client.name) do |tools|
+          tools.run_on_machine(@client.name, @definition.guest_state_command)
+        end
+        state = JSON.parse(output)
+        @definition.validate_guest_readback!(state)
+
+        state
       end
 
       def verify_idle
@@ -119,7 +134,7 @@ module AutoHCK
         @journal['original_sha256'] = Digest::SHA256.file(@original).hexdigest
         prepare_profile_nvram
         record('switching_to_profile')
-        @manager.restart_client_with_nvram(@scope, @client.name, @temporary)
+        @manager.restart_client_with_nvram(@scope, @client.name, @temporary, temporary_devices: @definition.devices)
         record('profile_active')
       end
 
@@ -228,8 +243,9 @@ module AutoHCK
 
         # Require an idle HLK target before returning to normal firmware.
         verify_idle
-        @manager.restart_client_with_nvram(@scope, @client.name, @original)
+        @manager.restart_client_with_nvram(@scope, @client.name, @original, temporary_devices: [])
         @client.wait_for_existing_target(@target)
+        verify_restored_state if @definition.verify_guest_state?
       rescue StandardError => e
         stop_after_transition_failure('NVRAM restoration failed', e)
         raise
@@ -240,6 +256,11 @@ module AutoHCK
         return unless original_hash && Digest::SHA256.file(@original).hexdigest != original_hash
 
         raise EngineError, 'Saved normal NVRAM changed while the profile was active; refusing to boot it'
+      end
+
+      def verify_restored_state
+        restored = read_state
+        @definition.validate_restored_guest_state!(@baseline, restored)
       end
 
       # Keep failed guest cleanup from affecting later tests.
