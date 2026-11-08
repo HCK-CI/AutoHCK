@@ -21,6 +21,7 @@ module AutoHCK
     def initialize(project)
       @platform = T.let(project.engine_platform, Models::HLKPlatform)
       initialize_project project
+      check_pending_nvram_transitions
 
       @clients_vm = {}
       @clients_vm_runners = {}
@@ -278,6 +279,10 @@ module AutoHCK
       @clients_vm[name].option_config(option)
     end
 
+    def virt_fw_vars_bin
+      @studio_vm.config.fetch('virt_fw_vars_bin')
+    end
+
     def run_studio(scope, run_opts = nil)
       @studio_vm.run(scope, run_opts)
     end
@@ -291,7 +296,16 @@ module AutoHCK
     end
 
     def run_client(scope, name, run_opts = nil)
+      check_pending_nvram_transitions
       @clients_vm_runners[name] = @clients_vm[name].run(scope, client_run_opts(run_opts))
+    end
+
+    # Protect the workspace from reuse after an unfinished NVRAM transition.
+    def check_pending_nvram_transitions
+      pending = Dir.glob(File.join(@workspace_path, 'nvram_transition_*.pending.json'))
+      return if pending.empty?
+
+      raise AutoHCKError, "Unfinished NVRAM transition; inspect before reusing this workspace: #{pending.join(', ')}"
     end
 
     def client_nvram_path(name)
@@ -305,13 +319,15 @@ module AutoHCK
       @clients_vm_runners.fetch(name).keep_snapshot
       stop_client(name)
       machine.select_nvram(path)
+      # Allow the current NVRAM transition to complete its client restarts.
       @clients_vm_runners[name] = machine.run(scope, client_run_opts(options))
     end
 
     # Stops the client's VM (if running) and boots a new one with run_opts.
     def power_cycle_client(scope, name, run_opts = nil)
+      check_pending_nvram_transitions
       stop_client(name)
-      @clients_vm_runners[name] = @clients_vm[name].run(scope, client_run_opts(run_opts))
+      run_client(scope, name, run_opts)
     end
 
     def client_run_opts(run_opts)

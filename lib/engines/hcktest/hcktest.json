@@ -11,6 +11,11 @@
       "secure": true
     },
     {
+      "tests": ["UEFI GOP mode test"],
+      "svvp_only": true,
+      "nvram_profile": "uefi_gop_1024x768"
+    },
+    {
       "tests": [
         "USB Type-C ACPI Validation"
       ],

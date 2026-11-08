@@ -180,6 +180,7 @@ module AutoHCK
         all_tests_configs
           .select { |test_config| Regexp.union(test_config.tests.map { Regexp.new(_1) }).match?(test_name) }
           .select { |test_config| test_config.kits.empty? || test_config.kits.include?(@client.kit) }
+          .select { |test_config| !test_config.svvp_only || @project.options.test.svvp }
           .flat_map(&config)
       end
 
@@ -194,6 +195,15 @@ module AutoHCK
 
       def test_errata(test_name)
         select_test_config(test_name, :errata).compact.first
+      end
+
+      def nvram_profile(test_name)
+        return nil unless @project.options.test.svvp
+
+        profiles = select_test_config(test_name, :nvram_profile).compact.uniq
+        raise EngineError, "Conflicting NVRAM profiles for #{test_name}" if profiles.size > 1
+
+        profiles.first
       end
 
       sig { params(test: Models::HLK::Test, type: Symbol, replacement: ReplacementMap).void }
@@ -574,21 +584,35 @@ module AutoHCK
         build_system_info(support_sysinfo)
       end
 
-      sig { params(test: Models::HLK::Test, run_number: Integer, run_count: Integer).void }
-      def one_test_run(test, run_number, run_count)
+      # Keep temporary firmware changes within one test run.
+      sig do
+        params(test: Models::HLK::Test, run_number: Integer, run_count: Integer, scope: T.nilable(ResourceScope)).void
+      end
+      def one_test_run(test, run_number, run_count, scope: nil)
         replacement = @replacement_map.merge(
           '@safe_test_name@' => test.safe_name,
           '@run_number@' => run_number.to_s
         )
 
-        run_test_commands(test, :pre_test_commands, replacement)
+        profile = nvram_profile(test.name)
+        if profile
+          environment = NvramProfile.new(project: @project, tools: @tools, client: @client,
+                                         target: @target, scope: scope)
+          environment.run(profile, cleanup: -> { run_test_commands(test, :post_test_commands, replacement) }) do
+            queue_and_run_test(test, run_number, run_count, replacement)
+          end
+        else
+          queue_and_run_test(test, run_number, run_count, replacement)
+          run_test_commands(test, :post_test_commands, replacement)
+        end
+      end
 
+      def queue_and_run_test(test, run_number, run_count, replacement)
+        run_test_commands(test, :pre_test_commands, replacement)
         test_str = "run #{run_number}/#{run_count} #{test.name} (#{test.id})"
         @logger.info("Adding to queue: #{test_str}")
         queue_test(test, wait: true)
         handle_test_running
-
-        run_test_commands(test, :post_test_commands, replacement)
       end
 
       sig { params(current_run_tests: T::Array[Models::HLK::Test]).returns(T::Array[Models::HLK::Test]) }
@@ -616,8 +640,8 @@ module AutoHCK
         end
       end
 
-      sig { params(current_run_tests: T::Array[Models::HLK::Test]).void }
-      def retry_tests(current_run_tests)
+      sig { params(current_run_tests: T::Array[Models::HLK::Test], scope: T.nilable(ResourceScope)).void }
+      def retry_tests(current_run_tests, scope: nil)
         loop do
           tests_to_retry = select_tests_for_retry(current_run_tests)
           break if tests_to_retry.empty?
@@ -626,7 +650,7 @@ module AutoHCK
 
           tests_to_retry.each do |test|
             run_id = test.run_count + test.retried_times + 1
-            one_test_run(test, run_id, run_id)
+            one_test_run(test, run_id, run_id, scope: scope)
             test.retried_times += 1
 
             break if @project.run_terminated
@@ -644,15 +668,21 @@ module AutoHCK
         @project.generate_junit
       end
 
-      sig { params(tests: T::Array[Models::HLK::Test]).void }
-      def run(tests)
+      sig { params(tests: T::Array[Models::HLK::Test], scope: T.nilable(ResourceScope)).void }
+      def run(tests, scope: nil)
         load_clients_system_info
         update_summary_results_log
+        return if @project.run_terminated || tests.empty?
+
+        run_group(tests, scope: scope)
+      end
+
+      def run_group(tests, scope:)
         tests.each do |test|
           run_count = test.run_count
 
           (1..run_count).each do |run_number|
-            one_test_run(test, run_number, run_count)
+            one_test_run(test, run_number, run_count, scope: scope)
 
             break if @project.run_terminated
           end
@@ -662,7 +692,7 @@ module AutoHCK
 
         return if @project.run_terminated
 
-        retry_tests(tests) unless @project.options.test.auto_retry_failed_tests.zero?
+        retry_tests(tests, scope: scope) unless @project.options.test.auto_retry_failed_tests.zero?
       end
     end
   end
