@@ -247,6 +247,45 @@ module AutoHCK
       set_machine_ready
     end
 
+    # Confirm a restarted client returns to its original HLK registration.
+    def wait_for_existing_target(target)
+      @logger.info("Waiting for #{@name} to return to its existing HLK pool and target")
+      deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + CLIENT_COOLDOWN_TIMEOUT
+      last_error = nil
+      loop do
+        begin
+          verify_existing_target(target)
+          @logger.info("#{@name} Ready in original pool #{@project.engine_tag}; target #{target.fetch('key')} retained")
+          return
+        rescue StandardError => e
+          last_error = e
+        end
+        break if Process.clock_gettime(Process::CLOCK_MONOTONIC) >= deadline
+
+        sleep 5
+      end
+      raise ClientRunError, "#{@name} did not return to its existing HLK pool/target: #{last_error}"
+    end
+
+    # Confirm the guest and its existing HLK target are ready for testing.
+    def verify_existing_target(target)
+      tag = @project.engine_tag
+      @tools.act_with_tools_on_machine(@name) { _1.run_on_machine(@name, '$env:COMPUTERNAME') }
+      ensure_existing_machine_ready(tag)
+      Targets.new(self, @project, @tools, tag).verify_original_target(target)
+    end
+
+    def ensure_existing_machine_ready(tag)
+      machine_pool = pool
+      raise ClientRunError, "#{@name} not found in any pool" unless machine_pool
+      raise ClientRunError, "#{@name} is not in pool #{tag}" unless machine_pool == tag
+
+      reset_to_ready_state
+      machine = machine_info
+      raise ClientRunError, "#{@name} not found in any pool" unless machine
+      raise ClientRunError, "#{@name} state is #{machine['state']}" unless machine['state'] == 'Ready'
+    end
+
     def close
       @logger.info("Exiting HLKClient #{@name}")
       @cooldown_thread&.exit
