@@ -4,6 +4,17 @@ module AutoHCK
   class HCKTest
     # Define the firmware changes and checks required by each NVRAM profile.
     class NvramProfileDefinition
+      # Set the firmware display mode without changing other NVRAM variables.
+      # PlatformConfig uses OVMF's gOvmfPlatformConfigGuid. Attributes 7 enable
+      # non-volatile, boot-service, and runtime access. The data stores width
+      # (1024) and height (768) as little-endian 32-bit integers.
+      GOP_VARIABLES = {
+        'PlatformConfig' => {
+          'name' => 'PlatformConfig', 'guid' => '7235c51c-0c80-4cab-87ac-3b084a6304b1',
+          'attr' => 7, 'data' => '0004000000030000'
+        }.freeze
+      }.freeze
+
       attr_reader :variables, :delete_variables, :kind, :label, :changed_variables, :prepared_detail
 
       def initialize(kind:, label:, changed_variables:, prepared_detail:, restored_message:, variables: {})
@@ -48,6 +59,10 @@ module AutoHCK
             raise EngineError, "Unexpected #{name} GUID or attributes in original NVRAM"
           end
         end
+        platform_config = original['PlatformConfig'] if @variables.key?('PlatformConfig')
+        return unless platform_config && platform_config.fetch('data').size != 16
+
+        raise EngineError, 'Unexpected PlatformConfig size in original NVRAM'
       end
 
       def matching_inventory?(expected, edited)
@@ -60,7 +75,12 @@ module AutoHCK
         end
       end
 
-      PROFILES = {}.freeze
+      PROFILES = {
+        'uefi_gop_1024x768' => new(kind: :gop, label: 'GOP', changed_variables: 'PlatformConfig',
+                                  prepared_detail: '1024x768',
+                                  restored_message: 'Original NVRAM restored on %<client>s; HLK target verified',
+                                  variables: GOP_VARIABLES)
+      }.freeze
 
       def self.fetch(name)
         PROFILES.fetch(name) { raise EngineError, "Unknown NVRAM profile: #{name}" }
