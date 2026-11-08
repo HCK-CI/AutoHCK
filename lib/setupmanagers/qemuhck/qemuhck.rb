@@ -25,6 +25,7 @@ module AutoHCK
 
       @clients_vm = {}
       @clients_vm_runners = {}
+      @firmware_sessions = {}
       @package_manager = PackageManager.new(@logger)
       initialize_studio_vm
       initialize_clients_vm
@@ -288,8 +289,23 @@ module AutoHCK
       @studio_vm.run(scope, run_opts)
     end
 
-    def run_hypervisor_client_command(name, cmd, arguments = nil)
-      @clients_vm_runners[name].qmp.run_cmd(cmd, arguments)
+    # Identify the active firmware session without exposing QMP to the test engine.
+    def firmware_session_token(name)
+      current = @clients_vm_runners[name]&.qmp
+      return nil unless current
+
+      state = @firmware_sessions[name]
+      return state[:token] if state && state[:qmp].equal?(current)
+
+      @firmware_sessions[name] = { qmp: current, token: Object.new.freeze }
+      @firmware_sessions[name][:token]
+    end
+
+    def run_hypervisor_client_command(name, cmd, arguments = nil, session: nil)
+      current = session ? firmware_session_state(name, session).fetch(:qmp) : @clients_vm_runners[name]&.qmp
+      raise QMPError, 'QEMU session unavailable or replaced' unless current
+
+      current.run_cmd(cmd, arguments)
     end
 
     def wait_for_hypervisor_client_event(name, events, timeout: 60)
@@ -379,6 +395,18 @@ module AutoHCK
       $stderr.write "[qemuhck.rb] Entering namespace: #{workspace_path}\n" if ENV['AUTOHCK_NS_VERBOSE']
       T.unsafe(Ns).enter workspace_path, Dir.pwd, 'bin/auto_hck', '-w',
                          workspace_path, *ARGV
+    end
+
+    private
+
+    def firmware_session_state(name, session)
+      current = @clients_vm_runners[name]&.qmp
+      state = @firmware_sessions[name]
+      unless current && state && state[:qmp].equal?(current) && state[:token].equal?(session)
+        raise QMPError, 'QEMU session unavailable or replaced'
+      end
+
+      state
     end
   end
 end
