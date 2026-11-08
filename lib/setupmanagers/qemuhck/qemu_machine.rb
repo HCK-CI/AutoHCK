@@ -48,7 +48,7 @@ module AutoHCK
 
       def try_with_qmp
         yield @qmp unless @qmp.nil?
-      rescue IOError
+      rescue IOError, QMPError
         # @qmp is closed.
       end
 
@@ -151,7 +151,7 @@ module AutoHCK
 
     include Helper
 
-    attr_reader :config, :fw
+    attr_reader :config, :fw, :run_opts
 
     MONITOR_BASE_PORT = 10_000
     VNC_BASE_PORT = 5900
@@ -272,6 +272,20 @@ module AutoHCK
       FileUtils.cp(@fw['nvram'], nvram)
       @fw['nvram'] = nvram
       @machine_options << 'pflash1=pflash_vars'
+    end
+
+    # Use a compatible workspace NVRAM for the next VM start.
+    def select_nvram(path)
+      raise QemuRunError, 'Cannot select NVRAM while QEMU is running' if @runner&.alive?
+
+      path = File.realpath(path)
+      unless File.dirname(path) == File.realpath(@workspace_path) && File.writable?(path) &&
+             File.size(path) == File.size(@fw.fetch('nvram'))
+        raise InvalidConfigFile, "NVRAM must be a compatible writable file directly in the workspace: #{path}"
+      end
+
+      @logger.info("Selecting NVRAM for #{@run_name}: #{path}")
+      @fw['nvram'] = path
     end
 
     def option_config(option)
@@ -1013,7 +1027,7 @@ module AutoHCK
         scope.transaction do |tmp_scope|
           hostfwd = QemuHCK::Ns::Hostfwd.new(@logger, @workspace_path, [@monitor_port, @vnc_port])
           tmp_scope << hostfwd
-          Runner.new(tmp_scope, @logger, self, @run_name, @run_opts)
+          @runner = Runner.new(tmp_scope, @logger, self, @run_name, @run_opts)
         end
       end
     end

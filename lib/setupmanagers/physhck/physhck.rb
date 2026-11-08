@@ -93,6 +93,14 @@ module AutoHCK
       Runner.new(@logger)
     end
 
+    def client_nvram_path(_name)
+      @logger.info('Client NVRAM path is currently not supported for physical machines')
+    end
+
+    def restart_client_with_nvram(*)
+      @logger.info('Client restart with NVRAM is currently not supported for physical machines')
+    end
+
     def power_cycle_client(*); end
 
     def client_post_start_commands
