@@ -1,6 +1,8 @@
 # typed: true
 # frozen_string_literal: true
 
+require 'timeout'
+
 # AutoHCK module
 module AutoHCK
   # QemuHCK class
@@ -15,6 +17,7 @@ module AutoHCK
     attr_reader :kit, :project
 
     QEMUHCK_INFO_LOG_FILE = 'qemuhck.txt'
+    SECURE_BOOT_QMP_TIMEOUT = 10
     OPT_NAMES = %w[viommu_state s3_state s4_state enlightenments_state vhost_state machine_type fw_type cpu
                    ctrl_net_device vbs_state tpm_state numa_state pcie_spare_root_ports vsm_state].freeze
 
@@ -25,6 +28,7 @@ module AutoHCK
 
       @clients_vm = {}
       @clients_vm_runners = {}
+      @client_vm_ids = {}
       @firmware_sessions = {}
       @package_manager = PackageManager.new(@logger)
       initialize_studio_vm
@@ -158,6 +162,7 @@ module AutoHCK
         vm_options = client_vm_options(v, i)
         @logger.debug("Creating client VM #{v.name} with options: #{vm_options}")
         @clients_vm[v.name] = QemuMachine.new(@project, vm_options)
+        @client_vm_ids[v.name] = vm_options.fetch('client_id')
       end
     end
 
@@ -297,7 +302,7 @@ module AutoHCK
       state = @firmware_sessions[name]
       return state[:token] if state && state[:qmp].equal?(current)
 
-      @firmware_sessions[name] = { qmp: current, token: Object.new.freeze }
+      @firmware_sessions[name] = { qmp: current, token: Object.new.freeze, regular_usb_bootindex: nil }
       @firmware_sessions[name][:token]
     end
 
@@ -306,6 +311,40 @@ module AutoHCK
       raise QMPError, 'QEMU session unavailable or replaced' unless current
 
       current.run_cmd(cmd, arguments)
+    end
+
+    # Give one test UFD priority while keeping the ordinary HLK USB stick out of the boot attempt.
+    def select_secure_boot_ufd(name, number, session:)
+      raise ArgumentError, "Unknown Secure Boot UFD: #{number}" unless [1, 2].include?(number)
+
+      state = firmware_session_state(name, session)
+      inactive = number == 1 ? 2 : 1
+      set_secure_boot_ufd_bootindex(name, inactive, -1, session:)
+      demote_regular_usb(name, state, session:)
+      set_secure_boot_ufd_bootindex(name, number, 0, session:)
+      verify_secure_boot_ufd_bootindex(name, inactive, -1, session:)
+      verify_secure_boot_ufd_bootindex(name, number, 0, session:)
+    end
+
+    # Return both test UFDs to normal priority after an EFI boot attempt.
+    def restore_secure_boot_ufd_priority(name, session:)
+      firmware_session_state(name, session)
+      reset_secure_boot_ufd_bootindexes(name, session:)
+      verify_secure_boot_ufd_bootindexes(name, session:)
+    end
+
+    # Restore the ordinary HLK USB stick when the manual test controller finishes.
+    def restore_secure_boot_boot_priority(name, session:)
+      return false unless session && firmware_session_token(name).equal?(session)
+
+      restore_secure_boot_ufd_priority(name, session:)
+      restore_regular_usb_bootindex(name, session:)
+      true
+    end
+
+    def send_efi_return(name, session:)
+      keys = [{ 'type' => 'qcode', 'data' => 'ret' }]
+      secure_boot_qmp(name, 'send-key', { 'keys' => keys, 'hold-time' => 100 }, session:)
     end
 
     def wait_for_hypervisor_client_event(name, events, timeout: 60)
@@ -407,6 +446,79 @@ module AutoHCK
       end
 
       state
+    end
+
+    def secure_boot_qmp(name, command, arguments, session:)
+      firmware_session_state(name, session)
+      Timeout.timeout(SECURE_BOOT_QMP_TIMEOUT) do
+        run_hypervisor_client_command(name, command, arguments, session:)
+      end
+    end
+
+    def secure_boot_client_id(name)
+      format('%<client>02d', client: @client_vm_ids.fetch(name))
+    end
+
+    def secure_boot_ufd_path(name, number)
+      "/machine/peripheral/svvp_ufd#{number}_#{secure_boot_client_id(name)}"
+    end
+
+    def regular_usb_path(name)
+      "/machine/peripheral/hlk_usb_stick_#{secure_boot_client_id(name)}"
+    end
+
+    def set_secure_boot_ufd_bootindex(name, number, value, session:)
+      arguments = { 'path' => secure_boot_ufd_path(name, number), 'property' => 'bootindex', 'value' => value }
+      secure_boot_qmp(name, 'qom-set', arguments, session:)
+    end
+
+    def reset_secure_boot_ufd_bootindexes(name, session:)
+      [1, 2].each { |number| set_secure_boot_ufd_bootindex(name, number, -1, session:) }
+    end
+
+    def verify_secure_boot_ufd_bootindexes(name, session:)
+      [1, 2].each { |number| verify_secure_boot_ufd_bootindex(name, number, -1, session:) }
+    end
+
+    def verify_secure_boot_ufd_bootindex(name, number, expected, session:)
+      arguments = { 'path' => secure_boot_ufd_path(name, number), 'property' => 'bootindex' }
+      actual = secure_boot_qmp(name, 'qom-get', arguments, session:)
+      return if actual == expected
+
+      raise EngineError, "UFD #{number} bootindex is #{actual.inspect}, expected #{expected}"
+    end
+
+    def demote_regular_usb(name, state, session:)
+      return unless state[:regular_usb_bootindex].nil?
+
+      path = regular_usb_path(name)
+      index = secure_boot_qmp(name, 'qom-get', { 'path' => path, 'property' => 'bootindex' }, session:)
+      unless index.is_a?(Integer) && index.zero?
+        raise EngineError, "General USB stick bootindex is #{index.inspect}, expected 0"
+      end
+
+      state[:regular_usb_bootindex] = index
+      secure_boot_qmp(name, 'qom-set', { 'path' => path, 'property' => 'bootindex', 'value' => -1 }, session:)
+      verify_regular_usb_bootindex(name, -1, session:)
+    end
+
+    def restore_regular_usb_bootindex(name, session:)
+      state = firmware_session_state(name, session)
+      index = state[:regular_usb_bootindex]
+      return if index.nil?
+
+      arguments = { 'path' => regular_usb_path(name), 'property' => 'bootindex', 'value' => index }
+      secure_boot_qmp(name, 'qom-set', arguments, session:)
+      verify_regular_usb_bootindex(name, index, session:)
+      state[:regular_usb_bootindex] = nil
+    end
+
+    def verify_regular_usb_bootindex(name, expected, session:)
+      arguments = { 'path' => regular_usb_path(name), 'property' => 'bootindex' }
+      actual = secure_boot_qmp(name, 'qom-get', arguments, session:)
+      return if actual == expected
+
+      raise EngineError, "General USB stick bootindex is #{actual.inspect}, expected #{expected}"
     end
   end
 end
