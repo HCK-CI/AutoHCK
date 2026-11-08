@@ -1,6 +1,7 @@
 {
   "qemu_bin": "/root/Prometheus/qemu/build/x86_64-softmmu/qemu-system-x86_64",
   "qemu_img_bin": "/root/Prometheus/qemu/build/qemu-img",
+  "virt_fw_vars_bin": "/usr/bin/virt-fw-vars",
   "ivshmem_server_bin": "/root/Prometheus/qemu/build/contrib/ivshmem-server/ivshmem-server",
   "fs_daemon_bin" : "/root/Prometheus/qemu/build/tools/virtiofsd/virtiofsd",
   "fs_daemon_share_path" : "/root/Prometheus/fs_share",
