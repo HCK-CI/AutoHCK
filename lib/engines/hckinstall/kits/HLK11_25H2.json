@@ -4,7 +4,8 @@
   "extra_software": [
     "winfsp",
     "NDIS65_ndprot683_fix",
-    "autoit"
+    "autoit",
+    "CCDEdid"
   ],
   "studio_platform": "Win2022x64",
   "name": "HLK11_25H2"
