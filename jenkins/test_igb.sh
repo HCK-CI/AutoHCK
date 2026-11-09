@@ -19,7 +19,7 @@ unzip -o "${AUTO_HCK_WORKSPACE_PATH}/latest/*hlkx" -d "${test_name}"
 
 cat "${test_name}/hck/data/PackageInfo.xml"
 # Check that HLK package contains the expected test results
-grep -e '<TestRollup Passed="1" Failed="0" NotRun="202" />' "${test_name}/hck/data/PackageInfo.xml"
+grep -e '<TestRollup Passed="1" Failed="0" NotRun="233" />' "${test_name}/hck/data/PackageInfo.xml"
 
 # Check count of JSON results files
 jsons=(${AUTO_HCK_WORKSPACE_PATH}/latest/Result_*.json)
