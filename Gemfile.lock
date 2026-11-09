@@ -67,7 +67,7 @@ GEM
     gyoku (1.4.0)
       builder (>= 2.1.2)
       rexml (~> 3.0)
-    httpclient (2.9.0)
+    httpclient (2.10.0)
       mutex_m
     i18n (1.15.2)
       concurrent-ruby (~> 1.0)
