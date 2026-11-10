@@ -50,10 +50,10 @@
 #     ssh.loop { true }
 #   end
 #
-# pkg:gem/net-ssh#lib/net/ssh/config.rb:2
+# pkg:gem/net-ssh#lib/net/ssh/config.rb:5
 module Net::SSH
   class << self
-    # pkg:gem/net-ssh#lib/net/ssh.rb:294
+    # pkg:gem/net-ssh#lib/net/ssh.rb:388
     def assign_defaults(options); end
 
     # Returns a hash of the configuration options for the given host, as read
@@ -64,10 +64,12 @@ module Net::SSH
     # be a file name (or array of file names) of SSH configuration file(s)
     # to read.
     #
+    # +user+ is the explicitly requested remote user, matched by <tt>Match User</tt>.
+    #
     # See Net::SSH::Config for the full description of all supported options.
     #
-    # pkg:gem/net-ssh#lib/net/ssh.rb:284
-    def configuration_for(host, use_ssh_config); end
+    # pkg:gem/net-ssh#lib/net/ssh.rb:378
+    def configuration_for(host, use_ssh_config, user: T.unsafe(nil)); end
 
     # The standard means of starting a new SSH connection. When used with a
     # block, the connection will be closed when the block terminates, otherwise
@@ -95,7 +97,10 @@ module Net::SSH
     #     ssh.loop
     #   end
     #
-    # This method accepts the following options (all are optional):
+    # This method accepts the following options (all are optional). Omit an
+    # option to use its default or ssh_config value; passing +nil+ (or an array
+    # containing +nil+) raises ArgumentError, except for :password,
+    # :passphrase, :logger and :password_prompt, where +nil+ means the default.
     #
     # * :auth_methods => an array of authentication methods to try
     # * :bind_address => the IP address on the connecting machine to use in
@@ -106,13 +111,48 @@ module Net::SSH
     # * :compression => the compression algorithm to use, or +true+ to use
     #   whatever is supported.
     # * :compression_level => the compression level to use when sending data
+    # * :control_master => set to +:auto+ to run the session through an
+    #   already running OpenSSH ControlMaster for the same host, port and user
+    #   (started e.g. with <tt>ssh -M</tt> or <tt>ControlMaster auto</tt>),
+    #   using its proxy mode (OpenSSH 7.4 or later). This skips the TCP
+    #   connection, key exchange and authentication. If there is no usable
+    #   master (no ControlPath, no socket, refused, timed out, owned by another
+    #   user) Net::SSH logs why and connects as usual; it never starts a master
+    #   itself. The master's own settings then apply instead of the options
+    #   for setting up a connection (:keys, :key_data, :password, :passphrase,
+    #   :auth_methods, :verify_host_key, :known_hosts, :host_key, :kex,
+    #   :encryption, :hmac, :compression, :rekey_*, :proxy, :keepalive and the
+    #   like); explicitly passed ones are named at info level. Over the
+    #   master, remote port forwarding (Service::Forward#remote and
+    #   #cancel_remote) raises Net::SSH::NotSupportedOverControlMaster, as the
+    #   master consumes the global request reply, so success, failure and the
+    #   port allocated for port 0 can't be observed; other global requests
+    #   raise it too. Agent and X11 forwarding requests raise it
+    #   too, and :forward_agent is ignored (logged at info level), because the
+    #   master serves them from its own agent or display only if it has
+    #   ForwardAgent or ForwardX11 enabled itself, and rejects them otherwise.
+    #   Keepalive and rekeying are left to the master. ssh_config's
+    #   ControlMaster is ignored, only this option enables it. An invalid
+    #   ControlPath raises ArgumentError. A missing or stale socket is logged
+    #   at info level, a socket that can't be used (another owner, refused,
+    #   wrong protocol, timed out) at warn level. Has no effect on Windows.
+    #   Defaults to +false+.
+    # * :control_path => the ControlMaster socket to use with
+    #   :control_master, with the same ~, ${ENV} and % tokens as ssh_config's
+    #   ControlPath (%C, %d, %h, %i, %j, %k, %L, %l, %n, %p, %r, %u, %%).
+    #   The master at that path decides which host and user the session is
+    #   connected to, so a fixed path without %h, %p, %r or %C sends every
+    #   host through the same master and the explicitly passed host key and
+    #   authentication options are ignored. Defaults to ControlPath from
+    #   ssh_config; +"none"+ disables the master.
     # * :config => set to +true+ to load the default OpenSSH config files
     #   (~/.ssh/config, /etc/ssh_config), or to +false+ to not load them, or to
     #   a file-name (or array of file-names) to load those specific configuration
     #   files. Defaults to +true+.
     # * :encryption => the encryption cipher (or ciphers) to use
     # * :forward_agent => set to true if you want the SSH agent connection to
-    #   be forwarded
+    #   be forwarded. Ignored for a session through a ControlMaster (see
+    #   :control_master).
     # * :known_hosts => a custom object holding known hosts records.
     #   It must implement #search_for and `add` in a similiar manner as KnownHosts.
     # * :global_known_hosts_file => the location of the global known hosts
@@ -134,7 +174,11 @@ module Net::SSH
     #   Defaults to +300+ seconds.
     # * :keepalive_maxcount => the maximun number of keepalive packet miss allowed.
     #   Defaults to 3
-    # * :kex => the key exchange algorithm (or algorithms) to use
+    # * :kex => the key exchange algorithm (or algorithms) to use. Like
+    #   KexAlgorithms, entries starting with +, - or ^ modify the default list.
+    #   diffie-hellman-group14-sha1 is supported but not offered unless listed
+    #   here (e.g. '+diffie-hellman-group14-sha1') or
+    #   :append_all_supported_algorithms is set.
     # * :keys => an array of file names of private keys to use for publickey
     #   and hostbased authentication
     # * :keycerts => an array of file names of key certificates to use
@@ -152,24 +196,51 @@ module Net::SSH
     #   packet. Default is 0x8000 (32768 bytes). Increase to 0x10000 (65536 bytes)
     #   for better performance if your SSH server supports it (most do).
     # * :max_win_size => maximum size we tell the other side that is supported for
-    #   the window.
+    #   the window, i.e. how much the server may send on a channel before net-ssh
+    #   reads it. Default is 0x200000 (2 MB), as in OpenSSH. Smaller values limit
+    #   how much data is in flight; some servers (e.g. Mikrotik) truncate output
+    #   when the window is small.
+    # * :minimum_dh_bits => the smallest group, in bits, accepted from the server
+    #   in diffie-hellman-group-exchange key exchange. Defaults to 2048, as in
+    #   OpenSSH; lower it (e.g. to 1024) only to reach legacy servers that offer
+    #   nothing larger.
+    # * :no_delay => turns Nagle's algorithm off on the connection's socket
+    #   (TCP_NODELAY), so a packet written while the previous one is still
+    #   unacknowledged is sent right away instead of waiting for the server's
+    #   ACK. OpenSSH does the same for every connection. Set to +false+ to keep
+    #   Nagle's algorithm on. Has no effect when the socket comes from a
+    #   ProxyCommand, whose command owns the TCP connection. Defaults to +true+.
     # * :non_interactive => set to true if your app is non interactive and prefers
     #   authentication failure vs password prompt. Non-interactive applications
     #   should set it to true to prefer failing a password/etc auth methods vs.
-    #   asking for password.
-    # * :paranoid => deprecated alias for :verify_host_key
+    #   asking for password. Like OpenSSH, Net::SSH never prompts when $stdin is
+    #   not a TTY (e.g. in a background job), so it defaults to +true+ then,
+    #   unless :password_prompt or :prompt_without_tty is given or an
+    #   SSH_ASKPASS program can be used (see Net::SSH::Prompt.askpass).
     # * :passphrase => the passphrase to use when loading a private key (default
     #   is +nil+, for no passphrase)
     # * :password => the password to use to login
     # * :port => the port to use when connecting to the remote host
+    # * :preopen_channels => set to +true+ to keep one spare "session" channel
+    #   open, so that Net::SSH::Connection::Session#open_channel can hand it
+    #   out at once and a command that waits for the previous one to finish
+    #   costs one round trip instead of two. The spare counts against the
+    #   server's MaxSessions; if the server refuses it, pre-opening stops for
+    #   the session. Defaults to +false+.
+    # * :prompt_without_tty => set to +true+ to prompt for passwords, key
+    #   passphrases and keyboard-interactive responses on $stdout/$stdin even
+    #   when $stdin is not a TTY, e.g. to read a password piped into the
+    #   process. Defaults to +false+.
     # * :properties => a hash of key/value pairs to add to the new connection's
     #   properties (see Net::SSH::Connection::Session#properties)
     # * :proxy => a proxy instance (see Proxy) to use when connecting
-    # * :pubkey_algorithms => the public key authentication algorithms to use for
-    #   this connection. Valid values are 'rsa-sha2-256-cert-v01@openssh.com',
-    #   'ssh-rsa-cert-v01@openssh.com', 'rsa-sha2-256', 'ssh-rsa'. Currently, this
-    #   option is only used for RSA public key authentication and ignored for other
-    #   types.
+    # * :pubkey_algorithms => the public key authentication algorithms to offer,
+    #   in order of preference (e.g. %w[ssh-ed25519 rsa-sha2-512 rsa-sha2-256]).
+    #   Keys whose type isn't listed are skipped. Like PubkeyAcceptedAlgorithms,
+    #   entries starting with +, - or ^ modify the default list. ssh-rsa (SHA-1),
+    #   ssh-rsa-cert-v01@openssh.com and ssh-dss are supported but not offered
+    #   unless listed here (e.g. '+ssh-rsa') or :append_all_supported_algorithms
+    #   is set.
     # * :rekey_blocks_limit => the max number of blocks to process before rekeying
     # * :rekey_limit => the max number of bytes to process before rekeying
     # * :rekey_packet_limit => the max number of packets to process before rekeying
@@ -181,7 +252,8 @@ module Net::SSH
     # * :user => the user name to log in as; this overrides the +user+
     #   parameter, and is primarily only useful when provided via an SSH
     #   configuration file.
-    # * :remote_user => used for substitution into the '%r' part of a ProxyCommand
+    # * :remote_user => used for substitution into the '%r' part of a ProxyCommand;
+    #   defaults to the user name the connection logs in as.
     # * :user_known_hosts_file => the location of the user known hosts file.
     #   Set to an array to specify multiple user known hosts files.
     #   Defaults to %w(~/.ssh/known_hosts ~/.ssh/known_hosts2).
@@ -193,7 +265,9 @@ module Net::SSH
     #   default. The symbols :debug, :info, :warn, :error, and :fatal are also
     #   supported and are translated to the corresponding Logger constant.
     # * :append_all_supported_algorithms => set to +true+ to append all supported
-    #   algorithms by net-ssh. Was the default behaviour until 2.10
+    #   algorithms by net-ssh, except the +none+ cipher and MAC, which must be
+    #   named explicitly (e.g. encryption: '+none'). Was the default behaviour
+    #   until 2.10
     # * :number_of_password_prompts => Number of prompts for the password
     #   authentication method defaults to 3 set to 0 to disable prompt for
     #   password auth method
@@ -208,24 +282,26 @@ module Net::SSH
     #   * :accept_new_or_local_tunnel (insecure) ::Net::SSH::Verifiers::AcceptNewOrLocalTunnel
     #   * :accept_new (insecure) ::Net::SSH::Verifiers::AcceptNew
     #   * :always (secure) ::Net::SSH::Verifiers::Always
-    #   You can also provide an own Object which responds to +verify+. The argument
-    #   given to +verify+ is a hash consisting of the +:key+, the +:key_blob+,
-    #   the +:fingerprint+ and the +:session+. Returning true accepts the host key,
-    #   returning false declines it and closes the connection.
+    #   You can also provide an own Object which responds to +verify+ and
+    #   +verify_signature+. The argument given to +verify+ is a hash consisting
+    #   of the +:key+, the +:key_blob+, the +:fingerprint+ and the +:session+.
+    #   Returning true accepts the host key, returning false declines it and
+    #   closes the connection. +verify_signature+ is given a block that checks
+    #   the server's host key signature and must return the block's result.
     # * :fingerprint_hash => 'MD5' or 'SHA256', defaults to 'SHA256'
     # If +user+ parameter is nil it defaults to USER from ssh_config, or
     # local username
     #
-    # pkg:gem/net-ssh#lib/net/ssh.rb:221
+    # pkg:gem/net-ssh#lib/net/ssh.rb:297
     def start(host, user = T.unsafe(nil), options = T.unsafe(nil), &block); end
 
     private
 
-    # pkg:gem/net-ssh#lib/net/ssh.rb:307
-    def _sanitize_options(options); end
+    # pkg:gem/net-ssh#lib/net/ssh.rb:354
+    def connect_directly(host, user, options); end
 
-    # pkg:gem/net-ssh#lib/net/ssh.rb:316
-    def _support_deprecated_option_paranoid(options); end
+    # pkg:gem/net-ssh#lib/net/ssh.rb:421
+    def reject_nil_options(options); end
   end
 end
 
@@ -239,14 +315,14 @@ module Net::SSH::Authentication; end
 # This means that although it behaves like a SSH1 client, it also has
 # some SSH2 functionality (like signing data).
 #
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:26
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:29
 class Net::SSH::Authentication::Agent
   include ::Net::SSH::Loggable
 
   # Creates a new Agent object, using the optional logger instance to
   # report status.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:77
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:80
   def initialize(logger = T.unsafe(nil)); end
 
   # Adds the private key with comment to the agent.
@@ -255,13 +331,13 @@ class Net::SSH::Authentication::Agent
   # If confirm is true, confirmation will be required for each agent signing
   # operation.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:170
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:185
   def add_identity(priv_key, comment, lifetime: T.unsafe(nil), confirm: T.unsafe(nil)); end
 
   # Closes this socket. This agent reference is no longer able to
   # query the agent.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:150
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:165
   def close; end
 
   # Connect to the agent process using the socket factory and socket name
@@ -269,51 +345,51 @@ class Net::SSH::Authentication::Agent
   # socket reports that it is an SSH2-compatible agent, this will fail
   # (it only supports the ssh-agent distributed by OpenSSH).
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:85
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:88
   def connect!(agent_socket_factory = T.unsafe(nil), identity_agent = T.unsafe(nil)); end
 
   # Return an array of all identities (public keys) known to the agent.
   # Each key returned is augmented with a +comment+ property which is set
   # to the comment returned by the agent for that key.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:122
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:137
   def identities; end
 
   # lock the ssh agent with password
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:197
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:212
   def lock(password); end
 
   # Attempts to negotiate the SSH agent protocol version. Raises an error
   # if the version could not be negotiated successfully.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:106
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:116
   def negotiate!; end
 
   # Removes all identities from the agent.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:191
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:206
   def remove_all_identities; end
 
   # Removes key from the agent.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:185
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:200
   def remove_identity(key); end
 
   # Using the agent and the given public key, sign the given data. The
   # signature is returned in SSH2 format.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:156
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:171
   def sign(key, data, flags = T.unsafe(nil)); end
 
   # The underlying socket being used to communicate with the SSH agent.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:64
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:67
   def socket; end
 
   # unlock the ssh agent with password
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:203
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:218
   def unlock(password); end
 
   private
@@ -321,38 +397,41 @@ class Net::SSH::Authentication::Agent
   # Returns +true+ if the parameter indicates a "failure" response from
   # the agent, and +false+ otherwise.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:242
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:266
   def agent_failed(type); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:248
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:272
   def blob_for_add(priv_key); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:94
+  def open_agent_socket!; end
 
   # Read the next packet from the agent. This will return a two-part
   # tuple consisting of the packet type, and the packet's body (which
   # is returned as a Net::SSH::Buffer).
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:225
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:240
   def read_packet; end
 
   # Send the given packet and return the subsequent reply from the agent.
   # (See #send_packet and #read_packet).
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:235
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:256
   def send_and_wait(type, *args); end
 
   # Send a new packet of the given type, with the associated data.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:215
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:230
   def send_packet(type, *args); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:210
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:225
   def unix_socket_class; end
 
   class << self
     # Instantiates a new agent object, connects to a running SSH agent,
     # negotiates the agent protocol version, and returns the agent object.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:68
+    # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:71
     def connect(logger = T.unsafe(nil), agent_socket_factory = T.unsafe(nil), identity_agent = T.unsafe(nil)); end
   end
 end
@@ -360,83 +439,88 @@ end
 # A simple module for extending keys, to allow comments to be specified
 # for them.
 #
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:31
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:34
 module Net::SSH::Authentication::Agent::Comment
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:32
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:35
   def comment; end
 
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:32
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:35
   def comment=(_arg0); end
 end
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:40
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:43
 Net::SSH::Authentication::Agent::SSH2_AGENT_ADD_IDENTITY = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:45
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:48
 Net::SSH::Authentication::Agent::SSH2_AGENT_ADD_ID_CONSTRAINED = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:46
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:49
 Net::SSH::Authentication::Agent::SSH2_AGENT_FAILURE = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:37
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:40
 Net::SSH::Authentication::Agent::SSH2_AGENT_IDENTITIES_ANSWER = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:43
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:46
 Net::SSH::Authentication::Agent::SSH2_AGENT_LOCK = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:42
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:45
 Net::SSH::Authentication::Agent::SSH2_AGENT_REMOVE_ALL_IDENTITIES = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:41
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:44
 Net::SSH::Authentication::Agent::SSH2_AGENT_REMOVE_IDENTITY = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:36
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:39
 Net::SSH::Authentication::Agent::SSH2_AGENT_REQUEST_IDENTITIES = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:35
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:38
 Net::SSH::Authentication::Agent::SSH2_AGENT_REQUEST_VERSION = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:38
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:41
 Net::SSH::Authentication::Agent::SSH2_AGENT_SIGN_REQUEST = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:39
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:42
 Net::SSH::Authentication::Agent::SSH2_AGENT_SIGN_RESPONSE = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:44
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:47
 Net::SSH::Authentication::Agent::SSH2_AGENT_UNLOCK = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:47
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:50
 Net::SSH::Authentication::Agent::SSH2_AGENT_VERSION_RESPONSE = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:58
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:61
 Net::SSH::Authentication::Agent::SSH_AGENT_CONSTRAIN_CONFIRM = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:57
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:60
 Net::SSH::Authentication::Agent::SSH_AGENT_CONSTRAIN_LIFETIME = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:54
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:57
 Net::SSH::Authentication::Agent::SSH_AGENT_FAILURE = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:51
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:54
 Net::SSH::Authentication::Agent::SSH_AGENT_REQUEST_RSA_IDENTITIES = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:52
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:55
 Net::SSH::Authentication::Agent::SSH_AGENT_RSA_IDENTITIES_ANSWER1 = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:53
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:56
 Net::SSH::Authentication::Agent::SSH_AGENT_RSA_IDENTITIES_ANSWER2 = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:60
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:63
 Net::SSH::Authentication::Agent::SSH_AGENT_RSA_SHA2_256 = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:61
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:64
 Net::SSH::Authentication::Agent::SSH_AGENT_RSA_SHA2_512 = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:55
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:58
 Net::SSH::Authentication::Agent::SSH_AGENT_SUCCESS = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:49
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:52
 Net::SSH::Authentication::Agent::SSH_COM_AGENT2_FAILURE = T.let(T.unsafe(nil), Integer)
+
+# Raised when the agent closes the connection before replying.
+#
+# pkg:gem/net-ssh#lib/net/ssh/authentication/agent.rb:21
+class Net::SSH::Authentication::AgentClosedConnection < ::Net::SSH::Authentication::AgentError; end
 
 # Class for representing agent-specific errors.
 #
@@ -467,7 +551,7 @@ class Net::SSH::Authentication::Certificate
   def extensions=(_arg0); end
 
   # pkg:gem/net-ssh#lib/net/ssh/authentication/certificate.rb:81
-  def fingerprint; end
+  def fingerprint(algorithm = T.unsafe(nil)); end
 
   # pkg:gem/net-ssh#lib/net/ssh/authentication/certificate.rb:11
   def key; end
@@ -634,25 +718,182 @@ Net::SSH::Authentication::Constants::USERAUTH_SUCCESS = T.let(T.unsafe(nil), Int
 # pkg:gem/net-ssh#lib/net/ssh/authentication/session.rb:15
 class Net::SSH::Authentication::DisallowedMethod < ::Net::SSH::Exception; end
 
-# Loads ED25519 support which requires optinal dependecies like
-# ed25519, bcrypt_pbkdf
+# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:8
+module Net::SSH::Authentication::ED25519
+  class << self
+    # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:15
+    def ensure_supported!; end
+
+    # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:33
+    def new_private_key(key); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:28
+    def new_public_key(key); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:38
+    def sign(key, data); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:46
+    def validate_key_bytes!(key, label, expected_bytes); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:42
+    def verify(key, signature, data); end
+
+    private
+
+    # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:50
+    def binary_string(string); end
+  end
+end
+
+# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:9
+Net::SSH::Authentication::ED25519::ALGORITHM = T.let(T.unsafe(nil), String)
+
+# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:10
+Net::SSH::Authentication::ED25519::KEY_BYTES = T.let(T.unsafe(nil), Integer)
+
+# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:55
+class Net::SSH::Authentication::ED25519::OpenSSHPrivateKeyLoader
+  class << self
+    # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:146
+    def bcrypt_pbkdf_key(password, salt, length, rounds); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:164
+    def decrypt_private_key(ciphername, encrypted_private, auth_tag, options); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:76
+    def read(datafull, password); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:160
+    def require_bcrypt_pbkdf; end
+  end
+end
+
+# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:56
+Net::SSH::Authentication::ED25519::OpenSSHPrivateKeyLoader::CipherFactory = Net::SSH::Transport::CipherFactory
+
+# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:65
+class Net::SSH::Authentication::ED25519::OpenSSHPrivateKeyLoader::DecryptError < ::ArgumentError
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:66
+  def initialize(message, encrypted_key: T.unsafe(nil)); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:71
+  def encrypted_key?; end
+end
+
+# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:60
+Net::SSH::Authentication::ED25519::OpenSSHPrivateKeyLoader::MAGIC = T.let(T.unsafe(nil), String)
+
+# Same limit as OpenSSH; bcrypt_pbkdf with 2**32 rounds would run for months (GHSA-rpq3-v334-f5pm).
 #
-# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519_loader.rb:6
+# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:63
+Net::SSH::Authentication::ED25519::OpenSSHPrivateKeyLoader::MAX_KDF_ROUNDS = T.let(T.unsafe(nil), Integer)
+
+# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:58
+Net::SSH::Authentication::ED25519::OpenSSHPrivateKeyLoader::MBEGIN = T.let(T.unsafe(nil), String)
+
+# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:59
+Net::SSH::Authentication::ED25519::OpenSSHPrivateKeyLoader::MEND = T.let(T.unsafe(nil), String)
+
+# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:11
+Net::SSH::Authentication::ED25519::PRIVATE_KEY_BYTES = T.let(T.unsafe(nil), Integer)
+
+# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:225
+class Net::SSH::Authentication::ED25519::PrivKey
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:230
+  def initialize(buffer); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:272
+  def private_key_bytes; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:276
+  def private_key_bytes_for_agent; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:260
+  def public_key; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:268
+  def public_key_bytes; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:228
+  def sign_key; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:264
+  def ssh_do_sign(data, sig_alg = T.unsafe(nil)); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:256
+  def ssh_signature_type; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:252
+  def ssh_type; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:248
+  def to_blob; end
+
+  class << self
+    # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:280
+    def read(data, password); end
+  end
+end
+
+# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:226
+Net::SSH::Authentication::ED25519::PrivKey::CipherFactory = Net::SSH::Transport::CipherFactory
+
+# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:183
+class Net::SSH::Authentication::ED25519::PubKey
+  include ::Net::SSH::Authentication::PubKeyFingerprint
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:186
+  def initialize(data); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:216
+  def public_key_bytes; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:207
+  def ssh_do_verify(sig, data, options = T.unsafe(nil)); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:203
+  def ssh_signature_type; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:199
+  def ssh_type; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:195
+  def to_blob; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:211
+  def to_pem; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:220
+  def verify_key; end
+
+  class << self
+    # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:191
+    def read_keyblob(buffer); end
+  end
+end
+
+# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519.rb:13
+class Net::SSH::Authentication::ED25519::UnsupportedError < ::StandardError; end
+
+# Loads ED25519 support backed by Ruby OpenSSL raw key APIs.
+#
+# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519_loader.rb:5
 module Net::SSH::Authentication::ED25519Loader
   class << self
-    # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519_loader.rb:22
-    def dependenciesRequiredForED25519; end
+    # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519_loader.rb:30
+    def ed25519SupportRequired; end
 
-    # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519_loader.rb:16
+    # pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519_loader.rb:24
     def raiseUnlessLoaded(message); end
   end
 end
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519_loader.rb:12
-Net::SSH::Authentication::ED25519Loader::ERROR = T.let(T.unsafe(nil), Gem::LoadError)
+# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519_loader.rb:10
+Net::SSH::Authentication::ED25519Loader::ERROR = T.let(T.unsafe(nil), T.untyped)
 
-# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519_loader.rb:13
-Net::SSH::Authentication::ED25519Loader::LOADED = T.let(T.unsafe(nil), FalseClass)
+# pkg:gem/net-ssh#lib/net/ssh/authentication/ed25519_loader.rb:9
+Net::SSH::Authentication::ED25519Loader::LOADED = T.let(T.unsafe(nil), TrueClass)
 
 # This class encapsulates all operations done by clients on a user's
 # private keys. In practice, the client should never need a reference
@@ -701,7 +942,7 @@ class Net::SSH::Authentication::KeyManager
   # agent process. Returns nil if use of an SSH agent has been disabled,
   # or if the agent is otherwise not available.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:234
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:233
   def agent; end
 
   # Clear all knowledge of any loaded user keys. This also clears the list
@@ -763,7 +1004,7 @@ class Net::SSH::Authentication::KeyManager
   # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:39
   def known_identities; end
 
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:243
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:242
   def no_keys?; end
 
   # The map of options that were passed to the key-manager
@@ -781,47 +1022,53 @@ class Net::SSH::Authentication::KeyManager
   # will always return the signature in an SSH2-specified "signature
   # blob" format.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:176
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:175
   def sign(identity, data, sig_alg = T.unsafe(nil)); end
 
   # Toggles whether the ssh-agent will be used or not. If true, an
   # attempt will be made to use the ssh-agent. If false, any existing
   # connection to an agent is closed and the agent will not be used.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:226
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:225
   def use_agent=(use_agent); end
 
   # Identifies whether the ssh-agent will be used or not.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:219
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:218
   def use_agent?; end
 
   private
 
-  # Load keycerts from files and data.
+  # Like OpenSSH's pubkey_prepare, an agent that fails to list its keys is
+  # dropped for the session so that key files are still tried.
   #
   # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:250
+  def agent_identities; end
+
+  # Load keycerts from files and data.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:261
   def keycerts; end
 
   # Load prepared identities. Private key decryption errors ignored if ignore_decryption_errors
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:292
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:303
   def load_identities(identities, ask_passphrase, ignore_decryption_errors); end
 
   # Prepared identities from user key_data, preserving their order and sources.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:285
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:296
   def prepare_identities_from_data; end
 
   # Prepares identities from user key_files for loading, preserving their order and sources.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:256
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:267
   def prepare_identities_from_files; end
 
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:329
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:340
   def process_identity_loading_error(identity, e); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:280
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/key_manager.rb:291
   def readable_file?(path); end
 end
 
@@ -843,7 +1090,7 @@ class Net::SSH::Authentication::Methods::Abstract
 
   # Instantiates a new authentication method.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/abstract.rb:29
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/abstract.rb:27
   def initialize(session, options = T.unsafe(nil)); end
 
   # The key manager object. Not all authentication methods will require
@@ -852,17 +1099,15 @@ class Net::SSH::Authentication::Methods::Abstract
   # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/abstract.rb:21
   def key_manager; end
 
-  # So far only affects algorithms used for rsa keys, but can be
-  # extended to other keys, e.g after reading of
-  # PubkeyAcceptedAlgorithms option from ssh_config file is implemented.
+  # public key algorithms to be used
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/abstract.rb:26
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/abstract.rb:24
   def pubkey_algorithms; end
 
   # Sends a message via the underlying transport layer abstraction. This
   # will block until the message is completely sent.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/abstract.rb:50
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/abstract.rb:44
   def send_message(msg); end
 
   # The authentication session object
@@ -873,19 +1118,22 @@ class Net::SSH::Authentication::Methods::Abstract
   # Returns the session-id, as generated during the first key exchange of
   # an SSH connection.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/abstract.rb:44
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/abstract.rb:38
   def session_id; end
 
   # Creates a new USERAUTH_REQUEST packet. The extra arguments on the end
   # must be either boolean values or strings, and are tacked onto the end
   # of the packet. The new packet is returned, ready for sending.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/abstract.rb:57
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/abstract.rb:51
   def userauth_request(username, next_service, auth_method, *others); end
 
   private
 
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/abstract.rb:74
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/abstract.rb:70
+  def fingerprint(identity); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/abstract.rb:68
   def prompt; end
 end
 
@@ -981,7 +1229,7 @@ class Net::SSH::Authentication::Methods::Publickey < ::Net::SSH::Authentication:
   # them succeed, returns +true+, otherwise returns +false+. This
   # requires the presence of a key manager.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/publickey.rb:15
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/publickey.rb:34
   def authenticate(next_service, username, password = T.unsafe(nil)); end
 
   private
@@ -990,24 +1238,43 @@ class Net::SSH::Authentication::Methods::Publickey < ::Net::SSH::Authentication:
   # username, with the given identity (public key). Returns +true+ if
   # successful, or +false+ otherwise.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/publickey.rb:94
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/publickey.rb:115
   def authenticate_with(identity, next_service, username); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/publickey.rb:46
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/publickey.rb:67
   def authenticate_with_alg(identity, next_service, username, alg, sig_alg = T.unsafe(nil)); end
 
   # Builds a packet that contains the request formatted for sending
   # a public-key request to the server.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/publickey.rb:29
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/publickey.rb:50
   def build_request(pub_key, username, next_service, alg, has_sig); end
+
+  # Picks the single algorithm to offer for the identity, following
+  # key_sig_algorithm() in OpenSSH 10.2 sshconnect2.c.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/publickey.rb:127
+  def key_algorithm(identity); end
 
   # Builds and sends a request formatted for a public-key
   # authentication request.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/publickey.rb:39
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/methods/publickey.rb:60
   def send_request(pub_key, username, next_service, alg, signature = T.unsafe(nil)); end
 end
+
+# pkg:gem/net-ssh#lib/net/ssh/authentication/methods/publickey.rb:11
+Net::SSH::Authentication::Methods::Publickey::RSA_CERT = T.let(T.unsafe(nil), String)
+
+# Key algorithms usable with each RSA key type, mapped to the signature algorithm they imply.
+#
+# pkg:gem/net-ssh#lib/net/ssh/authentication/methods/publickey.rb:14
+Net::SSH::Authentication::Methods::Publickey::RSA_SIGNATURE_ALGORITHMS = T.let(T.unsafe(nil), Hash)
+
+# Servers that OpenSSH flags with SSH_BUG_SIGTYPE (compat.c): no RSA/SHA-2 certificate signatures.
+#
+# pkg:gem/net-ssh#lib/net/ssh/authentication/methods/publickey.rb:28
+Net::SSH::Authentication::Methods::Publickey::SIGTYPE_BUG = T.let(T.unsafe(nil), Regexp)
 
 # Public key fingerprinting utility module - internal not part of API.
 # This is included in pubkey classes and called from there. All RSA, DSA, and ECC keys
@@ -1039,6 +1306,68 @@ module Net::SSH::Authentication::PubKeyFingerprint
     def fingerprint(blob, algorithm = T.unsafe(nil)); end
   end
 end
+
+# FIDO/U2F security keys held by ssh-agent. The agent does the signing (incl. user
+# presence); net-ssh only parses and re-serialises the public key blob (see PROTOCOL.u2f).
+#
+# pkg:gem/net-ssh#lib/net/ssh/authentication/security_key.rb:9
+module Net::SSH::Authentication::SecurityKey
+  class << self
+    # pkg:gem/net-ssh#lib/net/ssh/authentication/security_key.rb:14
+    def understands?(type); end
+  end
+end
+
+# Public key of an agent-held security key; signing is delegated to the agent.
+#
+# pkg:gem/net-ssh#lib/net/ssh/authentication/security_key.rb:19
+class Net::SSH::Authentication::SecurityKey::PubKey
+  include ::Net::SSH::Authentication::PubKeyFingerprint
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/security_key.rb:43
+  def initialize(ssh_type, public_key_data, application, curve: T.unsafe(nil)); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/security_key.rb:22
+  def application; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/security_key.rb:22
+  def curve; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/security_key.rb:22
+  def public_key_data; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/security_key.rb:59
+  def ssh_signature_type; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/security_key.rb:22
+  def ssh_type; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/security_key.rb:50
+  def to_blob; end
+
+  # Only used to de-duplicate identities, so a stable key-specific string suffices.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/security_key.rb:64
+  def to_pem; end
+
+  class << self
+    # Wire formats:
+    #   sk-ecdsa-sha2-nistp256@openssh.com: string curve, string Q, string application
+    #   sk-ssh-ed25519@openssh.com:         string public_key, string application
+    #
+    # pkg:gem/net-ssh#lib/net/ssh/authentication/security_key.rb:27
+    def read_keyblob(type, buffer); end
+  end
+end
+
+# pkg:gem/net-ssh#lib/net/ssh/authentication/security_key.rb:10
+Net::SSH::Authentication::SecurityKey::SK_ECDSA_SHA2_NISTP256 = T.let(T.unsafe(nil), String)
+
+# pkg:gem/net-ssh#lib/net/ssh/authentication/security_key.rb:11
+Net::SSH::Authentication::SecurityKey::SK_SSH_ED25519 = T.let(T.unsafe(nil), String)
+
+# pkg:gem/net-ssh#lib/net/ssh/authentication/security_key.rb:12
+Net::SSH::Authentication::SecurityKey::TYPES = T.let(T.unsafe(nil), Array)
 
 # Represents an authentication session. It manages the authentication of
 # a user over an established connection (the "transport" object, see
@@ -1080,14 +1409,14 @@ class Net::SSH::Authentication::Session
   # Blocks until a packet is received, and returns it if it is of the given
   # type. If it is not, an exception is raised.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/session.rb:130
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/session.rb:126
   def expect_message(type); end
 
   # Blocks until a packet is received. It silently handles USERAUTH_BANNER
   # packets, and will raise an error if any packet is received that is not
   # valid during user authentication.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/session.rb:101
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/session.rb:96
   def next_message; end
 
   # a hash of options, given at construction time
@@ -1105,32 +1434,35 @@ class Net::SSH::Authentication::Session
   # Returns an array of paths to the key files usually defined
   # by system default.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/session.rb:141
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/session.rb:154
   def default_keys; end
 
   # Returns an array of the key data that should be used when
   # attempting any key-based authentication mechanism.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/session.rb:166
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/session.rb:179
   def key_data; end
 
   # Returns an array of the keycert data that should be used when
   # attempting any key-based authentication mechanism.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/session.rb:160
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/session.rb:173
   def keycert_data; end
 
   # Returns an array of paths to the keycert files that should be used when
   # attempting any key-based authentication mechanism.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/session.rb:154
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/session.rb:167
   def keycerts; end
 
   # Returns an array of paths to the key files that should be used when
   # attempting any key-based authentication mechanism.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/authentication/session.rb:148
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/session.rb:161
   def keys; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/authentication/session.rb:135
+  def try_authenticate(method_name, next_service, username, password, key_manager); end
 end
 
 # This exception is raised when authentication fails (whether it be
@@ -1154,36 +1486,36 @@ class Net::SSH::AuthenticationFailed < ::Net::SSH::Exception; end
 # are ever implementing a protocol on top of SSH (e.g. SFTP), this buffer
 # class can be quite handy.
 #
-# pkg:gem/net-ssh#lib/net/ssh/buffer.rb:22
+# pkg:gem/net-ssh#lib/net/ssh/buffer.rb:24
 class Net::SSH::Buffer
   # Creates a new buffer, initialized to the given content. The position
   # is initialized to the beginning of the buffer.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:73
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:75
   def initialize(content = T.unsafe(nil)); end
 
   # Compares the contents of the two buffers, returning +true+ only if they
   # are identical in size and content.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:96
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:98
   def ==(buffer); end
 
   # Appends the given text to the end of the buffer. Does not alter the
   # read position. Returns the buffer object itself.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:145
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:147
   def append(text); end
 
   # Returns the number of bytes available to be read (e.g., how many bytes
   # remain between the current position and the end of the buffer).
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:85
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:87
   def available; end
 
   # Resets the buffer, making it empty. Also, resets the read position to
   # 0.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:119
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:121
   def clear!; end
 
   # Consumes n bytes from the buffer, where n is the current position
@@ -1194,118 +1526,118 @@ class Net::SSH::Buffer
   #
   # Returns the buffer object itself.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:131
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:133
   def consume!(n = T.unsafe(nil)); end
 
   # exposes the raw content of the buffer
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:66
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:68
   def content; end
 
   # Returns +true+ if the buffer contains no data (e.g., it is of zero length).
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:101
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:103
   def empty?; end
 
   # Returns true if the pointer is at the end of the buffer. Subsequent
   # reads will return nil, in this case.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:113
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:115
   def eof?; end
 
   # Returns the length of the buffer's content.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:79
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:81
   def length; end
 
   # the current position of the pointer in the buffer
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:69
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:71
   def position; end
 
   # the current position of the pointer in the buffer
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:69
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:71
   def position=(_arg0); end
 
   # Reads and returns the next +count+ bytes from the buffer, starting from
   # the read position. If +count+ is +nil+, this will return all remaining
   # text in the buffer. This method will increment the pointer.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:174
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:176
   def read(count = T.unsafe(nil)); end
 
   # Reads (as #read) and returns the given number of bytes from the buffer,
   # and then consumes (as #consume!) all data up to the new read position.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:183
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:185
   def read!(count = T.unsafe(nil)); end
 
   # Calls block(self) until the buffer is empty, and returns all results.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:190
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:192
   def read_all(&block); end
 
   # Read a bignum (OpenSSL::BN) from the buffer, in SSH2 format. It is
   # essentially just a string, which is reinterpreted to be a bignum in
   # binary format.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:236
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:238
   def read_bignum; end
 
   # Read a single byte and convert it into a boolean, using 'C' rules
   # (i.e., zero is false, non-zero is true).
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:228
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:230
   def read_bool; end
 
   # Reads the next string from the buffer, and returns a new Buffer
   # object that wraps it.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:350
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:355
   def read_buffer; end
 
   # Read and return the next byte in the buffer. Returns nil if called at
   # the end of the buffer.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:213
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:215
   def read_byte; end
 
   # Return the next 8 bytes as a 64-bit integer (in network byte order).
   # Returns nil if there are less than 8 bytes remaining to be read in the
   # buffer.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:197
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:199
   def read_int64; end
 
   # Read a key from the buffer. The key will start with a string
   # describing its type. The remainder of the key is defined by the
   # type that was read.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:246
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:248
   def read_key; end
 
   # Read a keyblob of the given type from the buffer, and return it as
   # a key. Only RSA, DSA, and ECDSA keys are supported.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:295
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:297
   def read_keyblob(type); end
 
   # Return the next four bytes as a long integer (in network byte order).
   # Returns nil if there are less than 4 bytes remaining to be read in the
   # buffer.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:206
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:208
   def read_long; end
 
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:251
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:253
   def read_private_keyblob(type); end
 
   # Read and return an SSH2-encoded string. The string starts with a long
   # integer that describes the number of bytes remaining in the string.
   # Returns nil if there are not enough bytes to satisfy the request.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:221
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:223
   def read_string; end
 
   # Reads all data up to and including the given pattern, which may be a
@@ -1314,76 +1646,76 @@ class Net::SSH::Buffer
   # immediately after the pattern, if it does match. Returns all data up to
   # and including the text that matched the pattern.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:161
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:163
   def read_to(pattern); end
 
   # Returns all text from the current pointer to the end of the buffer as
   # a new Net::SSH::Buffer object.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:152
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:154
   def remainder_as_buffer; end
 
   # Resets the pointer to the start of the buffer. Subsequent reads will
   # begin at position 0.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:107
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:109
   def reset!; end
 
   # Returns a copy of the buffer's content.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:90
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:92
   def to_s; end
 
   # Writes the given data literally into the string. Does not alter the
   # read position. Returns the buffer object.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:356
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:361
   def write(*data); end
 
   # Writes each argument to the buffer as a bignum (SSH2-style). No
   # checking is done to ensure that the arguments are, in fact, bignums.
   # Does not alter the read position. Returns the buffer object.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:436
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:441
   def write_bignum(*n); end
 
   # Writes each argument to the buffer as a (C-style) boolean, with 1
   # meaning true, and 0 meaning false. Does not alter the read position.
   # Returns the buffer object.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:428
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:433
   def write_bool(*b); end
 
   # Writes each argument to the buffer as a byte. Does not alter the read
   # position. Returns the buffer object.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:395
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:400
   def write_byte(*n); end
 
   # Writes each argument to the buffer as a network-byte-order-encoded
   # 64-bit integer (8 bytes). Does not alter the read position. Returns the
   # buffer object.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:376
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:381
   def write_int64(*n); end
 
   # Writes the given arguments to the buffer as SSH2-encoded keys. Does not
   # alter the read position. Returns the buffer object.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:443
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:448
   def write_key(*key); end
 
   # Writes each argument to the buffer as a network-byte-order-encoded
   # long (4-byte) integer. Does not alter the read position. Returns the
   # buffer object.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:388
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:393
   def write_long(*n); end
 
   # Optimized version of write where the caller gives up ownership of string
   # to the method. This way we can mutate the string.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:363
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:368
   def write_moved(string); end
 
   # Writes each argument to the buffer as an SSH2-encoded string. Each
@@ -1391,14 +1723,14 @@ class Net::SSH::Buffer
   # Does not alter the read position. Returns the buffer object.
   # Might alter arguments see write_moved
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:416
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:421
   def write_mstring(*text); end
 
   # Writes each argument to the buffer as an SSH2-encoded string. Each
   # string is prefixed by its length, encoded as a 4-byte long integer.
   # Does not alter the read position. Returns the buffer object.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:403
+  # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:408
   def write_string(*text); end
 
   class << self
@@ -1426,7 +1758,7 @@ class Net::SSH::Buffer
     # Any of these, except for :raw, accepts an Array argument, to make it
     # easier to write multiple values of the same type in a briefer manner.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:46
+    # pkg:gem/net-ssh#lib/net/ssh/buffer.rb:48
     def from(*args); end
   end
 end
@@ -1567,15 +1899,15 @@ end
 # raise this exception in the handler and Net::SSH will translate that into
 # a "channel open failed" message.
 #
-# pkg:gem/net-ssh#lib/net/ssh/errors.rb:34
+# pkg:gem/net-ssh#lib/net/ssh/errors.rb:44
 class Net::SSH::ChannelOpenFailed < ::Net::SSH::Exception
-  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:37
+  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:47
   def initialize(code, reason); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:35
+  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:45
   def code; end
 
-  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:35
+  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:45
   def reason; end
 end
 
@@ -1585,7 +1917,7 @@ end
 # raise this exception in the handler and Net::SSH will translate that into
 # a "channel failure" message.
 #
-# pkg:gem/net-ssh#lib/net/ssh/errors.rb:27
+# pkg:gem/net-ssh#lib/net/ssh/errors.rb:37
 class Net::SSH::ChannelRequestFailed < ::Net::SSH::Exception; end
 
 # The Net::SSH::Config class is used to parse OpenSSH configuration files,
@@ -1603,6 +1935,8 @@ class Net::SSH::ChannelRequestFailed < ::Net::SSH::Exception; end
 # * Compression => :compression
 # * CompressionLevel => :compression_level
 # * ConnectTimeout => maps to the :timeout option
+# * ControlPath => :control_path, used only when Net::SSH.start is given
+#   control_master: :auto; ControlMaster itself is not read
 # * ForwardAgent => :forward_agent
 # * GlobalKnownHostsFile => :global_known_hosts_file
 # * HostBasedAuthentication => maps to the :auth_methods option
@@ -1612,6 +1946,7 @@ class Net::SSH::ChannelRequestFailed < ::Net::SSH::Exception; end
 # * IdentityFile => maps to the :keys option
 # * IdentityAgent => :identity_agent
 # * IdentitiesOnly => :keys_only
+# * KexAlgorithms => maps to the :kex option
 # * CheckHostIP => :check_host_ip
 # * Macs => maps to the :hmac option
 # * PasswordAuthentication => maps to the :auth_methods option password
@@ -1619,6 +1954,7 @@ class Net::SSH::ChannelRequestFailed < ::Net::SSH::Exception; end
 # * PreferredAuthentications => maps to the :auth_methods option
 # * ProxyCommand => maps to the :proxy option
 # * ProxyJump => maps to the :proxy option
+# * PubkeyAcceptedAlgorithms (or PubkeyAcceptedKeyTypes) => maps to :pubkey_algorithms
 # * PubKeyAuthentication => maps to the :auth_methods option
 # * RekeyLimit => :rekey_limit
 # * StrictHostKeyChecking => :verify_host_key
@@ -1631,21 +1967,21 @@ class Net::SSH::ChannelRequestFailed < ::Net::SSH::Exception; end
 # whether the OpenSSH configuration files are read by passing the :config
 # option to Net::SSH.start. (They are, by default.)
 #
-# pkg:gem/net-ssh#lib/net/ssh/config.rb:45
+# pkg:gem/net-ssh#lib/net/ssh/config.rb:52
 class Net::SSH::Config
   class << self
-    # pkg:gem/net-ssh#lib/net/ssh/config.rb:60
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:67
     def default_auth_methods; end
 
     # Returns an array of locations of OpenSSH configuration files
     # to parse by default.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/config.rb:56
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:63
     def default_files; end
 
     # Filters default_files down to the files that are expandable.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/config.rb:186
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:204
     def expandable_default_files; end
 
     # Loads the configuration data for the given +host+ from all of the
@@ -1653,8 +1989,18 @@ class Net::SSH::Config
     # #default_files), translates the resulting hash into the options
     # recognized by Net::SSH, and returns them.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/config.rb:68
-    def for(host, files = T.unsafe(nil)); end
+    # +user+ is the remote user given explicitly (e.g. to Net::SSH.start),
+    # used by <tt>Match User</tt>; when nil, the User set so far by the
+    # config, then the local user name, is used, as in OpenSSH.
+    #
+    # Match supports +all+, +Host+, +OriginalHost+, +User+ and +LocalUser+,
+    # each optionally negated with a leading "!". A Match block with any
+    # other condition (+exec+, +canonical+, +final+, +localnetwork+,
+    # +tagged+, ...) never matches, and a warning naming the condition is
+    # printed with Kernel#warn once per config line.
+    #
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:85
+    def for(host, files = T.unsafe(nil), user: T.unsafe(nil)); end
 
     # Load the OpenSSH configuration settings in the given +file+ for the
     # given +host+. If +settings+ is given, the options are merged into
@@ -1663,59 +2009,81 @@ class Net::SSH::Config
     # #translate for how to convert the OpenSSH options into Net::SSH
     # options.)
     #
-    # pkg:gem/net-ssh#lib/net/ssh/config.rb:80
-    def load(path, host, settings = T.unsafe(nil), base_dir = T.unsafe(nil)); end
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:97
+    def load(path, host, settings = T.unsafe(nil), base_dir = T.unsafe(nil), user: T.unsafe(nil)); end
 
     # Given a hash of OpenSSH configuration options, converts them into
     # a hash of Net::SSH options. Unrecognized options are ignored. The
     # +settings+ hash must have Strings for keys, all downcased, and
     # the returned hash will have Symbols for keys.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/config.rb:176
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:194
     def translate(settings); end
 
     private
 
-    # pkg:gem/net-ssh#lib/net/ssh/config.rb:366
-    def eval_match_conditions(condition, host, settings); end
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:394
+    def eval_match_conditions(condition, host, remote_user, location); end
 
-    # pkg:gem/net-ssh#lib/net/ssh/config.rb:354
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:379
     def included_file_paths(base_dir, config_paths); end
 
     # Converts the given size into an integer number of bytes.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/config.rb:337
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:362
     def interpret_size(size); end
 
-    # pkg:gem/net-ssh#lib/net/ssh/config.rb:346
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:465
+    def local_user; end
+
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:426
+    def match_condition?(name, exprs, host, remote_user, condition_count); end
+
+    # OpenSSH's match_pattern_list: true if any pattern matches and no "!pattern" does.
+    #
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:446
+    def match_pattern_list(string, list, ignore_case: T.unsafe(nil)); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:371
     def merge_challenge_response_with_keyboard_interactive(hash); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:415
+    def parse_match_conditions(tokens); end
 
     # Converts an ssh_config pattern into a regex for matching against
     # host names.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/config.rb:317
-    def pattern2regex(pattern); end
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:342
+    def pattern2regex(pattern, ignore_case: T.unsafe(nil)); end
 
-    # pkg:gem/net-ssh#lib/net/ssh/config.rb:302
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:325
     def setup_proxy(type, value); end
 
     # Tokenize string into tokens.
     # A token is a word or a quoted sequence of words, separated by whitespaces.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/config.rb:362
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:387
     def tokenize_config_value(str); end
 
-    # pkg:gem/net-ssh#lib/net/ssh/config.rb:234
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:253
     def translate_config_key(hash, key, value, settings); end
 
-    # pkg:gem/net-ssh#lib/net/ssh/config.rb:208
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:226
     def translate_keepalive(hash, value); end
 
-    # pkg:gem/net-ssh#lib/net/ssh/config.rb:197
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:215
     def translate_verify_host_key(value); end
 
-    # pkg:gem/net-ssh#lib/net/ssh/config.rb:401
+    # As in OpenSSH's argv_split, "#" starts a comment only at the start of a token and outside quotes.
+    #
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:470
+    def uncomment(string); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:474
     def unquote(string); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/config.rb:458
+    def warn_unsupported_match(kind, location); end
   end
 end
 
@@ -1781,17 +2149,17 @@ class Net::SSH::Connection::Channel
   #
   # This also sets the default maximum packet size and maximum window size.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:112
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:115
   def initialize(connection, type, local_id, max_pkt_size = T.unsafe(nil), max_win_size = T.unsafe(nil), &on_confirm_open); end
 
   # A shortcut for accessing properties of the channel (see #properties).
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:135
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:140
   def [](name); end
 
   # A shortcut for setting properties of the channel (see #properties).
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:140
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:145
   def []=(name, value); end
 
   # Returns true if the channel exists in the channel list of the session,
@@ -1800,13 +2168,13 @@ class Net::SSH::Connection::Channel
   #
   #   ssh.loop { channel.active? }
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:262
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:287
   def active?; end
 
   # Requests that the channel be closed. It only marks the channel to be closed
   # the CHANNEL_CLOSE message will be sent from event loop
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:299
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:324
   def close; end
 
   # True if close() has been called; NOTE: if the channel has data waiting to
@@ -1815,18 +2183,24 @@ class Net::SSH::Connection::Channel
   # This may be true for awhile before closed? returns true if we are still
   # sending buffered output to server.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:280
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:305
   def closing?; end
 
   # The underlying Net::SSH::Connection::Session instance that supports this channel.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:68
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:71
   def connection; end
+
+  # Internal and experimental: reports that +bytes+ of received data have
+  # been processed, letting the remote end send that much more.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:274
+  def consumed(bytes); end
 
   # Invokes the #on_close callback when the server closes a channel.
   # The channel is the only argument.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:613
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:643
   def do_close; end
 
   # Invokes the #on_data callback when the server sends data to the
@@ -1835,14 +2209,14 @@ class Net::SSH::Connection::Channel
   # the window size is too small. The callback is invoked with the channel
   # as the first argument, and the data as the second.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:590
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:615
   def do_data(data); end
 
   # Invokes the #on_eof callback when the server indicates that no
   # further data is forthcoming. The callback is invoked with the channel
   # as the argument.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:607
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:637
   def do_eof; end
 
   # Invokes the #on_extended_data callback when the server sends
@@ -1850,13 +2224,13 @@ class Net::SSH::Connection::Channel
   # size on the local end. The callback is invoked with the channel,
   # type, and data.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:599
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:624
   def do_extended_data(type, data); end
 
   # Invokes the next pending request callback with +false+ as the second
   # argument.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:619
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:649
   def do_failure; end
 
   # Invoked when the server confirms that a channel has been opened.
@@ -1866,7 +2240,7 @@ class Net::SSH::Connection::Channel
   # given when the channel was created, it is invoked at this time with
   # the channel itself as the sole argument.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:530
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:555
   def do_open_confirmation(remote_id, max_window, max_packet); end
 
   # Invoked when the server failed to open the channel. If an #on_open_failed
@@ -1874,7 +2248,7 @@ class Net::SSH::Connection::Channel
   # and description as arguments. Otherwise, a ChannelOpenFailed exception
   # will be raised.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:544
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:569
   def do_open_failed(reason_code, description); end
 
   # Invoked when the server sends a channel request. If any #on_request
@@ -1886,13 +2260,13 @@ class Net::SSH::Connection::Channel
   # callback should accept the channel as the first argument, and the
   # request-specific data as the second.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:569
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:594
   def do_request(request, want_reply, data); end
 
   # Invokes the next pending request callback with +true+ as the second
   # argument.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:629
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:659
   def do_success; end
 
   # Invoked when the server sends a CHANNEL_WINDOW_ADJUST packet, and
@@ -1900,7 +2274,7 @@ class Net::SSH::Connection::Channel
   # number of bytes. This has the effect of allowing more data to be sent
   # from the local end to the remote end of the channel.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:556
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:581
   def do_window_adjust(bytes); end
 
   # Enqueues pending output at the connection as CHANNEL_DATA packets. This
@@ -1909,7 +2283,7 @@ class Net::SSH::Connection::Channel
   # is called from the event loop (Connection::Session#process). You will
   # generally not need to invoke it directly.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:506
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:531
   def enqueue_pending_output; end
 
   # Syntactic sugar for setting an environment variable in the remote
@@ -1921,21 +2295,21 @@ class Net::SSH::Connection::Channel
   #
   #   channel.env "PATH", "/usr/local/bin"
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:189
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:194
   def env(variable_name, variable_value, &block); end
 
   # Tells the remote end of the channel that no more data is forthcoming
   # from this end of the channel. The remote end may still send data.
   # The CHANNEL_EOF packet will be sent once the output buffer is empty.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:315
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:340
   def eof!; end
 
   # Returns true if the local end of the channel has declared that no more
   # data is forthcoming (see #eof!). Trying to send data via #send_data when
   # this is true will result in an exception being raised.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:308
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:333
   def eof?; end
 
   # Syntactic sugar for executing a command. Sends a channel request asking
@@ -1955,34 +2329,42 @@ class Net::SSH::Connection::Channel
   #     end
   #   end
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:160
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:165
   def exec(command, &block); end
+
+  # Internal and experimental, used by port forwarding: from now on window
+  # is granted only for bytes reported via #consumed, so a slow consumer
+  # stalls the remote sender instead of buffering everything it sends.
+  # Must be called before any data is received.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:266
+  def grant_window_on_consume!; end
 
   # True if we have sent CHANNEL_CLOSE to the remote server.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:285
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:310
   def local_closed?; end
 
   # The local id for this channel, assigned by the Net::SSH::Connection::Session instance.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:59
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:62
   def local_id; end
 
   # The maximum packet size that the local host can receive.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:71
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:74
   def local_maximum_packet_size; end
 
   # The maximum amount of data that the local end of this channel can
   # receive. This is a total, not per-packet.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:75
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:78
   def local_maximum_window_size; end
 
   # This is the remaining window size on the local end of this channel. When
   # this reaches zero, no more data can be received.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:86
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:89
   def local_window_size; end
 
   # Registers a callback to be invoked when the server acknowledges that a
@@ -1992,7 +2374,7 @@ class Net::SSH::Connection::Channel
   #     puts "remote end is closing!"
   #   end
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:403
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:428
   def on_close(&block); end
 
   # Registers a callback to be invoked when data packets are received by the
@@ -2006,7 +2388,7 @@ class Net::SSH::Connection::Channel
   # Data received this way is typically the data written by the remote
   # process to its +stdout+ stream.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:350
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:375
   def on_data(&block); end
 
   # Registers a callback to be invoked when the server indicates that no more
@@ -2017,7 +2399,7 @@ class Net::SSH::Connection::Channel
   #     puts "remote end is done sending data"
   #   end
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:415
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:440
   def on_eof(&block); end
 
   # Registers a callback to be invoked when extended data packets are received
@@ -2031,7 +2413,7 @@ class Net::SSH::Connection::Channel
   #     puts "got stderr: #{data.inspect}"
   #   end
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:365
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:390
   def on_extended_data(&block); end
 
   # Registers a callback to be invoked when the server was unable to open
@@ -2045,7 +2427,7 @@ class Net::SSH::Connection::Channel
   #
   #   channel.on_open_failed { |ch, code, desc| ... }
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:430
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:455
   def on_open_failed(&block); end
 
   # Registers a callback to be invoked for each pass of the event loop for
@@ -2071,7 +2453,7 @@ class Net::SSH::Connection::Channel
   #     end
   #   end
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:392
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:417
   def on_process(&block); end
 
   # Registers a callback to be invoked when a channel request of the given
@@ -2101,62 +2483,62 @@ class Net::SSH::Connection::Channel
   #       puts "process terminated with exit status: #{data.read_long}"
   #     end
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:461
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:486
   def on_request(type, &block); end
 
   # The output buffer for this channel. Data written to the channel is
   # enqueued here, to be written as CHANNEL_DATA packets during each pass of
   # the event loop. See Connection::Session#process and #enqueue_pending_output.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:99
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:102
   def output; end
 
   # The list of pending requests. Each time a request is sent which requires
   # a reply, the corresponding callback is pushed onto this queue. As responses
   # arrive, they are shifted off the front and handled.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:104
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:107
   def pending_requests; end
 
   # If an #on_process handler has been set up, this will cause it to be
   # invoked (passing the channel itself as an argument). It also causes all
   # pending output to be enqueued as CHANNEL_DATA packets (see #enqueue_pending_output).
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:324
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:349
   def process; end
 
   # A hash of properties for this channel. These can be used to store state
   # information about this channel. See also #[] and #[]=.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:94
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:97
   def properties; end
 
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:293
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:318
   def remote_closed!; end
 
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:289
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:314
   def remote_closed?; end
 
   # The remote id for this channel, assigned by the remote host.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:62
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:65
   def remote_id; end
 
   # The maximum packet size that the remote host can receive.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:78
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:81
   def remote_maximum_packet_size; end
 
   # The maximum amount of data that the remote end of this channel can
   # receive. This is a total, not per-packet.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:82
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:85
   def remote_maximum_window_size; end
 
   # This is the remaining window size on the remote end of this channel. When
   # this reaches zero, no more data can be sent.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:90
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:93
   def remote_window_size; end
 
   # Requests that a pseudo-tty (or "pty") be made available for this channel.
@@ -2179,7 +2561,7 @@ class Net::SSH::Connection::Channel
   #     end
   #   end
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:220
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:225
   def request_pty(opts = T.unsafe(nil), &block); end
 
   # Sends a new channel request with the given name. The extra +data+
@@ -2205,7 +2587,7 @@ class Net::SSH::Connection::Channel
   # Most channel requests you'll want to send are already wrapped in more
   # convenient helper methods (see #exec and #subsystem).
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:488
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:513
   def send_channel_request(request_name, *data, &callback); end
 
   # Sends data to the channel's remote endpoint. This usually has the
@@ -2222,7 +2604,7 @@ class Net::SSH::Connection::Channel
   #
   #   channel.send_data("the password\n")
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:251
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:256
   def send_data(data); end
 
   # Syntactic sugar for requesting that a subsystem be started. Subsystems
@@ -2239,12 +2621,12 @@ class Net::SSH::Connection::Channel
   #     end
   #   end
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:177
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:182
   def subsystem(subsystem, &block); end
 
   # The type of this channel, usually "session".
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:65
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:68
   def type; end
 
   # Runs the SSH event loop until the channel is no longer active. This is
@@ -2253,10 +2635,17 @@ class Net::SSH::Connection::Channel
   #   channel.exec("grep ...") { ... }
   #   channel.wait
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:271
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:296
   def wait; end
 
   private
+
+  # Mirrors OpenSSH's channel_check_window: once the window is below half,
+  # give back what was consumed, growing the maximum window the same way
+  # #update_local_window_size does.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:701
+  def adjust_window_for_consumed; end
 
   # Gets an +Array+ of local environment variables in the remote process'
   # environment.
@@ -2264,14 +2653,14 @@ class Net::SSH::Connection::Channel
   #
   #   channel.forward_local_env [/^GIT_.*$/, "LANG"]
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:671
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:718
   def forward_local_env(env_variable_patterns); end
 
   # Set a +Hash+ of environment variables in the remote process' environment.
   #
   #   channel.set_remote_env foo: 'bar', baz: 'whale'
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:688
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:735
   def set_remote_env(env); end
 
   # Updates the local window size by the given amount. If the window
@@ -2279,25 +2668,30 @@ class Net::SSH::Connection::Channel
   # threshold), a CHANNEL_WINDOW_ADJUST message will be sent to the
   # server telling it that the window size has grown.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:652
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:682
   def update_local_window_size(size); end
 
   # Runs the SSH event loop until the remote confirmed channel open
   # experimental api
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:641
+  # pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:671
   def wait_until_open_confirmed; end
 end
 
-# pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:646
+# OpenSSH's CHAN_SES_WINDOW_DEFAULT; some servers (e.g. Mikrotik) truncate output with smaller windows (#726).
+#
+# pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:59
+Net::SSH::Connection::Channel::DEFAULT_MAX_WIN_SIZE = T.let(T.unsafe(nil), Integer)
+
+# pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:676
 Net::SSH::Connection::Channel::GOOD_LOCAL_MAXIUMUM_WINDOW_SIZE = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:645
+# pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:675
 Net::SSH::Connection::Channel::LOCAL_WINDOW_SIZE_INCREMENT = T.let(T.unsafe(nil), Integer)
 
 # A hash of the valid PTY options (see #request_pty).
 #
-# pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:194
+# pkg:gem/net-ssh#lib/net/ssh/connection/channel.rb:199
 Net::SSH::Connection::Channel::VALID_PTY_OPTIONS = T.let(T.unsafe(nil), Hash)
 
 # Definitions of constants that are specific to the connection layer of the
@@ -2446,19 +2840,19 @@ class Net::SSH::Connection::Session
   # Create a new connection service instance atop the given transport
   # layer. Initializes the listeners to be only the underlying socket object.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:68
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:72
   def initialize(transport, options = T.unsafe(nil)); end
 
   # Retrieves a custom property from this instance. This can be used to
   # store additional state in applications that must manage multiple
   # SSH connections.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:94
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:105
   def [](key); end
 
   # Sets a custom property for this instance.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:99
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:110
   def []=(key, value); end
 
   # Returns +true+ if there are any channels currently active on this
@@ -2467,11 +2861,12 @@ class Net::SSH::Connection::Session
   # a +true+ value for +include_invisible+, then those will be counted.
   #
   # This can be useful for determining whether the event loop should continue
-  # to be run.
+  # to be run. A forwarded socket still writing out data that arrived before
+  # its channel closed also counts as busy.
   #
   #   ssh.loop { ssh.busy? }
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:152
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:173
   def busy?(include_invisible = T.unsafe(nil)); end
 
   # The map of specialized handlers for opening specific channel types. See
@@ -2485,15 +2880,22 @@ class Net::SSH::Connection::Session
   # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:44
   def channels; end
 
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:522
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:584
   def cleanup_channel(channel); end
 
   # Closes the session gracefully, blocking until all channels have
   # successfully closed, and then closes the underlying transport layer
   # connection.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:121
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:132
   def close; end
+
+  # Internal and experimental, used by port forwarding: stops reading +io+
+  # but keeps flushing its pending output, then closes it and stops
+  # listening, as OpenSSH's chan_rcvd_oclose does.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:547
+  def close_when_drained(io); end
 
   # Returns true if the underlying transport has been closed. Note that
   # this can be a little misleading, since if the remote server has
@@ -2501,13 +2903,13 @@ class Net::SSH::Connection::Session
   # until the next operation on the socket. Nevertheless, this method can
   # be useful if you just want to know if _you_ have closed the connection.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:114
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:125
   def closed?; end
 
   # Returns the file descriptors the event loop should wait for read/write events,
   # we also return the max wait
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:255
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:280
   def ev_do_calculate_rw_wait(wait); end
 
   # It loops over the given arrays of reader IO's and writer IO's,
@@ -2515,19 +2917,19 @@ class Net::SSH::Connection::Session
   # then calls Net::SSH::Transport::Session#rekey_as_needed to allow the
   # transport layer to rekey. Then returns true.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:270
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:295
   def ev_do_handle_events(readers, writers); end
 
   # calls Net::SSH::Transport::Session#rekey_as_needed to allow the
   # transport layer to rekey
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:289
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:315
   def ev_do_postprocess(was_events); end
 
   # Called by event loop to process available data before going to
   # event multiplexing
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:248
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:271
   def ev_preprocess(&block); end
 
   # A convenience method for executing a command and interacting with it. If
@@ -2551,7 +2953,7 @@ class Net::SSH::Connection::Session
   #     end
   #   end
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:379
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:411
   def exec(command, status: T.unsafe(nil), &block); end
 
   # Same as #exec, except this will block until the command finishes. Also,
@@ -2560,21 +2962,24 @@ class Net::SSH::Connection::Session
   #
   #   matches = ssh.exec!("grep something /some/files")
   #
-  # the returned string has an exitstatus method to query its exit status
+  # With a block, output goes to the block and an empty string is returned,
+  # unless the block sets <tt>ch[:result]</tt>, which is returned instead.
+  # Either way the returned string has an exitstatus method to query the
+  # command's exit status.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:420
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:455
   def exec!(command, status: T.unsafe(nil), &block); end
 
   # Returns a reference to the Net::SSH::Service::Forward service, which can
   # be used for forwarding ports over SSH.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:493
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:555
   def forward; end
 
   # Returns the name of the host that was given to the transport layer to
   # connect to.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:105
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:116
   def host; end
 
   # Adds an IO object for the event loop to listen to. If a callback
@@ -2612,7 +3017,7 @@ class Net::SSH::Connection::Session
   #
   #   channel.wait
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:481
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:516
   def listen_to(io, &callback); end
 
   # The map of listeners that the event loop knows about. See #listen_to.
@@ -2638,14 +3043,14 @@ class Net::SSH::Connection::Session
   #   trap("INT") { int_pressed = true }
   #   ssh.loop(0.1) { not int_pressed }
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:177
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:200
   def loop(wait = T.unsafe(nil), &block); end
 
   # If the #preprocess and #postprocess callbacks for this session need to run
   # periodically, this method returns the maximum number of seconds which may
   # pass between callbacks.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:532
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:594
   def max_select_wait_time; end
 
   # Registers a handler to be invoked when the server sends a global request
@@ -2655,7 +3060,7 @@ class Net::SSH::Connection::Session
   # :sent. Otherwise, if it returns true, REQUEST_SUCCESS will be sent, and
   # if it returns false, REQUEST_FAILURE will be sent.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:517
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:579
   def on_global_request(type, &block); end
 
   # Registers a handler to be invoked when the server wants to open a
@@ -2669,7 +3074,7 @@ class Net::SSH::Connection::Session
   # when a remote forwarded port receives a connection. However, you are
   # welcome to register handlers for other channel types, as needed.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:507
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:569
   def on_open_channel(type, &block); end
 
   # Requests that a new channel be opened. By default, the channel will be
@@ -2692,13 +3097,23 @@ class Net::SSH::Connection::Session
   #
   #   channel.wait
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:338
+  # With the :preopen_channels option a plain "session" channel reuses
+  # the spare opened ahead of time, if there is one. Its callback still
+  # runs from the event loop, as if the server had just confirmed it.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:368
   def open_channel(type = T.unsafe(nil), *extra, &on_confirm); end
 
   # The map of options that were used to initialize this instance.
   #
   # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:38
   def options; end
+
+  # Internal and experimental, used by port forwarding: stops the event
+  # loop from reading +io+ while it keeps flushing its pending output.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:530
+  def pause_reading(io); end
 
   # The list of callbacks for pending requests. See #send_global_request.
   #
@@ -2707,7 +3122,7 @@ class Net::SSH::Connection::Session
 
   # This is called internally as part of #process.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:262
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:287
   def postprocess(readers, writers); end
 
   # This is called internally as part of #process. It dispatches any
@@ -2716,7 +3131,7 @@ class Net::SSH::Connection::Session
   # start of the method and again at the end, and if the block ever returns
   # false, this method returns false. Otherwise, it returns true.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:237
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:260
   def preprocess(&block); end
 
   # The core of the event loop. It processes a single iteration of the event
@@ -2754,13 +3169,19 @@ class Net::SSH::Connection::Session
   #     break if connections.empty?
   #   end
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:225
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:248
   def process(wait = T.unsafe(nil), &block); end
 
   # The collection of custom properties for this instance. (See #[] and #[]=).
   #
   # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:41
   def properties; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:540
+  def reading_paused?(io); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:536
+  def resume_reading(io); end
 
   # Send a global request of the given type. The +extra+ parameters must
   # be even in number, and conform to the same format as described for
@@ -2779,7 +3200,7 @@ class Net::SSH::Connection::Session
   #
   #   ssh.send_global_request("keep-alive@openssh.com")
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:311
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:337
   def send_global_request(type, *extra, &callback); end
 
   # Enqueues a message to be sent to the server as soon as the socket is
@@ -2790,7 +3211,7 @@ class Net::SSH::Connection::Session
   #
   #  ssh.send_message(Buffer.from(:byte, REQUEST_SUCCESS).to_s)
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:443
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:478
   def send_message(message); end
 
   # Performs a "hard" shutdown of the connection. In general, this should
@@ -2798,13 +3219,13 @@ class Net::SSH::Connection::Session
   # when the connection needs to close but you don't know the status of the
   # underlying protocol's state).
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:136
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:155
   def shutdown!; end
 
   # Removes the given io object from the listeners collection, so that the
   # event loop will no longer monitor it.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:487
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:522
   def stop_listening_to(io); end
 
   # The underlying transport layer abstraction (see Net::SSH::Transport::Session).
@@ -2814,22 +3235,22 @@ class Net::SSH::Connection::Session
 
   private
 
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:682
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:774
   def channel_close(packet); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:568
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:639
   def channel_closed(channel); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:667
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:757
   def channel_data(packet); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:677
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:767
   def channel_eof(packet); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:672
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:762
   def channel_extended_data(packet); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:694
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:793
   def channel_failure(packet); end
 
   # Called when the server wants to open a channel. If no registered
@@ -2837,68 +3258,92 @@ class Net::SSH::Connection::Session
   # is returned, otherwise the callback is invoked and everything proceeds
   # accordingly.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:612
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:683
   def channel_open(packet); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:645
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:716
   def channel_open_confirmation(packet); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:651
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:729
   def channel_open_failure(packet); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:662
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:752
   def channel_request(packet); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:689
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:788
   def channel_success(packet); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:657
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:742
   def channel_window_adjust(packet); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:632
+  def close_if_drained(io); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:826
+  def confirm_preopened_channels; end
 
   # Read all pending packets from the connection and dispatch them as
   # appropriate. Returns as soon as there are no more pending packets.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:545
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:607
   def dispatch_incoming_packets(raise_disconnect_errors: T.unsafe(nil)); end
 
   # iterate channels with the posibility of callbacks opening new channels during the iteration
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:539
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:601
   def each_channel(&block); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:562
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:624
   def force_channel_cleanup_on_close; end
 
   # Returns the next available channel id to be assigned, and increments
   # the counter.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:558
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:620
   def get_next_channel_id; end
 
   # Invoked when a global request is received. The registered global
   # request callback will be invoked, if one exists, and the necessary
   # reply returned.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:579
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:650
   def global_request(packet); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:699
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:837
   def io_select_wait(wait); end
 
   # preserve a reference to Kernel#loop
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:141
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:161
   def loop_forever; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:812
+  def open_spare_channel; end
 
   # Invokes the next pending request callback with +false+.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:602
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:673
   def request_failure(packet); end
 
   # Invokes the next pending request callback with +true+.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:595
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:666
   def request_success(packet); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:798
+  def send_channel_open(type, local_id, window_size, packet_size, *extra); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:833
+  def spare_channel(packet); end
+
+  # An unused spare is never closed, as that would cost round trips just before the transport goes away;
+  # it stays in @spare_channel to absorb the server's late replies for it.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:822
+  def stop_preopening; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:803
+  def take_spare_channel; end
 end
 
 # Default IO.select timeout threshold
@@ -2906,24 +3351,71 @@ end
 # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:32
 Net::SSH::Connection::Session::DEFAULT_IO_SELECT_TIMEOUT = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:703
+# pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:841
 Net::SSH::Connection::Session::MAP = T.let(T.unsafe(nil), Hash)
 
-# pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:56
+# pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:60
 class Net::SSH::Connection::Session::NilChannel
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:57
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:61
   def initialize(session); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:61
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:65
   def method_missing(sym, *args); end
 end
 
-# pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:350
+# A "session" channel opened ahead of time by :preopen_channels, and
+# the server's confirmation for it once that has arrived.
+#
+# pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:58
+class Net::SSH::Connection::Session::SpareChannel < ::Struct
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:58
+  def local_id; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:58
+  def local_id=(_); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:58
+  def packet_size; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:58
+  def packet_size=(_); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:58
+  def remote_id; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:58
+  def remote_id=(_); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:58
+  def window_size; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:58
+  def window_size=(_); end
+
+  class << self
+    # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:58
+    def [](*_arg0); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:58
+    def inspect; end
+
+    # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:58
+    def keyword_init?; end
+
+    # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:58
+    def members; end
+
+    # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:58
+    def new(*_arg0); end
+  end
+end
+
+# pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:382
 class Net::SSH::Connection::Session::StringWithExitstatus < ::String
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:351
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:383
   def initialize(str, exitstatus); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:356
+  # pkg:gem/net-ssh#lib/net/ssh/connection/session.rb:388
   def exitstatus; end
 end
 
@@ -3259,31 +3751,53 @@ class Net::SSH::Exception < ::RuntimeError; end
 #
 # pkg:gem/net-ssh#lib/net/ssh/buffered_io.rb:168
 module Net::SSH::ForwardedBufferedIo
-  # pkg:gem/net-ssh#lib/net/ssh/buffered_io.rb:169
+  # pkg:gem/net-ssh#lib/net/ssh/buffered_io.rb:174
   def fill(n = T.unsafe(nil)); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/buffered_io.rb:185
+  # Internal and experimental: registers a block called with the number of
+  # bytes each #send_pending wrote to the socket.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/buffered_io.rb:192
+  def on_sent(&block); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/buffered_io.rb:196
   def send_pending; end
+
+  # Internal: shuts down the write side once pending output has been sent,
+  # as OpenSSH does on CHANNEL_EOF (chan_rcvd_ieof, chan_obuf_empty).
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/buffered_io.rb:222
+  def shutdown_write_when_drained; end
+
+  private
+
+  # pkg:gem/net-ssh#lib/net/ssh/buffered_io.rb:229
+  def shutdown_write_if_drained; end
+
+  class << self
+    # pkg:gem/net-ssh#lib/net/ssh/buffered_io.rb:169
+    def extended(object); end
+  end
 end
 
-# pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:9
+# pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:8
 module Net::SSH::HostKeyEntries; end
 
 # @cert-authority entry
 #
-# pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:40
+# pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:50
 class Net::SSH::HostKeyEntries::CertAuthority
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:52
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:62
   def initialize(key, comment: T.unsafe(nil)); end
 
   # Returns true if every critical option in the certificate is one we can
   # enforce. net-ssh enforces none, so any critical option is unsupported
   # and, as OpenSSH does, must cause the certificate to be rejected.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:92
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:102
   def critical_options_supported?(server_key); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:57
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:67
   def matches_key?(server_key); end
 
   # Returns true if the certificate lists no principals (unrestricted) or
@@ -3292,100 +3806,130 @@ class Net::SSH::HostKeyEntries::CertAuthority
   # sshkey_cert_check_host passes wildcard_pattern=1 so principals like
   # "*.example.com" are matched with match_pattern rather than strcmp.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:70
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:80
   def matches_principal?(server_key, hostname); end
 
   # Returns true if the certificate is a host certificate. A user
   # certificate (type :user) must never authenticate a host.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:85
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:95
   def matches_type?(server_key); end
 
   # Returns true if the certificate's validity window covers the current time.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:76
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:86
   def matches_validity?(server_key); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:41
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:51
   def ssh_types; end
 end
 
 # regular public key entry
 #
-# pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:11
+# pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:10
 class Net::SSH::HostKeyEntries::PubKey
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:12
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:14
   def initialize(key, comment: T.unsafe(nil)); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:29
-  def __getobj__; end
+  # The public key itself, e.g. an OpenSSL::PKey::PKey.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:12
+  def key; end
 
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:34
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:31
   def matches_key?(server_key); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:17
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:35
+  def method_missing(name, *args, &block); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:19
   def ssh_type; end
 
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:21
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:23
   def ssh_types; end
 
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:25
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:27
   def to_blob; end
+
+  private
+
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:44
+  def respond_to_missing?(_name, _include_private = T.unsafe(nil)); end
+end
+
+# @revoked entry
+#
+# pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:108
+class Net::SSH::HostKeyEntries::Revoked
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:109
+  def initialize(key, comment: T.unsafe(nil)); end
+
+  # Returns true for the revoked key itself and for any certificate that
+  # wraps it or is signed by it, matching OpenSSH's check_key_not_revoked.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:116
+  def matches_key?(server_key); end
 end
 
 # Base class for host key exceptions. When rescuing this exception, you can
 # inspect the key fingerprint and, if you want to proceed anyway, simply call
 # the remember_host! method on the exception, and then retry.
 #
-# pkg:gem/net-ssh#lib/net/ssh/errors.rb:46
+# pkg:gem/net-ssh#lib/net/ssh/errors.rb:56
 class Net::SSH::HostKeyError < ::Net::SSH::Exception
   # An accessor for getting at the data that was used to look up the host
   # (see also #fingerprint, #host, #port, #ip, and #key).
   #
-  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:55
+  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:65
   def [](key); end
 
   # the callback to use when #remember_host! is called
   #
-  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:48
+  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:58
   def callback=(_arg0); end
 
   # situation-specific data describing the host (see #host, #port, etc.)
   #
-  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:51
+  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:61
   def data=(_arg0); end
 
   # Returns the fingerprint of the key for the host, which either was not
   # found or did not match.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:61
+  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:71
   def fingerprint; end
 
-  # Returns the host name for the remote host, as reported by the socket.
-  #
-  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:66
-  def host; end
-
-  # Returns the IP address of the remote host, as reported by the socket.
+  # Returns the host name that was connected to.
   #
   # pkg:gem/net-ssh#lib/net/ssh/errors.rb:76
+  def host; end
+
+  # Returns the IP address of the remote host, as reported by the socket,
+  # or nil when connected through a ProxyCommand.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:87
   def ip; end
 
   # Returns the key itself, as reported by the remote host.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:81
+  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:93
   def key; end
 
-  # Returns the port number for the remote host, as reported by the socket.
+  # Returns the port number that was connected to.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:71
+  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:81
   def port; end
 
   # Tell Net::SSH to record this host and key in the known hosts file, so
   # that subsequent connections will remember them.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:87
+  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:99
   def remember_host!; end
+
+  private
+
+  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:105
+  def session; end
 end
 
 # Raised when the cached key for a particular host does not match the
@@ -3394,8 +3938,19 @@ end
 # and, if you want to proceed anyway, simply call the remember_host!
 # method on the exception, and then retry.
 #
-# pkg:gem/net-ssh#lib/net/ssh/errors.rb:97
+# pkg:gem/net-ssh#lib/net/ssh/errors.rb:115
 class Net::SSH::HostKeyMismatch < ::Net::SSH::HostKeyError; end
+
+# Raised when the key given by the host, or the CA that signed its
+# certificate, is marked @revoked in a known hosts file. A revoked key must
+# never be accepted, so unlike the other host key errors this one can't be
+# overridden: #remember_host! just raises it again.
+#
+# pkg:gem/net-ssh#lib/net/ssh/errors.rb:128
+class Net::SSH::HostKeyRevoked < ::Net::SSH::HostKeyError
+  # pkg:gem/net-ssh#lib/net/ssh/errors.rb:129
+  def remember_host!; end
+end
 
 # Raised when there is no cached key for a particular host, which probably
 # means that the host has simply not been seen before.
@@ -3403,29 +3958,29 @@ class Net::SSH::HostKeyMismatch < ::Net::SSH::HostKeyError; end
 # you want to proceed anyway, simply call the remember_host! method on the
 # exception, and then retry.
 #
-# pkg:gem/net-ssh#lib/net/ssh/errors.rb:104
+# pkg:gem/net-ssh#lib/net/ssh/errors.rb:122
 class Net::SSH::HostKeyUnknown < ::Net::SSH::HostKeyError; end
 
 # Represents the result of a search in known hosts
 # see search_for
 #
-# pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:100
+# pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:126
 class Net::SSH::HostKeys
   include ::Enumerable
 
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:104
-  def initialize(host_keys, host, known_hosts, options = T.unsafe(nil)); end
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:130
+  def initialize(host_keys, host, known_hosts, options = T.unsafe(nil), revoked_keys = T.unsafe(nil)); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:111
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:143
   def add_host_key(key); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:116
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:148
   def each(&block); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:120
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:152
   def empty?; end
 
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:102
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:128
   def host; end
 
   # Returns the bare hostname, stripping port and IP portions from the
@@ -3436,8 +3991,13 @@ class Net::SSH::HostKeys
   #   "server.example.com,1.2.3.4"    => "server.example.com"
   #   "[server.example.com]:2222"      => "server.example.com"
   #
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:131
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:163
   def hostname; end
+
+  # Returns true if a @revoked known-hosts entry for this host matches +key+.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:139
+  def revoked?(key); end
 end
 
 # A factory class for returning new Key classes. It is used for obtaining
@@ -3450,13 +4010,13 @@ end
 #
 #   key = Net::SSH::KeyFactory.load_public_key("~/.ssh/id_dsa.pub")
 #
-# pkg:gem/net-ssh#lib/net/ssh/key_factory.rb:17
+# pkg:gem/net-ssh#lib/net/ssh/key_factory.rb:18
 class Net::SSH::KeyFactory
   class << self
     # Fetch an OpenSSL key instance by its SSH name. It will be a new,
     # empty key of the given type.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/key_factory.rb:30
+    # pkg:gem/net-ssh#lib/net/ssh/key_factory.rb:31
     def get(name); end
 
     # Loads a private key. It will correctly determine
@@ -3465,14 +4025,14 @@ class Net::SSH::KeyFactory
     # encrypted (requiring a passphrase to use), the user will be
     # prompted to enter their password unless passphrase works.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/key_factory.rb:49
+    # pkg:gem/net-ssh#lib/net/ssh/key_factory.rb:50
     def load_data_private_key(data, passphrase = T.unsafe(nil), ask_passphrase = T.unsafe(nil), filename = T.unsafe(nil), prompt = T.unsafe(nil)); end
 
     # Loads a public key. It will correctly determine whether
     # the file describes an RSA or DSA key, and will load it
     # appropriately. The new public key is returned.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/key_factory.rb:89
+    # pkg:gem/net-ssh#lib/net/ssh/key_factory.rb:90
     def load_data_public_key(data, filename = T.unsafe(nil)); end
 
     # Loads a private key from a file. It will correctly determine
@@ -3481,14 +4041,14 @@ class Net::SSH::KeyFactory
     # encrypted (requiring a passphrase to use), the user will be
     # prompted to enter their password unless passphrase works.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/key_factory.rb:39
+    # pkg:gem/net-ssh#lib/net/ssh/key_factory.rb:40
     def load_private_key(filename, passphrase = T.unsafe(nil), ask_passphrase = T.unsafe(nil), prompt = T.unsafe(nil)); end
 
     # Loads a public key from a file. It will correctly determine whether
     # the file describes an RSA or DSA key, and will load it
     # appropriately. The new public key is returned.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/key_factory.rb:81
+    # pkg:gem/net-ssh#lib/net/ssh/key_factory.rb:82
     def load_public_key(filename); end
 
     private
@@ -3496,14 +4056,17 @@ class Net::SSH::KeyFactory
     # Determine whether the file describes an RSA or DSA key, and return how load it
     # appropriately.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/key_factory.rb:198
+    # pkg:gem/net-ssh#lib/net/ssh/key_factory.rb:204
     def classify_key(data, filename); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/key_factory.rb:108
+    def public_key_type?(type); end
   end
 end
 
 # Specifies the mapping of SSH names to OpenSSL key classes.
 #
-# pkg:gem/net-ssh#lib/net/ssh/key_factory.rb:19
+# pkg:gem/net-ssh#lib/net/ssh/key_factory.rb:20
 Net::SSH::KeyFactory::MAP = T.let(T.unsafe(nil), Hash)
 
 # Searches an OpenSSH-style known-host file for a given host, and returns all
@@ -3513,19 +4076,19 @@ Net::SSH::KeyFactory::MAP = T.let(T.unsafe(nil), Hash)
 # This is used internally by Net::SSH, and will never need to be used directly
 # by consumers of the library.
 #
-# pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:142
+# pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:174
 class Net::SSH::KnownHosts
   # Instantiate a new KnownHosts instance that will search the given known-hosts
   # file. The path is expanded file File.expand_path.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:203
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:238
   def initialize(source); end
 
   # Tries to append an entry to the current source file for the given host
   # and key. If it is unable to (because the file is not writable, for
   # instance), an exception will be raised.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:300
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:339
   def add(host, key); end
 
   # Returns an array of all keys that are known to be associatd with the
@@ -3542,30 +4105,49 @@ class Net::SSH::KnownHosts
   #   "[1,2,3,4]:5555"
   #   "[net.ssh.test]:5555,[1.2.3.4]:5555
   #
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:222
+  # @revoked entries are not included, see revoked_keys_for.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:259
   def keys_for(host, options = T.unsafe(nil)); end
 
   # Indicates whether one of the entries matches an hostname that has been
   # stored as a HMAC-SHA1 hash in the known hosts.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:284
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:323
   def known_host_hash?(hostlist, entries); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:267
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:306
   def match(host, pattern); end
+
+  # Returns the @revoked entries for the given host, which takes the same
+  # formats as keys_for. An entry matching any of the comma-separated names
+  # counts, so :check_host_ip can't narrow a revocation.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:290
+  def revoked_keys_for(host); end
 
   # The host-key file name that this KnownHosts instance will use to search
   # for keys.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:199
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:234
   def source; end
+
+  private
+
+  # Yields the marker, host patterns, key and comment of each usable line.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:349
+  def each_entry; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:368
+  def read_key(key_content); end
 
   class << self
     # Looks in all user known host files (see KnownHosts.hostfiles) and tries to
     # add an entry for the given host and key to the first file it is able
     # to.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:187
+    # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:222
     def add(host, key, options = T.unsafe(nil)); end
 
     # Looks in the given +options+ hash for the :user_known_hosts_file and
@@ -3578,24 +4160,25 @@ class Net::SSH::KnownHosts
     # If you only want the user known host files, you can pass :user as
     # the second option.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:172
+    # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:207
     def hostfiles(options, which = T.unsafe(nil)); end
 
     # Searches all known host files (see KnownHosts.hostfiles) for all keys
     # of the given host. Returns an enumerable of keys found.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:153
+    # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:185
     def search_for(host, options = T.unsafe(nil)); end
 
     # Search for all known keys for the given host, in every file given in
-    # the +files+ array. Returns the list of keys.
+    # the +files+ array. Returns the list of keys. @revoked entries are not
+    # included.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:159
+    # pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:194
     def search_in(files, host, options = T.unsafe(nil)); end
   end
 end
 
-# pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:143
+# pkg:gem/net-ssh#lib/net/ssh/known_hosts.rb:175
 Net::SSH::KnownHosts::SUPPORTED_TYPE = T.let(T.unsafe(nil), Array)
 
 # A simple module to make logging easier to deal with. It assumes that the
@@ -3666,6 +4249,376 @@ module Net::SSH::Loggable
   # pkg:gem/net-ssh#lib/net/ssh/loggable.rb:57
   def facility; end
 end
+
+# Reuse of an existing OpenSSH ControlMaster connection, enabled by the
+# :control_master option of Net::SSH.start. Net::SSH only ever connects to
+# a master someone else started (e.g. with ssh -M or ControlMaster auto);
+# it never becomes one.
+#
+# pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:10
+module Net::SSH::Multiplex
+  class << self
+    # Returns a Connection::Session running through the ControlMaster for
+    # this connection, or nil (after logging why) when there is no usable
+    # master, in which case the caller connects as usual. +explicit+ are
+    # the option names the caller passed to Net::SSH.start. Raises
+    # ArgumentError for an invalid ControlPath, as ssh does.
+    #
+    # pkg:gem/net-ssh#lib/net/ssh/multiplex.rb:46
+    def connect(host_arg, host, user, options, explicit: T.unsafe(nil)); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/multiplex.rb:35
+    def validate_options!(options); end
+
+    private
+
+    # pkg:gem/net-ssh#lib/net/ssh/multiplex.rb:102
+    def jump_host(proxy); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/multiplex.rb:108
+    def log_master_owned(logger, explicit); end
+
+    # ENOENT and ECONNREFUSED just mean no master is running, while the
+    # other errors mean a socket is there but can't be used.
+    #
+    # pkg:gem/net-ssh#lib/net/ssh/multiplex.rb:67
+    def open_proxy(path, options); end
+
+    # Keepalive is a global request, which the master doesn't allow; it
+    # watches its own connection anyway. The master serves agent requests
+    # from its own agent only if it has ForwardAgent enabled itself.
+    #
+    # pkg:gem/net-ssh#lib/net/ssh/multiplex.rb:118
+    def session_options(logger, options); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/multiplex.rb:77
+    def socket_path(host_arg, host, user, options); end
+  end
+end
+
+# Connects to an OpenSSH ControlMaster's UNIX socket and switches it to
+# proxy mode (MUX_C_PROXY, OpenSSH 7.4 and later), after which the socket
+# carries plain SSH connection-protocol packets. See PROTOCOL.mux and
+# mux.c in OpenSSH.
+#
+# pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:19
+class Net::SSH::Multiplex::Client
+  include ::Net::SSH::Loggable
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:36
+  def initialize(path, timeout:, logger: T.unsafe(nil)); end
+
+  # Performs the HELLO and PROXY exchange and returns the connected
+  # socket, positioned at the first proxied packet. Raises
+  # Multiplex::Error, SystemCallError or IOError if the master can't be
+  # used; the socket is closed in that case.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:46
+  def connect_proxy; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:34
+  def path; end
+
+  private
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:89
+  def hello; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:60
+  def open_socket; end
+
+  # Reads exactly +count+ bytes so nothing after the PROXY reply, which
+  # already belongs to the packet stream, is consumed here.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:141
+  def read_exactly(count); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:131
+  def read_message; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:102
+  def request_proxy; end
+
+  # The master itself rejects clients with a different uid (channels.c,
+  # getpeereid); checking here also keeps us off a socket someone else
+  # planted at the ControlPath.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:80
+  def verify_peer; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:154
+  def wait_for(direction, socket); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:118
+  def write_message(type, *args); end
+end
+
+# Mux control messages are small; this only guards against reading a
+# bogus length from something that isn't a ControlMaster.
+#
+# pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:32
+Net::SSH::Multiplex::Client::MAX_MESSAGE_SIZE = T.let(T.unsafe(nil), Integer)
+
+# pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:23
+Net::SSH::Multiplex::Client::MUX_C_PROXY = T.let(T.unsafe(nil), Integer)
+
+# pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:22
+Net::SSH::Multiplex::Client::MUX_MSG_HELLO = T.let(T.unsafe(nil), Integer)
+
+# pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:25
+Net::SSH::Multiplex::Client::MUX_S_FAILURE = T.let(T.unsafe(nil), Integer)
+
+# pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:24
+Net::SSH::Multiplex::Client::MUX_S_PERMISSION_DENIED = T.let(T.unsafe(nil), Integer)
+
+# pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:26
+Net::SSH::Multiplex::Client::MUX_S_PROXY = T.let(T.unsafe(nil), Integer)
+
+# pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:28
+Net::SSH::Multiplex::Client::PROTOCOL_VERSION = T.let(T.unsafe(nil), Integer)
+
+# Expands a ControlPath the way OpenSSH's ssh does: a leading ~ first,
+# then ${ENV} and the % tokens below in a single pass (ssh.c,
+# DEFAULT_CLIENT_PERCENT_EXPAND_ARGS in sshconnect.h, misc.c
+# percent_dollar_expand).
+#
+#   %%  a literal %
+#   %C  SHA1 hex of %l%h%p%r%j
+#   %d  local home directory
+#   %h  remote host name, after HostName
+#   %i  local uid
+#   %j  host of the last ProxyJump hop, or empty
+#   %k  the host key alias, or the host name as given
+#   %L  local host name up to the first dot
+#   %l  local host name
+#   %n  the host name as given
+#   %p  remote port
+#   %r  remote user
+#   %u  local user
+#
+# pkg:gem/net-ssh#lib/net/ssh/multiplex/control_path.rb:27
+class Net::SSH::Multiplex::ControlPath
+  # +host_arg+ is the host as given, +host+ the one connected to after
+  # HostName.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/control_path.rb:30
+  def initialize(host_arg:, host:, port:, remote_user:, jump_host: T.unsafe(nil), host_key_alias: T.unsafe(nil)); end
+
+  # Raises ArgumentError for an unknown % token, an unset ${ENV}
+  # variable or an unknown ~user, which make ssh refuse the ControlPath
+  # too.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/control_path.rb:43
+  def expand(path); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/control_path.rb:47
+  def tokens; end
+
+  private
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/control_path.rb:111
+  def address?(host); end
+
+  # ssh uses the home directory from the password database, not $HOME
+  # (misc.c, tilde_expand).
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/control_path.rb:84
+  def expand_tilde(path); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/control_path.rb:93
+  def expand_tokens(path); end
+
+  class << self
+    # The host ssh uses for %j: the last hop of a ProxyJump list, without
+    # user or port (readconf.c, parse_jump).
+    #
+    # pkg:gem/net-ssh#lib/net/ssh/multiplex/control_path.rb:70
+    def jump_host(proxy_jump); end
+  end
+end
+
+# Used for the mux handshake when the :timeout option isn't set.
+#
+# pkg:gem/net-ssh#lib/net/ssh/multiplex.rb:17
+Net::SSH::Multiplex::DEFAULT_TIMEOUT = T.let(T.unsafe(nil), Integer)
+
+# Raised when the ControlMaster socket can't be used, e.g. the master
+# refused the request or spoke an unexpected protocol.
+#
+# pkg:gem/net-ssh#lib/net/ssh/multiplex/client.rb:13
+class Net::SSH::Multiplex::Error < ::Net::SSH::Exception; end
+
+# Options for setting up a connection, which the master already did
+# with its own settings.
+#
+# pkg:gem/net-ssh#lib/net/ssh/multiplex.rb:21
+Net::SSH::Multiplex::MASTER_OWNED_OPTIONS = T.let(T.unsafe(nil), Array)
+
+# Packet framing on a ControlMaster socket in proxy mode: the usual
+# uint32 packet_length and byte padding_length, but no padding, MAC,
+# encryption or compression. The master parses everything after the
+# padding_length byte as payload (channel_proxy_downstream in OpenSSH's
+# channels.c), so padding must not be sent.
+#
+# pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:18
+module Net::SSH::Multiplex::PacketSocket
+  include ::Net::SSH::Loggable
+  include ::Net::SSH::BufferedIo
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:28
+  def available_for_read?; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:59
+  def enqueue_packet(payload); end
+
+  # Same contract as Net::SSH::Transport::PacketStream#next_packet.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:33
+  def next_packet(mode = T.unsafe(nil), timeout = T.unsafe(nil)); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:64
+  def send_packet(payload); end
+
+  private
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:71
+  def poll_next_packet; end
+
+  class << self
+    # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:24
+    def extended(object); end
+  end
+end
+
+# OpenSSH's PACKET_MAX_SIZE.
+#
+# pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:22
+Net::SSH::Multiplex::PacketSocket::MAX_PACKET_SIZE = T.let(T.unsafe(nil), Integer)
+
+# Stands in for Net::SSH::Transport::Session underneath a
+# Net::SSH::Connection::Session when connected through an OpenSSH
+# ControlMaster in proxy mode. Key exchange, rekeying, host key
+# verification and authentication all belong to the master, so the
+# matching transport methods are no-ops or raise
+# NotSupportedOverControlMaster.
+#
+# pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:98
+class Net::SSH::Multiplex::ProxyTransport
+  include ::Net::SSH::Loggable
+  include ::Net::SSH::Connection::Constants
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:115
+  def initialize(socket, host:, control_path:, options: T.unsafe(nil)); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:174
+  def algorithms; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:138
+  def close; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:134
+  def closed?; end
+
+  # The ControlMaster socket path this transport is connected through.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:113
+  def control_path; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:159
+  def enqueue_message(message); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:168
+  def hint(*); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:110
+  def host; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:126
+  def host_as_string; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:182
+  def host_key_verifier; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:178
+  def host_keys; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:147
+  def next_message; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:110
+  def options; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:130
+  def peer; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:151
+  def poll_message(mode = T.unsafe(nil), *); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:110
+  def port; end
+
+  # The master rekeys its own connection.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:164
+  def rekey!; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:166
+  def rekey_as_needed; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:155
+  def send_message(message); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:170
+  def server_version; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:142
+  def shutdown!; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:110
+  def socket; end
+
+  private
+
+  # The master kills the proxy connection on any global request other
+  # than tcpip-forward, and consumes the reply to that one itself, so
+  # its success or failure and an allocated port 0 can't be observed
+  # (channels.c channel_proxy_downstream, clientloop.c
+  # client_global_request_reply).
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:197
+  def check_supported(data); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:188
+  def not_supported(what); end
+end
+
+# pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:102
+Net::SSH::Multiplex::ProxyTransport::DEFAULT_PORT = T.let(T.unsafe(nil), Integer)
+
+# Channel requests whose follow-up channel the server opens towards
+# the master, which serves it from its own agent or X display only if
+# it has ForwardAgent or ForwardX11 enabled itself, and rejects it
+# otherwise (clientloop.c, client_input_channel_open).
+#
+# pkg:gem/net-ssh#lib/net/ssh/multiplex/proxy_transport.rb:108
+Net::SSH::Multiplex::ProxyTransport::UNSUPPORTED_CHANNEL_REQUESTS = T.let(T.unsafe(nil), Array)
+
+# pkg:gem/net-ssh#lib/net/ssh/multiplex.rb:33
+Net::SSH::Multiplex::VALUES = T.let(T.unsafe(nil), Array)
+
+# pkg:gem/net-ssh#lib/net/ssh.rb:404
+Net::SSH::NIL_ALLOWED_OPTIONS = T.let(T.unsafe(nil), Array)
+
+# pkg:gem/net-ssh#lib/net/ssh.rb:406
+Net::SSH::NIL_OPTION_HINTS = T.let(T.unsafe(nil), Hash)
+
+# Raised when a session connected through an OpenSSH ControlMaster (see the
+# :control_master option of Net::SSH.start) is asked for something the
+# master's proxy mode cannot carry, such as remote port forwarding, agent
+# or X11 forwarding, or other global requests.
+#
+# pkg:gem/net-ssh#lib/net/ssh/errors.rb:30
+class Net::SSH::NotSupportedOverControlMaster < ::Net::SSH::Exception; end
 
 # A specialization of Buffer that knows the format of certain common
 # packet types. It auto-parses those packet types, and allows them to
@@ -3756,10 +4709,21 @@ class Net::SSH::Prompt
   # on the returned object. Info hash tries to uniquely identify the password
   # session, so caching implementations can save passwords properly.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/prompt.rb:57
+  # pkg:gem/net-ssh#lib/net/ssh/prompt.rb:95
   def start(info); end
 
   class << self
+    # The SSH_ASKPASS program to ask with instead of the terminal, chosen with
+    # the SSH_ASKPASS_REQUIRE and DISPLAY rules described in ssh(1).
+    #
+    # pkg:gem/net-ssh#lib/net/ssh/prompt.rb:36
+    def askpass; end
+
+    # Whether the default prompt has a terminal or an askpass program to ask with.
+    #
+    # pkg:gem/net-ssh#lib/net/ssh/prompt.rb:30
+    def can_ask?; end
+
     # factory
     #
     # pkg:gem/net-ssh#lib/net/ssh/prompt.rb:23
@@ -3770,22 +4734,29 @@ end
 # default prompt object implementation. More sophisticated implemenetations
 # might implement caching.
 #
-# pkg:gem/net-ssh#lib/net/ssh/prompt.rb:31
+# pkg:gem/net-ssh#lib/net/ssh/prompt.rb:51
 class Net::SSH::Prompt::Prompter
-  # pkg:gem/net-ssh#lib/net/ssh/prompt.rb:32
+  # pkg:gem/net-ssh#lib/net/ssh/prompt.rb:52
   def initialize(info); end
 
   # ask input from user, a prompter might ask for multiple inputs
   # (like user and password) in a single session.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/prompt.rb:41
+  # pkg:gem/net-ssh#lib/net/ssh/prompt.rb:64
   def ask(prompt, echo = T.unsafe(nil)); end
 
   # success method will be called when the password was accepted
   # It's a good time to save password asked to a cache.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/prompt.rb:51
+  # pkg:gem/net-ssh#lib/net/ssh/prompt.rb:77
   def success; end
+
+  private
+
+  # Like OpenSSH, a cancelled or failed askpass answers with an empty string.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/prompt.rb:82
+  def ask_askpass(prompt); end
 end
 
 # pkg:gem/net-ssh#lib/net/ssh/service/forward.rb:5
@@ -3979,14 +4950,14 @@ class Net::SSH::Service::Forward
 
   # The callback used when an auth-agent channel is requested by the server.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/service/forward.rb:407
+  # pkg:gem/net-ssh#lib/net/ssh/service/forward.rb:418
   def auth_agent_channel(session, channel, packet); end
 
   # The callback used when a new "forwarded-tcpip" channel is requested
   # by the server.  This will open a new socket to the host/port specified
   # when the forwarded connection was first requested.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/service/forward.rb:385
+  # pkg:gem/net-ssh#lib/net/ssh/service/forward.rb:396
   def forwarded_tcpip(session, channel, packet); end
 
   # Perform setup operations that are common to all forwarded channels.
@@ -3998,7 +4969,7 @@ class Net::SSH::Service::Forward
 
   # not a real socket, so use a simpler behaviour
   #
-  # pkg:gem/net-ssh#lib/net/ssh/service/forward.rb:365
+  # pkg:gem/net-ssh#lib/net/ssh/service/forward.rb:374
   def prepare_simple_client(client, channel, type); end
 end
 
@@ -4105,7 +5076,16 @@ class Net::SSH::Transport::AES128_GCM
 
   class << self
     # pkg:gem/net-ssh#lib/net/ssh/transport/aes128_gcm.rb:7
+    def auth_length; end
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/aes128_gcm.rb:7
     def block_size; end
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/aes128_gcm.rb:7
+    def decrypt_private_key(ciphertext, auth_tag, key, initialization_vector); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/aes128_gcm.rb:7
+    def iv_len; end
 
     # --- RFC 5647 ---
     # K_LEN       AES key length                   16 octets
@@ -4186,7 +5166,16 @@ class Net::SSH::Transport::AES256_GCM
 
   class << self
     # pkg:gem/net-ssh#lib/net/ssh/transport/aes256_gcm.rb:7
+    def auth_length; end
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/aes256_gcm.rb:7
     def block_size; end
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/aes256_gcm.rb:7
+    def decrypt_private_key(ciphertext, auth_tag, key, initialization_vector); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/aes256_gcm.rb:7
+    def iv_len; end
 
     # --- RFC 5647 ---
     # K_LEN       AES key length                   32 octets
@@ -4215,7 +5204,7 @@ end
 # You will never instantiate or reference this directly. It is used
 # internally by the transport layer.
 #
-# pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:22
+# pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:23
 class Net::SSH::Transport::Algorithms
   include ::Net::SSH::Loggable
   include ::Net::SSH::Transport::Constants
@@ -4223,13 +5212,13 @@ class Net::SSH::Transport::Algorithms
   # Instantiates a new Algorithms object, and prepares the hash of preferred
   # algorithms based on the options parameter and the ALGORITHMS constant.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:158
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:177
   def initialize(session, options = T.unsafe(nil)); end
 
   # A convenience method for accessing the list of preferred types for a
   # specific algorithm (see #algorithms).
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:202
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:221
   def [](key); end
 
   # Called by the transport layer when a KEXINIT packet is received, indicating
@@ -4237,84 +5226,84 @@ class Net::SSH::Transport::Algorithms
   # can be in response to a client-initiated rekey request (see #rekey!). Either
   # way, this will block until the key exchange completes.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:189
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:208
   def accept_kexinit(packet); end
 
   # The hash of algorithms preferred by the client, which will be told to
   # the server during algorithm negotiation.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:144
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:163
   def algorithms; end
 
   # Returns true if no exchange is pending, and otherwise returns true or
   # false depending on whether the given packet is of a type that is allowed
   # during a key exchange.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:218
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:237
   def allow?(packet); end
 
   # The type of compression to use to compress packets being sent by the client.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:131
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:150
   def compression_client; end
 
   # The type of compression to use to decompress packets arriving from the server.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:134
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:153
   def compression_server; end
 
   # The type of the cipher to use to encrypt packets sent from the client to
   # the server.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:119
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:138
   def encryption_client; end
 
   # The type of the cipher to use to decrypt packets arriving from the server.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:122
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:141
   def encryption_server; end
 
   # The type of HMAC to use to sign packets sent by the client.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:125
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:144
   def hmac_client; end
 
   # The type of HMAC to use to validate packets arriving from the server.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:128
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:147
   def hmac_server; end
 
   # The type of host key that will be used for this session.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:115
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:134
   def host_key; end
 
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:227
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:246
   def host_key_format; end
 
   # Returns true if the algorithms have been negotiated at all.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:223
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:242
   def initialized?; end
 
   # The kex algorithm to use settled on between the client and server.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:112
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:131
   def kex; end
 
   # The language that will be used in messages sent by the client.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:137
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:156
   def language_client; end
 
   # The language that will be used in messages sent from the server.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:140
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:159
   def language_server; end
 
   # The hash of options used to initialize this object
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:109
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:128
   def options; end
 
   # Returns +true+ if a key-exchange is pending. This will be true from the
@@ -4323,7 +5312,7 @@ class Net::SSH::Transport::Algorithms
   # of packets are allowed, so event processing essentially stops during this
   # period.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:211
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:230
   def pending?; end
 
   # Request a rekey operation. This will return immediately, and does not
@@ -4331,22 +5320,22 @@ class Net::SSH::Transport::Algorithms
   # state, however--until the key exchange finishes, no new packets will be
   # processed.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:179
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:198
   def rekey!; end
 
   # The underlying transport layer session that supports this object
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:106
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:125
   def session; end
 
   # The session-id for this session, as decided during the initial key exchange.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:147
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:166
   def session_id; end
 
   # Start the algorithm negotation
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:169
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:188
   def start; end
 
   private
@@ -4355,34 +5344,37 @@ class Net::SSH::Transport::Algorithms
   # a KEXINIT packet to send to the server. It does not actually send it,
   # it simply builds the packet and returns it.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:372
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:426
   def build_client_algorithm_packet; end
 
   # Composes the list of algorithms by taking supported algorithms and matching with supplied options.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:299
-  def compose_algorithm_list(supported, option, append_all_supported_algorithms = T.unsafe(nil)); end
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:327
+  def compose_algorithm_list(supported, defaults, option, append_all_supported_algorithms = T.unsafe(nil), appendable = T.unsafe(nil)); end
 
   # Instantiates one of the Transport::Kex classes (based on the negotiated
   # kex algorithm), and uses it to exchange keys. Then, the ciphers and
   # HMACs are initialized and fed to the transport layer, to be used in
   # further communication with the server.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:446
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:504
   def exchange_keys; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:378
+  def host_key_explicitly_named?(name); end
 
   # Considers the sizes of the keys and block-sizes for the selected ciphers,
   # and the lengths of the hmacs, and returns the largest as the byte requirement
   # for the key-exchange algorithm.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:430
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:488
   def kex_byte_requirement; end
 
   # Negotiates a single algorithm based on the preferences reported by the
   # server and those set by the client. This is called by
   # #negotiate_algorithms.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:415
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:473
   def negotiate(algorithm); end
 
   # Given the parsed server KEX packet, and the client's preferred algorithm
@@ -4390,18 +5382,18 @@ class Net::SSH::Transport::Algorithms
   # in common and set those as the selected algorithms. If, for any algorithm,
   # no type can be settled on, an exception is raised.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:391
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:448
   def negotiate_algorithms; end
 
   # Given the SSH name for some compression algorithm, return a normalized
   # name as a symbol.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:520
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:578
   def normalize_compression_name(name); end
 
   # Parses a KEXINIT packet from the server.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:345
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:392
   def parse_server_algorithm_packet(packet); end
 
   # Prepares the list of preferred algorithms, based on the options hash
@@ -4411,41 +5403,57 @@ class Net::SSH::Transport::Algorithms
   # before, and if so, that key type is used as the preferred type for
   # communicating with this server.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:267
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:286
   def prepare_preferred_algorithms!; end
 
   # After both client and server have sent their KEXINIT packets, this
   # will do the algorithm negotiation and key exchange. Once both finish,
   # the object leaves the pending state and the method returns.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:254
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:273
   def proceed!; end
+
+  # Reads one comma-separated algorithm name-list from a KEXINIT packet.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:417
+  def read_name_list(packet); end
 
   # Sends a KEXINIT packet to the server. If a server KEXINIT has already
   # been received, this will then invoke #proceed! to proceed with the key
   # exchange, otherwise it returns immediately (but sets the object to the
   # pending state).
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:242
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:261
   def send_kexinit; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:383
+  def warn_deprecated_host_key; end
 
   class << self
     # Returns true if the given packet can be processed during a key-exchange.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:150
+    # pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:169
     def allowed_packet?(packet); end
   end
 end
 
 # Define all algorithms, with the deprecated, supported by Net::SSH.
 #
-# pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:78
+# pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:85
 Net::SSH::Transport::Algorithms::ALGORITHMS = T.let(T.unsafe(nil), Hash)
 
 # Define the default algorithms, in order of preference, supported by Net::SSH.
 #
-# pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:27
+# pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:28
 Net::SSH::Transport::Algorithms::DEFAULT_ALGORITHMS = T.let(T.unsafe(nil), Hash)
+
+# pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:122
+Net::SSH::Transport::Algorithms::DEPRECATED_HOST_KEY = T.let(T.unsafe(nil), String)
+
+# Not added by append_all_supported_algorithms; only used when named explicitly.
+#
+# pkg:gem/net-ssh#lib/net/ssh/transport/algorithms.rb:117
+Net::SSH::Transport::Algorithms::EXPLICIT_ONLY_ALGORITHMS = T.let(T.unsafe(nil), Hash)
 
 # Pure-Ruby implementation of Stateful Decryption Counter(SDCTR) Mode
 # for Block Ciphers. See RFC4344 for detail.
@@ -4458,22 +5466,138 @@ module Net::SSH::Transport::CTR
   end
 end
 
-# Loads chacha20 poly1305 support which requires optinal dependency rbnacl
+# Implements the chacha20-poly1305@openssh cipher
+#
+# pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:8
+class Net::SSH::Transport::ChaCha20Poly1305Cipher
+  include ::Net::SSH::Loggable
+
+  # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:32
+  def initialize(encrypt:, key:); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:100
+  def block_size; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:112
+  def implicit_mac; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:108
+  def implicit_mac?; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:96
+  def mac_length; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:104
+  def name; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:78
+  def read_and_mac(data, mac, sequence_number); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:72
+  def read_length(data, sequence_number); end
+
+  # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:53
+  def update_cipher_mac(payload, sequence_number); end
+
+  private
+
+  # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:178
+  def packet_iv(sequence_number); end
+
+  class << self
+    # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:128
+    def auth_length; end
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:116
+    def block_size; end
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:132
+    def decrypt_private_key(ciphertext, auth_tag, key, _initialization_vector); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:153
+    def ensure_supported!; end
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:124
+    def iv_len; end
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:120
+    def key_length; end
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:164
+    def poly1305_auth(poly_key, data); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:169
+    def validate_poly1305_key!(poly_key); end
+
+    private
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:173
+    def binary_string(string); end
+  end
+end
+
+# Implicit HMAC, no need to do anything
+#
+# pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:21
+class Net::SSH::Transport::ChaCha20Poly1305Cipher::ImplicitHMac
+  # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:22
+  def etm; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:27
+  def key_length; end
+end
+
+# pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:14
+Net::SSH::Transport::ChaCha20Poly1305Cipher::NAME = T.let(T.unsafe(nil), String)
+
+# pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:11
+Net::SSH::Transport::ChaCha20Poly1305Cipher::POLY1305_ALGORITHM = T.let(T.unsafe(nil), String)
+
+# pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:12
+Net::SSH::Transport::ChaCha20Poly1305Cipher::POLY1305_KEY_BYTES = T.let(T.unsafe(nil), Integer)
+
+# pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:13
+Net::SSH::Transport::ChaCha20Poly1305Cipher::POLY1305_TAG_BYTES = T.let(T.unsafe(nil), Integer)
+
+# pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:18
+class Net::SSH::Transport::ChaCha20Poly1305Cipher::UnsupportedError < ::StandardError; end
+
+# pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:15
+Net::SSH::Transport::ChaCha20Poly1305Cipher::ZERO_BLOCK = T.let(T.unsafe(nil), String)
+
+# pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher.rb:16
+Net::SSH::Transport::ChaCha20Poly1305Cipher::ZERO_IV = T.let(T.unsafe(nil), String)
+
+# Loads chacha20-poly1305 support backed by Ruby OpenSSL APIs.
 #
 # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher_loader.rb:5
-module Net::SSH::Transport::ChaCha20Poly1305CipherLoader; end
+module Net::SSH::Transport::ChaCha20Poly1305CipherLoader
+  class << self
+    # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher_loader.rb:30
+    def chacha20_poly1305_support_required; end
 
-# pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher_loader.rb:11
-Net::SSH::Transport::ChaCha20Poly1305CipherLoader::ERROR = T.let(T.unsafe(nil), LoadError)
+    # pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher_loader.rb:24
+    def raiseUnlessLoaded(message); end
+  end
+end
 
-# pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher_loader.rb:12
-Net::SSH::Transport::ChaCha20Poly1305CipherLoader::LOADED = T.let(T.unsafe(nil), FalseClass)
+# pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher_loader.rb:10
+Net::SSH::Transport::ChaCha20Poly1305CipherLoader::ERROR = T.let(T.unsafe(nil), T.untyped)
+
+# pkg:gem/net-ssh#lib/net/ssh/transport/chacha20_poly1305_cipher_loader.rb:9
+Net::SSH::Transport::ChaCha20Poly1305CipherLoader::LOADED = T.let(T.unsafe(nil), TrueClass)
 
 # Implements a factory of OpenSSL cipher algorithms.
 #
 # pkg:gem/net-ssh#lib/net/ssh/transport/cipher_factory.rb:14
 class Net::SSH::Transport::CipherFactory
   class << self
+    # pkg:gem/net-ssh#lib/net/ssh/transport/cipher_factory.rb:132
+    def auth_length(name); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/cipher_factory.rb:139
+    def decrypt_private_key(name, ciphertext, auth_tag, key, initialization_vector); end
+
     # Retrieves a new instance of the named algorithm. The new instance
     # will be initialized using an iv and key generated from the given
     # iv, key, shared, hash and digester values. Additionally, the
@@ -4521,45 +5645,48 @@ Net::SSH::Transport::Constants::DEBUG = T.let(T.unsafe(nil), Integer)
 # pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:9
 Net::SSH::Transport::Constants::DISCONNECT = T.let(T.unsafe(nil), Integer)
 
+# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:15
+Net::SSH::Transport::Constants::EXT_INFO = T.let(T.unsafe(nil), Integer)
+
 # pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:10
 Net::SSH::Transport::Constants::IGNORE = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:33
+# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:34
 Net::SSH::Transport::Constants::KEXDH_GEX_GROUP = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:34
+# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:35
 Net::SSH::Transport::Constants::KEXDH_GEX_INIT = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:35
+# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:36
 Net::SSH::Transport::Constants::KEXDH_GEX_REPLY = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:36
+# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:37
 Net::SSH::Transport::Constants::KEXDH_GEX_REQUEST = T.let(T.unsafe(nil), Integer)
 
 # --
 # Key exchange method specific messages
 # ++
 #
-# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:27
+# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:28
 Net::SSH::Transport::Constants::KEXDH_INIT = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:28
+# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:29
 Net::SSH::Transport::Constants::KEXDH_REPLY = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:30
+# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:31
 Net::SSH::Transport::Constants::KEXECDH_INIT = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:31
+# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:32
 Net::SSH::Transport::Constants::KEXECDH_REPLY = T.let(T.unsafe(nil), Integer)
 
 # --
 # Algorithm negotiation messages
 # ++
 #
-# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:20
+# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:21
 Net::SSH::Transport::Constants::KEXINIT = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:21
+# pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:22
 Net::SSH::Transport::Constants::NEWKEYS = T.let(T.unsafe(nil), Integer)
 
 # pkg:gem/net-ssh#lib/net/ssh/transport/constants.rb:14
@@ -4576,10 +5703,19 @@ Net::SSH::Transport::Constants::UNIMPLEMENTED = T.let(T.unsafe(nil), Integer)
 # pkg:gem/net-ssh#lib/net/ssh/transport/gcm_cipher.rb:7
 module Net::SSH::Transport::GCMCipher
   class << self
-    # pkg:gem/net-ssh#lib/net/ssh/transport/gcm_cipher.rb:9
+    # pkg:gem/net-ssh#lib/net/ssh/transport/gcm_cipher.rb:13
     def extended(orig); end
   end
 end
+
+# pkg:gem/net-ssh#lib/net/ssh/transport/gcm_cipher.rb:10
+Net::SSH::Transport::GCMCipher::AUTH_TAG_BYTES = T.let(T.unsafe(nil), Integer)
+
+# pkg:gem/net-ssh#lib/net/ssh/transport/gcm_cipher.rb:8
+Net::SSH::Transport::GCMCipher::BLOCK_SIZE = T.let(T.unsafe(nil), Integer)
+
+# pkg:gem/net-ssh#lib/net/ssh/transport/gcm_cipher.rb:9
+Net::SSH::Transport::GCMCipher::IV_BYTES = T.let(T.unsafe(nil), Integer)
 
 # Implements a simple factory interface for fetching hmac implementations, or
 # for finding the key lengths for hmac implementations.s
@@ -4590,12 +5726,12 @@ module Net::SSH::Transport::HMAC
     # Retrieves a new hmac instance of the given SSH type (+name+). If +key+ is
     # given, the new instance will be initialized with that key.
     #
-    # pkg:gem/net-ssh#lib/net/ssh/transport/hmac.rb:37
+    # pkg:gem/net-ssh#lib/net/ssh/transport/hmac.rb:39
     def get(name, key = T.unsafe(nil), parameters = T.unsafe(nil)); end
 
     # Retrieves the key length for the hmac of the given SSH type (+name+).
     #
-    # pkg:gem/net-ssh#lib/net/ssh/transport/hmac.rb:43
+    # pkg:gem/net-ssh#lib/net/ssh/transport/hmac.rb:45
     def key_length(name); end
   end
 end
@@ -4658,7 +5794,7 @@ end
 
 # The mapping of SSH hmac algorithms to their implementations
 #
-# pkg:gem/net-ssh#lib/net/ssh/transport/hmac.rb:19
+# pkg:gem/net-ssh#lib/net/ssh/transport/hmac.rb:20
 Net::SSH::Transport::HMAC::MAP = T.let(T.unsafe(nil), Hash)
 
 # The MD5 HMAC algorithm.
@@ -4697,6 +5833,12 @@ class Net::SSH::Transport::HMAC::SHA1 < ::Net::SSH::Transport::HMAC::Abstract; e
 #
 # pkg:gem/net-ssh#lib/net/ssh/transport/hmac/sha1_96.rb:6
 class Net::SSH::Transport::HMAC::SHA1_96 < ::Net::SSH::Transport::HMAC::SHA1; end
+
+# The SHA1 Encrypt-Then-Mac HMAC algorithm. This has a mac and
+# key length of 20, and uses the SHA1 digest algorithm.
+#
+# pkg:gem/net-ssh#lib/net/ssh/transport/hmac/sha1_etm.rb:6
+class Net::SSH::Transport::HMAC::SHA1_Etm < ::Net::SSH::Transport::HMAC::Abstract; end
 
 # The SHA-256 HMAC algorithm. This has a mac and key length of 32, and
 # uses the SHA-256 digest algorithm.
@@ -4896,24 +6038,76 @@ class Net::SSH::Transport::Kex::Abstract5656 < ::Net::SSH::Transport::Kex::Abstr
   def send_kexinit; end
 end
 
-# Loads Curve25519Sha256 support which requires optinal dependencies
+# A key-exchange service implementing the "curve25519-sha256@libssh.org"
+# key-exchange algorithm. (defined in https://tools.ietf.org/html/draft-ietf-curdle-ssh-curves-06)
+#
+# pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256.rb:11
+class Net::SSH::Transport::Kex::Curve25519Sha256 < ::Net::SSH::Transport::Kex::Abstract5656
+  # pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256.rb:47
+  def digester; end
+
+  private
+
+  # compute shared secret from server's public key and client's private key
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256.rb:63
+  def compute_shared_secret(server_ecdh_pubkey); end
+
+  # string   Q_C, client's ephemeral public key octet string
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256.rb:58
+  def ecdh_public_key_bytes; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256.rb:53
+  def generate_key; end
+
+  class << self
+    # pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256.rb:17
+    def ensure_supported!; end
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256.rb:29
+    def generate_x25519_key; end
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256.rb:33
+    def new_raw_public_key(key); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256.rb:38
+    def validate_key_bytes!(key, label, expected_bytes); end
+
+    private
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256.rb:42
+    def binary_string(string); end
+  end
+end
+
+# pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256.rb:12
+Net::SSH::Transport::Kex::Curve25519Sha256::ALGORITHM = T.let(T.unsafe(nil), String)
+
+# pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256.rb:13
+Net::SSH::Transport::Kex::Curve25519Sha256::KEY_BYTES = T.let(T.unsafe(nil), Integer)
+
+# pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256.rb:15
+class Net::SSH::Transport::Kex::Curve25519Sha256::UnsupportedError < ::StandardError; end
+
+# Loads Curve25519Sha256 support backed by Ruby OpenSSL X25519 APIs.
 #
 # pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256_loader.rb:6
 module Net::SSH::Transport::Kex::Curve25519Sha256Loader
   class << self
-    # pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256_loader.rb:22
-    def dependenciesRequiredForX25519; end
-
-    # pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256_loader.rb:16
+    # pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256_loader.rb:25
     def raiseUnlessLoaded(message); end
+
+    # pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256_loader.rb:31
+    def x25519SupportRequired; end
   end
 end
 
-# pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256_loader.rb:12
-Net::SSH::Transport::Kex::Curve25519Sha256Loader::ERROR = T.let(T.unsafe(nil), Gem::LoadError)
+# pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256_loader.rb:11
+Net::SSH::Transport::Kex::Curve25519Sha256Loader::ERROR = T.let(T.unsafe(nil), T.untyped)
 
-# pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256_loader.rb:13
-Net::SSH::Transport::Kex::Curve25519Sha256Loader::LOADED = T.let(T.unsafe(nil), FalseClass)
+# pkg:gem/net-ssh#lib/net/ssh/transport/kex/curve25519_sha256_loader.rb:10
+Net::SSH::Transport::Kex::Curve25519Sha256Loader::LOADED = T.let(T.unsafe(nil), TrueClass)
 
 # A key-exchange service implementing the "diffie-hellman-group14-sha1"
 # key-exchange algorithm. (defined in RFC 4253)
@@ -4985,6 +6179,12 @@ class Net::SSH::Transport::Kex::DiffieHellmanGroup1SHA1 < ::Net::SSH::Transport:
   #
   # pkg:gem/net-ssh#lib/net/ssh/transport/kex/diffie_hellman_group1_sha1.rb:89
   def send_kexinit; end
+
+  # Rejects degenerate values that would let the server force a
+  # predictable shared secret, as OpenSSH's dh_pub_is_valid.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/transport/kex/diffie_hellman_group1_sha1.rb:122
+  def validate_server_dh_pubkey(pub); end
 end
 
 # The group constant
@@ -5012,24 +6212,45 @@ class Net::SSH::Transport::Kex::DiffieHellmanGroupExchangeSHA1 < ::Net::SSH::Tra
   # Build the signature buffer to use when verifying a signature from
   # the server.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/kex/diffie_hellman_group_exchange_sha1.rb:56
+  # pkg:gem/net-ssh#lib/net/ssh/transport/kex/diffie_hellman_group_exchange_sha1.rb:86
   def build_signature_buffer(result); end
 
-  # Compute the number of bits needed for the given number of bytes.
+  # pkg:gem/net-ssh#lib/net/ssh/transport/kex/diffie_hellman_group_exchange_sha1.rb:30
+  def cisco_server?; end
+
+  # Computes the minimum, preferred and maximum group sizes to request,
+  # like OpenSSH's kexgex_client.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/kex/diffie_hellman_group_exchange_sha1.rb:15
+  # pkg:gem/net-ssh#lib/net/ssh/transport/kex/diffie_hellman_group_exchange_sha1.rb:17
   def compute_need_bits; end
+
+  # Group size giving at least the given bits of security (NIST SP 800-57),
+  # as OpenSSH's dh_estimate.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/transport/kex/diffie_hellman_group_exchange_sha1.rb:36
+  def estimate_group_bits(security_bits); end
 
   # Returns the INIT/REPLY constants used by this algorithm.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/kex/diffie_hellman_group_exchange_sha1.rb:50
+  # pkg:gem/net-ssh#lib/net/ssh/transport/kex/diffie_hellman_group_exchange_sha1.rb:80
   def get_message_types; end
 
   # Returns the DH key parameters for the given session.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/kex/diffie_hellman_group_exchange_sha1.rb:32
+  # pkg:gem/net-ssh#lib/net/ssh/transport/kex/diffie_hellman_group_exchange_sha1.rb:49
   def get_parameters; end
+
+  # Some Cisco servers fail instead of returning their 4096-bit group when asked for more (OpenSSH bz#2209).
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/transport/kex/diffie_hellman_group_exchange_sha1.rb:24
+  def maximum_need_bits; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/transport/kex/diffie_hellman_group_exchange_sha1.rb:68
+  def validate_group(prime, generator); end
 end
+
+# pkg:gem/net-ssh#lib/net/ssh/transport/kex/diffie_hellman_group_exchange_sha1.rb:11
+Net::SSH::Transport::Kex::DiffieHellmanGroupExchangeSHA1::CISCO_MAXIMUM_NEED_BITS = T.let(T.unsafe(nil), Integer)
 
 # pkg:gem/net-ssh#lib/net/ssh/transport/kex/diffie_hellman_group_exchange_sha1.rb:10
 Net::SSH::Transport::Kex::DiffieHellmanGroupExchangeSHA1::MAXIMUM_BITS = T.let(T.unsafe(nil), Integer)
@@ -5194,7 +6415,7 @@ module Net::SSH::Transport::PacketStream
   # client or server state objects, see State#needs_rekey?), this will
   # yield. Otherwise, this does nothing.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/packet_stream.rb:198
+  # pkg:gem/net-ssh#lib/net/ssh/transport/packet_stream.rb:199
   def if_needs_rekey?; end
 
   # Returns the next full packet. If the mode parameter is :nonblock (the
@@ -5226,10 +6447,16 @@ module Net::SSH::Transport::PacketStream
 
   protected
 
+  # Like OpenSSH, hang up a ProxyCommand child: tunnels such as EC2 Instance
+  # Connect don't exit on their own, and IO#close waits for them.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/transport/packet_stream.rb:211
+  def hang_up_proxy_command; end
+
   # Called when this module is used to extend an object. It initializes
   # the states and generally prepares the object for use as a packet stream.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/packet_stream.rb:210
+  # pkg:gem/net-ssh#lib/net/ssh/transport/packet_stream.rb:222
   def initialize_ssh; end
 
   # Tries to read the next packet. If there is insufficient data to read
@@ -5238,7 +6465,7 @@ module Net::SSH::Transport::PacketStream
   # algorithms specified in the server state object, and returned as a
   # new Packet object.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/packet_stream.rb:224
+  # pkg:gem/net-ssh#lib/net/ssh/transport/packet_stream.rb:236
   def poll_next_packet; end
 
   class << self
@@ -5327,7 +6554,7 @@ class Net::SSH::Transport::Session
   # the initial key exchange completes, leaving you with a ready-to-use
   # transport session.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:62
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:67
   def initialize(host, options = T.unsafe(nil)); end
 
   # The Algorithms instance used to perform key exchanges.
@@ -5337,38 +6564,38 @@ class Net::SSH::Transport::Session
 
   # Cleans up (see PacketStream#cleanup) and closes the underlying socket.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:132
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:145
   def close; end
 
   # Returns true if the underlying socket has been closed.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:127
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:140
   def closed?; end
 
   # Configure's the packet stream's client state with the given set of
   # options. This is typically used to define the cipher, compression, and
   # hmac algorithms to use when sending packets to the server.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:266
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:283
   def configure_client(options = T.unsafe(nil)); end
 
   # Configure's the packet stream's server state with the given set of
   # options. This is typically used to define the cipher, compression, and
   # hmac algorithms to use when reading packets from the server.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:273
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:290
   def configure_server(options = T.unsafe(nil)); end
 
   # Enqueues the given message, such that it will be sent at the earliest
   # opportunity. This does not block, but returns immediately.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:259
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:276
   def enqueue_message(message); end
 
   # Sets a new hint for the packet stream, which the packet stream may use
   # to change its behavior. (See PacketStream#hints).
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:279
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:296
   def hint(which, value = T.unsafe(nil)); end
 
   # The host to connect to, as given to the constructor.
@@ -5379,7 +6606,7 @@ class Net::SSH::Transport::Session
   # Returns the host (and possibly IP address) in a format compatible with
   # SSH known-host files.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:108
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:121
   def host_as_string; end
 
   # The host-key verifier object used to verify host keys, to ensure that
@@ -5388,13 +6615,13 @@ class Net::SSH::Transport::Session
   # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:54
   def host_key_verifier; end
 
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:99
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:108
   def host_keys; end
 
   # Blocks until a new packet is available to be read, and returns that
   # packet. See #poll_message.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:179
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:192
   def next_message; end
 
   # The hash of options that were given to the object at initialization.
@@ -5405,7 +6632,7 @@ class Net::SSH::Transport::Session
   # Returns a hash of information about the peer (remote) side of the socket,
   # including :ip, :port, :host, and :canonized (see #host_as_string).
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:173
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:186
   def peer; end
 
   # Tries to read the next packet from the socket. If mode is :nonblock (the
@@ -5420,7 +6647,7 @@ class Net::SSH::Transport::Session
   # is not in process, and consume_queue is true, packets will be first
   # read from the queue before the socket is queried.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:194
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:207
   def poll_message(mode = T.unsafe(nil), consume_queue = T.unsafe(nil)); end
 
   # The port number to connect to, as given in the options to the constructor.
@@ -5429,37 +6656,47 @@ class Net::SSH::Transport::Session
   # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:39
   def port; end
 
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:115
+  def pubkey_algorithms; end
+
   # Adds the given packet to the packet queue. If the queue is non-empty,
   # #poll_message will return packets from the queue in the order they
   # were received.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:242
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:259
   def push(packet); end
 
   # this method is primarily for use in tests
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:286
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:303
   def queue; end
 
   # Requests a rekey operation, and blocks until the operation completes.
   # If a rekey is already pending, this returns immediately, having no
   # effect.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:155
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:168
   def rekey!; end
 
   # Returns immediately if a rekey is already in process. Otherwise, if a
   # rekey is needed (as indicated by the socket, see PacketStream#if_needs_rekey?)
   # one is performed, causing this method to block until it completes.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:165
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:178
   def rekey_as_needed; end
 
   # Sends the given message via the packet stream, blocking until the
   # entire message has been sent.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:253
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:270
   def send_message(message); end
+
+  # The signature algorithms the server accepts for publickey
+  # authentication, from its RFC 8308 server-sig-algs extension, or nil if
+  # it did not send one.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:62
+  def server_sig_algs; end
 
   # The ServerVersion instance that encapsulates the negotiated protocol
   # version.
@@ -5470,7 +6707,7 @@ class Net::SSH::Transport::Session
   # Returns a new service_request packet for the given service name, ready
   # for sending to the server.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:148
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:161
   def service_request(service); end
 
   # Performs a "hard" shutdown of the connection. In general, this should
@@ -5478,7 +6715,7 @@ class Net::SSH::Transport::Session
   # when the connection needs to close but you don't know the status of the
   # underlying protocol's state).
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:141
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:154
   def shutdown!; end
 
   # The underlying socket object being used to communicate with the remote
@@ -5491,10 +6728,16 @@ class Net::SSH::Transport::Session
   # this just waits long enough to see if there are any pending packets. Any
   # packets read are enqueued (see #push).
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:229
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:246
   def wait; end
 
   private
+
+  # Parses an RFC 8308 EXT_INFO packet, which servers send after the first
+  # NEWKEYS and possibly again just before USERAUTH_SUCCESS.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:309
+  def accept_ext_info(packet); end
 
   # Instantiates a new host-key verification class, based on the value of
   # the parameter.
@@ -5510,30 +6753,20 @@ class Net::SSH::Transport::Session
   # If the argument happens to respond to :verify and :verify_signature,
   # it is returned directly. Otherwise, an exception is raised.
   #
-  # Values false, true, and :very were deprecated in
-  # [#595](https://github.com/net-ssh/net-ssh/pull/595)
-  #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:329
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:359
   def select_host_key_verifier(verifier); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:290
+  # Turns Nagle's algorithm off on the socket, so that a packet written
+  # while the previous one is still unacknowledged goes out right away
+  # instead of waiting for the server's ACK. A ProxyCommand hands the
+  # transport a pipe rather than a socket, and the command on its other
+  # end owns the TCP connection, so there is nothing to set in that case.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:332
+  def set_no_delay; end
+
+  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:321
   def shift_queue; end
-end
-
-# Compatibility verifier which allows users to keep using
-# custom verifier code without adding new :verify_signature
-# method.
-#
-# pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:299
-class Net::SSH::Transport::Session::CompatibleVerifier
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:300
-  def initialize(verifier); end
-
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:304
-  def verify(arguments); end
-
-  # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:308
-  def verify_signature(&block); end
 end
 
 # The standard port for the SSH protocol.
@@ -5548,6 +6781,9 @@ Net::SSH::Transport::Session::MAX_QUEUED_BYTES = T.let(T.unsafe(nil), Integer)
 #
 # pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:31
 Net::SSH::Transport::Session::MAX_QUEUED_PACKETS = T.let(T.unsafe(nil), Integer)
+
+# pkg:gem/net-ssh#lib/net/ssh/transport/session.rb:339
+Net::SSH::Transport::Session::REMOVED_VERIFY_HOST_KEY_VALUES = T.let(T.unsafe(nil), Hash)
 
 # Encapsulates state information about one end of an SSH connection. Such
 # state includes the packet sequence number, the algorithms in use, how
@@ -5725,10 +6961,16 @@ class Net::SSH::Transport::State
   def update_next_iv(data, reset = T.unsafe(nil)); end
 end
 
+# This exception is raised when a key blob has a key type that Net::SSH
+# cannot parse.
+#
+# pkg:gem/net-ssh#lib/net/ssh/errors.rb:24
+class Net::SSH::UnsupportedKeyType < ::Net::SSH::Exception; end
+
 # This is the set of options that Net::SSH.start recognizes. See
 # Net::SSH.start for a description of each option.
 #
-# pkg:gem/net-ssh#lib/net/ssh.rb:61
+# pkg:gem/net-ssh#lib/net/ssh.rb:62
 Net::SSH::VALID_OPTIONS = T.let(T.unsafe(nil), Array)
 
 # pkg:gem/net-ssh#lib/net/ssh/verifiers/always.rb:6
@@ -5754,14 +6996,15 @@ end
 # verify a connection if the server is the localhost and the port is a
 # nonstandard port number. Those two conditions will typically mean the
 # connection is being tunnelled through a forwarded port, so the known-hosts
-# file will not be helpful (in general).
+# file will not be helpful (in general). A key marked @revoked is refused
+# either way.
 #
-# pkg:gem/net-ssh#lib/net/ssh/verifiers/accept_new_or_local_tunnel.rb:11
+# pkg:gem/net-ssh#lib/net/ssh/verifiers/accept_new_or_local_tunnel.rb:12
 class Net::SSH::Verifiers::AcceptNewOrLocalTunnel < ::Net::SSH::Verifiers::AcceptNew
   # Tries to determine if the connection is being tunnelled, and if so,
   # returns true. Otherwise, performs the standard strict verification.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/verifiers/accept_new_or_local_tunnel.rb:14
+  # pkg:gem/net-ssh#lib/net/ssh/verifiers/accept_new_or_local_tunnel.rb:15
   def verify(arguments); end
 
   private
@@ -5769,7 +7012,7 @@ class Net::SSH::Verifiers::AcceptNewOrLocalTunnel < ::Net::SSH::Verifiers::Accep
   # A connection is potentially being tunnelled if the port is not 22,
   # and the ip refers to the localhost.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/verifiers/accept_new_or_local_tunnel.rb:24
+  # pkg:gem/net-ssh#lib/net/ssh/verifiers/accept_new_or_local_tunnel.rb:26
   def tunnelled?(args); end
 end
 
@@ -5779,42 +7022,50 @@ end
 # (HostKeyUnknown). This is in contrast to the "Strict" class, which will
 # silently add the key to your known_hosts file. If the server does appear at
 # least once, but the key given does not match any known for the server, an
-# exception will be raised (HostKeyMismatch).
+# exception will be raised (HostKeyMismatch). A key marked @revoked in a
+# host file is always refused (HostKeyRevoked).
 # Otherwise, this returns true.
 #
-# pkg:gem/net-ssh#lib/net/ssh/verifiers/always.rb:15
+# pkg:gem/net-ssh#lib/net/ssh/verifiers/always.rb:16
 class Net::SSH::Verifiers::Always
-  # pkg:gem/net-ssh#lib/net/ssh/verifiers/always.rb:16
+  # pkg:gem/net-ssh#lib/net/ssh/verifiers/always.rb:17
   def verify(arguments); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/verifiers/always.rb:44
+  # pkg:gem/net-ssh#lib/net/ssh/verifiers/always.rb:47
   def verify_signature(&block); end
 
   private
 
-  # pkg:gem/net-ssh#lib/net/ssh/verifiers/always.rb:84
+  # pkg:gem/net-ssh#lib/net/ssh/verifiers/always.rb:96
   def process_cache_miss(host_keys, args, exc_class, message); end
+
+  # Custom :known_hosts objects may return a host_keys collection with no
+  # revocation support.
+  #
+  # pkg:gem/net-ssh#lib/net/ssh/verifiers/always.rb:55
+  def refuse_revoked!(arguments); end
 
   # Enforces the @cert-authority certificate constraints for entries that
   # implement them (Net::SSH::HostKeyEntries::CertAuthority). Non-certificate
   # entries do not respond to these predicates and are left untouched.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/verifiers/always.rb:53
+  # pkg:gem/net-ssh#lib/net/ssh/verifiers/always.rb:68
   def verify_certificate!(entry, host_keys, arguments); end
 end
 
 # This host key verifier simply allows every key it sees, without
 # any verification. This is simple, but very insecure because it
-# exposes you to MiTM attacks.
+# exposes you to MiTM attacks. It does not read the known hosts files,
+# so it accepts keys marked @revoked as well.
 #
-# pkg:gem/net-ssh#lib/net/ssh/verifiers/never.rb:7
+# pkg:gem/net-ssh#lib/net/ssh/verifiers/never.rb:8
 class Net::SSH::Verifiers::Never
   # Returns true.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/verifiers/never.rb:9
+  # pkg:gem/net-ssh#lib/net/ssh/verifiers/never.rb:10
   def verify(arguments); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/verifiers/never.rb:13
+  # pkg:gem/net-ssh#lib/net/ssh/verifiers/never.rb:14
   def verify_signature(&block); end
 end
 
@@ -5910,12 +7161,12 @@ Net::SSH::Version::TINY = T.let(T.unsafe(nil), Integer)
 # have been added to it by the Net::SSH module for convenience in dealing with
 # SSH functionality.
 #
-# pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:8
+# pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:9
 class OpenSSL::BN
   # Converts a BN object to a string. The format used is that which is
   # required by the SSH2 protocol.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:11
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:12
   def to_ssh; end
 end
 
@@ -5923,12 +7174,12 @@ end
 # have been added to it by the Net::SSH module for convenience in dealing
 # with SSH functionality.
 #
-# pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:33
+# pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:34
 class OpenSSL::PKey::DH < ::OpenSSL::PKey::PKey
   # Determines whether the pub_key for this key is valid. (This algorithm
   # lifted more-or-less directly from OpenSSH, dh.c, dh_pub_is_valid.)
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:36
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:37
   def valid?; end
 end
 
@@ -5936,30 +7187,30 @@ end
 # have been added to it by the Net::SSH module for convenience in dealing
 # with SSH functionality.
 #
-# pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:93
+# pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:94
 class OpenSSL::PKey::DSA < ::OpenSSL::PKey::PKey
   # Signs the given data.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:120
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:121
   def ssh_do_sign(data, sig_alg = T.unsafe(nil)); end
 
   # Verifies the given signature matches the given data.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:109
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:110
   def ssh_do_verify(sig, data, options = T.unsafe(nil)); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:100
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:101
   def ssh_signature_type; end
 
   # Returns "ssh-dss", which is the description of this key type used by the
   # SSH2 protocol.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:96
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:97
   def ssh_type; end
 
   # Converts the key to a blob, according to the SSH2 protocol.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:103
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:104
   def to_blob; end
 end
 
@@ -5967,67 +7218,67 @@ end
 # have been added to it by the Net::SSH module for convenience in dealing
 # with SSH functionality.
 #
-# pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:140
+# pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:141
 class OpenSSL::PKey::EC < ::OpenSSL::PKey::PKey
   # Returns the signature for the given data.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:244
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:245
   def ssh_do_sign(data, sig_alg = T.unsafe(nil)); end
 
   # Verifies the given signature matches the given data.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:218
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:219
   def ssh_do_verify(sig, data, options = T.unsafe(nil)); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:191
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:192
   def ssh_signature_type; end
 
   # Returns the description of this key type used by the
   # SSH2 protocol, like "ecdsa-sha2-nistp256"
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:187
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:188
   def ssh_type; end
 
   # Converts the key to a blob, according to the SSH2 protocol.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:210
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:211
   def to_blob; end
 
   private
 
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:193
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:194
   def digester; end
 
   class << self
-    # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:153
+    # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:154
     def read_keyblob(curve_name_in_type, buffer); end
   end
 end
 
-# pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:141
+# pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:142
 OpenSSL::PKey::EC::CurveNameAlias = T.let(T.unsafe(nil), Hash)
 
-# pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:147
+# pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:148
 OpenSSL::PKey::EC::CurveNameAliasInv = T.let(T.unsafe(nil), Hash)
 
-# pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:255
+# pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:256
 class OpenSSL::PKey::EC::Point
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:262
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:263
   def ssh_signature_type; end
 
   # Returns the description of this key type used by the
   # SSH2 protocol, like "ecdsa-sha2-nistp256"
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:258
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:259
   def ssh_type; end
 
   # Converts the key to a blob, according to the SSH2 protocol.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:265
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:266
   def to_blob; end
 end
 
-# pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:26
+# pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:27
 class OpenSSL::PKey::PKey
   include ::Net::SSH::Authentication::PubKeyFingerprint
 end
@@ -6036,29 +7287,29 @@ end
 # have been added to it by the Net::SSH module for convenience in dealing
 # with SSH functionality.
 #
-# pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:48
+# pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:49
 class OpenSSL::PKey::RSA < ::OpenSSL::PKey::PKey
   # Returns the signature for the given data.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:77
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:78
   def ssh_do_sign(data, sig_alg = T.unsafe(nil)); end
 
   # Verifies the given signature matches the given data.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:63
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:64
   def ssh_do_verify(sig, data, options = T.unsafe(nil)); end
 
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:55
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:56
   def ssh_signature_type; end
 
   # Returns "ssh-rsa", which is the description of this key type used by the
   # SSH2 protocol.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:51
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:52
   def ssh_type; end
 
   # Converts the key to a blob, according to the SSH2 protocol.
   #
-  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:58
+  # pkg:gem/net-ssh#lib/net/ssh/transport/openssl.rb:59
   def to_blob; end
 end
