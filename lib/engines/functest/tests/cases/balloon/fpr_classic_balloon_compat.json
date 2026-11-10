@@ -1,0 +1,94 @@
+{
+    "name": "fpr_classic_balloon_compat",
+    "display_name": "Classic balloon still tracks memory size changes with FPR off",
+    "description": "Non-regression contract: with the feature off, QEMU balloon (setmem equivalent) still tracks host-initiated resizes in both directions (directional available-memory deltas above 3/4 of the resize amount). Resize targets are derived from the configured guest RAM (the QMP balloon semantics): shrink to 3/4, grow back to the full size. Directional assertions (delta > 3/4 of the resize amount) instead of absolute values - the reclaimed amount depends on guest state.",
+    "test_system_ref": "virtio-win/kvm-guest-drivers-windows#1657",
+    "timeout": 420,
+    "test_steps": [
+        {
+            "desc": "Make sure FPR is off (classic balloon only)",
+            "guest_run": "$k='HKLM:\\SYSTEM\\CurrentControlSet\\Services\\BALLOON\\Parameters'; if (-not (Test-Path $k)) { New-Item $k -Force | Out-Null }; Set-ItemProperty -Path $k -Name EnableFpr -Value 0 -Type DWord; Write-Output 'PASS: EnableFpr=0 set'",
+            "expected_output_contains": "PASS:"
+        },
+        {
+            "desc": "Restart balloon device without the feature",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_restart_device.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 60
+        },
+        {
+            "desc": "Probe available memory before shrinking",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_avail_probe.ps1",
+            "capture_output": "avail_before"
+        },
+        {
+            "desc": "Derive the full-size balloon target from the configured guest RAM",
+            "guest_run": "Write-Output ([uint64]@vm_memory_gb@ * 1GB)",
+            "capture_output": "full_bytes"
+        },
+        {
+            "desc": "Derive the shrink target (3/4 of the full size)",
+            "guest_run": "Write-Output ([uint64]@vm_memory_gb@ * 1GB * 3 / 4)",
+            "capture_output": "shrink_bytes"
+        },
+        {
+            "desc": "Shrink the guest to 3/4 of its size via QMP balloon",
+            "qmp_command": {
+                "execute": "balloon",
+                "arguments": {
+                    "value": "@shrink_bytes@"
+                }
+            }
+        },
+        {
+            "desc": "Let the deflate/adjust settle",
+            "guest_run": "Start-Sleep -Seconds 20; Write-Output 'PASS: waited'"
+        },
+        {
+            "desc": "Probe available memory while shrunk",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_avail_probe.ps1",
+            "capture_output": "avail_mid"
+        },
+        {
+            "desc": "Grow the guest back to its full size via QMP balloon",
+            "qmp_command": {
+                "execute": "balloon",
+                "arguments": {
+                    "value": "@full_bytes@"
+                }
+            }
+        },
+        {
+            "desc": "Let the inflate back settle",
+            "guest_run": "Start-Sleep -Seconds 20; Write-Output 'PASS: waited'"
+        },
+        {
+            "desc": "Probe available memory after growing back",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_avail_probe.ps1",
+            "capture_output": "avail_after"
+        },
+        {
+            "desc": "Verify the classic balloon tracked both directions",
+            "guest_run": "$deltaReq = [math]::Round(([uint64]@full_bytes@ - [uint64]@shrink_bytes@) * 3 / 4 / 1MB); if ((@avail_before@ - @avail_mid@) -gt $deltaReq -and (@avail_after@ - @avail_mid@) -gt $deltaReq) { Write-Output 'PASS: classic balloon tracks setmem (before @avail_before@ MB, mid @avail_mid@ MB, after @avail_after@ MB)' } else { Write-Output \"FAIL: classic balloon did not track: before @avail_before@ MB, mid @avail_mid@ MB, after @avail_after@ MB, required delta $deltaReq MB\"; exit 1 }",
+            "expected_output_contains": "PASS:"
+        }
+    ],
+    "cleanup": [
+        {
+            "desc": "Derive the full-size balloon target for the best-effort restore below",
+            "guest_run": "Write-Output ([uint64]@vm_memory_gb@ * 1GB)",
+            "capture_output": "cleanup_full_bytes",
+            "ignore_errors": true
+        },
+        {
+            "desc": "Best-effort restore of the full-size balloon target (failures do not change the result)",
+            "qmp_command": {
+                "execute": "balloon",
+                "arguments": {
+                    "value": "@cleanup_full_bytes@"
+                }
+            },
+            "ignore_errors": true
+        }
+    ]
+}

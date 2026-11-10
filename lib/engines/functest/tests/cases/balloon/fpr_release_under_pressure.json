@@ -1,0 +1,53 @@
+{
+    "name": "fpr_release_under_pressure",
+    "display_name": "Guest allocation pressure keeps allocations succeeding",
+    "description": "Safety contract: with pages held, a touched allocation sized to exceed the gate does not fail - allocations keep succeeding and both counters settle back above the floor. The counters are what is asserted; which mechanism released the pages is not isolated here.",
+    "test_system_ref": "virtio-win/kvm-guest-drivers-windows#1657",
+    "timeout": 600,
+    "test_steps": [
+        {
+            "desc": "Enable FPR (opt-in)",
+            "guest_run": "$k='HKLM:\\SYSTEM\\CurrentControlSet\\Services\\BALLOON\\Parameters'; if (-not (Test-Path $k)) { New-Item $k -Force | Out-Null }; Set-ItemProperty -Path $k -Name EnableFpr -Value 1 -Type DWord; Write-Output 'PASS: EnableFpr=1 set'",
+            "expected_output_contains": "PASS:"
+        },
+        {
+            "desc": "Restart balloon device to negotiate the feature",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_restart_device.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 60
+        },
+        {
+            "desc": "Let the hold take the free memory first (soft early-exit window)",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_wait_hold.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 120
+        },
+        {
+            "desc": "Confirm pages are actually held",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_check_hold.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 60
+        },
+        {
+            "desc": "Push allocation pressure toward the release line and verify the answer",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_pressure_release.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 300
+        }
+    ],
+    "cleanup": [
+        {
+            "desc": "Restore the default (off) state",
+            "guest_run": "$k='HKLM:\\SYSTEM\\CurrentControlSet\\Services\\BALLOON\\Parameters'; if (-not (Test-Path $k)) { New-Item $k -Force | Out-Null }; Set-ItemProperty -Path $k -Name EnableFpr -Value 0 -Type DWord; Write-Output 'cleanup: EnableFpr=0 set'",
+            "ignore_errors": true,
+            "expected_output_contains": "cleanup:"
+        },
+        {
+            "desc": "Restart the balloon device so the runtime state matches the registry",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_restart_device.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 60,
+            "ignore_errors": true
+        }
+    ]
+}
