@@ -11,87 +11,73 @@
 # All modules meant for use in your application are <tt>autoload</tt>ed here,
 # so it should be enough just to <tt>require 'rack'</tt> in your code.
 #
-# source://rack//lib/rack/version.rb#14
+# pkg:gem/rack#lib/rack/version.rb:14
 module Rack
   class << self
     # Return the Rack release as a dotted string.
     #
-    # source://rack//lib/rack/version.rb#18
+    # pkg:gem/rack#lib/rack/version.rb:18
     def release; end
   end
 end
 
-# source://rack//lib/rack.rb#60
+# pkg:gem/rack#lib/rack.rb:60
 module Rack::Auth; end
 
 # Rack::Auth::AbstractHandler implements common authentication functionality.
 #
 # +realm+ should be set for all handlers.
 #
-# source://rack//lib/rack/auth/abstract/handler.rb#11
+# pkg:gem/rack#lib/rack/auth/abstract/handler.rb:11
 class Rack::Auth::AbstractHandler
-  # @return [AbstractHandler] a new instance of AbstractHandler
-  #
-  # source://rack//lib/rack/auth/abstract/handler.rb#15
+  # pkg:gem/rack#lib/rack/auth/abstract/handler.rb:15
   def initialize(app, realm = T.unsafe(nil), &authenticator); end
 
-  # Returns the value of attribute realm.
-  #
-  # source://rack//lib/rack/auth/abstract/handler.rb#13
+  # pkg:gem/rack#lib/rack/auth/abstract/handler.rb:13
   def realm; end
 
-  # Sets the attribute realm
-  #
-  # @param value the value to set the attribute realm to.
-  #
-  # source://rack//lib/rack/auth/abstract/handler.rb#13
+  # pkg:gem/rack#lib/rack/auth/abstract/handler.rb:13
   def realm=(_arg0); end
 
   private
 
-  # source://rack//lib/rack/auth/abstract/handler.rb#31
+  # pkg:gem/rack#lib/rack/auth/abstract/handler.rb:31
   def bad_request; end
 
-  # source://rack//lib/rack/auth/abstract/handler.rb#22
+  # pkg:gem/rack#lib/rack/auth/abstract/handler.rb:22
   def unauthorized(www_authenticate = T.unsafe(nil)); end
 end
 
-# source://rack//lib/rack/auth/abstract/request.rb#7
+# pkg:gem/rack#lib/rack/auth/abstract/request.rb:7
 class Rack::Auth::AbstractRequest
-  # @return [AbstractRequest] a new instance of AbstractRequest
-  #
-  # source://rack//lib/rack/auth/abstract/request.rb#9
+  # pkg:gem/rack#lib/rack/auth/abstract/request.rb:9
   def initialize(env); end
 
-  # source://rack//lib/rack/auth/abstract/request.rb#33
+  # pkg:gem/rack#lib/rack/auth/abstract/request.rb:33
   def params; end
 
-  # source://rack//lib/rack/auth/abstract/request.rb#25
+  # pkg:gem/rack#lib/rack/auth/abstract/request.rb:25
   def parts; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/auth/abstract/request.rb#17
+  # pkg:gem/rack#lib/rack/auth/abstract/request.rb:17
   def provided?; end
 
-  # source://rack//lib/rack/auth/abstract/request.rb#13
+  # pkg:gem/rack#lib/rack/auth/abstract/request.rb:13
   def request; end
 
-  # source://rack//lib/rack/auth/abstract/request.rb#29
+  # pkg:gem/rack#lib/rack/auth/abstract/request.rb:29
   def scheme; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/auth/abstract/request.rb#21
+  # pkg:gem/rack#lib/rack/auth/abstract/request.rb:21
   def valid?; end
 
   private
 
-  # source://rack//lib/rack/auth/abstract/request.rb#42
+  # pkg:gem/rack#lib/rack/auth/abstract/request.rb:42
   def authorization_key; end
 end
 
-# source://rack//lib/rack/auth/abstract/request.rb#40
+# pkg:gem/rack#lib/rack/auth/abstract/request.rb:40
 Rack::Auth::AbstractRequest::AUTHORIZATION_KEYS = T.let(T.unsafe(nil), Array)
 
 # Rack::Auth::Basic implements HTTP Basic Authentication, as per RFC 2617.
@@ -99,85 +85,75 @@ Rack::Auth::AbstractRequest::AUTHORIZATION_KEYS = T.let(T.unsafe(nil), Array)
 # Initialize with the Rack application that you want protecting,
 # and a block that checks if a username and password pair are valid.
 #
-# source://rack//lib/rack/auth/basic.rb#13
+# pkg:gem/rack#lib/rack/auth/basic.rb:13
 class Rack::Auth::Basic < ::Rack::Auth::AbstractHandler
-  # source://rack//lib/rack/auth/basic.rb#15
+  # pkg:gem/rack#lib/rack/auth/basic.rb:15
   def call(env); end
 
   private
 
-  # source://rack//lib/rack/auth/basic.rb#34
+  # pkg:gem/rack#lib/rack/auth/basic.rb:34
   def challenge; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/auth/basic.rb#38
+  # pkg:gem/rack#lib/rack/auth/basic.rb:38
   def valid?(auth); end
 end
 
-# source://rack//lib/rack/auth/basic.rb#42
+# pkg:gem/rack#lib/rack/auth/basic.rb:42
 class Rack::Auth::Basic::Request < ::Rack::Auth::AbstractRequest
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/auth/basic.rb#43
+  # pkg:gem/rack#lib/rack/auth/basic.rb:43
   def basic?; end
 
-  # source://rack//lib/rack/auth/basic.rb#47
+  # pkg:gem/rack#lib/rack/auth/basic.rb:47
   def credentials; end
 
-  # source://rack//lib/rack/auth/basic.rb#51
+  # pkg:gem/rack#lib/rack/auth/basic.rb:51
   def username; end
 end
 
-# source://rack//lib/rack/builder.rb#6
+# pkg:gem/rack#lib/rack/builder.rb:6
 Rack::BUILDER_TOPLEVEL_BINDING = T.let(T.unsafe(nil), Proc)
 
 # Represents a 400 Bad Request error when input data fails to meet the
 # requirements.
 #
-# source://rack//lib/rack/bad_request.rb#6
+# pkg:gem/rack#lib/rack/bad_request.rb:6
 module Rack::BadRequest; end
 
 # Proxy for response bodies allowing calling a block when
 # the response body is closed (after the response has been fully
 # sent to the client).
 #
-# source://rack//lib/rack/body_proxy.rb#7
+# pkg:gem/rack#lib/rack/body_proxy.rb:7
 class Rack::BodyProxy
   # Set the response body to wrap, and the block to call when the
   # response has been fully sent.
   #
-  # @return [BodyProxy] a new instance of BodyProxy
-  #
-  # source://rack//lib/rack/body_proxy.rb#10
+  # pkg:gem/rack#lib/rack/body_proxy.rb:10
   def initialize(body, &block); end
 
   # If not already closed, close the wrapped body and
   # then call the block the proxy was initialized with.
   #
-  # source://rack//lib/rack/body_proxy.rb#28
+  # pkg:gem/rack#lib/rack/body_proxy.rb:28
   def close; end
 
   # Whether the proxy is closed.  The proxy starts as not closed,
   # and becomes closed on the first call to close.
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/body_proxy.rb#40
+  # pkg:gem/rack#lib/rack/body_proxy.rb:40
   def closed?; end
 
   # Delegate missing methods to the wrapped body.
   #
-  # source://rack//lib/rack/body_proxy.rb#45
-  def method_missing(method_name, *args, **_arg2, &block); end
+  # pkg:gem/rack#lib/rack/body_proxy.rb:45
+  def method_missing(method_name, *args, **, &block); end
 
   private
 
   # Return whether the wrapped body responds to the method.
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/body_proxy.rb#17
+  # pkg:gem/rack#lib/rack/body_proxy.rb:17
   def respond_to_missing?(method_name, include_all = T.unsafe(nil)); end
 end
 
@@ -209,28 +185,26 @@ end
 # +use+ adds middleware to the stack, +run+ dispatches to an application.
 # You can use +map+ to construct a Rack::URLMap in a convenient way.
 #
-# source://rack//lib/rack/builder.rb#36
+# pkg:gem/rack#lib/rack/builder.rb:36
 class Rack::Builder
   # Initialize a new Rack::Builder instance.  +default_app+ specifies the
   # default application if +run+ is not called later.  If a block
   # is given, it is evaluated in the context of the instance.
   #
-  # @return [Builder] a new instance of Builder
-  #
-  # source://rack//lib/rack/builder.rb#116
+  # pkg:gem/rack#lib/rack/builder.rb:116
   def initialize(default_app = T.unsafe(nil), **options, &block); end
 
   # Call the Rack application generated by this builder instance. Note that
   # this rebuilds the Rack application and runs the warmup code (if any)
   # every time it is called, so it should not be used if performance is important.
   #
-  # source://rack//lib/rack/builder.rb#276
+  # pkg:gem/rack#lib/rack/builder.rb:276
   def call(env); end
 
   # Freeze the app (set using run) and all middleware instances when building the application
   # in to_app.
   #
-  # source://rack//lib/rack/builder.rb#259
+  # pkg:gem/rack#lib/rack/builder.rb:259
   def freeze_app; end
 
   # Creates a route within the application.  Routes under the mapped path will be sent to
@@ -273,7 +247,7 @@ class Rack::Builder
   # Note that providing a +path+ of +/+ will ignore any default application given in a +run+ statement
   # outside the block.
   #
-  # source://rack//lib/rack/builder.rb#252
+  # pkg:gem/rack#lib/rack/builder.rb:252
   def map(path, &block); end
 
   # Any options provided to the Rack::Builder instance at initialization.
@@ -282,7 +256,7 @@ class Rack::Builder
   # * +:isolation+: One of +process+, +thread+ or +fiber+. The execution
   #   isolation model to use.
   #
-  # source://rack//lib/rack/builder.rb#132
+  # pkg:gem/rack#lib/rack/builder.rb:132
   def options; end
 
   # Takes a block or argument that is an object that responds to #call and
@@ -308,14 +282,12 @@ class Rack::Builder
   #
   #   run Heartbeat.new
   #
-  # @raise [ArgumentError]
-  #
-  # source://rack//lib/rack/builder.rb#193
+  # pkg:gem/rack#lib/rack/builder.rb:193
   def run(app = T.unsafe(nil), &block); end
 
   # Return the Rack application generated by this instance.
   #
-  # source://rack//lib/rack/builder.rb#264
+  # pkg:gem/rack#lib/rack/builder.rb:264
   def to_app; end
 
   # Specifies middleware to use in a stack.
@@ -338,8 +310,8 @@ class Rack::Builder
   # The +call+ method in this example sets an additional environment key which then can be
   # referenced in the application if required.
   #
-  # source://rack//lib/rack/builder.rb#159
-  def use(middleware, *args, **_arg2, &block); end
+  # pkg:gem/rack#lib/rack/builder.rb:159
+  def use(middleware, *args, **, &block); end
 
   # Takes a lambda or block that is used to warm-up the application. This block is called
   # before the Rack application is returned by to_app.
@@ -352,7 +324,7 @@ class Rack::Builder
   #   use SomeMiddleware
   #   run MyApp
   #
-  # source://rack//lib/rack/builder.rb#209
+  # pkg:gem/rack#lib/rack/builder.rb:209
   def warmup(prc = T.unsafe(nil), &block); end
 
   private
@@ -360,14 +332,14 @@ class Rack::Builder
   # Generate a URLMap instance by generating new Rack applications for each
   # map block in this instance.
   #
-  # source://rack//lib/rack/builder.rb#284
+  # pkg:gem/rack#lib/rack/builder.rb:284
   def generate_map(default_app, mapping); end
 
   class << self
     # Create a new Rack::Builder instance and return the Rack application
     # generated from it.
     #
-    # source://rack//lib/rack/builder.rb#136
+    # pkg:gem/rack#lib/rack/builder.rb:136
     def app(default_app = T.unsafe(nil), &block); end
 
     # Load the given file as a rackup file, treating the
@@ -384,13 +356,13 @@ class Rack::Builder
     #   require './app.rb'
     #   run App
     #
-    # source://rack//lib/rack/builder.rb#87
+    # pkg:gem/rack#lib/rack/builder.rb:87
     def load_file(path, **options); end
 
     # Evaluate the given +builder_script+ string in the context of
     # a Rack::Builder block, returning a Rack application.
     #
-    # source://rack//lib/rack/builder.rb#102
+    # pkg:gem/rack#lib/rack/builder.rb:102
     def new_from_string(builder_script, path = T.unsafe(nil), **options); end
 
     # Parse the given config file to get a Rack application.
@@ -418,28 +390,28 @@ class Rack::Builder
     #   # process's current directory.  After requiring,
     #   # assumes MyApp constant is a Rack application
     #
-    # source://rack//lib/rack/builder.rb#65
+    # pkg:gem/rack#lib/rack/builder.rb:65
     def parse_file(path, **options); end
   end
 end
 
 # https://stackoverflow.com/questions/2223882/whats-the-difference-between-utf-8-and-utf-8-without-bom
 #
-# source://rack//lib/rack/builder.rb#39
+# pkg:gem/rack#lib/rack/builder.rb:39
 Rack::Builder::UTF_8_BOM = T.let(T.unsafe(nil), String)
 
 # Response Header Keys
 #
-# source://rack//lib/rack/constants.rb#19
+# pkg:gem/rack#lib/rack/constants.rb:19
 Rack::CACHE_CONTROL = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#35
+# pkg:gem/rack#lib/rack/constants.rb:35
 Rack::CONNECT = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#20
+# pkg:gem/rack#lib/rack/constants.rb:20
 Rack::CONTENT_LENGTH = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#21
+# pkg:gem/rack#lib/rack/constants.rb:21
 Rack::CONTENT_TYPE = T.let(T.unsafe(nil), String)
 
 # Rack::Cascade tries a request on several apps, and returns the
@@ -447,7 +419,7 @@ Rack::CONTENT_TYPE = T.let(T.unsafe(nil), String)
 # status codes).  If all applications tried return one of the configured
 # status codes, return the last response.
 #
-# source://rack//lib/rack/cascade.rb#11
+# pkg:gem/rack#lib/rack/cascade.rb:11
 class Rack::Cascade
   # Set the apps to send requests to, and what statuses result in
   # cascading.  Arguments:
@@ -456,40 +428,33 @@ class Rack::Cascade
   # cascade_for: The statuses to use cascading for.  If a response is received
   #              from an app, the next app is tried.
   #
-  # @return [Cascade] a new instance of Cascade
-  #
-  # source://rack//lib/rack/cascade.rb#21
+  # pkg:gem/rack#lib/rack/cascade.rb:21
   def initialize(apps, cascade_for = T.unsafe(nil)); end
 
-  # Append an app to the list of apps to cascade.  This app will
-  # be tried last.
-  #
-  # source://rack//lib/rack/cascade.rb#65
+  # pkg:gem/rack#lib/rack/cascade.rb:65
   def <<(app); end
 
   # Append an app to the list of apps to cascade.  This app will
   # be tried last.
   #
-  # source://rack//lib/rack/cascade.rb#56
+  # pkg:gem/rack#lib/rack/cascade.rb:56
   def add(app); end
 
   # An array of applications to try in order.
   #
-  # source://rack//lib/rack/cascade.rb#13
+  # pkg:gem/rack#lib/rack/cascade.rb:13
   def apps; end
 
   # Call each app in order.  If the responses uses a status that requires
   # cascading, try the next app.  If all responses require cascading,
   # return the response from the last app.
   #
-  # source://rack//lib/rack/cascade.rb#32
+  # pkg:gem/rack#lib/rack/cascade.rb:32
   def call(env); end
 
   # Whether the given app is one of the apps to cascade to.
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/cascade.rb#61
+  # pkg:gem/rack#lib/rack/cascade.rb:61
   def include?(app); end
 end
 
@@ -498,16 +463,14 @@ end
 # {Apache common log format}[http://httpd.apache.org/docs/1.3/logs.html#common]
 # to the configured logger.
 #
-# source://rack//lib/rack/common_logger.rb#13
+# pkg:gem/rack#lib/rack/common_logger.rb:13
 class Rack::CommonLogger
   # +logger+ can be any object that supports the +write+ or +<<+ methods,
   # which includes the standard library Logger.  These methods are called
   # with a single string argument, the log message.
   # If +logger+ is nil, CommonLogger will fall back <tt>env['rack.errors']</tt>.
   #
-  # @return [CommonLogger] a new instance of CommonLogger
-  #
-  # source://rack//lib/rack/common_logger.rb#29
+  # pkg:gem/rack#lib/rack/common_logger.rb:29
   def initialize(app, logger = T.unsafe(nil)); end
 
   # Log all requests in common_log format after a response has been
@@ -518,7 +481,7 @@ class Rack::CommonLogger
   # exceptions raised during the sending of the response body will
   # cause the request not to be logged.
   #
-  # source://rack//lib/rack/common_logger.rb#41
+  # pkg:gem/rack#lib/rack/common_logger.rb:41
   def call(env); end
 
   private
@@ -526,12 +489,12 @@ class Rack::CommonLogger
   # Attempt to determine the content length for the response to
   # include it in the logged data.
   #
-  # source://rack//lib/rack/common_logger.rb#84
+  # pkg:gem/rack#lib/rack/common_logger.rb:84
   def extract_content_length(headers); end
 
   # Log the request to the configured logger.
   #
-  # source://rack//lib/rack/common_logger.rb#52
+  # pkg:gem/rack#lib/rack/common_logger.rb:52
   def log(env, status, response_headers, began_at); end
 end
 
@@ -545,7 +508,7 @@ end
 # separation of SCRIPT_NAME and PATH_INFO, and because the elapsed
 # time in seconds is included at the end.
 #
-# source://rack//lib/rack/common_logger.rb#23
+# pkg:gem/rack#lib/rack/common_logger.rb:23
 Rack::CommonLogger::FORMAT = T.let(T.unsafe(nil), String)
 
 # Middleware that enables conditional GET using if-none-match and
@@ -561,17 +524,15 @@ Rack::CommonLogger::FORMAT = T.let(T.unsafe(nil), String)
 # Adapted from Michael Klishin's Merb implementation:
 # https://github.com/wycats/merb/blob/master/merb-core/lib/merb-core/rack/middleware/conditional_get.rb
 #
-# source://rack//lib/rack/conditional_get.rb#21
+# pkg:gem/rack#lib/rack/conditional_get.rb:21
 class Rack::ConditionalGet
-  # @return [ConditionalGet] a new instance of ConditionalGet
-  #
-  # source://rack//lib/rack/conditional_get.rb#22
+  # pkg:gem/rack#lib/rack/conditional_get.rb:22
   def initialize(app); end
 
   # Return empty 304 response if the response has not been
   # modified since the last request.
   #
-  # source://rack//lib/rack/conditional_get.rb#28
+  # pkg:gem/rack#lib/rack/conditional_get.rb:28
   def call(env); end
 
   private
@@ -579,31 +540,25 @@ class Rack::ConditionalGet
   # Whether the etag response header matches the if-none-match request header.
   # If so, the request has not been modified.
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/conditional_get.rb#62
+  # pkg:gem/rack#lib/rack/conditional_get.rb:62
   def etag_matches?(none_match, headers); end
 
   # Return whether the response has not been modified since the
   # last request.
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/conditional_get.rb#51
+  # pkg:gem/rack#lib/rack/conditional_get.rb:51
   def fresh?(env, headers); end
 
   # Whether the last-modified response header matches the if-modified-since
   # request header.  If so, the request has not been modified.
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/conditional_get.rb#68
+  # pkg:gem/rack#lib/rack/conditional_get.rb:68
   def modified_since?(modified_since, headers); end
 
   # Return a Time object for the given string (which should be in RFC2822
   # format), or nil if the string cannot be parsed.
   #
-  # source://rack//lib/rack/conditional_get.rb#75
+  # pkg:gem/rack#lib/rack/conditional_get.rb:75
   def to_rfc2822(since); end
 end
 
@@ -615,14 +570,12 @@ end
 #       env['my-key'] = 'some-value'
 #     end
 #
-# source://rack//lib/rack/config.rb#11
+# pkg:gem/rack#lib/rack/config.rb:11
 class Rack::Config
-  # @return [Config] a new instance of Config
-  #
-  # source://rack//lib/rack/config.rb#12
+  # pkg:gem/rack#lib/rack/config.rb:12
   def initialize(app, &block); end
 
-  # source://rack//lib/rack/config.rb#17
+  # pkg:gem/rack#lib/rack/config.rb:17
   def call(env); end
 end
 
@@ -631,16 +584,14 @@ end
 # does not fix responses that have an invalid content-length
 # header specified.
 #
-# source://rack//lib/rack/content_length.rb#12
+# pkg:gem/rack#lib/rack/content_length.rb:12
 class Rack::ContentLength
   include ::Rack::Utils
 
-  # @return [ContentLength] a new instance of ContentLength
-  #
-  # source://rack//lib/rack/content_length.rb#15
+  # pkg:gem/rack#lib/rack/content_length.rb:15
   def initialize(app); end
 
-  # source://rack//lib/rack/content_length.rb#19
+  # pkg:gem/rack#lib/rack/content_length.rb:19
   def call(env); end
 end
 
@@ -652,20 +603,18 @@ end
 # When no content type argument is provided, "text/html" is the
 # default.
 #
-# source://rack//lib/rack/content_type.rb#15
+# pkg:gem/rack#lib/rack/content_type.rb:15
 class Rack::ContentType
   include ::Rack::Utils
 
-  # @return [ContentType] a new instance of ContentType
-  #
-  # source://rack//lib/rack/content_type.rb#18
+  # pkg:gem/rack#lib/rack/content_type.rb:18
   def initialize(app, content_type = T.unsafe(nil)); end
 
-  # source://rack//lib/rack/content_type.rb#23
+  # pkg:gem/rack#lib/rack/content_type.rb:23
   def call(env); end
 end
 
-# source://rack//lib/rack/constants.rb#32
+# pkg:gem/rack#lib/rack/constants.rb:32
 Rack::DELETE = T.let(T.unsafe(nil), String)
 
 # This middleware enables content encoding of http responses,
@@ -685,7 +634,7 @@ Rack::DELETE = T.let(T.unsafe(nil), String)
 # Note that despite the name, Deflater does not support the +deflate+
 # encoding.
 #
-# source://rack//lib/rack/deflater.rb#28
+# pkg:gem/rack#lib/rack/deflater.rb:28
 class Rack::Deflater
   # Creates Rack::Deflater middleware. Options:
   #
@@ -698,27 +647,23 @@ class Rack::Deflater
   #          latency for time-sensitive streaming applications, but hurts compression and throughput.
   #          Defaults to +true+.
   #
-  # @return [Deflater] a new instance of Deflater
-  #
-  # source://rack//lib/rack/deflater.rb#39
+  # pkg:gem/rack#lib/rack/deflater.rb:39
   def initialize(app, options = T.unsafe(nil)); end
 
-  # source://rack//lib/rack/deflater.rb#46
+  # pkg:gem/rack#lib/rack/deflater.rb:46
   def call(env); end
 
   private
 
   # Whether the body should be compressed.
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/deflater.rb#136
+  # pkg:gem/rack#lib/rack/deflater.rb:136
   def should_deflate?(env, status, headers, body); end
 end
 
 # Body class used for gzip encoded responses.
 #
-# source://rack//lib/rack/deflater.rb#83
+# pkg:gem/rack#lib/rack/deflater.rb:83
 class Rack::Deflater::GzipStream
   # Initialize the gzip stream.  Arguments:
   # body :: Response body to compress with gzip
@@ -726,28 +671,26 @@ class Rack::Deflater::GzipStream
   #          modification time in the gzip header.
   # sync :: Whether to flush each gzip chunk as soon as it is ready.
   #
-  # @return [GzipStream] a new instance of GzipStream
-  #
-  # source://rack//lib/rack/deflater.rb#92
+  # pkg:gem/rack#lib/rack/deflater.rb:92
   def initialize(body, mtime, sync); end
 
   # Close the original body if possible.
   #
-  # source://rack//lib/rack/deflater.rb#128
+  # pkg:gem/rack#lib/rack/deflater.rb:128
   def close; end
 
   # Yield gzip compressed strings to the given block.
   #
-  # source://rack//lib/rack/deflater.rb#99
+  # pkg:gem/rack#lib/rack/deflater.rb:99
   def each(&block); end
 
   # Call the block passed to #each with the gzipped data.
   #
-  # source://rack//lib/rack/deflater.rb#123
+  # pkg:gem/rack#lib/rack/deflater.rb:123
   def write(data); end
 end
 
-# source://rack//lib/rack/deflater.rb#85
+# pkg:gem/rack#lib/rack/deflater.rb:85
 Rack::Deflater::GzipStream::BUFFER_LENGTH = T.let(T.unsafe(nil), Integer)
 
 # Rack::Directory serves entries below the +root+ given, according to the
@@ -757,102 +700,98 @@ Rack::Deflater::GzipStream::BUFFER_LENGTH = T.let(T.unsafe(nil), Integer)
 #
 # If +app+ is not specified, a Rack::Files of the same +root+ will be used.
 #
-# source://rack//lib/rack/directory.rb#19
+# pkg:gem/rack#lib/rack/directory.rb:19
 class Rack::Directory
   # Set the root directory and application for serving files.
   #
-  # @return [Directory] a new instance of Directory
-  #
-  # source://rack//lib/rack/directory.rb#83
+  # pkg:gem/rack#lib/rack/directory.rb:83
   def initialize(root, app = T.unsafe(nil)); end
 
-  # source://rack//lib/rack/directory.rb#90
+  # pkg:gem/rack#lib/rack/directory.rb:90
   def call(env); end
 
   # Rack response to use for requests with invalid paths, or nil if path is valid.
   #
-  # source://rack//lib/rack/directory.rb#110
+  # pkg:gem/rack#lib/rack/directory.rb:110
   def check_bad_request(path_info); end
 
   # Rack response to use for requests with paths outside the root, or nil if path is inside the root.
   #
-  # source://rack//lib/rack/directory.rb#120
+  # pkg:gem/rack#lib/rack/directory.rb:120
   def check_forbidden(path_info); end
 
   # Rack response to use for unreadable and non-file, non-directory entries.
   #
-  # source://rack//lib/rack/directory.rb#184
+  # pkg:gem/rack#lib/rack/directory.rb:184
   def entity_not_found(path_info); end
 
   # Provide human readable file sizes
   #
-  # source://rack//lib/rack/directory.rb#200
+  # pkg:gem/rack#lib/rack/directory.rb:200
   def filesize_format(int); end
 
   # Internals of request handling.  Similar to call but does
   # not remove body for HEAD requests.
   #
-  # source://rack//lib/rack/directory.rb#97
+  # pkg:gem/rack#lib/rack/directory.rb:97
   def get(env); end
 
   # Rack response to use for directories under the root.
   #
-  # source://rack//lib/rack/directory.rb#133
+  # pkg:gem/rack#lib/rack/directory.rb:133
   def list_directory(path_info, path, script_name); end
 
   # Rack response to use for files and directories under the root.
   # Unreadable and non-file, non-directory entries will get a 404 response.
   #
-  # source://rack//lib/rack/directory.rb#174
+  # pkg:gem/rack#lib/rack/directory.rb:174
   def list_path(env, path, path_info, script_name); end
 
   # The root of the directory hierarchy.  Only requests for files and
   # directories inside of the root directory are supported.
   #
-  # source://rack//lib/rack/directory.rb#80
+  # pkg:gem/rack#lib/rack/directory.rb:80
   def root; end
 
   # File::Stat for the given path, but return nil for missing/bad entries.
   #
-  # source://rack//lib/rack/directory.rb#166
+  # pkg:gem/rack#lib/rack/directory.rb:166
   def stat(path); end
 end
 
-# source://rack//lib/rack/directory.rb#20
+# pkg:gem/rack#lib/rack/directory.rb:20
 Rack::Directory::DIR_FILE = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/directory.rb#43
+# pkg:gem/rack#lib/rack/directory.rb:43
 Rack::Directory::DIR_PAGE_FOOTER = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/directory.rb#21
+# pkg:gem/rack#lib/rack/directory.rb:21
 Rack::Directory::DIR_PAGE_HEADER = T.let(T.unsafe(nil), String)
 
 # Body class for directory entries, showing an index page with links
 # to each file.
 #
-# source://rack//lib/rack/directory.rb#51
+# pkg:gem/rack#lib/rack/directory.rb:51
 class Rack::Directory::DirectoryBody < ::Struct
   # Yield strings for each part of the directory entry
   #
-  # @yield [DIR_PAGE_HEADER % [ show_path, show_path ]]
-  #
-  # source://rack//lib/rack/directory.rb#53
+  # pkg:gem/rack#lib/rack/directory.rb:53
   def each; end
 
   private
 
   # Escape each element in the array of html strings.
   #
-  # source://rack//lib/rack/directory.rb#73
+  # pkg:gem/rack#lib/rack/directory.rb:73
   def DIR_FILE_escape(htmls); end
 end
 
 # Stolen from Ramaze
 #
-# source://rack//lib/rack/directory.rb#192
+# pkg:gem/rack#lib/rack/directory.rb:192
 Rack::Directory::FILESIZE_FORMAT = T.let(T.unsafe(nil), Array)
 
-# source://rack//lib/rack/constants.rb#22
+# pkg:gem/rack#lib/rack/constants.rb:22
 Rack::ETAG = T.let(T.unsafe(nil), String)
 
 # Automatically sets the etag header on all String bodies.
@@ -865,39 +804,33 @@ Rack::ETAG = T.let(T.unsafe(nil), String)
 # used when etag is absent and a directive when it is present. The first
 # defaults to nil, while the second defaults to "max-age=0, private, must-revalidate"
 #
-# source://rack//lib/rack/etag.rb#18
+# pkg:gem/rack#lib/rack/etag.rb:18
 class Rack::ETag
-  # @return [ETag] a new instance of ETag
-  #
-  # source://rack//lib/rack/etag.rb#22
+  # pkg:gem/rack#lib/rack/etag.rb:22
   def initialize(app, no_cache_control = T.unsafe(nil), cache_control = T.unsafe(nil)); end
 
-  # source://rack//lib/rack/etag.rb#28
+  # pkg:gem/rack#lib/rack/etag.rb:28
   def call(env); end
 
   private
 
-  # source://rack//lib/rack/etag.rb#61
+  # pkg:gem/rack#lib/rack/etag.rb:61
   def digest_body(body); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/etag.rb#53
+  # pkg:gem/rack#lib/rack/etag.rb:53
   def etag_status?(status); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/etag.rb#57
+  # pkg:gem/rack#lib/rack/etag.rb:57
   def skip_caching?(headers); end
 end
 
-# source://rack//lib/rack/etag.rb#20
+# pkg:gem/rack#lib/rack/etag.rb:20
 Rack::ETag::DEFAULT_CACHE_CONTROL = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/etag.rb#19
+# pkg:gem/rack#lib/rack/etag.rb:19
 Rack::ETag::ETAG_STRING = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#23
+# pkg:gem/rack#lib/rack/constants.rb:23
 Rack::EXPIRES = T.let(T.unsafe(nil), String)
 
 # This middleware provides hooks to certain places in the request /
@@ -953,89 +886,77 @@ Rack::EXPIRES = T.let(T.unsafe(nil), String)
 # raises an exception.  If something raises an exception in a `on_finish`
 # method, then nothing is guaranteed.
 #
-# source://rack//lib/rack/events.rb#61
+# pkg:gem/rack#lib/rack/events.rb:61
 class Rack::Events
-  # @return [Events] a new instance of Events
-  #
-  # source://rack//lib/rack/events.rb#106
+  # pkg:gem/rack#lib/rack/events.rb:106
   def initialize(app, handlers); end
 
-  # source://rack//lib/rack/events.rb#111
+  # pkg:gem/rack#lib/rack/events.rb:111
   def call(env); end
 
   private
 
-  # source://rack//lib/rack/events.rb#149
+  # pkg:gem/rack#lib/rack/events.rb:149
   def make_request(env); end
 
-  # source://rack//lib/rack/events.rb#153
+  # pkg:gem/rack#lib/rack/events.rb:153
   def make_response(status, headers, body); end
 
-  # source://rack//lib/rack/events.rb#137
+  # pkg:gem/rack#lib/rack/events.rb:137
   def on_commit(request, response); end
 
-  # source://rack//lib/rack/events.rb#133
+  # pkg:gem/rack#lib/rack/events.rb:133
   def on_error(request, response, e); end
 
-  # source://rack//lib/rack/events.rb#145
+  # pkg:gem/rack#lib/rack/events.rb:145
   def on_finish(request, response); end
 
-  # source://rack//lib/rack/events.rb#141
+  # pkg:gem/rack#lib/rack/events.rb:141
   def on_start(request, response); end
 end
 
-# source://rack//lib/rack/events.rb#62
+# pkg:gem/rack#lib/rack/events.rb:62
 module Rack::Events::Abstract
-  # source://rack//lib/rack/events.rb#66
+  # pkg:gem/rack#lib/rack/events.rb:66
   def on_commit(req, res); end
 
-  # source://rack//lib/rack/events.rb#75
+  # pkg:gem/rack#lib/rack/events.rb:75
   def on_error(req, res, e); end
 
-  # source://rack//lib/rack/events.rb#72
+  # pkg:gem/rack#lib/rack/events.rb:72
   def on_finish(req, res); end
 
-  # source://rack//lib/rack/events.rb#69
+  # pkg:gem/rack#lib/rack/events.rb:69
   def on_send(req, res); end
 
-  # source://rack//lib/rack/events.rb#63
+  # pkg:gem/rack#lib/rack/events.rb:63
   def on_start(req, res); end
 end
 
-# source://rack//lib/rack/events.rb#95
+# pkg:gem/rack#lib/rack/events.rb:95
 class Rack::Events::BufferedResponse < ::Rack::Response::Raw
-  # @return [BufferedResponse] a new instance of BufferedResponse
-  #
-  # source://rack//lib/rack/events.rb#98
+  # pkg:gem/rack#lib/rack/events.rb:98
   def initialize(status, headers, body); end
 
-  # Returns the value of attribute body.
-  #
-  # source://rack//lib/rack/events.rb#96
+  # pkg:gem/rack#lib/rack/events.rb:96
   def body; end
 
-  # source://rack//lib/rack/events.rb#103
+  # pkg:gem/rack#lib/rack/events.rb:103
   def to_a; end
 end
 
-# source://rack//lib/rack/events.rb#79
+# pkg:gem/rack#lib/rack/events.rb:79
 class Rack::Events::EventedBodyProxy < ::Rack::BodyProxy
-  # @return [EventedBodyProxy] a new instance of EventedBodyProxy
-  #
-  # source://rack//lib/rack/events.rb#82
+  # pkg:gem/rack#lib/rack/events.rb:82
   def initialize(body, request, response, handlers, &block); end
 
-  # source://rack//lib/rack/events.rb#89
+  # pkg:gem/rack#lib/rack/events.rb:89
   def each; end
 
-  # Returns the value of attribute request.
-  #
-  # source://rack//lib/rack/events.rb#80
+  # pkg:gem/rack#lib/rack/events.rb:80
   def request; end
 
-  # Returns the value of attribute response.
-  #
-  # source://rack//lib/rack/events.rb#80
+  # pkg:gem/rack#lib/rack/events.rb:80
   def response; end
 end
 
@@ -1047,99 +968,85 @@ end
 # Handlers can detect if bodies are a Rack::Files, and use mechanisms
 # like sendfile on the +path+.
 #
-# source://rack//lib/rack/files.rb#20
+# pkg:gem/rack#lib/rack/files.rb:20
 class Rack::Files
-  # @return [Files] a new instance of Files
-  #
-  # source://rack//lib/rack/files.rb#27
+  # pkg:gem/rack#lib/rack/files.rb:27
   def initialize(root, headers = T.unsafe(nil), default_mime = T.unsafe(nil)); end
 
-  # source://rack//lib/rack/files.rb#34
+  # pkg:gem/rack#lib/rack/files.rb:34
   def call(env); end
 
-  # source://rack//lib/rack/files.rb#39
+  # pkg:gem/rack#lib/rack/files.rb:39
   def get(env); end
 
-  # Returns the value of attribute root.
-  #
-  # source://rack//lib/rack/files.rb#25
+  # pkg:gem/rack#lib/rack/files.rb:25
   def root; end
 
-  # source://rack//lib/rack/files.rb#68
+  # pkg:gem/rack#lib/rack/files.rb:68
   def serving(request, path); end
 
   private
 
-  # source://rack//lib/rack/files.rb#190
+  # pkg:gem/rack#lib/rack/files.rb:190
   def fail(status, body, headers = T.unsafe(nil)); end
 
-  # source://rack//lib/rack/files.rb#209
+  # pkg:gem/rack#lib/rack/files.rb:209
   def filesize(path); end
 
   # The MIME type for the contents of the file located at @path
   #
-  # source://rack//lib/rack/files.rb#205
+  # pkg:gem/rack#lib/rack/files.rb:205
   def mime_type(path, default_mime); end
 end
 
-# source://rack//lib/rack/files.rb#21
+# pkg:gem/rack#lib/rack/files.rb:21
 Rack::Files::ALLOWED_VERBS = T.let(T.unsafe(nil), Array)
 
-# source://rack//lib/rack/files.rb#22
+# pkg:gem/rack#lib/rack/files.rb:22
 Rack::Files::ALLOW_HEADER = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/files.rb#121
+# pkg:gem/rack#lib/rack/files.rb:121
 class Rack::Files::BaseIterator
-  # @return [BaseIterator] a new instance of BaseIterator
-  #
-  # source://rack//lib/rack/files.rb#124
+  # pkg:gem/rack#lib/rack/files.rb:124
   def initialize(path, ranges, options); end
 
-  # source://rack//lib/rack/files.rb#144
+  # pkg:gem/rack#lib/rack/files.rb:144
   def bytesize; end
 
-  # source://rack//lib/rack/files.rb#153
+  # pkg:gem/rack#lib/rack/files.rb:153
   def close; end
 
-  # source://rack//lib/rack/files.rb#130
+  # pkg:gem/rack#lib/rack/files.rb:130
   def each; end
 
-  # Returns the value of attribute options.
-  #
-  # source://rack//lib/rack/files.rb#122
+  # pkg:gem/rack#lib/rack/files.rb:122
   def options; end
 
-  # Returns the value of attribute path.
-  #
-  # source://rack//lib/rack/files.rb#122
+  # pkg:gem/rack#lib/rack/files.rb:122
   def path; end
 
-  # Returns the value of attribute ranges.
-  #
-  # source://rack//lib/rack/files.rb#122
+  # pkg:gem/rack#lib/rack/files.rb:122
   def ranges; end
 
   private
 
-  # source://rack//lib/rack/files.rb#171
+  # pkg:gem/rack#lib/rack/files.rb:171
   def each_range_part(file, range); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/files.rb#157
+  # pkg:gem/rack#lib/rack/files.rb:157
   def multipart?; end
 
-  # source://rack//lib/rack/files.rb#161
+  # pkg:gem/rack#lib/rack/files.rb:161
   def multipart_heading(range); end
 end
 
-# source://rack//lib/rack/files.rb#184
+# pkg:gem/rack#lib/rack/files.rb:184
 class Rack::Files::Iterator < ::Rack::Files::BaseIterator
-  # source://rack//lib/rack/files.rb#185
+  # pkg:gem/rack#lib/rack/files.rb:185
   def to_path; end
 end
 
-# source://rack//lib/rack/files.rb#23
+# pkg:gem/rack#lib/rack/files.rb:23
 Rack::Files::MULTIPART_BOUNDARY = T.let(T.unsafe(nil), String)
 
 # Rack::ForwardRequest gets caught by Rack::Recursive and redirects
@@ -1147,57 +1054,49 @@ Rack::Files::MULTIPART_BOUNDARY = T.let(T.unsafe(nil), String)
 #
 #   raise ForwardRequest.new("/not-found")
 #
-# source://rack//lib/rack/recursive.rb#14
+# pkg:gem/rack#lib/rack/recursive.rb:14
 class Rack::ForwardRequest < ::Exception
-  # @return [ForwardRequest] a new instance of ForwardRequest
-  #
-  # source://rack//lib/rack/recursive.rb#17
+  # pkg:gem/rack#lib/rack/recursive.rb:17
   def initialize(url, env = T.unsafe(nil)); end
 
-  # Returns the value of attribute env.
-  #
-  # source://rack//lib/rack/recursive.rb#15
+  # pkg:gem/rack#lib/rack/recursive.rb:15
   def env; end
 
-  # Returns the value of attribute url.
-  #
-  # source://rack//lib/rack/recursive.rb#15
+  # pkg:gem/rack#lib/rack/recursive.rb:15
   def url; end
 end
 
 # HTTP method verbs
 #
-# source://rack//lib/rack/constants.rb#28
+# pkg:gem/rack#lib/rack/constants.rb:28
 Rack::GET = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#33
+# pkg:gem/rack#lib/rack/constants.rb:33
 Rack::HEAD = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#7
+# pkg:gem/rack#lib/rack/constants.rb:7
 Rack::HTTPS = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#16
+# pkg:gem/rack#lib/rack/constants.rb:16
 Rack::HTTP_COOKIE = T.let(T.unsafe(nil), String)
 
 # Request env keys
 #
-# source://rack//lib/rack/constants.rb#5
+# pkg:gem/rack#lib/rack/constants.rb:5
 Rack::HTTP_HOST = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#6
+# pkg:gem/rack#lib/rack/constants.rb:6
 Rack::HTTP_PORT = T.let(T.unsafe(nil), String)
 
 # Rack::Head returns an empty body for all HEAD requests. It leaves
 # all other requests unchanged.
 #
-# source://rack//lib/rack/head.rb#9
+# pkg:gem/rack#lib/rack/head.rb:9
 class Rack::Head
-  # @return [Head] a new instance of Head
-  #
-  # source://rack//lib/rack/head.rb#10
+  # pkg:gem/rack#lib/rack/head.rb:10
   def initialize(app); end
 
-  # source://rack//lib/rack/head.rb#14
+  # pkg:gem/rack#lib/rack/head.rb:14
   def call(env); end
 end
 
@@ -1206,128 +1105,116 @@ end
 # (by using non-lowercase response header keys), automatically handling
 # the downcasing of keys.
 #
-# source://rack//lib/rack/headers.rb#8
+# pkg:gem/rack#lib/rack/headers.rb:8
 class Rack::Headers < ::Hash
-  # source://rack//lib/rack/headers.rb#110
+  # pkg:gem/rack#lib/rack/headers.rb:110
   def [](key); end
 
-  # source://rack//lib/rack/headers.rb#114
+  # pkg:gem/rack#lib/rack/headers.rb:114
   def []=(key, value); end
 
-  # source://rack//lib/rack/headers.rb#119
+  # pkg:gem/rack#lib/rack/headers.rb:119
   def assoc(key); end
 
-  # @raise [TypeError]
-  #
-  # source://rack//lib/rack/headers.rb#123
+  # pkg:gem/rack#lib/rack/headers.rb:123
   def compare_by_identity; end
 
-  # source://rack//lib/rack/headers.rb#127
+  # pkg:gem/rack#lib/rack/headers.rb:127
   def delete(key); end
 
-  # source://rack//lib/rack/headers.rb#131
+  # pkg:gem/rack#lib/rack/headers.rb:131
   def dig(key, *a); end
 
   # :nocov:
   #
-  # source://rack//lib/rack/headers.rb#227
+  # pkg:gem/rack#lib/rack/headers.rb:227
   def except(*a); end
 
-  # source://rack//lib/rack/headers.rb#135
+  # pkg:gem/rack#lib/rack/headers.rb:135
   def fetch(key, *default, &block); end
 
-  # source://rack//lib/rack/headers.rb#140
+  # pkg:gem/rack#lib/rack/headers.rb:140
   def fetch_values(*a); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/headers.rb#144
+  # pkg:gem/rack#lib/rack/headers.rb:144
   def has_key?(key); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/headers.rb#147
+  # pkg:gem/rack#lib/rack/headers.rb:147
   def include?(key); end
 
-  # source://rack//lib/rack/headers.rb#151
+  # pkg:gem/rack#lib/rack/headers.rb:151
   def invert; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/headers.rb#148
+  # pkg:gem/rack#lib/rack/headers.rb:148
   def key?(key); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/headers.rb#149
+  # pkg:gem/rack#lib/rack/headers.rb:149
   def member?(key); end
 
-  # source://rack//lib/rack/headers.rb#157
+  # pkg:gem/rack#lib/rack/headers.rb:157
   def merge(hash, &block); end
 
-  # source://rack//lib/rack/headers.rb#196
+  # pkg:gem/rack#lib/rack/headers.rb:196
   def merge!(hash, &block); end
 
-  # source://rack//lib/rack/headers.rb#161
+  # pkg:gem/rack#lib/rack/headers.rb:161
   def reject(&block); end
 
-  # source://rack//lib/rack/headers.rb#167
+  # pkg:gem/rack#lib/rack/headers.rb:167
   def replace(hash); end
 
-  # source://rack//lib/rack/headers.rb#172
+  # pkg:gem/rack#lib/rack/headers.rb:172
   def select(&block); end
 
   # :nocov:
   #
-  # source://rack//lib/rack/headers.rb#205
+  # pkg:gem/rack#lib/rack/headers.rb:205
   def slice(*a); end
 
-  # source://rack//lib/rack/headers.rb#117
+  # pkg:gem/rack#lib/rack/headers.rb:117
   def store(key, value); end
 
-  # source://rack//lib/rack/headers.rb#178
+  # pkg:gem/rack#lib/rack/headers.rb:178
   def to_proc; end
 
-  # source://rack//lib/rack/headers.rb#211
+  # pkg:gem/rack#lib/rack/headers.rb:211
   def transform_keys(&block); end
 
-  # source://rack//lib/rack/headers.rb#215
+  # pkg:gem/rack#lib/rack/headers.rb:215
   def transform_keys!; end
 
-  # source://rack//lib/rack/headers.rb#182
+  # pkg:gem/rack#lib/rack/headers.rb:182
   def transform_values(&block); end
 
-  # source://rack//lib/rack/headers.rb#186
+  # pkg:gem/rack#lib/rack/headers.rb:186
   def update(hash, &block); end
 
-  # source://rack//lib/rack/headers.rb#198
+  # pkg:gem/rack#lib/rack/headers.rb:198
   def values_at(*keys); end
 
   private
 
-  # source://rack//lib/rack/headers.rb#234
+  # pkg:gem/rack#lib/rack/headers.rb:234
   def downcase_key(key); end
 
   class << self
-    # source://rack//lib/rack/headers.rb#91
+    # pkg:gem/rack#lib/rack/headers.rb:91
     def [](*items); end
   end
 end
 
-# source://rack//lib/rack/headers.rb#9
+# pkg:gem/rack#lib/rack/headers.rb:9
 Rack::Headers::KNOWN_HEADERS = T.let(T.unsafe(nil), Hash)
 
-# source://rack//lib/rack/constants.rb#36
+# pkg:gem/rack#lib/rack/constants.rb:36
 Rack::LINK = T.let(T.unsafe(nil), String)
 
 # Rack::Lint validates your application and the requests and
 # responses according to the Rack spec.
 #
-# source://rack//lib/rack/lint.rb#13
+# pkg:gem/rack#lib/rack/lint.rb:13
 class Rack::Lint
-  # @return [Lint] a new instance of Lint
-  #
-  # source://rack//lib/rack/lint.rb#19
+  # pkg:gem/rack#lib/rack/lint.rb:19
   def initialize(app); end
 
   # AUTHORS: n.b. The trailing whitespace between paragraphs is important and
@@ -1345,49 +1232,45 @@ class Rack::Lint
   # A Rack application is a Ruby object (not a class) that
   # responds to +call+.
   #
-  # source://rack//lib/rack/lint.rb#40
+  # pkg:gem/rack#lib/rack/lint.rb:40
   def call(env = T.unsafe(nil)); end
 end
 
 # :stopdoc:
 #
-# source://rack//lib/rack/lint.rb#25
+# pkg:gem/rack#lib/rack/lint.rb:25
 class Rack::Lint::LintError < ::RuntimeError; end
 
-# source://rack//lib/rack/lint.rb#15
+# pkg:gem/rack#lib/rack/lint.rb:15
 Rack::Lint::REQUEST_PATH_ABSOLUTE_FORM = T.let(T.unsafe(nil), Regexp)
 
-# source://rack//lib/rack/lint.rb#17
+# pkg:gem/rack#lib/rack/lint.rb:17
 Rack::Lint::REQUEST_PATH_ASTERISK_FORM = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/lint.rb#16
+# pkg:gem/rack#lib/rack/lint.rb:16
 Rack::Lint::REQUEST_PATH_AUTHORITY_FORM = T.let(T.unsafe(nil), Regexp)
 
-# source://rack//lib/rack/lint.rb#14
+# pkg:gem/rack#lib/rack/lint.rb:14
 Rack::Lint::REQUEST_PATH_ORIGIN_FORM = T.let(T.unsafe(nil), Regexp)
 
-# source://rack//lib/rack/lint.rb#44
+# pkg:gem/rack#lib/rack/lint.rb:44
 class Rack::Lint::Wrapper
-  # @return [Wrapper] a new instance of Wrapper
-  #
-  # source://rack//lib/rack/lint.rb#45
+  # pkg:gem/rack#lib/rack/lint.rb:45
   def initialize(app, env); end
 
   # ==== Streaming Body
   #
-  # @raise [LintError]
-  #
-  # source://rack//lib/rack/lint.rb#939
+  # pkg:gem/rack#lib/rack/lint.rb:939
   def call(stream); end
 
   # ==== The +content-length+ Header
   #
-  # source://rack//lib/rack/lint.rb#757
+  # pkg:gem/rack#lib/rack/lint.rb:757
   def check_content_length_header(status, headers); end
 
   # ==== The +content-type+ Header
   #
-  # source://rack//lib/rack/lint.rb#741
+  # pkg:gem/rack#lib/rack/lint.rb:741
   def check_content_type_header(status, headers); end
 
   # === Early Hints
@@ -1395,27 +1278,25 @@ class Rack::Lint::Wrapper
   # The application or any middleware may call the <tt>rack.early_hints</tt>
   # with an object which would be valid as the headers of a Rack response.
   #
-  # source://rack//lib/rack/lint.rb#657
+  # pkg:gem/rack#lib/rack/lint.rb:657
   def check_early_hints(env); end
 
   # == The Environment
   #
-  # @raise [LintError]
-  #
-  # source://rack//lib/rack/lint.rb#101
+  # pkg:gem/rack#lib/rack/lint.rb:101
   def check_environment(env); end
 
   # === The Error Stream
   #
-  # source://rack//lib/rack/lint.rb#531
+  # pkg:gem/rack#lib/rack/lint.rb:531
   def check_error_stream(error); end
 
-  # source://rack//lib/rack/lint.rb#731
+  # pkg:gem/rack#lib/rack/lint.rb:731
   def check_header_value(key, value); end
 
   # === The Headers
   #
-  # source://rack//lib/rack/lint.rb#691
+  # pkg:gem/rack#lib/rack/lint.rb:691
   def check_headers(headers); end
 
   # === Hijacking
@@ -1440,7 +1321,7 @@ class Rack::Lint::Wrapper
   # It is intended to be used when applications need access to raw HTTP/1
   # connection.
   #
-  # source://rack//lib/rack/lint.rb#591
+  # pkg:gem/rack#lib/rack/lint.rb:591
   def check_hijack(env); end
 
   # ==== Partial Hijack
@@ -1452,7 +1333,7 @@ class Rack::Lint::Wrapper
   # It is intended to be used when applications need bi-directional
   # streaming.
   #
-  # source://rack//lib/rack/lint.rb#619
+  # pkg:gem/rack#lib/rack/lint.rb:619
   def check_hijack_response(headers, env); end
 
   # === The Input Stream
@@ -1460,19 +1341,19 @@ class Rack::Lint::Wrapper
   # The input stream is an IO-like object which contains the raw HTTP
   # POST data.
   #
-  # source://rack//lib/rack/lint.rb#427
+  # pkg:gem/rack#lib/rack/lint.rb:427
   def check_input_stream(input); end
 
   # ==== The +rack.protocol+ Header
   #
-  # source://rack//lib/rack/lint.rb#785
+  # pkg:gem/rack#lib/rack/lint.rb:785
   def check_rack_protocol_header(status, headers); end
 
   # == The Response
   #
   # === The Status
   #
-  # source://rack//lib/rack/lint.rb#680
+  # pkg:gem/rack#lib/rack/lint.rb:680
   def check_status(status); end
 
   # Setting this value informs the server that it should perform a
@@ -1504,24 +1385,18 @@ class Rack::Lint::Wrapper
   # cases where the Rack application makes internal/virtual requests and
   # discards the response.
   #
-  # source://rack//lib/rack/lint.rb#831
+  # pkg:gem/rack#lib/rack/lint.rb:831
   def close; end
 
   # ==== Enumerable Body
   #
-  # @raise [LintError]
-  #
-  # source://rack//lib/rack/lint.rb#865
+  # pkg:gem/rack#lib/rack/lint.rb:865
   def each; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/lint.rb#910
-  def respond_to?(name, *_arg1); end
+  # pkg:gem/rack#lib/rack/lint.rb:910
+  def respond_to?(name, *); end
 
-  # @raise [LintError]
-  #
-  # source://rack//lib/rack/lint.rb#60
+  # pkg:gem/rack#lib/rack/lint.rb:60
   def response; end
 
   # If the Body responds to +to_ary+, it must return an +Array+ whose
@@ -1532,81 +1407,69 @@ class Rack::Lint::Wrapper
   # +to_ary+ and +close+, its implementation of +to_ary+ must call
   # +close+.
   #
-  # source://rack//lib/rack/lint.rb#926
+  # pkg:gem/rack#lib/rack/lint.rb:926
   def to_ary; end
 
-  # source://rack//lib/rack/lint.rb#906
+  # pkg:gem/rack#lib/rack/lint.rb:906
   def to_path; end
 
-  # source://rack//lib/rack/lint.rb#770
+  # pkg:gem/rack#lib/rack/lint.rb:770
   def verify_content_length(size); end
 
-  # source://rack//lib/rack/lint.rb#847
+  # pkg:gem/rack#lib/rack/lint.rb:847
   def verify_to_path; end
 end
 
-# source://rack//lib/rack/lint.rb#904
+# pkg:gem/rack#lib/rack/lint.rb:904
 Rack::Lint::Wrapper::BODY_METHODS = T.let(T.unsafe(nil), Hash)
 
-# source://rack//lib/rack/lint.rb#540
+# pkg:gem/rack#lib/rack/lint.rb:540
 class Rack::Lint::Wrapper::ErrorWrapper
-  # @return [ErrorWrapper] a new instance of ErrorWrapper
-  #
-  # source://rack//lib/rack/lint.rb#541
+  # pkg:gem/rack#lib/rack/lint.rb:541
   def initialize(error); end
 
   # * +close+ must never be called on the error stream.
   #
-  # @raise [LintError]
-  #
-  # source://rack//lib/rack/lint.rb#563
+  # pkg:gem/rack#lib/rack/lint.rb:563
   def close(*args); end
 
   # * +flush+ must be called without arguments and must be called
   #   in order to make the error appear for sure.
   #
-  # source://rack//lib/rack/lint.rb#558
+  # pkg:gem/rack#lib/rack/lint.rb:558
   def flush; end
 
   # * +puts+ must be called with a single argument that responds to +to_s+.
   #
-  # source://rack//lib/rack/lint.rb#546
+  # pkg:gem/rack#lib/rack/lint.rb:546
   def puts(str); end
 
   # * +write+ must be called with a single argument that is a String.
   #
-  # @raise [LintError]
-  #
-  # source://rack//lib/rack/lint.rb#551
+  # pkg:gem/rack#lib/rack/lint.rb:551
   def write(str); end
 end
 
-# source://rack//lib/rack/lint.rb#445
+# pkg:gem/rack#lib/rack/lint.rb:445
 class Rack::Lint::Wrapper::InputWrapper
-  # @return [InputWrapper] a new instance of InputWrapper
-  #
-  # source://rack//lib/rack/lint.rb#446
+  # pkg:gem/rack#lib/rack/lint.rb:446
   def initialize(input); end
 
   # * +close+ can be called on the input stream to indicate that
   #   any remaining input is not needed.
   #
-  # source://rack//lib/rack/lint.rb#523
+  # pkg:gem/rack#lib/rack/lint.rb:523
   def close(*args); end
 
   # * +each+ must be called without arguments and only yield Strings.
   #
-  # @raise [LintError]
-  #
-  # source://rack//lib/rack/lint.rb#511
+  # pkg:gem/rack#lib/rack/lint.rb:511
   def each(*args); end
 
   # * +gets+ must be called without arguments and return a string,
   #   or +nil+ on EOF.
   #
-  # @raise [LintError]
-  #
-  # source://rack//lib/rack/lint.rb#452
+  # pkg:gem/rack#lib/rack/lint.rb:452
   def gets(*args); end
 
   # * +read+ behaves like <tt>IO#read</tt>.
@@ -1627,42 +1490,40 @@ class Rack::Lint::Wrapper::InputWrapper
   #   If +buffer+ is given, then the read data will be placed
   #   into +buffer+ instead of a newly created String object.
   #
-  # source://rack//lib/rack/lint.rb#478
+  # pkg:gem/rack#lib/rack/lint.rb:478
   def read(*args); end
 end
 
-# source://rack//lib/rack/lint.rb#959
+# pkg:gem/rack#lib/rack/lint.rb:959
 class Rack::Lint::Wrapper::StreamWrapper
   extend ::Forwardable
 
-  # @return [StreamWrapper] a new instance of StreamWrapper
-  #
-  # source://rack//lib/rack/lint.rb#974
+  # pkg:gem/rack#lib/rack/lint.rb:974
   def initialize(stream); end
 
-  # source://rack//lib/rack/lint.rb#972
-  def <<(*args, **_arg1, &block); end
+  # pkg:gem/rack#lib/rack/lint.rb:972
+  def <<(*args, **, &block); end
 
-  # source://rack//lib/rack/lint.rb#972
-  def close(*args, **_arg1, &block); end
+  # pkg:gem/rack#lib/rack/lint.rb:972
+  def close(*args, **, &block); end
 
-  # source://rack//lib/rack/lint.rb#972
-  def close_read(*args, **_arg1, &block); end
+  # pkg:gem/rack#lib/rack/lint.rb:972
+  def close_read(*args, **, &block); end
 
-  # source://rack//lib/rack/lint.rb#972
-  def close_write(*args, **_arg1, &block); end
+  # pkg:gem/rack#lib/rack/lint.rb:972
+  def close_write(*args, **, &block); end
 
-  # source://rack//lib/rack/lint.rb#972
-  def closed?(*args, **_arg1, &block); end
+  # pkg:gem/rack#lib/rack/lint.rb:972
+  def closed?(*args, **, &block); end
 
-  # source://rack//lib/rack/lint.rb#972
-  def flush(*args, **_arg1, &block); end
+  # pkg:gem/rack#lib/rack/lint.rb:972
+  def flush(*args, **, &block); end
 
-  # source://rack//lib/rack/lint.rb#972
-  def read(*args, **_arg1, &block); end
+  # pkg:gem/rack#lib/rack/lint.rb:972
+  def read(*args, **, &block); end
 
-  # source://rack//lib/rack/lint.rb#972
-  def write(*args, **_arg1, &block); end
+  # pkg:gem/rack#lib/rack/lint.rb:972
+  def write(*args, **, &block); end
 end
 
 # The semantics of these IO methods must be a best effort match to
@@ -1671,44 +1532,40 @@ end
 # pass on real IO objects, although it is recognized that this approach
 # is not directly compatible with HTTP/2.
 #
-# source://rack//lib/rack/lint.rb#967
+# pkg:gem/rack#lib/rack/lint.rb:967
 Rack::Lint::Wrapper::StreamWrapper::REQUIRED_METHODS = T.let(T.unsafe(nil), Array)
 
 # Rack::Lock locks every request inside a mutex, so that every request
 # will effectively be executed synchronously.
 #
-# source://rack//lib/rack/lock.rb#8
+# pkg:gem/rack#lib/rack/lock.rb:8
 class Rack::Lock
-  # @return [Lock] a new instance of Lock
-  #
-  # source://rack//lib/rack/lock.rb#9
+  # pkg:gem/rack#lib/rack/lock.rb:9
   def initialize(app, mutex = T.unsafe(nil)); end
 
-  # source://rack//lib/rack/lock.rb#13
+  # pkg:gem/rack#lib/rack/lock.rb:13
   def call(env); end
 
   private
 
-  # source://rack//lib/rack/lock.rb#25
+  # pkg:gem/rack#lib/rack/lock.rb:25
   def unlock; end
 end
 
 # Sets up rack.logger to write to rack.errors stream
 #
-# source://rack//lib/rack/logger.rb#10
+# pkg:gem/rack#lib/rack/logger.rb:10
 class Rack::Logger
-  # @return [Logger] a new instance of Logger
-  #
-  # source://rack//lib/rack/logger.rb#11
+  # pkg:gem/rack#lib/rack/logger.rb:11
   def initialize(app, level = T.unsafe(nil)); end
 
-  # source://rack//lib/rack/logger.rb#15
+  # pkg:gem/rack#lib/rack/logger.rb:15
   def call(env); end
 end
 
 # Rack::MediaType parse media type and parameters out of content_type string
 #
-# source://rack//lib/rack/media_type.rb#6
+# pkg:gem/rack#lib/rack/media_type.rb:6
 class Rack::MediaType
   class << self
     # The media type parameters provided in CONTENT_TYPE as a Hash, or
@@ -1722,7 +1579,7 @@ class Rack::MediaType
     # and "text/plain;charset" will return { 'charset' => '' }, similarly to
     # the query params parser (barring the latter case, which returns nil instead)).
     #
-    # source://rack//lib/rack/media_type.rb#35
+    # pkg:gem/rack#lib/rack/media_type.rb:35
     def params(content_type); end
 
     # The media type (type/subtype) portion of the CONTENT_TYPE header
@@ -1732,54 +1589,52 @@ class Rack::MediaType
     # For more information on the use of media types in HTTP, see:
     # http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.7
     #
-    # source://rack//lib/rack/media_type.rb#16
+    # pkg:gem/rack#lib/rack/media_type.rb:16
     def type(content_type); end
 
     private
 
-    # source://rack//lib/rack/media_type.rb#48
+    # pkg:gem/rack#lib/rack/media_type.rb:48
     def strip_doublequotes(str); end
   end
 end
 
-# source://rack//lib/rack/media_type.rb#7
+# pkg:gem/rack#lib/rack/media_type.rb:7
 Rack::MediaType::SPLIT_PATTERN = T.let(T.unsafe(nil), Regexp)
 
-# source://rack//lib/rack/method_override.rb#8
+# pkg:gem/rack#lib/rack/method_override.rb:8
 class Rack::MethodOverride
-  # @return [MethodOverride] a new instance of MethodOverride
-  #
-  # source://rack//lib/rack/method_override.rb#15
+  # pkg:gem/rack#lib/rack/method_override.rb:15
   def initialize(app); end
 
-  # source://rack//lib/rack/method_override.rb#19
+  # pkg:gem/rack#lib/rack/method_override.rb:19
   def call(env); end
 
-  # source://rack//lib/rack/method_override.rb#31
+  # pkg:gem/rack#lib/rack/method_override.rb:31
   def method_override(env); end
 
   private
 
-  # source://rack//lib/rack/method_override.rb#44
+  # pkg:gem/rack#lib/rack/method_override.rb:44
   def allowed_methods; end
 
-  # source://rack//lib/rack/method_override.rb#48
+  # pkg:gem/rack#lib/rack/method_override.rb:48
   def method_override_param(req); end
 end
 
-# source://rack//lib/rack/method_override.rb#13
+# pkg:gem/rack#lib/rack/method_override.rb:13
 Rack::MethodOverride::ALLOWED_METHODS = T.let(T.unsafe(nil), Array)
 
-# source://rack//lib/rack/method_override.rb#9
+# pkg:gem/rack#lib/rack/method_override.rb:9
 Rack::MethodOverride::HTTP_METHODS = T.let(T.unsafe(nil), Array)
 
-# source://rack//lib/rack/method_override.rb#12
+# pkg:gem/rack#lib/rack/method_override.rb:12
 Rack::MethodOverride::HTTP_METHOD_OVERRIDE_HEADER = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/method_override.rb#11
+# pkg:gem/rack#lib/rack/method_override.rb:11
 Rack::MethodOverride::METHOD_OVERRIDE_PARAM_KEY = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/mime.rb#4
+# pkg:gem/rack#lib/rack/mime.rb:4
 module Rack::Mime
   private
 
@@ -1790,9 +1645,7 @@ module Rack::Mime
   #    Rack::Mime.match?('text/plain', '*') => true
   #    Rack::Mime.match?('text/html', 'application/json') => false
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/mime.rb#30
+  # pkg:gem/rack#lib/rack/mime.rb:30
   def match?(value, matcher); end
 
   # Returns String with mime type if found, otherwise use +fallback+.
@@ -1808,36 +1661,14 @@ module Rack::Mime
   # This is a shortcut for:
   #     Rack::Mime::MIME_TYPES.fetch('.foo', 'application/octet-stream')
   #
-  # source://rack//lib/rack/mime.rb#18
+  # pkg:gem/rack#lib/rack/mime.rb:18
   def mime_type(ext, fallback = T.unsafe(nil)); end
 
   class << self
-    # Returns true if the given value is a mime match for the given mime match
-    # specification, false otherwise.
-    #
-    #    Rack::Mime.match?('text/html', 'text/*') => true
-    #    Rack::Mime.match?('text/plain', '*') => true
-    #    Rack::Mime.match?('text/html', 'application/json') => false
-    #
-    # @return [Boolean]
-    #
-    # source://rack//lib/rack/mime.rb#36
+    # pkg:gem/rack#lib/rack/mime.rb:36
     def match?(value, matcher); end
 
-    # Returns String with mime type if found, otherwise use +fallback+.
-    # +ext+ should be filename extension in the '.ext' format that
-    #       File.extname(file) returns.
-    # +fallback+ may be any object
-    #
-    # Also see the documentation for MIME_TYPES
-    #
-    # Usage:
-    #     Rack::Mime.mime_type('.foo')
-    #
-    # This is a shortcut for:
-    #     Rack::Mime::MIME_TYPES.fetch('.foo', 'application/octet-stream')
-    #
-    # source://rack//lib/rack/mime.rb#21
+    # pkg:gem/rack#lib/rack/mime.rb:21
     def mime_type(ext, fallback = T.unsafe(nil)); end
   end
 end
@@ -1855,7 +1686,7 @@ end
 # N.B. On Ubuntu the mime.types file does not include the leading period, so
 # users may need to modify the data before merging into the hash.
 #
-# source://rack//lib/rack/mime.rb#51
+# pkg:gem/rack#lib/rack/mime.rb:51
 Rack::Mime::MIME_TYPES = T.let(T.unsafe(nil), Hash)
 
 # Rack::MockRequest helps testing your Rack application without
@@ -1871,53 +1702,51 @@ Rack::Mime::MIME_TYPES = T.let(T.unsafe(nil), Hash)
 # <tt>:fatal</tt>:: Raise a FatalWarning if the app writes to rack.errors.
 # <tt>:lint</tt>:: If true, wrap the application in a Rack::Lint.
 #
-# source://rack//lib/rack/mock_request.rb#23
+# pkg:gem/rack#lib/rack/mock_request.rb:23
 class Rack::MockRequest
-  # @return [MockRequest] a new instance of MockRequest
-  #
-  # source://rack//lib/rack/mock_request.rb#44
+  # pkg:gem/rack#lib/rack/mock_request.rb:44
   def initialize(app); end
 
   # Make a DELETE request and return a MockResponse. See #request.
   #
-  # source://rack//lib/rack/mock_request.rb#57
+  # pkg:gem/rack#lib/rack/mock_request.rb:57
   def delete(uri, opts = T.unsafe(nil)); end
 
   # Make a GET request and return a MockResponse. See #request.
   #
-  # source://rack//lib/rack/mock_request.rb#49
+  # pkg:gem/rack#lib/rack/mock_request.rb:49
   def get(uri, opts = T.unsafe(nil)); end
 
   # Make a HEAD request and return a MockResponse. See #request.
   #
-  # source://rack//lib/rack/mock_request.rb#59
+  # pkg:gem/rack#lib/rack/mock_request.rb:59
   def head(uri, opts = T.unsafe(nil)); end
 
   # Make an OPTIONS request and return a MockResponse. See #request.
   #
-  # source://rack//lib/rack/mock_request.rb#61
+  # pkg:gem/rack#lib/rack/mock_request.rb:61
   def options(uri, opts = T.unsafe(nil)); end
 
   # Make a PATCH request and return a MockResponse. See #request.
   #
-  # source://rack//lib/rack/mock_request.rb#55
+  # pkg:gem/rack#lib/rack/mock_request.rb:55
   def patch(uri, opts = T.unsafe(nil)); end
 
   # Make a POST request and return a MockResponse. See #request.
   #
-  # source://rack//lib/rack/mock_request.rb#51
+  # pkg:gem/rack#lib/rack/mock_request.rb:51
   def post(uri, opts = T.unsafe(nil)); end
 
   # Make a PUT request and return a MockResponse. See #request.
   #
-  # source://rack//lib/rack/mock_request.rb#53
+  # pkg:gem/rack#lib/rack/mock_request.rb:53
   def put(uri, opts = T.unsafe(nil)); end
 
   # Make a request using the given request method for the given
   # uri to the rack application and return a MockResponse.
   # Options given are passed to MockRequest.env_for.
   #
-  # source://rack//lib/rack/mock_request.rb#66
+  # pkg:gem/rack#lib/rack/mock_request.rb:66
   def request(method = T.unsafe(nil), uri = T.unsafe(nil), opts = T.unsafe(nil)); end
 
   class << self
@@ -1931,118 +1760,110 @@ class Rack::MockRequest
     # :params :: The params to use
     # :script_name :: The SCRIPT_NAME to set
     #
-    # source://rack//lib/rack/mock_request.rb#98
+    # pkg:gem/rack#lib/rack/mock_request.rb:98
     def env_for(uri = T.unsafe(nil), opts = T.unsafe(nil)); end
 
     # For historical reasons, we're pinning to RFC 2396.
     # URI::Parser = URI::RFC2396_Parser
     #
-    # source://rack//lib/rack/mock_request.rb#84
+    # pkg:gem/rack#lib/rack/mock_request.rb:84
     def parse_uri_rfc2396(uri); end
   end
 end
 
-# source://rack//lib/rack/mock_request.rb#27
+# pkg:gem/rack#lib/rack/mock_request.rb:27
 class Rack::MockRequest::FatalWarner
-  # source://rack//lib/rack/mock_request.rb#36
+  # pkg:gem/rack#lib/rack/mock_request.rb:36
   def flush; end
 
-  # @raise [FatalWarning]
-  #
-  # source://rack//lib/rack/mock_request.rb#28
+  # pkg:gem/rack#lib/rack/mock_request.rb:28
   def puts(warning); end
 
-  # source://rack//lib/rack/mock_request.rb#39
+  # pkg:gem/rack#lib/rack/mock_request.rb:39
   def string; end
 
-  # @raise [FatalWarning]
-  #
-  # source://rack//lib/rack/mock_request.rb#32
+  # pkg:gem/rack#lib/rack/mock_request.rb:32
   def write(warning); end
 end
 
-# source://rack//lib/rack/mock_request.rb#24
+# pkg:gem/rack#lib/rack/mock_request.rb:24
 class Rack::MockRequest::FatalWarning < ::RuntimeError; end
 
 # Rack::MockResponse provides useful helpers for testing your apps.
 # Usually, you don't create the MockResponse on your own, but use
 # MockRequest.
 #
-# source://rack//lib/rack/mock_response.rb#12
+# pkg:gem/rack#lib/rack/mock_response.rb:12
 class Rack::MockResponse < ::Rack::Response
-  # @return [MockResponse] a new instance of MockResponse
-  #
-  # source://rack//lib/rack/mock_response.rb#53
+  # pkg:gem/rack#lib/rack/mock_response.rb:53
   def initialize(status, headers, body, errors = T.unsafe(nil)); end
 
-  # source://rack//lib/rack/mock_response.rb#68
+  # pkg:gem/rack#lib/rack/mock_response.rb:68
   def =~(other); end
 
-  # source://rack//lib/rack/mock_response.rb#76
+  # pkg:gem/rack#lib/rack/mock_response.rb:76
   def body; end
 
-  # source://rack//lib/rack/mock_response.rb#102
+  # pkg:gem/rack#lib/rack/mock_response.rb:102
   def cookie(name); end
 
   # Headers
   #
-  # source://rack//lib/rack/mock_response.rb#48
+  # pkg:gem/rack#lib/rack/mock_response.rb:48
   def cookies; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/mock_response.rb#98
+  # pkg:gem/rack#lib/rack/mock_response.rb:98
   def empty?; end
 
   # Errors
   #
-  # source://rack//lib/rack/mock_response.rb#51
+  # pkg:gem/rack#lib/rack/mock_response.rb:51
   def errors; end
 
   # Errors
   #
-  # source://rack//lib/rack/mock_response.rb#51
+  # pkg:gem/rack#lib/rack/mock_response.rb:51
   def errors=(_arg0); end
 
-  # source://rack//lib/rack/mock_response.rb#72
+  # pkg:gem/rack#lib/rack/mock_response.rb:72
   def match(other); end
 
   # Headers
   #
-  # source://rack//lib/rack/mock_response.rb#48
+  # pkg:gem/rack#lib/rack/mock_response.rb:48
   def original_headers; end
 
   private
 
-  # source://rack//lib/rack/mock_response.rb#129
+  # pkg:gem/rack#lib/rack/mock_response.rb:129
   def identify_cookie_attributes(cookie_filling); end
 
-  # source://rack//lib/rack/mock_response.rb#108
+  # pkg:gem/rack#lib/rack/mock_response.rb:108
   def parse_cookies_from_header; end
 
   class << self
-    # source://rack//lib/rack/mock_response.rb#44
+    # pkg:gem/rack#lib/rack/mock_response.rb:44
     def [](*_arg0); end
   end
 end
 
-# source://rack//lib/rack/mock_response.rb#16
+# pkg:gem/rack#lib/rack/mock_response.rb:16
 Rack::MockResponse::Cookie = CGI::Cookie
 
 # A multipart form data parser, adapted from IOWA.
 #
 # Usually, Rack::Request#POST takes care of calling this.
 #
-# source://rack//lib/rack/multipart/parser.rb#9
+# pkg:gem/rack#lib/rack/multipart/parser.rb:9
 module Rack::Multipart
   class << self
-    # source://rack//lib/rack/multipart.rb#72
+    # pkg:gem/rack#lib/rack/multipart.rb:72
     def build_multipart(params, first = T.unsafe(nil)); end
 
-    # source://rack//lib/rack/multipart.rb#68
+    # pkg:gem/rack#lib/rack/multipart.rb:68
     def extract_multipart(request, params = T.unsafe(nil)); end
 
-    # source://rack//lib/rack/multipart.rb#48
+    # pkg:gem/rack#lib/rack/multipart.rb:48
     def parse_multipart(env, params = T.unsafe(nil)); end
   end
 end
@@ -2050,90 +1871,86 @@ end
 # Base class for multipart exceptions that do not subclass from
 # other exception classes for backwards compatibility.
 #
-# source://rack//lib/rack/multipart/parser.rb#26
+# pkg:gem/rack#lib/rack/multipart/parser.rb:26
 class Rack::Multipart::BoundaryTooLongError < ::StandardError
   include ::Rack::BadRequest
 end
 
-# source://rack//lib/rack/multipart/parser.rb#33
+# pkg:gem/rack#lib/rack/multipart/parser.rb:33
 Rack::Multipart::EOL = T.let(T.unsafe(nil), String)
 
 # Use specific error class when parsing multipart request
 # that ends early.
 #
-# source://rack//lib/rack/multipart/parser.rb#20
+# pkg:gem/rack#lib/rack/multipart/parser.rb:20
 class Rack::Multipart::EmptyContentError < ::EOFError
   include ::Rack::BadRequest
 end
 
 # Prefer to use the BoundaryTooLongError class or Rack::BadRequest.
 #
-# source://rack//lib/rack/multipart/parser.rb#31
+# pkg:gem/rack#lib/rack/multipart/parser.rb:31
 Rack::Multipart::Error = Rack::Multipart::BoundaryTooLongError
 
-# whitespace with optional folding
-#
-# source://rack//lib/rack/multipart/parser.rb#34
+# pkg:gem/rack#lib/rack/multipart/parser.rb:34
 Rack::Multipart::FWS = T.let(T.unsafe(nil), Regexp)
 
-# source://rack//lib/rack/multipart/generator.rb#7
+# pkg:gem/rack#lib/rack/multipart/generator.rb:7
 class Rack::Multipart::Generator
-  # @return [Generator] a new instance of Generator
-  #
-  # source://rack//lib/rack/multipart/generator.rb#8
+  # pkg:gem/rack#lib/rack/multipart/generator.rb:8
   def initialize(params, first = T.unsafe(nil)); end
 
-  # source://rack//lib/rack/multipart/generator.rb#16
+  # pkg:gem/rack#lib/rack/multipart/generator.rb:16
   def dump; end
 
   private
 
-  # source://rack//lib/rack/multipart/generator.rb#89
+  # pkg:gem/rack#lib/rack/multipart/generator.rb:89
   def content_for_other(file, name); end
 
-  # source://rack//lib/rack/multipart/generator.rb#77
+  # pkg:gem/rack#lib/rack/multipart/generator.rb:77
   def content_for_tempfile(io, file, name); end
 
-  # source://rack//lib/rack/multipart/generator.rb#52
+  # pkg:gem/rack#lib/rack/multipart/generator.rb:52
   def flattened_params; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/multipart/generator.rb#37
+  # pkg:gem/rack#lib/rack/multipart/generator.rb:37
   def multipart?; end
 end
 
-# anything but a non-folding CRLF
+# whitespace with optional folding
 #
-# source://rack//lib/rack/multipart/parser.rb#35
+# pkg:gem/rack#lib/rack/multipart/parser.rb:35
 Rack::Multipart::HEADER_VALUE = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/multipart/parser.rb#36
+# anything but a non-folding CRLF
+#
+# pkg:gem/rack#lib/rack/multipart/parser.rb:36
 Rack::Multipart::MULTIPART = T.let(T.unsafe(nil), Regexp)
 
-# source://rack//lib/rack/multipart.rb#16
+# pkg:gem/rack#lib/rack/multipart.rb:16
 Rack::Multipart::MULTIPART_BOUNDARY = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/multipart/parser.rb#38
+# pkg:gem/rack#lib/rack/multipart/parser.rb:38
 Rack::Multipart::MULTIPART_CONTENT_DISPOSITION = T.let(T.unsafe(nil), Regexp)
 
-# source://rack//lib/rack/multipart/parser.rb#39
+# pkg:gem/rack#lib/rack/multipart/parser.rb:39
 Rack::Multipart::MULTIPART_CONTENT_ID = T.let(T.unsafe(nil), Regexp)
 
-# source://rack//lib/rack/multipart/parser.rb#37
+# pkg:gem/rack#lib/rack/multipart/parser.rb:37
 Rack::Multipart::MULTIPART_CONTENT_TYPE = T.let(T.unsafe(nil), Regexp)
 
-# source://rack//lib/rack/multipart.rb#18
+# pkg:gem/rack#lib/rack/multipart.rb:18
 class Rack::Multipart::MissingInputError < ::StandardError
   include ::Rack::BadRequest
 end
 
-# source://rack//lib/rack/multipart/parser.rb#10
+# pkg:gem/rack#lib/rack/multipart/parser.rb:10
 class Rack::Multipart::MultipartPartLimitError < ::Errno::EMFILE
   include ::Rack::BadRequest
 end
 
-# source://rack//lib/rack/multipart/parser.rb#14
+# pkg:gem/rack#lib/rack/multipart/parser.rb:14
 class Rack::Multipart::MultipartTotalPartLimitError < ::StandardError
   include ::Rack::BadRequest
 end
@@ -2142,44 +1959,38 @@ end
 # In future, the Parser could return the pair list directly, but that would
 # change its API.
 #
-# source://rack//lib/rack/multipart.rb#25
+# pkg:gem/rack#lib/rack/multipart.rb:25
 class Rack::Multipart::ParamList
-  # @return [ParamList] a new instance of ParamList
-  #
-  # source://rack//lib/rack/multipart.rb#34
+  # pkg:gem/rack#lib/rack/multipart.rb:34
   def initialize; end
 
-  # source://rack//lib/rack/multipart.rb#38
+  # pkg:gem/rack#lib/rack/multipart.rb:38
   def <<(pair); end
 
-  # source://rack//lib/rack/multipart.rb#42
+  # pkg:gem/rack#lib/rack/multipart.rb:42
   def to_params_hash; end
 
   class << self
-    # source://rack//lib/rack/multipart.rb#26
+    # pkg:gem/rack#lib/rack/multipart.rb:26
     def make_params; end
 
-    # source://rack//lib/rack/multipart.rb#30
+    # pkg:gem/rack#lib/rack/multipart.rb:30
     def normalize_params(params, key, value); end
   end
 end
 
-# source://rack//lib/rack/multipart/parser.rb#41
+# pkg:gem/rack#lib/rack/multipart/parser.rb:41
 class Rack::Multipart::Parser
-  # @return [Parser] a new instance of Parser
-  #
-  # source://rack//lib/rack/multipart/parser.rb#242
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:246
   def initialize(boundary, tempfile, bufsize, query_parser); end
 
-  # source://rack//lib/rack/multipart/parser.rb#263
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:267
   def parse(io); end
 
-  # source://rack//lib/rack/multipart/parser.rb#287
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:291
   def result; end
 
-  # Returns the value of attribute state.
-  #
-  # source://rack//lib/rack/multipart/parser.rb#240
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:244
   def state; end
 
   private
@@ -2189,25 +2000,23 @@ class Rack::Multipart::Parser
   # end of the boundary.  If we don't find the start or end of the
   # boundary, clear the buffer and return nil.
   #
-  # source://rack//lib/rack/multipart/parser.rb#519
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:530
   def consume_boundary; end
 
-  # From WEBrick::HTTPUtils
-  #
-  # source://rack//lib/rack/multipart/parser.rb#299
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:303
   def dequote(str); end
 
   # Return the related Encoding object. However, because
   # enc is submitted by the user, it may be invalid, so
   # use a binary encoding in that case.
   #
-  # source://rack//lib/rack/multipart/parser.rb#574
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:585
   def find_encoding(enc); end
 
-  # source://rack//lib/rack/multipart/parser.rb#351
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:355
   def handle_consume_token; end
 
-  # source://rack//lib/rack/multipart/parser.rb#580
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:591
   def handle_empty_content!(content); end
 
   # This handles the initial parser state.  We read until we find the starting
@@ -2218,375 +2027,330 @@ class Rack::Multipart::Parser
   # boundary.  The client would have to deliberately craft a response
   # with the opening boundary beyond the buffer size for that to happen.
   #
-  # source://rack//lib/rack/multipart/parser.rb#324
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:328
   def handle_fast_forward; end
 
-  # source://rack//lib/rack/multipart/parser.rb#486
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:497
   def handle_mime_body; end
 
-  # source://rack//lib/rack/multipart/parser.rb#363
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:369
   def handle_mime_head; end
 
-  # source://rack//lib/rack/multipart/parser.rb#528
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:539
   def normalize_filename(filename); end
 
-  # source://rack//lib/rack/multipart/parser.rb#305
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:309
   def read_data(io, outbuf); end
 
-  # source://rack//lib/rack/multipart/parser.rb#541
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:552
   def tag_multipart_encoding(filename, content_type, name, body); end
 
-  # source://rack//lib/rack/multipart/parser.rb#508
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:519
   def update_retained_size(size); end
 
   class << self
-    # source://rack//lib/rack/multipart/parser.rb#125
+    # pkg:gem/rack#lib/rack/multipart/parser.rb:129
     def parse(io, content_length, content_type, tmpfile, bufsize, qp); end
 
-    # source://rack//lib/rack/multipart/parser.rb#110
+    # pkg:gem/rack#lib/rack/multipart/parser.rb:110
     def parse_boundary(content_type); end
   end
 end
 
-# source://rack//lib/rack/multipart/parser.rb#50
+# pkg:gem/rack#lib/rack/multipart/parser.rb:50
 Rack::Multipart::Parser::BOUNDARY_START_LIMIT = T.let(T.unsafe(nil), Integer)
 
-# source://rack//lib/rack/multipart/parser.rb#68
+# pkg:gem/rack#lib/rack/multipart/parser.rb:68
 Rack::Multipart::Parser::BUFFERED_UPLOAD_BYTESIZE_LIMIT = T.let(T.unsafe(nil), Integer)
 
-# source://rack//lib/rack/multipart/parser.rb#42
+# pkg:gem/rack#lib/rack/multipart/parser.rb:42
 Rack::Multipart::Parser::BUFSIZE = T.let(T.unsafe(nil), Integer)
 
-# source://rack//lib/rack/multipart/parser.rb#78
+# pkg:gem/rack#lib/rack/multipart/parser.rb:78
 class Rack::Multipart::Parser::BoundedIO
-  # @return [BoundedIO] a new instance of BoundedIO
-  #
-  # source://rack//lib/rack/multipart/parser.rb#79
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:79
   def initialize(io, content_length); end
 
-  # source://rack//lib/rack/multipart/parser.rb#85
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:85
   def read(size, outbuf = T.unsafe(nil)); end
 end
 
-# source://rack//lib/rack/multipart/parser.rb#538
+# pkg:gem/rack#lib/rack/multipart/parser.rb:549
 Rack::Multipart::Parser::CHARSET = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/multipart/parser.rb#362
+# pkg:gem/rack#lib/rack/multipart/parser.rb:366
 Rack::Multipart::Parser::CONTENT_DISPOSITION_MAX_BYTES = T.let(T.unsafe(nil), Integer)
 
-# source://rack//lib/rack/multipart/parser.rb#361
+# pkg:gem/rack#lib/rack/multipart/parser.rb:365
 Rack::Multipart::Parser::CONTENT_DISPOSITION_MAX_PARAMS = T.let(T.unsafe(nil), Integer)
 
-# source://rack//lib/rack/multipart/parser.rb#75
+# pkg:gem/rack#lib/rack/multipart/parser.rb:75
 Rack::Multipart::Parser::CONTENT_DISPOSITION_QUOTED_ESCAPES_LIMIT = T.let(T.unsafe(nil), Integer)
 
-# source://rack//lib/rack/multipart/parser.rb#149
+# pkg:gem/rack#lib/rack/multipart/parser.rb:153
 class Rack::Multipart::Parser::Collector
   include ::Enumerable
 
-  # @return [Collector] a new instance of Collector
-  #
-  # source://rack//lib/rack/multipart/parser.rb#185
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:189
   def initialize(tempfile); end
 
-  # source://rack//lib/rack/multipart/parser.rb#191
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:195
   def each; end
 
-  # source://rack//lib/rack/multipart/parser.rb#211
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:215
   def on_mime_body(mime_index, content); end
 
-  # source://rack//lib/rack/multipart/parser.rb#215
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:219
   def on_mime_finish(mime_index); end
 
-  # source://rack//lib/rack/multipart/parser.rb#195
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:199
   def on_mime_head(mime_index, head, filename, content_type, name); end
 
   private
 
-  # source://rack//lib/rack/multipart/parser.rb#220
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:224
   def check_part_limits; end
 end
 
-# source://rack//lib/rack/multipart/parser.rb#173
+# pkg:gem/rack#lib/rack/multipart/parser.rb:177
 class Rack::Multipart::Parser::Collector::BufferPart < ::Rack::Multipart::Parser::Collector::MimePart
-  # source://rack//lib/rack/multipart/parser.rb#175
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:179
   def close; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/multipart/parser.rb#174
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:178
   def file?; end
 end
 
-# source://rack//lib/rack/multipart/parser.rb#150
+# pkg:gem/rack#lib/rack/multipart/parser.rb:154
 class Rack::Multipart::Parser::Collector::MimePart < ::Struct
-  # @yield [data]
-  #
-  # source://rack//lib/rack/multipart/parser.rb#151
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:155
   def get_data; end
 end
 
-# source://rack//lib/rack/multipart/parser.rb#178
+# pkg:gem/rack#lib/rack/multipart/parser.rb:182
 class Rack::Multipart::Parser::Collector::TempfilePart < ::Rack::Multipart::Parser::Collector::MimePart
-  # source://rack//lib/rack/multipart/parser.rb#180
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:184
   def close; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/multipart/parser.rb#179
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:183
   def file?; end
 end
 
-# source://rack//lib/rack/multipart/parser.rb#108
+# pkg:gem/rack#lib/rack/multipart/parser.rb:108
 Rack::Multipart::Parser::EMPTY = T.let(T.unsafe(nil), Rack::Multipart::Parser::MultipartInfo)
 
-# source://rack//lib/rack/multipart/parser.rb#53
+# pkg:gem/rack#lib/rack/multipart/parser.rb:53
 Rack::Multipart::Parser::MIME_HEADER_BYTESIZE_LIMIT = T.let(T.unsafe(nil), Integer)
 
-# source://rack//lib/rack/multipart/parser.rb#107
+# pkg:gem/rack#lib/rack/multipart/parser.rb:107
 class Rack::Multipart::Parser::MultipartInfo < ::Struct
-  # Returns the value of attribute params
-  #
-  # @return [Object] the current value of params
-  #
-  # source://rack//lib/rack/multipart/parser.rb#107
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:107
   def params; end
 
-  # Sets the attribute params
-  #
-  # @param value [Object] the value to set the attribute params to.
-  # @return [Object] the newly set value
-  #
-  # source://rack//lib/rack/multipart/parser.rb#107
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:107
   def params=(_); end
 
-  # Returns the value of attribute tmp_files
-  #
-  # @return [Object] the current value of tmp_files
-  #
-  # source://rack//lib/rack/multipart/parser.rb#107
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:107
   def tmp_files; end
 
-  # Sets the attribute tmp_files
-  #
-  # @param value [Object] the value to set the attribute tmp_files to.
-  # @return [Object] the newly set value
-  #
-  # source://rack//lib/rack/multipart/parser.rb#107
+  # pkg:gem/rack#lib/rack/multipart/parser.rb:107
   def tmp_files=(_); end
 
   class << self
-    # source://rack//lib/rack/multipart/parser.rb#107
+    # pkg:gem/rack#lib/rack/multipart/parser.rb:107
     def [](*_arg0); end
 
-    # source://rack//lib/rack/multipart/parser.rb#107
+    # pkg:gem/rack#lib/rack/multipart/parser.rb:107
     def inspect; end
 
-    # source://rack//lib/rack/multipart/parser.rb#107
+    # pkg:gem/rack#lib/rack/multipart/parser.rb:107
     def keyword_init?; end
 
-    # source://rack//lib/rack/multipart/parser.rb#107
+    # pkg:gem/rack#lib/rack/multipart/parser.rb:107
     def members; end
 
-    # source://rack//lib/rack/multipart/parser.rb#107
+    # pkg:gem/rack#lib/rack/multipart/parser.rb:107
     def new(*_arg0); end
   end
 end
 
-# source://rack//lib/rack/multipart/parser.rb#72
+# pkg:gem/rack#lib/rack/multipart/parser.rb:367
+Rack::Multipart::Parser::OBS_UNFOLD = T.let(T.unsafe(nil), Regexp)
+
+# pkg:gem/rack#lib/rack/multipart/parser.rb:72
 Rack::Multipart::Parser::PARSER_BYTESIZE_LIMIT = T.let(T.unsafe(nil), Integer)
 
-# source://rack//lib/rack/multipart/parser.rb#44
+# pkg:gem/rack#lib/rack/multipart/parser.rb:44
 Rack::Multipart::Parser::TEMPFILE_FACTORY = T.let(T.unsafe(nil), Proc)
 
-# source://rack//lib/rack/multipart/parser.rb#43
+# pkg:gem/rack#lib/rack/multipart/parser.rb:43
 Rack::Multipart::Parser::TEXT_PLAIN = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/multipart/uploaded_file.rb#8
+# pkg:gem/rack#lib/rack/multipart/uploaded_file.rb:8
 class Rack::Multipart::UploadedFile
-  # @return [UploadedFile] a new instance of UploadedFile
-  #
-  # source://rack//lib/rack/multipart/uploaded_file.rb#16
+  # pkg:gem/rack#lib/rack/multipart/uploaded_file.rb:16
   def initialize(filepath = T.unsafe(nil), ct = T.unsafe(nil), bin = T.unsafe(nil), path: T.unsafe(nil), content_type: T.unsafe(nil), binary: T.unsafe(nil), filename: T.unsafe(nil), io: T.unsafe(nil)); end
 
   # The content type of the "uploaded" file
   #
-  # source://rack//lib/rack/multipart/uploaded_file.rb#14
+  # pkg:gem/rack#lib/rack/multipart/uploaded_file.rb:14
   def content_type; end
 
   # The content type of the "uploaded" file
   #
-  # source://rack//lib/rack/multipart/uploaded_file.rb#14
+  # pkg:gem/rack#lib/rack/multipart/uploaded_file.rb:14
   def content_type=(_arg0); end
 
-  # source://rack//lib/rack/multipart/uploaded_file.rb#34
+  # pkg:gem/rack#lib/rack/multipart/uploaded_file.rb:34
   def local_path; end
 
-  # source://rack//lib/rack/multipart/uploaded_file.rb#40
+  # pkg:gem/rack#lib/rack/multipart/uploaded_file.rb:40
   def method_missing(method_name, *args, &block); end
 
   # The filename, *not* including the path, of the "uploaded" file
   #
-  # source://rack//lib/rack/multipart/uploaded_file.rb#11
+  # pkg:gem/rack#lib/rack/multipart/uploaded_file.rb:11
   def original_filename; end
 
-  # source://rack//lib/rack/multipart/uploaded_file.rb#31
+  # pkg:gem/rack#lib/rack/multipart/uploaded_file.rb:31
   def path; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/multipart/uploaded_file.rb#36
+  # pkg:gem/rack#lib/rack/multipart/uploaded_file.rb:36
   def respond_to?(*args); end
 end
 
-# source://rack//lib/rack/null_logger.rb#6
+# pkg:gem/rack#lib/rack/null_logger.rb:6
 class Rack::NullLogger
-  # @return [NullLogger] a new instance of NullLogger
-  #
-  # source://rack//lib/rack/null_logger.rb#7
+  # pkg:gem/rack#lib/rack/null_logger.rb:7
   def initialize(app); end
 
-  # source://rack//lib/rack/null_logger.rb#45
+  # pkg:gem/rack#lib/rack/null_logger.rb:45
   def <<(msg); end
 
-  # source://rack//lib/rack/null_logger.rb#43
+  # pkg:gem/rack#lib/rack/null_logger.rb:43
   def add(severity, message = T.unsafe(nil), progname = T.unsafe(nil), &block); end
 
-  # source://rack//lib/rack/null_logger.rb#11
+  # pkg:gem/rack#lib/rack/null_logger.rb:11
   def call(env); end
 
-  # source://rack//lib/rack/null_logger.rb#42
+  # pkg:gem/rack#lib/rack/null_logger.rb:42
   def close; end
 
-  # source://rack//lib/rack/null_logger.rb#34
+  # pkg:gem/rack#lib/rack/null_logger.rb:34
   def datetime_format; end
 
-  # source://rack//lib/rack/null_logger.rb#39
+  # pkg:gem/rack#lib/rack/null_logger.rb:39
   def datetime_format=(datetime_format); end
 
-  # source://rack//lib/rack/null_logger.rb#17
+  # pkg:gem/rack#lib/rack/null_logger.rb:17
   def debug(progname = T.unsafe(nil), &block); end
 
-  # source://rack//lib/rack/null_logger.rb#27
+  # pkg:gem/rack#lib/rack/null_logger.rb:27
   def debug!; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/null_logger.rb#23
+  # pkg:gem/rack#lib/rack/null_logger.rb:23
   def debug?; end
 
-  # source://rack//lib/rack/null_logger.rb#19
+  # pkg:gem/rack#lib/rack/null_logger.rb:19
   def error(progname = T.unsafe(nil), &block); end
 
-  # source://rack//lib/rack/null_logger.rb#28
+  # pkg:gem/rack#lib/rack/null_logger.rb:28
   def error!; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/null_logger.rb#25
+  # pkg:gem/rack#lib/rack/null_logger.rb:25
   def error?; end
 
-  # source://rack//lib/rack/null_logger.rb#20
+  # pkg:gem/rack#lib/rack/null_logger.rb:20
   def fatal(progname = T.unsafe(nil), &block); end
 
-  # source://rack//lib/rack/null_logger.rb#29
+  # pkg:gem/rack#lib/rack/null_logger.rb:29
   def fatal!; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/null_logger.rb#26
+  # pkg:gem/rack#lib/rack/null_logger.rb:26
   def fatal?; end
 
-  # source://rack//lib/rack/null_logger.rb#35
+  # pkg:gem/rack#lib/rack/null_logger.rb:35
   def formatter; end
 
-  # source://rack//lib/rack/null_logger.rb#40
+  # pkg:gem/rack#lib/rack/null_logger.rb:40
   def formatter=(formatter); end
 
-  # source://rack//lib/rack/null_logger.rb#16
+  # pkg:gem/rack#lib/rack/null_logger.rb:16
   def info(progname = T.unsafe(nil), &block); end
 
-  # source://rack//lib/rack/null_logger.rb#30
+  # pkg:gem/rack#lib/rack/null_logger.rb:30
   def info!; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/null_logger.rb#22
+  # pkg:gem/rack#lib/rack/null_logger.rb:22
   def info?; end
 
-  # source://rack//lib/rack/null_logger.rb#32
+  # pkg:gem/rack#lib/rack/null_logger.rb:32
   def level; end
 
-  # source://rack//lib/rack/null_logger.rb#37
+  # pkg:gem/rack#lib/rack/null_logger.rb:37
   def level=(level); end
 
-  # source://rack//lib/rack/null_logger.rb#44
+  # pkg:gem/rack#lib/rack/null_logger.rb:44
   def log(severity, message = T.unsafe(nil), progname = T.unsafe(nil), &block); end
 
-  # source://rack//lib/rack/null_logger.rb#33
+  # pkg:gem/rack#lib/rack/null_logger.rb:33
   def progname; end
 
-  # source://rack//lib/rack/null_logger.rb#38
+  # pkg:gem/rack#lib/rack/null_logger.rb:38
   def progname=(progname); end
 
-  # source://rack//lib/rack/null_logger.rb#46
+  # pkg:gem/rack#lib/rack/null_logger.rb:46
   def reopen(logdev = T.unsafe(nil)); end
 
-  # source://rack//lib/rack/null_logger.rb#36
+  # pkg:gem/rack#lib/rack/null_logger.rb:36
   def sev_threshold; end
 
-  # source://rack//lib/rack/null_logger.rb#41
+  # pkg:gem/rack#lib/rack/null_logger.rb:41
   def sev_threshold=(sev_threshold); end
 
-  # source://rack//lib/rack/null_logger.rb#21
+  # pkg:gem/rack#lib/rack/null_logger.rb:21
   def unknown(progname = T.unsafe(nil), &block); end
 
-  # source://rack//lib/rack/null_logger.rb#18
+  # pkg:gem/rack#lib/rack/null_logger.rb:18
   def warn(progname = T.unsafe(nil), &block); end
 
-  # source://rack//lib/rack/null_logger.rb#31
+  # pkg:gem/rack#lib/rack/null_logger.rb:31
   def warn!; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/null_logger.rb#24
+  # pkg:gem/rack#lib/rack/null_logger.rb:24
   def warn?; end
 end
 
-# source://rack//lib/rack/constants.rb#34
+# pkg:gem/rack#lib/rack/constants.rb:34
 Rack::OPTIONS = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#31
+# pkg:gem/rack#lib/rack/constants.rb:31
 Rack::PATCH = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#8
+# pkg:gem/rack#lib/rack/constants.rb:8
 Rack::PATH_INFO = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#29
+# pkg:gem/rack#lib/rack/constants.rb:29
 Rack::POST = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#30
+# pkg:gem/rack#lib/rack/constants.rb:30
 Rack::PUT = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#12
+# pkg:gem/rack#lib/rack/constants.rb:12
 Rack::QUERY_STRING = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/query_parser.rb#7
+# pkg:gem/rack#lib/rack/query_parser.rb:7
 class Rack::QueryParser
-  # @return [QueryParser] a new instance of QueryParser
-  #
-  # source://rack//lib/rack/query_parser.rb#62
+  # pkg:gem/rack#lib/rack/query_parser.rb:62
   def initialize(params_class, param_depth_limit, bytesize_limit: T.unsafe(nil), params_limit: T.unsafe(nil)); end
 
-  # Returns the value of attribute bytesize_limit.
-  #
-  # source://rack//lib/rack/query_parser.rb#60
+  # pkg:gem/rack#lib/rack/query_parser.rb:60
   def bytesize_limit; end
 
-  # source://rack//lib/rack/query_parser.rb#194
+  # pkg:gem/rack#lib/rack/query_parser.rb:194
   def make_params; end
 
-  # source://rack//lib/rack/query_parser.rb#198
+  # pkg:gem/rack#lib/rack/query_parser.rb:198
   def new_depth_limit(param_depth_limit); end
 
   # normalize_params recursively expands parameters into structural types. If
@@ -2595,12 +2359,10 @@ class Rack::QueryParser
   # and should no longer be used, it is kept for backwards compatibility with
   # earlier versions of rack.
   #
-  # source://rack//lib/rack/query_parser.rb#122
+  # pkg:gem/rack#lib/rack/query_parser.rb:122
   def normalize_params(params, name, v, _depth = T.unsafe(nil)); end
 
-  # Returns the value of attribute param_depth_limit.
-  #
-  # source://rack//lib/rack/query_parser.rb#40
+  # pkg:gem/rack#lib/rack/query_parser.rb:40
   def param_depth_limit; end
 
   # parse_nested_query expands a query string into structural types. Supported
@@ -2609,7 +2371,7 @@ class Rack::QueryParser
   # ParameterTypeError is raised. Users are encouraged to return a 400 in this
   # case.
   #
-  # source://rack//lib/rack/query_parser.rb#101
+  # pkg:gem/rack#lib/rack/query_parser.rb:101
   def parse_nested_query(qs, separator = T.unsafe(nil)); end
 
   # Stolen from Mongrel, with some small modifications:
@@ -2617,70 +2379,64 @@ class Rack::QueryParser
   # to parse cookies by changing the characters used in the second parameter
   # (which defaults to '&').
   #
-  # source://rack//lib/rack/query_parser.rb#73
+  # pkg:gem/rack#lib/rack/query_parser.rb:73
   def parse_query(qs, separator = T.unsafe(nil), &unescaper); end
 
   private
 
-  # @raise [ParamsTooDeepError]
-  #
-  # source://rack//lib/rack/query_parser.rb#126
+  # pkg:gem/rack#lib/rack/query_parser.rb:126
   def _normalize_params(params, name, v, depth); end
 
-  # source://rack//lib/rack/query_parser.rb#220
+  # pkg:gem/rack#lib/rack/query_parser.rb:220
   def check_query_string(qs, sep); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/query_parser.rb#208
+  # pkg:gem/rack#lib/rack/query_parser.rb:208
   def params_hash_has_key?(hash, key); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/query_parser.rb#204
+  # pkg:gem/rack#lib/rack/query_parser.rb:204
   def params_hash_type?(obj); end
 
-  # source://rack//lib/rack/query_parser.rb#236
+  # pkg:gem/rack#lib/rack/query_parser.rb:236
   def unescape(string, encoding = T.unsafe(nil)); end
 
   class << self
-    # source://rack//lib/rack/query_parser.rb#36
+    # pkg:gem/rack#lib/rack/query_parser.rb:36
     def make_default(param_depth_limit, **options); end
   end
 end
 
-# source://rack//lib/rack/query_parser.rb#54
+# pkg:gem/rack#lib/rack/query_parser.rb:54
 Rack::QueryParser::BYTESIZE_LIMIT = T.let(T.unsafe(nil), Integer)
 
-# source://rack//lib/rack/query_parser.rb#9
+# pkg:gem/rack#lib/rack/query_parser.rb:9
 Rack::QueryParser::COMMON_SEP = T.let(T.unsafe(nil), Hash)
 
-# source://rack//lib/rack/query_parser.rb#8
+# pkg:gem/rack#lib/rack/query_parser.rb:8
 Rack::QueryParser::DEFAULT_SEP = T.let(T.unsafe(nil), Regexp)
 
 # InvalidParameterError is the error that is raised when incoming structural
 # parameters (parsed by parse_nested_query) contain invalid format or byte
 # sequence.
 #
-# source://rack//lib/rack/query_parser.rb#20
+# pkg:gem/rack#lib/rack/query_parser.rb:20
 class Rack::QueryParser::InvalidParameterError < ::ArgumentError
   include ::Rack::BadRequest
 end
 
-# source://rack//lib/rack/query_parser.rb#57
+# pkg:gem/rack#lib/rack/query_parser.rb:57
 Rack::QueryParser::PARAMS_LIMIT = T.let(T.unsafe(nil), Integer)
 
 # ParameterTypeError is the error that is raised when incoming structural
 # parameters (parsed by parse_nested_query) contain conflicting types.
 #
-# source://rack//lib/rack/query_parser.rb#13
+# pkg:gem/rack#lib/rack/query_parser.rb:13
 class Rack::QueryParser::ParameterTypeError < ::TypeError
   include ::Rack::BadRequest
 end
 
-# source://rack//lib/rack/query_parser.rb#240
+# pkg:gem/rack#lib/rack/query_parser.rb:240
 class Rack::QueryParser::Params < ::Hash
-  # source://rack//lib/rack/query_parser.rb#241
+  # pkg:gem/rack#lib/rack/query_parser.rb:241
   def to_params_hash; end
 end
 
@@ -2689,104 +2445,104 @@ end
 # as QueryLimitError, so that code that rescues ParamsTooDeepError error
 # to handle bad query strings also now handles other limits.
 #
-# source://rack//lib/rack/query_parser.rb#34
+# pkg:gem/rack#lib/rack/query_parser.rb:34
 Rack::QueryParser::ParamsTooDeepError = Rack::QueryParser::QueryLimitError
 
 # QueryLimitError is for errors raised when the query provided exceeds one
 # of the query parser limits.
 #
-# source://rack//lib/rack/query_parser.rb#26
+# pkg:gem/rack#lib/rack/query_parser.rb:26
 class Rack::QueryParser::QueryLimitError < ::RangeError
   include ::Rack::BadRequest
 end
 
-# source://rack//lib/rack/constants.rb#43
+# pkg:gem/rack#lib/rack/constants.rb:43
 Rack::RACK_EARLY_HINTS = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#44
+# pkg:gem/rack#lib/rack/constants.rb:44
 Rack::RACK_ERRORS = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#51
+# pkg:gem/rack#lib/rack/constants.rb:51
 Rack::RACK_HIJACK = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#46
+# pkg:gem/rack#lib/rack/constants.rb:46
 Rack::RACK_INPUT = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#52
+# pkg:gem/rack#lib/rack/constants.rb:52
 Rack::RACK_IS_HIJACK = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#45
+# pkg:gem/rack#lib/rack/constants.rb:45
 Rack::RACK_LOGGER = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#66
+# pkg:gem/rack#lib/rack/constants.rb:66
 Rack::RACK_METHODOVERRIDE_ORIGINAL_METHOD = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#54
+# pkg:gem/rack#lib/rack/constants.rb:54
 Rack::RACK_MULTIPART_BUFFER_SIZE = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#55
+# pkg:gem/rack#lib/rack/constants.rb:55
 Rack::RACK_MULTIPART_TEMPFILE_FACTORY = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#53
+# pkg:gem/rack#lib/rack/constants.rb:53
 Rack::RACK_RECURSIVE_INCLUDE = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#62
+# pkg:gem/rack#lib/rack/constants.rb:62
 Rack::RACK_REQUEST_COOKIE_HASH = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#63
+# pkg:gem/rack#lib/rack/constants.rb:63
 Rack::RACK_REQUEST_COOKIE_STRING = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#61
+# pkg:gem/rack#lib/rack/constants.rb:61
 Rack::RACK_REQUEST_FORM_ERROR = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#58
+# pkg:gem/rack#lib/rack/constants.rb:58
 Rack::RACK_REQUEST_FORM_HASH = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#57
+# pkg:gem/rack#lib/rack/constants.rb:57
 Rack::RACK_REQUEST_FORM_INPUT = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#59
+# pkg:gem/rack#lib/rack/constants.rb:59
 Rack::RACK_REQUEST_FORM_PAIRS = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#60
+# pkg:gem/rack#lib/rack/constants.rb:60
 Rack::RACK_REQUEST_FORM_VARS = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#64
+# pkg:gem/rack#lib/rack/constants.rb:64
 Rack::RACK_REQUEST_QUERY_HASH = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#65
+# pkg:gem/rack#lib/rack/constants.rb:65
 Rack::RACK_REQUEST_QUERY_STRING = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#56
+# pkg:gem/rack#lib/rack/constants.rb:56
 Rack::RACK_RESPONSE_FINISHED = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#47
+# pkg:gem/rack#lib/rack/constants.rb:47
 Rack::RACK_SESSION = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#48
+# pkg:gem/rack#lib/rack/constants.rb:48
 Rack::RACK_SESSION_OPTIONS = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#49
+# pkg:gem/rack#lib/rack/constants.rb:49
 Rack::RACK_SHOWSTATUS_DETAIL = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#42
+# pkg:gem/rack#lib/rack/constants.rb:42
 Rack::RACK_TEMPFILES = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#50
+# pkg:gem/rack#lib/rack/constants.rb:50
 Rack::RACK_URL_SCHEME = T.let(T.unsafe(nil), String)
 
 # Rack environment variables
 #
-# source://rack//lib/rack/constants.rb#41
+# pkg:gem/rack#lib/rack/constants.rb:41
 Rack::RACK_VERSION = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/version.rb#15
+# pkg:gem/rack#lib/rack/version.rb:15
 Rack::RELEASE = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#9
+# pkg:gem/rack#lib/rack/constants.rb:9
 Rack::REQUEST_METHOD = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#10
+# pkg:gem/rack#lib/rack/constants.rb:10
 Rack::REQUEST_PATH = T.let(T.unsafe(nil), String)
 
 # Rack::Recursive allows applications called down the chain to
@@ -2794,20 +2550,18 @@ Rack::REQUEST_PATH = T.let(T.unsafe(nil), String)
 # <tt>rack['rack.recursive.include'][...]</tt> or raise a
 # ForwardRequest to redirect internally.
 #
-# source://rack//lib/rack/recursive.rb#36
+# pkg:gem/rack#lib/rack/recursive.rb:36
 class Rack::Recursive
-  # @return [Recursive] a new instance of Recursive
-  #
-  # source://rack//lib/rack/recursive.rb#37
+  # pkg:gem/rack#lib/rack/recursive.rb:37
   def initialize(app); end
 
-  # source://rack//lib/rack/recursive.rb#45
+  # pkg:gem/rack#lib/rack/recursive.rb:45
   def _call(env); end
 
-  # source://rack//lib/rack/recursive.rb#41
+  # pkg:gem/rack#lib/rack/recursive.rb:41
   def call(env); end
 
-  # source://rack//lib/rack/recursive.rb#52
+  # pkg:gem/rack#lib/rack/recursive.rb:52
   def include(env, path); end
 end
 
@@ -2825,38 +2579,36 @@ end
 # It is performing a check/reload cycle at the start of every request, but
 # also respects a cool down time, during which nothing will be done.
 #
-# source://rack//lib/rack/reloader.rb#24
+# pkg:gem/rack#lib/rack/reloader.rb:24
 class Rack::Reloader
-  # @return [Reloader] a new instance of Reloader
-  #
-  # source://rack//lib/rack/reloader.rb#25
+  # pkg:gem/rack#lib/rack/reloader.rb:25
   def initialize(app, cooldown = T.unsafe(nil), backend = T.unsafe(nil)); end
 
-  # source://rack//lib/rack/reloader.rb#36
+  # pkg:gem/rack#lib/rack/reloader.rb:36
   def call(env); end
 
-  # source://rack//lib/rack/reloader.rb#50
+  # pkg:gem/rack#lib/rack/reloader.rb:50
   def reload!(stderr = T.unsafe(nil)); end
 
   # A safe Kernel::load, issuing the hooks depending on the results
   #
-  # source://rack//lib/rack/reloader.rb#58
+  # pkg:gem/rack#lib/rack/reloader.rb:58
   def safe_load(file, mtime, stderr = T.unsafe(nil)); end
 end
 
-# source://rack//lib/rack/reloader.rb#68
+# pkg:gem/rack#lib/rack/reloader.rb:68
 module Rack::Reloader::Stat
   # Takes a relative or absolute +file+ name, a couple possible +paths+ that
   # the +file+ might reside in. Returns the full path and File::Stat for the
   # path.
   #
-  # source://rack//lib/rack/reloader.rb#88
+  # pkg:gem/rack#lib/rack/reloader.rb:88
   def figure_path(file, paths); end
 
-  # source://rack//lib/rack/reloader.rb#69
+  # pkg:gem/rack#lib/rack/reloader.rb:69
   def rotation; end
 
-  # source://rack//lib/rack/reloader.rb#103
+  # pkg:gem/rack#lib/rack/reloader.rb:103
   def safe_stat(file); end
 end
 
@@ -2868,23 +2620,21 @@ end
 #   req.post?
 #   req.params["data"]
 #
-# source://rack//lib/rack/request.rb#16
+# pkg:gem/rack#lib/rack/request.rb:16
 class Rack::Request
   include ::Rack::Request::Env
   include ::Rack::Request::Helpers
 
-  # @return [Request] a new instance of Request
-  #
-  # source://rack//lib/rack/request.rb#62
+  # pkg:gem/rack#lib/rack/request.rb:62
   def initialize(env); end
 
-  # source://rack//lib/rack/request.rb#76
+  # pkg:gem/rack#lib/rack/request.rb:76
   def delete_param(k); end
 
-  # source://rack//lib/rack/request.rb#67
+  # pkg:gem/rack#lib/rack/request.rb:67
   def params; end
 
-  # source://rack//lib/rack/request.rb#71
+  # pkg:gem/rack#lib/rack/request.rb:71
   def update_param(k, v); end
 
   class << self
@@ -2900,7 +2650,7 @@ class Rack::Request
     # using reverse proxies, you should probably use an empty
     # array.
     #
-    # source://rack//lib/rack/request.rb#31
+    # pkg:gem/rack#lib/rack/request.rb:31
     def forwarded_priority; end
 
     # The priority when checking forwarded headers. The default
@@ -2915,19 +2665,13 @@ class Rack::Request
     # using reverse proxies, you should probably use an empty
     # array.
     #
-    # source://rack//lib/rack/request.rb#31
+    # pkg:gem/rack#lib/rack/request.rb:31
     def forwarded_priority=(_arg0); end
 
-    # Returns the value of attribute ip_filter.
-    #
-    # source://rack//lib/rack/request.rb#18
+    # pkg:gem/rack#lib/rack/request.rb:18
     def ip_filter; end
 
-    # Sets the attribute ip_filter
-    #
-    # @param value the value to set the attribute ip_filter to.
-    #
-    # source://rack//lib/rack/request.rb#18
+    # pkg:gem/rack#lib/rack/request.rb:18
     def ip_filter=(_arg0); end
 
     # The priority when checking either the <tt>X-Forwarded-Proto</tt>
@@ -2938,7 +2682,7 @@ class Rack::Request
     # similar to <tt>[:scheme, :proto]</tt>.  You can remove either or
     # both of the entries in array to ignore that respective header.
     #
-    # source://rack//lib/rack/request.rb#40
+    # pkg:gem/rack#lib/rack/request.rb:40
     def x_forwarded_proto_priority; end
 
     # The priority when checking either the <tt>X-Forwarded-Proto</tt>
@@ -2949,17 +2693,17 @@ class Rack::Request
     # similar to <tt>[:scheme, :proto]</tt>.  You can remove either or
     # both of the entries in array to ignore that respective header.
     #
-    # source://rack//lib/rack/request.rb#40
+    # pkg:gem/rack#lib/rack/request.rb:40
     def x_forwarded_proto_priority=(_arg0); end
   end
 end
 
-# source://rack//lib/rack/request.rb#60
+# pkg:gem/rack#lib/rack/request.rb:60
 Rack::Request::ALLOWED_SCHEMES = T.let(T.unsafe(nil), Array)
 
-# source://rack//lib/rack/request.rb#82
+# pkg:gem/rack#lib/rack/request.rb:82
 module Rack::Request::Env
-  # source://rack//lib/rack/request.rb#86
+  # pkg:gem/rack#lib/rack/request.rb:86
   def initialize(env); end
 
   # Add a header that may have multiple values.
@@ -2972,59 +2716,57 @@ module Rack::Request::Env
   #
   # http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
   #
-  # source://rack//lib/rack/request.rb#129
+  # pkg:gem/rack#lib/rack/request.rb:129
   def add_header(key, v); end
 
   # Delete a request specific value for `name`.
   #
-  # source://rack//lib/rack/request.rb#140
+  # pkg:gem/rack#lib/rack/request.rb:140
   def delete_header(name); end
 
   # Loops through each key / value pair in the request specific data.
   #
-  # source://rack//lib/rack/request.rb#111
+  # pkg:gem/rack#lib/rack/request.rb:111
   def each_header(&block); end
 
   # The environment of the request.
   #
-  # source://rack//lib/rack/request.rb#84
+  # pkg:gem/rack#lib/rack/request.rb:84
   def env; end
 
   # If a block is given, it yields to the block if the value hasn't been set
   # on the request.
   #
-  # source://rack//lib/rack/request.rb#106
+  # pkg:gem/rack#lib/rack/request.rb:106
   def fetch_header(name, &block); end
 
   # Get a request specific value for `name`.
   #
-  # source://rack//lib/rack/request.rb#100
+  # pkg:gem/rack#lib/rack/request.rb:100
   def get_header(name); end
 
   # Predicate method to test to see if `name` has been set as request
   # specific data
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/request.rb#95
+  # pkg:gem/rack#lib/rack/request.rb:95
   def has_header?(name); end
 
   # Set a request specific value for `name` to `v`
   #
-  # source://rack//lib/rack/request.rb#116
+  # pkg:gem/rack#lib/rack/request.rb:116
   def set_header(name, v); end
 
   private
 
-  # source://rack//lib/rack/request.rb#144
+  # pkg:gem/rack#lib/rack/request.rb:144
   def initialize_copy(other); end
 end
 
-# source://rack//lib/rack/request.rb#149
+# pkg:gem/rack#lib/rack/request.rb:149
 module Rack::Request::Helpers
   # Returns the data received in the query string.
   #
-  # source://rack//lib/rack/request.rb#484
+  # pkg:gem/rack#lib/rack/request.rb:486
   def GET; end
 
   # Returns the data received in the request body.
@@ -3032,13 +2774,13 @@ module Rack::Request::Helpers
   # This method support both application/x-www-form-urlencoded and
   # multipart/form-data.
   #
-  # source://rack//lib/rack/request.rb#503
+  # pkg:gem/rack#lib/rack/request.rb:505
   def POST; end
 
-  # source://rack//lib/rack/request.rb#610
+  # pkg:gem/rack#lib/rack/request.rb:613
   def accept_encoding; end
 
-  # source://rack//lib/rack/request.rb#614
+  # pkg:gem/rack#lib/rack/request.rb:617
   def accept_language; end
 
   # The authority of the incoming request as defined by RFC3976.
@@ -3047,13 +2789,13 @@ module Rack::Request::Helpers
   # In HTTP/1, this is the `host` header.
   # In HTTP/2, this is the `:authority` pseudo-header.
   #
-  # source://rack//lib/rack/request.rb#266
+  # pkg:gem/rack#lib/rack/request.rb:266
   def authority; end
 
-  # source://rack//lib/rack/request.rb#593
+  # pkg:gem/rack#lib/rack/request.rb:595
   def base_url; end
 
-  # source://rack//lib/rack/request.rb#190
+  # pkg:gem/rack#lib/rack/request.rb:190
   def body; end
 
   # The character set of the request body if a "charset" media type
@@ -3061,23 +2803,21 @@ module Rack::Request::Helpers
   # that, per RFC2616, text/* media types that specify no explicit
   # charset are to be considered ISO-8859-1.
   #
-  # source://rack//lib/rack/request.rb#458
+  # pkg:gem/rack#lib/rack/request.rb:460
   def content_charset; end
 
-  # source://rack//lib/rack/request.rb#199
+  # pkg:gem/rack#lib/rack/request.rb:199
   def content_length; end
 
-  # source://rack//lib/rack/request.rb#308
+  # pkg:gem/rack#lib/rack/request.rb:308
   def content_type; end
 
-  # source://rack//lib/rack/request.rb#293
+  # pkg:gem/rack#lib/rack/request.rb:293
   def cookies; end
 
   # Checks the HTTP request method (or verb) to see if it was of type DELETE
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/request.rb#220
+  # pkg:gem/rack#lib/rack/request.rb:220
   def delete?; end
 
   # Destructively delete a parameter, whether it's in GET or POST. Returns the value of the deleted parameter.
@@ -3086,7 +2826,7 @@ module Rack::Request::Helpers
   #
   # <tt>env['rack.input']</tt> is not touched.
   #
-  # source://rack//lib/rack/request.rb#588
+  # pkg:gem/rack#lib/rack/request.rb:590
   def delete_param(k); end
 
   # Determine whether the request body contains form-data by checking
@@ -3098,48 +2838,42 @@ module Rack::Request::Helpers
   # A request body is also assumed to contain form-data when no
   # content-type header is provided and the request_method is POST.
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/request.rb#470
+  # pkg:gem/rack#lib/rack/request.rb:472
   def form_data?; end
 
-  # source://rack//lib/rack/request.rb#393
+  # pkg:gem/rack#lib/rack/request.rb:395
   def forwarded_authority; end
 
-  # source://rack//lib/rack/request.rb#353
+  # pkg:gem/rack#lib/rack/request.rb:355
   def forwarded_for; end
 
-  # source://rack//lib/rack/request.rb#374
+  # pkg:gem/rack#lib/rack/request.rb:376
   def forwarded_port; end
 
-  # source://rack//lib/rack/request.rb#606
+  # pkg:gem/rack#lib/rack/request.rb:609
   def fullpath; end
 
   # Checks the HTTP request method (or verb) to see if it was of type GET
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/request.rb#223
+  # pkg:gem/rack#lib/rack/request.rb:223
   def get?; end
 
   # Checks the HTTP request method (or verb) to see if it was of type HEAD
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/request.rb#226
+  # pkg:gem/rack#lib/rack/request.rb:226
   def head?; end
 
   # Returns a formatted host, suitable for being used in a URI.
   #
-  # source://rack//lib/rack/request.rb#333
+  # pkg:gem/rack#lib/rack/request.rb:335
   def host; end
 
   # The `HTTP_HOST` header.
   #
-  # source://rack//lib/rack/request.rb#318
+  # pkg:gem/rack#lib/rack/request.rb:318
   def host_authority; end
 
-  # source://rack//lib/rack/request.rb#322
+  # pkg:gem/rack#lib/rack/request.rb:322
   def host_with_port(authority = T.unsafe(nil)); end
 
   # Returns an address suitable for being to resolve to an address.
@@ -3147,20 +2881,18 @@ module Rack::Request::Helpers
   # as +host+. In the case of IPv6 or future address formats, the square
   # brackets are removed.
   #
-  # source://rack//lib/rack/request.rb#341
+  # pkg:gem/rack#lib/rack/request.rb:343
   def hostname; end
 
-  # source://rack//lib/rack/request.rb#414
+  # pkg:gem/rack#lib/rack/request.rb:416
   def ip; end
 
   # Checks the HTTP request method (or verb) to see if it was of type LINK
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/request.rb#232
+  # pkg:gem/rack#lib/rack/request.rb:232
   def link?; end
 
-  # source://rack//lib/rack/request.rb#200
+  # pkg:gem/rack#lib/rack/request.rb:200
   def logger; end
 
   # The media type (type/subtype) portion of the CONTENT_TYPE header
@@ -3170,7 +2902,7 @@ module Rack::Request::Helpers
   # For more information on the use of media types in HTTP, see:
   # http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.7
   #
-  # source://rack//lib/rack/request.rb#441
+  # pkg:gem/rack#lib/rack/request.rb:443
   def media_type; end
 
   # The media type parameters provided in CONTENT_TYPE as a Hash, or
@@ -3179,129 +2911,109 @@ module Rack::Request::Helpers
   # this method responds with the following Hash:
   #   { 'charset' => 'utf-8' }
   #
-  # source://rack//lib/rack/request.rb#450
+  # pkg:gem/rack#lib/rack/request.rb:452
   def media_type_params; end
 
   # Checks the HTTP request method (or verb) to see if it was of type OPTIONS
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/request.rb#229
+  # pkg:gem/rack#lib/rack/request.rb:229
   def options?; end
 
   # The union of GET and POST data.
   #
   # Note that modifications will not be persisted in the env. Use update_param or delete_param if you want to destructively modify params.
   #
-  # source://rack//lib/rack/request.rb#559
+  # pkg:gem/rack#lib/rack/request.rb:561
   def params; end
 
   # Determine whether the request body contains data by checking
   # the request media_type against registered parse-data media-types
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/request.rb#479
+  # pkg:gem/rack#lib/rack/request.rb:481
   def parseable_data?; end
 
   # Checks the HTTP request method (or verb) to see if it was of type PATCH
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/request.rb#235
+  # pkg:gem/rack#lib/rack/request.rb:235
   def patch?; end
 
-  # source://rack//lib/rack/request.rb#602
+  # pkg:gem/rack#lib/rack/request.rb:605
   def path; end
 
-  # source://rack//lib/rack/request.rb#194
+  # pkg:gem/rack#lib/rack/request.rb:194
   def path_info; end
 
-  # source://rack//lib/rack/request.rb#195
+  # pkg:gem/rack#lib/rack/request.rb:195
   def path_info=(s); end
 
-  # source://rack//lib/rack/request.rb#345
+  # pkg:gem/rack#lib/rack/request.rb:347
   def port; end
 
   # Checks the HTTP request method (or verb) to see if it was of type POST
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/request.rb#238
+  # pkg:gem/rack#lib/rack/request.rb:238
   def post?; end
 
   # Checks the HTTP request method (or verb) to see if it was of type PUT
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/request.rb#241
+  # pkg:gem/rack#lib/rack/request.rb:241
   def put?; end
 
-  # source://rack//lib/rack/request.rb#198
+  # pkg:gem/rack#lib/rack/request.rb:198
   def query_string; end
 
   # the referer of the client
   #
-  # source://rack//lib/rack/request.rb#204
+  # pkg:gem/rack#lib/rack/request.rb:204
   def referer; end
 
-  # the referer of the client
-  #
-  # source://rack//lib/rack/request.rb#205
+  # pkg:gem/rack#lib/rack/request.rb:205
   def referrer; end
 
-  # source://rack//lib/rack/request.rb#197
+  # pkg:gem/rack#lib/rack/request.rb:197
   def request_method; end
 
-  # source://rack//lib/rack/request.rb#249
+  # pkg:gem/rack#lib/rack/request.rb:249
   def scheme; end
 
-  # source://rack//lib/rack/request.rb#191
+  # pkg:gem/rack#lib/rack/request.rb:191
   def script_name; end
 
-  # source://rack//lib/rack/request.rb#192
+  # pkg:gem/rack#lib/rack/request.rb:192
   def script_name=(s); end
 
   # The authority as defined by the `SERVER_NAME` and `SERVER_PORT`
   # variables.
   #
-  # source://rack//lib/rack/request.rb#272
+  # pkg:gem/rack#lib/rack/request.rb:272
   def server_authority; end
 
-  # source://rack//lib/rack/request.rb#285
+  # pkg:gem/rack#lib/rack/request.rb:285
   def server_name; end
 
-  # source://rack//lib/rack/request.rb#289
+  # pkg:gem/rack#lib/rack/request.rb:289
   def server_port; end
 
-  # source://rack//lib/rack/request.rb#207
+  # pkg:gem/rack#lib/rack/request.rb:207
   def session; end
 
-  # source://rack//lib/rack/request.rb#213
+  # pkg:gem/rack#lib/rack/request.rb:213
   def session_options; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/request.rb#410
+  # pkg:gem/rack#lib/rack/request.rb:412
   def ssl?; end
 
   # Checks the HTTP request method (or verb) to see if it was of type TRACE
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/request.rb#244
+  # pkg:gem/rack#lib/rack/request.rb:244
   def trace?; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/request.rb#618
+  # pkg:gem/rack#lib/rack/request.rb:621
   def trusted_proxy?(ip); end
 
   # Checks the HTTP request method (or verb) to see if it was of type UNLINK
   #
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/request.rb#247
+  # pkg:gem/rack#lib/rack/request.rb:247
   def unlink?; end
 
   # Destructively update a parameter, whether it's in GET and/or POST. Returns nil.
@@ -3310,136 +3022,134 @@ module Rack::Request::Helpers
   #
   # <tt>env['rack.input']</tt> is not touched.
   #
-  # source://rack//lib/rack/request.rb#568
+  # pkg:gem/rack#lib/rack/request.rb:570
   def update_param(k, v); end
 
   # Tries to return a remake of the original request URL as a string.
   #
-  # source://rack//lib/rack/request.rb#598
+  # pkg:gem/rack#lib/rack/request.rb:601
   def url; end
 
-  # source://rack//lib/rack/request.rb#201
+  # pkg:gem/rack#lib/rack/request.rb:201
   def user_agent; end
 
   # like Hash#values_at
   #
-  # source://rack//lib/rack/request.rb#623
+  # pkg:gem/rack#lib/rack/request.rb:626
   def values_at(*keys); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/request.rb#313
+  # pkg:gem/rack#lib/rack/request.rb:313
   def xhr?; end
 
   private
 
-  # source://rack//lib/rack/request.rb#779
+  # pkg:gem/rack#lib/rack/request.rb:782
   def allowed_scheme(header); end
 
-  # source://rack//lib/rack/request.rb#631
+  # pkg:gem/rack#lib/rack/request.rb:634
   def default_session; end
 
-  # source://rack//lib/rack/request.rb#687
+  # pkg:gem/rack#lib/rack/request.rb:690
   def expand_param_pairs(pairs, query_parser = T.unsafe(nil)); end
 
-  # source://rack//lib/rack/request.rb#783
+  # pkg:gem/rack#lib/rack/request.rb:786
   def forwarded_priority; end
 
-  # source://rack//lib/rack/request.rb#755
+  # pkg:gem/rack#lib/rack/request.rb:758
   def forwarded_scheme; end
 
   # Get an array of values set in the RFC 7239 `Forwarded` request header.
   #
-  # source://rack//lib/rack/request.rb#671
+  # pkg:gem/rack#lib/rack/request.rb:674
   def get_http_forwarded(token); end
 
-  # source://rack//lib/rack/request.rb#647
+  # pkg:gem/rack#lib/rack/request.rb:650
   def parse_http_accept_header(header); end
 
-  # source://rack//lib/rack/request.rb#683
+  # pkg:gem/rack#lib/rack/request.rb:686
   def parse_multipart; end
 
-  # source://rack//lib/rack/request.rb#679
+  # pkg:gem/rack#lib/rack/request.rb:682
   def parse_query(qs, d = T.unsafe(nil)); end
 
-  # source://rack//lib/rack/request.rb#675
+  # pkg:gem/rack#lib/rack/request.rb:678
   def query_parser; end
 
-  # source://rack//lib/rack/request.rb#746
+  # pkg:gem/rack#lib/rack/request.rb:749
   def reject_trusted_ip_addresses(ip_addresses); end
 
-  # source://rack//lib/rack/request.rb#740
+  # pkg:gem/rack#lib/rack/request.rb:743
   def split_authority(authority); end
 
-  # source://rack//lib/rack/request.rb#697
+  # pkg:gem/rack#lib/rack/request.rb:700
   def split_header(value); end
 
   # Assist with compatibility when processing `X-Forwarded-For`.
   #
-  # source://rack//lib/rack/request.rb#634
+  # pkg:gem/rack#lib/rack/request.rb:637
   def wrap_ipv6(host); end
 
-  # source://rack//lib/rack/request.rb#787
+  # pkg:gem/rack#lib/rack/request.rb:790
   def x_forwarded_proto_priority; end
 end
 
-# source://rack//lib/rack/request.rb#725
+# pkg:gem/rack#lib/rack/request.rb:728
 Rack::Request::Helpers::AUTHORITY = T.let(T.unsafe(nil), Regexp)
 
 # Default ports depending on scheme. Used to decide whether or not
 # to include the port in a generated URI.
 #
-# source://rack//lib/rack/request.rb#168
+# pkg:gem/rack#lib/rack/request.rb:168
 Rack::Request::Helpers::DEFAULT_PORTS = T.let(T.unsafe(nil), Hash)
 
 # The set of form-data media-types. Requests that do not indicate
 # one of the media types present in this list will not be eligible
 # for form-data / param parsing.
 #
-# source://rack//lib/rack/request.rb#153
+# pkg:gem/rack#lib/rack/request.rb:153
 Rack::Request::Helpers::FORM_DATA_MEDIA_TYPES = T.let(T.unsafe(nil), Array)
 
-# source://rack//lib/rack/request.rb#750
+# pkg:gem/rack#lib/rack/request.rb:753
 Rack::Request::Helpers::FORWARDED_SCHEME_HEADERS = T.let(T.unsafe(nil), Hash)
 
-# source://rack//lib/rack/request.rb#176
+# pkg:gem/rack#lib/rack/request.rb:176
 Rack::Request::Helpers::HTTP_FORWARDED = T.let(T.unsafe(nil), String)
 
 # The address of the client which connected to the proxy.
 #
-# source://rack//lib/rack/request.rb#171
+# pkg:gem/rack#lib/rack/request.rb:171
 Rack::Request::Helpers::HTTP_X_FORWARDED_FOR = T.let(T.unsafe(nil), String)
 
 # The contents of the host/:authority header sent to the proxy.
 #
-# source://rack//lib/rack/request.rb#174
+# pkg:gem/rack#lib/rack/request.rb:174
 Rack::Request::Helpers::HTTP_X_FORWARDED_HOST = T.let(T.unsafe(nil), String)
 
 # The port used to connect to the proxy.
 #
-# source://rack//lib/rack/request.rb#185
+# pkg:gem/rack#lib/rack/request.rb:185
 Rack::Request::Helpers::HTTP_X_FORWARDED_PORT = T.let(T.unsafe(nil), String)
 
 # The protocol used to connect to the proxy.
 #
-# source://rack//lib/rack/request.rb#182
+# pkg:gem/rack#lib/rack/request.rb:182
 Rack::Request::Helpers::HTTP_X_FORWARDED_PROTO = T.let(T.unsafe(nil), String)
 
 # The value of the scheme sent to the proxy.
 #
-# source://rack//lib/rack/request.rb#179
+# pkg:gem/rack#lib/rack/request.rb:179
 Rack::Request::Helpers::HTTP_X_FORWARDED_SCHEME = T.let(T.unsafe(nil), String)
 
 # Another way for specifying https scheme was used.
 #
-# source://rack//lib/rack/request.rb#188
+# pkg:gem/rack#lib/rack/request.rb:188
 Rack::Request::Helpers::HTTP_X_FORWARDED_SSL = T.let(T.unsafe(nil), String)
 
 # The set of media-types. Requests that do not indicate
 # one of the media types present in this list will not be eligible
 # for param parsing like soap attachments or generic multiparts
 #
-# source://rack//lib/rack/request.rb#161
+# pkg:gem/rack#lib/rack/request.rb:161
 Rack::Request::Helpers::PARSEABLE_DATA_MEDIA_TYPES = T.let(T.unsafe(nil), Array)
 
 # Rack::Response provides a convenient interface to create a Rack
@@ -3455,7 +3165,7 @@ Rack::Request::Helpers::PARSEABLE_DATA_MEDIA_TYPES = T.let(T.unsafe(nil), Array)
 #
 # Your application's +call+ should end returning Response#finish.
 #
-# source://rack//lib/rack/response.rb#23
+# pkg:gem/rack#lib/rack/response.rb:23
 class Rack::Response
   include ::Rack::Response::Helpers
 
@@ -3480,124 +3190,76 @@ class Rack::Response
   # the Rack specification for response headers. The key must be a +String+
   # instance and the value can be either a +String+ or +Array+ instance.
   #
-  # @return [Response] a new instance of Response
-  # @yield [_self]
-  # @yieldparam _self [Rack::Response] the object that the method was called on
-  #
-  # source://rack//lib/rack/response.rb#54
+  # pkg:gem/rack#lib/rack/response.rb:54
   def initialize(body = T.unsafe(nil), status = T.unsafe(nil), headers = T.unsafe(nil)); end
 
-  # @raise [ArgumentError]
-  #
-  # source://rack//lib/rack/response.rb#177
+  # pkg:gem/rack#lib/rack/response.rb:177
   def [](key); end
 
-  # @raise [ArgumentError]
-  #
-  # source://rack//lib/rack/response.rb#178
+  # pkg:gem/rack#lib/rack/response.rb:178
   def []=(key, value); end
 
-  # Returns the value of attribute body.
-  #
-  # source://rack//lib/rack/response.rb#31
+  # pkg:gem/rack#lib/rack/response.rb:31
   def body; end
 
-  # Sets the attribute body
-  #
-  # @param value the value to set the attribute body to.
-  #
-  # source://rack//lib/rack/response.rb#31
+  # pkg:gem/rack#lib/rack/response.rb:31
   def body=(_arg0); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#95
+  # pkg:gem/rack#lib/rack/response.rb:95
   def chunked?; end
 
-  # source://rack//lib/rack/response.rb#152
+  # pkg:gem/rack#lib/rack/response.rb:152
   def close; end
 
-  # @raise [ArgumentError]
-  #
-  # source://rack//lib/rack/response.rb#172
+  # pkg:gem/rack#lib/rack/response.rb:172
   def delete_header(key); end
 
-  # source://rack//lib/rack/response.rb#130
+  # For *response
+  #
+  # pkg:gem/rack#lib/rack/response.rb:130
   def each(&callback); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#156
+  # pkg:gem/rack#lib/rack/response.rb:156
   def empty?; end
 
   # Generate a response array consistent with the requirements of the SPEC.
+  # @return [Array] a 3-tuple suitable of `[status, headers, body]`
   # which is suitable to be returned from the middleware `#call(env)` method.
   #
-  # @return [Array] a 3-tuple suitable of `[status, headers, body]`
-  #
-  # source://rack//lib/rack/response.rb#107
+  # pkg:gem/rack#lib/rack/response.rb:107
   def finish(&block); end
 
-  # @raise [ArgumentError]
-  #
-  # source://rack//lib/rack/response.rb#164
+  # pkg:gem/rack#lib/rack/response.rb:164
   def get_header(key); end
 
-  # @raise [ArgumentError]
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#160
+  # pkg:gem/rack#lib/rack/response.rb:160
   def has_header?(key); end
 
-  # Returns the value of attribute headers.
-  #
-  # source://rack//lib/rack/response.rb#32
+  # pkg:gem/rack#lib/rack/response.rb:32
   def headers; end
 
-  # Returns the value of attribute length.
-  #
-  # source://rack//lib/rack/response.rb#31
+  # pkg:gem/rack#lib/rack/response.rb:31
   def length; end
 
-  # Sets the attribute length
-  #
-  # @param value the value to set the attribute length to.
-  #
-  # source://rack//lib/rack/response.rb#31
+  # pkg:gem/rack#lib/rack/response.rb:31
   def length=(_arg0); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#99
+  # pkg:gem/rack#lib/rack/response.rb:99
   def no_entity_body?; end
 
-  # source://rack//lib/rack/response.rb#90
+  # pkg:gem/rack#lib/rack/response.rb:90
   def redirect(target, status = T.unsafe(nil)); end
 
-  # @raise [ArgumentError]
-  #
-  # source://rack//lib/rack/response.rb#168
+  # pkg:gem/rack#lib/rack/response.rb:168
   def set_header(key, value); end
 
-  # Returns the value of attribute status.
-  #
-  # source://rack//lib/rack/response.rb#31
+  # pkg:gem/rack#lib/rack/response.rb:31
   def status; end
 
-  # Sets the attribute status
-  #
-  # @param value the value to set the attribute status to.
-  #
-  # source://rack//lib/rack/response.rb#31
+  # pkg:gem/rack#lib/rack/response.rb:31
   def status=(_arg0); end
 
-  # Generate a response array consistent with the requirements of the SPEC.
-  # which is suitable to be returned from the middleware `#call(env)` method.
-  # For *response
-  #
-  # @return [Array] a 3-tuple suitable of `[status, headers, body]`
-  #
-  # source://rack//lib/rack/response.rb#128
+  # pkg:gem/rack#lib/rack/response.rb:128
   def to_a(&block); end
 
   # Append a chunk to the response body.
@@ -3606,23 +3268,21 @@ class Rack::Response
   #
   # NOTE: Do not mix #write and direct #body access!
   #
-  # source://rack//lib/rack/response.rb#146
+  # pkg:gem/rack#lib/rack/response.rb:146
   def write(chunk); end
 
   class << self
-    # source://rack//lib/rack/response.rb#24
+    # pkg:gem/rack#lib/rack/response.rb:24
     def [](status, headers, body); end
   end
 end
 
-# source://rack//lib/rack/response.rb#28
+# pkg:gem/rack#lib/rack/response.rb:28
 Rack::Response::CHUNKED = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/response.rb#180
+# pkg:gem/rack#lib/rack/response.rb:180
 module Rack::Response::Helpers
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#191
+  # pkg:gem/rack#lib/rack/response.rb:191
   def accepted?; end
 
   # Add a header that may have multiple values.
@@ -3635,182 +3295,136 @@ module Rack::Response::Helpers
   #
   # http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
   #
-  # @raise [ArgumentError]
-  #
-  # source://rack//lib/rack/response.rb#219
+  # pkg:gem/rack#lib/rack/response.rb:219
   def add_header(key, value); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#194
+  # pkg:gem/rack#lib/rack/response.rb:194
   def bad_request?; end
 
   # Specify that the content should be cached.
-  #
-  # @option directive
-  # @param directive [Hash] a customizable set of options
   # @param duration [Integer] The number of seconds until the cache expires.
+  # @option directive [String] The cache control directive, one of "public", "private", "no-cache" or "no-store".
   #
-  # source://rack//lib/rack/response.rb#307
+  # pkg:gem/rack#lib/rack/response.rb:307
   def cache!(duration = T.unsafe(nil), directive: T.unsafe(nil)); end
 
-  # source://rack//lib/rack/response.rb#290
+  # pkg:gem/rack#lib/rack/response.rb:290
   def cache_control; end
 
-  # source://rack//lib/rack/response.rb#294
+  # pkg:gem/rack#lib/rack/response.rb:294
   def cache_control=(value); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#186
+  # pkg:gem/rack#lib/rack/response.rb:186
   def client_error?; end
 
-  # source://rack//lib/rack/response.rb#257
+  # pkg:gem/rack#lib/rack/response.rb:257
   def content_length; end
 
   # Get the content type of the response.
   #
-  # source://rack//lib/rack/response.rb#240
+  # pkg:gem/rack#lib/rack/response.rb:240
   def content_type; end
 
   # Set the content type of the response.
   #
-  # source://rack//lib/rack/response.rb#245
+  # pkg:gem/rack#lib/rack/response.rb:245
   def content_type=(content_type); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#190
+  # pkg:gem/rack#lib/rack/response.rb:190
   def created?; end
 
-  # source://rack//lib/rack/response.rb#274
+  # pkg:gem/rack#lib/rack/response.rb:274
   def delete_cookie(key, value = T.unsafe(nil)); end
 
   # Specifies that the content shouldn't be cached. Overrides `cache!` if already called.
   #
-  # source://rack//lib/rack/response.rb#299
+  # pkg:gem/rack#lib/rack/response.rb:299
   def do_not_cache!; end
 
-  # source://rack//lib/rack/response.rb#314
+  # pkg:gem/rack#lib/rack/response.rb:314
   def etag; end
 
-  # source://rack//lib/rack/response.rb#318
+  # pkg:gem/rack#lib/rack/response.rb:318
   def etag=(value); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#196
+  # pkg:gem/rack#lib/rack/response.rb:196
   def forbidden?; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#206
+  # pkg:gem/rack#lib/rack/response.rb:206
   def include?(header); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#183
+  # pkg:gem/rack#lib/rack/response.rb:183
   def informational?; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#181
+  # pkg:gem/rack#lib/rack/response.rb:181
   def invalid?; end
 
-  # source://rack//lib/rack/response.rb#262
+  # pkg:gem/rack#lib/rack/response.rb:262
   def location; end
 
-  # source://rack//lib/rack/response.rb#266
+  # pkg:gem/rack#lib/rack/response.rb:266
   def location=(location); end
 
-  # source://rack//lib/rack/response.rb#249
+  # pkg:gem/rack#lib/rack/response.rb:249
   def media_type; end
 
-  # source://rack//lib/rack/response.rb#253
+  # pkg:gem/rack#lib/rack/response.rb:253
   def media_type_params; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#198
+  # pkg:gem/rack#lib/rack/response.rb:198
   def method_not_allowed?; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#193
+  # pkg:gem/rack#lib/rack/response.rb:193
   def moved_permanently?; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#192
+  # pkg:gem/rack#lib/rack/response.rb:192
   def no_content?; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#199
+  # pkg:gem/rack#lib/rack/response.rb:199
   def not_acceptable?; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#197
+  # pkg:gem/rack#lib/rack/response.rb:197
   def not_found?; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#189
+  # pkg:gem/rack#lib/rack/response.rb:189
   def ok?; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#201
+  # pkg:gem/rack#lib/rack/response.rb:201
   def precondition_failed?; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#204
+  # pkg:gem/rack#lib/rack/response.rb:204
   def redirect?; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#185
+  # pkg:gem/rack#lib/rack/response.rb:185
   def redirection?; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#200
+  # pkg:gem/rack#lib/rack/response.rb:200
   def request_timeout?; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#187
+  # pkg:gem/rack#lib/rack/response.rb:187
   def server_error?; end
 
-  # source://rack//lib/rack/response.rb#270
+  # pkg:gem/rack#lib/rack/response.rb:270
   def set_cookie(key, value); end
 
-  # source://rack//lib/rack/response.rb#282
+  # pkg:gem/rack#lib/rack/response.rb:282
   def set_cookie_header; end
 
-  # source://rack//lib/rack/response.rb#286
+  # pkg:gem/rack#lib/rack/response.rb:286
   def set_cookie_header=(value); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#184
+  # pkg:gem/rack#lib/rack/response.rb:184
   def successful?; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#195
+  # pkg:gem/rack#lib/rack/response.rb:195
   def unauthorized?; end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#202
+  # pkg:gem/rack#lib/rack/response.rb:202
   def unprocessable?; end
 
   protected
 
-  # source://rack//lib/rack/response.rb#359
+  # pkg:gem/rack#lib/rack/response.rb:359
   def append(chunk); end
 
   # Convert the body of this response into an internally buffered Array if possible.
@@ -3822,52 +3436,40 @@ module Rack::Response::Helpers
   #
   # @return [Boolean] whether the body is buffered as an Array instance.
   #
-  # source://rack//lib/rack/response.rb#332
+  # pkg:gem/rack#lib/rack/response.rb:332
   def buffered_body!; end
 end
 
-# source://rack//lib/rack/response.rb#375
+# pkg:gem/rack#lib/rack/response.rb:375
 class Rack::Response::Raw
   include ::Rack::Response::Helpers
 
-  # @return [Raw] a new instance of Raw
-  #
-  # source://rack//lib/rack/response.rb#381
+  # pkg:gem/rack#lib/rack/response.rb:381
   def initialize(status, headers); end
 
-  # source://rack//lib/rack/response.rb#398
+  # pkg:gem/rack#lib/rack/response.rb:398
   def delete_header(key); end
 
-  # source://rack//lib/rack/response.rb#390
+  # pkg:gem/rack#lib/rack/response.rb:390
   def get_header(key); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/response.rb#386
+  # pkg:gem/rack#lib/rack/response.rb:386
   def has_header?(key); end
 
-  # Returns the value of attribute headers.
-  #
-  # source://rack//lib/rack/response.rb#378
+  # pkg:gem/rack#lib/rack/response.rb:378
   def headers; end
 
-  # source://rack//lib/rack/response.rb#394
+  # pkg:gem/rack#lib/rack/response.rb:394
   def set_header(key, value); end
 
-  # Returns the value of attribute status.
-  #
-  # source://rack//lib/rack/response.rb#379
+  # pkg:gem/rack#lib/rack/response.rb:379
   def status; end
 
-  # Sets the attribute status
-  #
-  # @param value the value to set the attribute status to.
-  #
-  # source://rack//lib/rack/response.rb#379
+  # pkg:gem/rack#lib/rack/response.rb:379
   def status=(_arg0); end
 end
 
-# source://rack//lib/rack/response.rb#29
+# pkg:gem/rack#lib/rack/response.rb:29
 Rack::Response::STATUS_WITH_NO_ENTITY_BODY = T.let(T.unsafe(nil), Hash)
 
 # Class which can make any IO object rewindable, including non-rewindable ones. It does
@@ -3876,11 +3478,9 @@ Rack::Response::STATUS_WITH_NO_ENTITY_BODY = T.let(T.unsafe(nil), Hash)
 # Don't forget to call #close when you're done. This frees up temporary resources that
 # RewindableInput uses, though it does *not* close the original IO object.
 #
-# source://rack//lib/rack/rewindable_input.rb#14
+# pkg:gem/rack#lib/rack/rewindable_input.rb:14
 class Rack::RewindableInput
-  # @return [RewindableInput] a new instance of RewindableInput
-  #
-  # source://rack//lib/rack/rewindable_input.rb#29
+  # pkg:gem/rack#lib/rack/rewindable_input.rb:29
   def initialize(io); end
 
   # Closes this RewindableInput object without closing the originally
@@ -3889,32 +3489,30 @@ class Rack::RewindableInput
   #
   # This method may be called multiple times. It does nothing on subsequent calls.
   #
-  # source://rack//lib/rack/rewindable_input.rb#65
+  # pkg:gem/rack#lib/rack/rewindable_input.rb:65
   def close; end
 
-  # source://rack//lib/rack/rewindable_input.rb#45
+  # pkg:gem/rack#lib/rack/rewindable_input.rb:45
   def each(&block); end
 
-  # source://rack//lib/rack/rewindable_input.rb#35
+  # pkg:gem/rack#lib/rack/rewindable_input.rb:35
   def gets; end
 
-  # source://rack//lib/rack/rewindable_input.rb#40
+  # pkg:gem/rack#lib/rack/rewindable_input.rb:40
   def read(*args); end
 
-  # source://rack//lib/rack/rewindable_input.rb#50
+  # pkg:gem/rack#lib/rack/rewindable_input.rb:50
   def rewind; end
 
-  # source://rack//lib/rack/rewindable_input.rb#55
+  # pkg:gem/rack#lib/rack/rewindable_input.rb:55
   def size; end
 
   private
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/rewindable_input.rb#109
+  # pkg:gem/rack#lib/rack/rewindable_input.rb:109
   def filesystem_has_posix_semantics?; end
 
-  # source://rack//lib/rack/rewindable_input.rb#78
+  # pkg:gem/rack#lib/rack/rewindable_input.rb:78
   def make_rewindable; end
 end
 
@@ -3922,14 +3520,12 @@ end
 # designed for earlier versions of Rack (where rack.input was required to be
 # rewindable).
 #
-# source://rack//lib/rack/rewindable_input.rb#18
+# pkg:gem/rack#lib/rack/rewindable_input.rb:18
 class Rack::RewindableInput::Middleware
-  # @return [Middleware] a new instance of Middleware
-  #
-  # source://rack//lib/rack/rewindable_input.rb#19
+  # pkg:gem/rack#lib/rack/rewindable_input.rb:19
   def initialize(app); end
 
-  # source://rack//lib/rack/rewindable_input.rb#23
+  # pkg:gem/rack#lib/rack/rewindable_input.rb:23
   def call(env); end
 end
 
@@ -3940,36 +3536,34 @@ end
 # time, or before all the other middlewares to include time for them,
 # too.
 #
-# source://rack//lib/rack/runtime.rb#12
+# pkg:gem/rack#lib/rack/runtime.rb:12
 class Rack::Runtime
-  # @return [Runtime] a new instance of Runtime
-  #
-  # source://rack//lib/rack/runtime.rb#16
+  # pkg:gem/rack#lib/rack/runtime.rb:16
   def initialize(app, name = T.unsafe(nil)); end
 
-  # source://rack//lib/rack/runtime.rb#22
+  # pkg:gem/rack#lib/rack/runtime.rb:22
   def call(env); end
 end
 
-# source://rack//lib/rack/runtime.rb#13
+# pkg:gem/rack#lib/rack/runtime.rb:13
 Rack::Runtime::FORMAT_STRING = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/runtime.rb#14
+# pkg:gem/rack#lib/rack/runtime.rb:14
 Rack::Runtime::HEADER_NAME = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#11
+# pkg:gem/rack#lib/rack/constants.rb:11
 Rack::SCRIPT_NAME = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#14
+# pkg:gem/rack#lib/rack/constants.rb:14
 Rack::SERVER_NAME = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#15
+# pkg:gem/rack#lib/rack/constants.rb:15
 Rack::SERVER_PORT = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#13
+# pkg:gem/rack#lib/rack/constants.rb:13
 Rack::SERVER_PROTOCOL = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#24
+# pkg:gem/rack#lib/rack/constants.rb:24
 Rack::SET_COOKIE = T.let(T.unsafe(nil), String)
 
 # = Sendfile
@@ -4084,25 +3678,23 @@ Rack::SET_COOKIE = T.let(T.unsafe(nil), String)
 # middleware constructor to prevent information disclosure vulnerabilities
 # where attackers could bypass proxy restrictions.
 #
-# source://rack//lib/rack/sendfile.rb#121
+# pkg:gem/rack#lib/rack/sendfile.rb:121
 class Rack::Sendfile
-  # @return [Sendfile] a new instance of Sendfile
-  #
-  # source://rack//lib/rack/sendfile.rb#122
+  # pkg:gem/rack#lib/rack/sendfile.rb:122
   def initialize(app, variation = T.unsafe(nil), mappings = T.unsafe(nil)); end
 
-  # source://rack//lib/rack/sendfile.rb#130
+  # pkg:gem/rack#lib/rack/sendfile.rb:130
   def call(env); end
 
   private
 
-  # source://rack//lib/rack/sendfile.rb#182
+  # pkg:gem/rack#lib/rack/sendfile.rb:182
   def map_accel_path(env, path); end
 
-  # source://rack//lib/rack/sendfile.rb#166
+  # pkg:gem/rack#lib/rack/sendfile.rb:166
   def variation(env); end
 
-  # source://rack//lib/rack/sendfile.rb#172
+  # pkg:gem/rack#lib/rack/sendfile.rb:172
   def x_accel_mapping(env); end
 end
 
@@ -4114,185 +3706,112 @@ end
 # Be careful when you use this on public-facing sites as it could
 # reveal information helpful to attackers.
 #
-# source://rack//lib/rack/show_exceptions.rb#18
+# pkg:gem/rack#lib/rack/show_exceptions.rb:18
 class Rack::ShowExceptions
-  # @return [ShowExceptions] a new instance of ShowExceptions
-  #
-  # source://rack//lib/rack/show_exceptions.rb#26
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:26
   def initialize(app); end
 
-  # source://rack//lib/rack/show_exceptions.rb#30
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:30
   def call(env); end
 
-  # source://rack//lib/rack/show_exceptions.rb#65
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:65
   def dump_exception(exception); end
 
-  # source://rack//lib/rack/show_exceptions.rb#116
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:116
   def h(obj); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/show_exceptions.rb#56
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:56
   def prefers_plaintext?(env); end
 
-  # source://rack//lib/rack/show_exceptions.rb#76
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:76
   def pretty(env, exception); end
 
-  # source://rack//lib/rack/show_exceptions.rb#112
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:112
   def template; end
 
   private
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/show_exceptions.rb#60
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:60
   def accepts_html?(env); end
 end
 
-# source://rack//lib/rack/show_exceptions.rb#19
+# pkg:gem/rack#lib/rack/show_exceptions.rb:19
 Rack::ShowExceptions::CONTEXT = T.let(T.unsafe(nil), Integer)
 
-# source://rack//lib/rack/show_exceptions.rb#21
+# pkg:gem/rack#lib/rack/show_exceptions.rb:21
 class Rack::ShowExceptions::Frame < ::Struct
-  # Returns the value of attribute context_line
-  #
-  # @return [Object] the current value of context_line
-  #
-  # source://rack//lib/rack/show_exceptions.rb#21
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:21
   def context_line; end
 
-  # Sets the attribute context_line
-  #
-  # @param value [Object] the value to set the attribute context_line to.
-  # @return [Object] the newly set value
-  #
-  # source://rack//lib/rack/show_exceptions.rb#21
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:21
   def context_line=(_); end
 
-  # Returns the value of attribute filename
-  #
-  # @return [Object] the current value of filename
-  #
-  # source://rack//lib/rack/show_exceptions.rb#21
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:21
   def filename; end
 
-  # Sets the attribute filename
-  #
-  # @param value [Object] the value to set the attribute filename to.
-  # @return [Object] the newly set value
-  #
-  # source://rack//lib/rack/show_exceptions.rb#21
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:21
   def filename=(_); end
 
-  # Returns the value of attribute function
-  #
-  # @return [Object] the current value of function
-  #
-  # source://rack//lib/rack/show_exceptions.rb#21
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:21
   def function; end
 
-  # Sets the attribute function
-  #
-  # @param value [Object] the value to set the attribute function to.
-  # @return [Object] the newly set value
-  #
-  # source://rack//lib/rack/show_exceptions.rb#21
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:21
   def function=(_); end
 
-  # Returns the value of attribute lineno
-  #
-  # @return [Object] the current value of lineno
-  #
-  # source://rack//lib/rack/show_exceptions.rb#21
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:21
   def lineno; end
 
-  # Sets the attribute lineno
-  #
-  # @param value [Object] the value to set the attribute lineno to.
-  # @return [Object] the newly set value
-  #
-  # source://rack//lib/rack/show_exceptions.rb#21
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:21
   def lineno=(_); end
 
-  # Returns the value of attribute post_context
-  #
-  # @return [Object] the current value of post_context
-  #
-  # source://rack//lib/rack/show_exceptions.rb#21
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:21
   def post_context; end
 
-  # Sets the attribute post_context
-  #
-  # @param value [Object] the value to set the attribute post_context to.
-  # @return [Object] the newly set value
-  #
-  # source://rack//lib/rack/show_exceptions.rb#21
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:21
   def post_context=(_); end
 
-  # Returns the value of attribute post_context_lineno
-  #
-  # @return [Object] the current value of post_context_lineno
-  #
-  # source://rack//lib/rack/show_exceptions.rb#21
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:21
   def post_context_lineno; end
 
-  # Sets the attribute post_context_lineno
-  #
-  # @param value [Object] the value to set the attribute post_context_lineno to.
-  # @return [Object] the newly set value
-  #
-  # source://rack//lib/rack/show_exceptions.rb#21
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:21
   def post_context_lineno=(_); end
 
-  # Returns the value of attribute pre_context
-  #
-  # @return [Object] the current value of pre_context
-  #
-  # source://rack//lib/rack/show_exceptions.rb#21
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:21
   def pre_context; end
 
-  # Sets the attribute pre_context
-  #
-  # @param value [Object] the value to set the attribute pre_context to.
-  # @return [Object] the newly set value
-  #
-  # source://rack//lib/rack/show_exceptions.rb#21
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:21
   def pre_context=(_); end
 
-  # Returns the value of attribute pre_context_lineno
-  #
-  # @return [Object] the current value of pre_context_lineno
-  #
-  # source://rack//lib/rack/show_exceptions.rb#21
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:21
   def pre_context_lineno; end
 
-  # Sets the attribute pre_context_lineno
-  #
-  # @param value [Object] the value to set the attribute pre_context_lineno to.
-  # @return [Object] the newly set value
-  #
-  # source://rack//lib/rack/show_exceptions.rb#21
+  # pkg:gem/rack#lib/rack/show_exceptions.rb:21
   def pre_context_lineno=(_); end
 
   class << self
-    # source://rack//lib/rack/show_exceptions.rb#21
+    # pkg:gem/rack#lib/rack/show_exceptions.rb:21
     def [](*_arg0); end
 
-    # source://rack//lib/rack/show_exceptions.rb#21
+    # pkg:gem/rack#lib/rack/show_exceptions.rb:21
     def inspect; end
 
-    # source://rack//lib/rack/show_exceptions.rb#21
+    # pkg:gem/rack#lib/rack/show_exceptions.rb:21
     def keyword_init?; end
 
-    # source://rack//lib/rack/show_exceptions.rb#21
+    # pkg:gem/rack#lib/rack/show_exceptions.rb:21
     def members; end
 
-    # source://rack//lib/rack/show_exceptions.rb#21
+    # pkg:gem/rack#lib/rack/show_exceptions.rb:21
     def new(*_arg0); end
   end
 end
 
-# source://rack//lib/rack/show_exceptions.rb#131
+# adapted from Django <www.djangoproject.com>
+# Copyright (c) Django Software Foundation and individual contributors.
+# Used under the modified BSD license:
+# http://www.xfree86.org/3.3.6/COPYRIGHT2.html#5
+#
+# pkg:gem/rack#lib/rack/show_exceptions.rb:131
 Rack::ShowExceptions::TEMPLATE = T.let(T.unsafe(nil), ERB)
 
 # Rack::ShowStatus catches all empty responses and replaces them
@@ -4302,21 +3821,24 @@ Rack::ShowExceptions::TEMPLATE = T.let(T.unsafe(nil), ERB)
 # and will be shown as HTML.  If such details exist, the error page
 # is always rendered, even if the reply was not empty.
 #
-# source://rack//lib/rack/show_status.rb#18
+# pkg:gem/rack#lib/rack/show_status.rb:18
 class Rack::ShowStatus
-  # @return [ShowStatus] a new instance of ShowStatus
-  #
-  # source://rack//lib/rack/show_status.rb#19
+  # pkg:gem/rack#lib/rack/show_status.rb:19
   def initialize(app); end
 
-  # source://rack//lib/rack/show_status.rb#24
+  # pkg:gem/rack#lib/rack/show_status.rb:24
   def call(env); end
 
-  # source://rack//lib/rack/show_status.rb#54
+  # pkg:gem/rack#lib/rack/show_status.rb:54
   def h(obj); end
 end
 
-# source://rack//lib/rack/show_status.rb#69
+# adapted from Django <www.djangoproject.com>
+# Copyright (c) Django Software Foundation and individual contributors.
+# Used under the modified BSD license:
+# http://www.xfree86.org/3.3.6/COPYRIGHT2.html#5
+#
+# pkg:gem/rack#lib/rack/show_status.rb:69
 Rack::ShowStatus::TEMPLATE = T.let(T.unsafe(nil), String)
 
 # The Rack::Static middleware intercepts requests for static files
@@ -4402,58 +3924,52 @@ Rack::ShowStatus::TEMPLATE = T.let(T.unsafe(nil), String)
 #           [:fonts, {'access-control-allow-origin' => '*'}]
 #         ]
 #
-# source://rack//lib/rack/static.rb#92
+# pkg:gem/rack#lib/rack/static.rb:92
 class Rack::Static
-  # @return [Static] a new instance of Static
-  #
-  # source://rack//lib/rack/static.rb#93
+  # pkg:gem/rack#lib/rack/static.rb:93
   def initialize(app, options = T.unsafe(nil)); end
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/static.rb#112
+  # pkg:gem/rack#lib/rack/static.rb:112
   def add_index_root?(path); end
 
   # Convert HTTP header rules to HTTP headers
   #
-  # source://rack//lib/rack/static.rb#170
+  # pkg:gem/rack#lib/rack/static.rb:170
   def applicable_rules(path); end
 
-  # source://rack//lib/rack/static.rb#128
+  # pkg:gem/rack#lib/rack/static.rb:128
   def call(env); end
 
-  # source://rack//lib/rack/static.rb#124
+  # pkg:gem/rack#lib/rack/static.rb:124
   def can_serve(path); end
 
-  # source://rack//lib/rack/static.rb#116
+  # pkg:gem/rack#lib/rack/static.rb:116
   def overwrite_file_path(path); end
 
-  # source://rack//lib/rack/static.rb#120
+  # pkg:gem/rack#lib/rack/static.rb:120
   def route_file(path); end
 end
 
-# source://rack//lib/rack/constants.rb#38
+# pkg:gem/rack#lib/rack/constants.rb:38
 Rack::TRACE = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/constants.rb#25
+# pkg:gem/rack#lib/rack/constants.rb:25
 Rack::TRANSFER_ENCODING = T.let(T.unsafe(nil), String)
 
 # Middleware tracks and cleans Tempfiles created throughout a request (i.e. Rack::Multipart)
 # Ideas/strategy based on posts by Eric Wong and Charles Oliver Nutter
 # https://groups.google.com/forum/#!searchin/rack-devel/temp/rack-devel/brK8eh-MByw/sw61oJJCGRMJ
 #
-# source://rack//lib/rack/tempfile_reaper.rb#11
+# pkg:gem/rack#lib/rack/tempfile_reaper.rb:11
 class Rack::TempfileReaper
-  # @return [TempfileReaper] a new instance of TempfileReaper
-  #
-  # source://rack//lib/rack/tempfile_reaper.rb#12
+  # pkg:gem/rack#lib/rack/tempfile_reaper.rb:12
   def initialize(app); end
 
-  # source://rack//lib/rack/tempfile_reaper.rb#16
+  # pkg:gem/rack#lib/rack/tempfile_reaper.rb:16
   def call(env); end
 end
 
-# source://rack//lib/rack/constants.rb#37
+# pkg:gem/rack#lib/rack/constants.rb:37
 Rack::UNLINK = T.let(T.unsafe(nil), String)
 
 # Rack::URLMap takes a hash mapping urls or paths to apps, and
@@ -4468,31 +3984,27 @@ Rack::UNLINK = T.let(T.unsafe(nil), String)
 # URLMap dispatches in such a way that the longest paths are tried
 # first, since they are most specific.
 #
-# source://rack//lib/rack/urlmap.rb#20
+# pkg:gem/rack#lib/rack/urlmap.rb:20
 class Rack::URLMap
-  # @return [URLMap] a new instance of URLMap
-  #
-  # source://rack//lib/rack/urlmap.rb#21
+  # pkg:gem/rack#lib/rack/urlmap.rb:21
   def initialize(map = T.unsafe(nil)); end
 
-  # source://rack//lib/rack/urlmap.rb#48
+  # pkg:gem/rack#lib/rack/urlmap.rb:48
   def call(env); end
 
-  # source://rack//lib/rack/urlmap.rb#25
+  # pkg:gem/rack#lib/rack/urlmap.rb:25
   def remap(map); end
 
   private
 
-  # @return [Boolean]
-  #
-  # source://rack//lib/rack/urlmap.rb#87
+  # pkg:gem/rack#lib/rack/urlmap.rb:87
   def casecmp?(v1, v2); end
 end
 
 # Rack::Utils contains a grab-bag of useful methods for writing web
 # applications adopted from all kinds of Ruby libraries.
 #
-# source://rack//lib/rack/utils.rb#20
+# pkg:gem/rack#lib/rack/utils.rb:20
 module Rack::Utils
   private
 
@@ -4501,31 +4013,31 @@ module Rack::Utils
   # matches (same specificity and quality), the value returned
   # is arbitrary.
   #
-  # source://rack//lib/rack/utils.rb#227
+  # pkg:gem/rack#lib/rack/utils.rb:227
   def best_q_match(q_value_header, available_mimes); end
 
-  # source://rack//lib/rack/utils.rb#120
+  # pkg:gem/rack#lib/rack/utils.rb:120
   def build_nested_query(value, prefix = T.unsafe(nil)); end
 
-  # source://rack//lib/rack/utils.rb#110
+  # pkg:gem/rack#lib/rack/utils.rb:110
   def build_query(params); end
 
   # Parses the "Range:" header, if present, into an array of Range objects.
   # Returns nil if the header is missing or syntactically invalid.
   # Returns an empty array if none of the ranges are satisfiable.
   #
-  # source://rack//lib/rack/utils.rb#499
+  # pkg:gem/rack#lib/rack/utils.rb:499
   def byte_ranges(env, size, max_ranges: T.unsafe(nil)); end
 
-  # source://rack//lib/rack/utils.rb#701
+  # pkg:gem/rack#lib/rack/utils.rb:701
   def clean_path_info(path_info); end
 
   # :nocov:
   #
-  # source://rack//lib/rack/utils.rb#91
+  # pkg:gem/rack#lib/rack/utils.rb:91
   def clock_time; end
 
-  # source://rack//lib/rack/utils.rb#457
+  # pkg:gem/rack#lib/rack/utils.rb:457
   def delete_cookie_header!(headers, key, value = T.unsafe(nil)); end
 
   # :call-seq:
@@ -4542,7 +4054,7 @@ module Rack::Utils
   #   delete_set_cookie_header("myname")
   #   # => "myname=; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT"
   #
-  # source://rack//lib/rack/utils.rb#453
+  # pkg:gem/rack#lib/rack/utils.rb:453
   def delete_set_cookie_header(key, value = T.unsafe(nil)); end
 
   # :call-seq:
@@ -4563,32 +4075,32 @@ module Rack::Utils
   #   header
   #   # => ["mycookie=; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT"]
   #
-  # source://rack//lib/rack/utils.rb#481
+  # pkg:gem/rack#lib/rack/utils.rb:481
   def delete_set_cookie_header!(header, key, value = T.unsafe(nil)); end
 
   # URI escapes. (CGI style space to +)
   #
-  # source://rack//lib/rack/utils.rb#40
+  # pkg:gem/rack#lib/rack/utils.rb:40
   def escape(s); end
 
-  # source://rack//lib/rack/utils.rb#352
+  # pkg:gem/rack#lib/rack/utils.rb:352
   def escape_cookie_key(key); end
 
   # Escape ampersands, brackets and quotes to their HTML/XML entities.
   #
-  # source://rack//lib/rack/utils.rb#243
+  # pkg:gem/rack#lib/rack/utils.rb:243
   def escape_html(_arg0); end
 
   # Like URI escaping, but with %20 instead of +. Strictly speaking this is
   # true URI escaping.
   #
-  # source://rack//lib/rack/utils.rb#46
+  # pkg:gem/rack#lib/rack/utils.rb:46
   def escape_path(s); end
 
-  # source://rack//lib/rack/utils.rb#152
+  # pkg:gem/rack#lib/rack/utils.rb:152
   def forwarded_values(forwarded_header); end
 
-  # source://rack//lib/rack/utils.rb#503
+  # pkg:gem/rack#lib/rack/utils.rb:503
   def get_byte_ranges(http_range, size, max_ranges: T.unsafe(nil)); end
 
   # :call-seq:
@@ -4600,7 +4112,7 @@ module Rack::Utils
   #   parse_cookies({'HTTP_COOKIE' => 'myname=myvalue'})
   #   # => {'myname' => 'myvalue'}
   #
-  # source://rack//lib/rack/utils.rb#343
+  # pkg:gem/rack#lib/rack/utils.rb:343
   def parse_cookies(env); end
 
   # :call-seq:
@@ -4613,24 +4125,29 @@ module Rack::Utils
   #   parse_cookies_header('myname=myvalue; max-age=0')
   #   # => {"myname"=>"myvalue", "max-age"=>"0"}
   #
-  # source://rack//lib/rack/utils.rb#324
+  # pkg:gem/rack#lib/rack/utils.rb:324
   def parse_cookies_header(value); end
 
-  # source://rack//lib/rack/utils.rb#106
+  # pkg:gem/rack#lib/rack/utils.rb:106
   def parse_nested_query(qs, d = T.unsafe(nil)); end
 
-  # source://rack//lib/rack/utils.rb#102
+  # pkg:gem/rack#lib/rack/utils.rb:102
   def parse_query(qs, d = T.unsafe(nil), &unescaper); end
 
-  # source://rack//lib/rack/utils.rb#138
+  # pkg:gem/rack#lib/rack/utils.rb:138
   def q_values(q_value_header); end
 
-  # source://rack//lib/rack/utils.rb#492
+  # pkg:gem/rack#lib/rack/utils.rb:492
   def rfc2822(time); end
 
-  # :nocov:
+  # Constant time string comparison.
   #
-  # source://rack//lib/rack/utils.rb#547
+  # NOTE: the values compared should be of fixed length, such as strings
+  # that have already been processed by HMAC. This should not be used
+  # on variable length plaintext strings because it could leak length info
+  # via timing attacks.
+  #
+  # pkg:gem/rack#lib/rack/utils.rb:547
   def secure_compare(a, b); end
 
   # Given an array of available encoding strings, and an array of
@@ -4652,7 +4169,7 @@ module Rack::Utils
   # To reduce denial of service potential, only the first 16
   # acceptable encodings are considered.
   #
-  # source://rack//lib/rack/utils.rb#270
+  # pkg:gem/rack#lib/rack/utils.rb:270
   def select_best_encoding(available_encodings, accept_encoding); end
 
   # :call-seq:
@@ -4678,7 +4195,7 @@ module Rack::Utils
   #   set_cookie_header("myname", {value: "myvalue", max_age: 10})
   #   # => "myname=myvalue; max-age=10"
   #
-  # source://rack//lib/rack/utils.rb#384
+  # pkg:gem/rack#lib/rack/utils.rb:384
   def set_cookie_header(key, value); end
 
   # :call-seq:
@@ -4690,25 +4207,25 @@ module Rack::Utils
   # If the headers already contains a +set-cookie+ key, it will be converted
   # to an +Array+ if not already, and appended to.
   #
-  # source://rack//lib/rack/utils.rb#427
+  # pkg:gem/rack#lib/rack/utils.rb:427
   def set_cookie_header!(headers, key, value); end
 
-  # source://rack//lib/rack/utils.rb#681
+  # pkg:gem/rack#lib/rack/utils.rb:681
   def status_code(status); end
 
   # Unescapes a URI escaped string with +encoding+. +encoding+ will be the
   # target encoding of the string returned, and it defaults to UTF-8
   #
-  # source://rack//lib/rack/utils.rb#58
+  # pkg:gem/rack#lib/rack/utils.rb:58
   def unescape(s, encoding = T.unsafe(nil)); end
 
   # Unescapes the **path** component of a URI.  See Rack::Utils.unescape for
   # unescaping query parameters or form components.
   #
-  # source://rack//lib/rack/utils.rb#52
+  # pkg:gem/rack#lib/rack/utils.rb:52
   def unescape_path(s); end
 
-  # source://rack//lib/rack/utils.rb#718
+  # pkg:gem/rack#lib/rack/utils.rb:718
   def valid_path?(path); end
 
   class << self
@@ -4717,41 +4234,37 @@ module Rack::Utils
     # matches (same specificity and quality), the value returned
     # is arbitrary.
     #
-    # source://rack//lib/rack/utils.rb#227
+    # pkg:gem/rack#lib/rack/utils.rb:227
     def best_q_match(q_value_header, available_mimes); end
 
-    # source://rack//lib/rack/utils.rb#120
+    # pkg:gem/rack#lib/rack/utils.rb:120
     def build_nested_query(value, prefix = T.unsafe(nil)); end
 
-    # source://rack//lib/rack/utils.rb#110
+    # pkg:gem/rack#lib/rack/utils.rb:110
     def build_query(params); end
 
     # Parses the "Range:" header, if present, into an array of Range objects.
     # Returns nil if the header is missing or syntactically invalid.
     # Returns an empty array if none of the ranges are satisfiable.
     #
-    # source://rack//lib/rack/utils.rb#499
+    # pkg:gem/rack#lib/rack/utils.rb:499
     def byte_ranges(env, size, max_ranges: T.unsafe(nil)); end
 
-    # source://rack//lib/rack/utils.rb#701
+    # pkg:gem/rack#lib/rack/utils.rb:701
     def clean_path_info(path_info); end
 
-    # source://rack//lib/rack/utils.rb#91
+    # :nocov:
+    #
+    # pkg:gem/rack#lib/rack/utils.rb:91
     def clock_time; end
 
-    # Returns the value of attribute default_query_parser.
-    #
-    # source://rack//lib/rack/utils.rb#30
+    # pkg:gem/rack#lib/rack/utils.rb:30
     def default_query_parser; end
 
-    # Sets the attribute default_query_parser
-    #
-    # @param value the value to set the attribute default_query_parser to.
-    #
-    # source://rack//lib/rack/utils.rb#30
+    # pkg:gem/rack#lib/rack/utils.rb:30
     def default_query_parser=(_arg0); end
 
-    # source://rack//lib/rack/utils.rb#457
+    # pkg:gem/rack#lib/rack/utils.rb:457
     def delete_cookie_header!(headers, key, value = T.unsafe(nil)); end
 
     # :call-seq:
@@ -4768,7 +4281,7 @@ module Rack::Utils
     #   delete_set_cookie_header("myname")
     #   # => "myname=; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT"
     #
-    # source://rack//lib/rack/utils.rb#453
+    # pkg:gem/rack#lib/rack/utils.rb:453
     def delete_set_cookie_header(key, value = T.unsafe(nil)); end
 
     # :call-seq:
@@ -4789,74 +4302,59 @@ module Rack::Utils
     #   header
     #   # => ["mycookie=; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT"]
     #
-    # source://rack//lib/rack/utils.rb#481
+    # pkg:gem/rack#lib/rack/utils.rb:481
     def delete_set_cookie_header!(header, key, value = T.unsafe(nil)); end
 
     # URI escapes. (CGI style space to +)
     #
-    # source://rack//lib/rack/utils.rb#40
+    # pkg:gem/rack#lib/rack/utils.rb:40
     def escape(s); end
 
-    # source://rack//lib/rack/utils.rb#352
+    # pkg:gem/rack#lib/rack/utils.rb:352
     def escape_cookie_key(key); end
 
-    # source://rack//lib/rack/utils.rb#243
+    # Escape ampersands, brackets and quotes to their HTML/XML entities.
+    #
+    # pkg:gem/rack#lib/rack/utils.rb:243
     def escape_html(_arg0); end
 
     # Like URI escaping, but with %20 instead of +. Strictly speaking this is
     # true URI escaping.
     #
-    # source://rack//lib/rack/utils.rb#46
+    # pkg:gem/rack#lib/rack/utils.rb:46
     def escape_path(s); end
 
-    # source://rack//lib/rack/utils.rb#152
+    # pkg:gem/rack#lib/rack/utils.rb:152
     def forwarded_values(forwarded_header); end
 
-    # source://rack//lib/rack/utils.rb#503
+    # pkg:gem/rack#lib/rack/utils.rb:503
     def get_byte_ranges(http_range, size, max_ranges: T.unsafe(nil)); end
 
-    # Returns the value of attribute multipart_file_limit.
-    #
-    # source://rack//lib/rack/utils.rb#65
+    # pkg:gem/rack#lib/rack/utils.rb:65
     def multipart_file_limit; end
 
-    # Sets the attribute multipart_file_limit
-    #
-    # @param value the value to set the attribute multipart_file_limit to.
-    #
-    # source://rack//lib/rack/utils.rb#65
+    # pkg:gem/rack#lib/rack/utils.rb:65
     def multipart_file_limit=(_arg0); end
 
-    # Returns the value of attribute multipart_file_limit.
     # multipart_part_limit is the original name of multipart_file_limit, but
     # the limit only counts parts with filenames.
     #
-    # source://rack//lib/rack/utils.rb#69
+    # pkg:gem/rack#lib/rack/utils.rb:69
     def multipart_part_limit; end
 
-    # Sets the attribute multipart_file_limit
-    #
-    # @param value the value to set the attribute multipart_file_limit to.
-    #
-    # source://rack//lib/rack/utils.rb#70
+    # pkg:gem/rack#lib/rack/utils.rb:70
     def multipart_part_limit=(_arg0); end
 
-    # Returns the value of attribute multipart_total_part_limit.
-    #
-    # source://rack//lib/rack/utils.rb#63
+    # pkg:gem/rack#lib/rack/utils.rb:63
     def multipart_total_part_limit; end
 
-    # Sets the attribute multipart_total_part_limit
-    #
-    # @param value the value to set the attribute multipart_total_part_limit to.
-    #
-    # source://rack//lib/rack/utils.rb#63
+    # pkg:gem/rack#lib/rack/utils.rb:63
     def multipart_total_part_limit=(_arg0); end
 
-    # source://rack//lib/rack/utils.rb#82
+    # pkg:gem/rack#lib/rack/utils.rb:82
     def param_depth_limit; end
 
-    # source://rack//lib/rack/utils.rb#86
+    # pkg:gem/rack#lib/rack/utils.rb:86
     def param_depth_limit=(v); end
 
     # :call-seq:
@@ -4868,7 +4366,7 @@ module Rack::Utils
     #   parse_cookies({'HTTP_COOKIE' => 'myname=myvalue'})
     #   # => {'myname' => 'myvalue'}
     #
-    # source://rack//lib/rack/utils.rb#343
+    # pkg:gem/rack#lib/rack/utils.rb:343
     def parse_cookies(env); end
 
     # :call-seq:
@@ -4881,22 +4379,29 @@ module Rack::Utils
     #   parse_cookies_header('myname=myvalue; max-age=0')
     #   # => {"myname"=>"myvalue", "max-age"=>"0"}
     #
-    # source://rack//lib/rack/utils.rb#324
+    # pkg:gem/rack#lib/rack/utils.rb:324
     def parse_cookies_header(value); end
 
-    # source://rack//lib/rack/utils.rb#106
+    # pkg:gem/rack#lib/rack/utils.rb:106
     def parse_nested_query(qs, d = T.unsafe(nil)); end
 
-    # source://rack//lib/rack/utils.rb#102
+    # pkg:gem/rack#lib/rack/utils.rb:102
     def parse_query(qs, d = T.unsafe(nil), &unescaper); end
 
-    # source://rack//lib/rack/utils.rb#138
+    # pkg:gem/rack#lib/rack/utils.rb:138
     def q_values(q_value_header); end
 
-    # source://rack//lib/rack/utils.rb#492
+    # pkg:gem/rack#lib/rack/utils.rb:492
     def rfc2822(time); end
 
-    # source://rack//lib/rack/utils.rb#547
+    # Constant time string comparison.
+    #
+    # NOTE: the values compared should be of fixed length, such as strings
+    # that have already been processed by HMAC. This should not be used
+    # on variable length plaintext strings because it could leak length info
+    # via timing attacks.
+    #
+    # pkg:gem/rack#lib/rack/utils.rb:547
     def secure_compare(a, b); end
 
     # Given an array of available encoding strings, and an array of
@@ -4918,7 +4423,7 @@ module Rack::Utils
     # To reduce denial of service potential, only the first 16
     # acceptable encodings are considered.
     #
-    # source://rack//lib/rack/utils.rb#270
+    # pkg:gem/rack#lib/rack/utils.rb:270
     def select_best_encoding(available_encodings, accept_encoding); end
 
     # :call-seq:
@@ -4944,7 +4449,7 @@ module Rack::Utils
     #   set_cookie_header("myname", {value: "myvalue", max_age: 10})
     #   # => "myname=myvalue; max-age=10"
     #
-    # source://rack//lib/rack/utils.rb#384
+    # pkg:gem/rack#lib/rack/utils.rb:384
     def set_cookie_header(key, value); end
 
     # :call-seq:
@@ -4956,35 +4461,33 @@ module Rack::Utils
     # If the headers already contains a +set-cookie+ key, it will be converted
     # to an +Array+ if not already, and appended to.
     #
-    # source://rack//lib/rack/utils.rb#427
+    # pkg:gem/rack#lib/rack/utils.rb:427
     def set_cookie_header!(headers, key, value); end
 
-    # source://rack//lib/rack/utils.rb#681
+    # pkg:gem/rack#lib/rack/utils.rb:681
     def status_code(status); end
 
     # Unescapes a URI escaped string with +encoding+. +encoding+ will be the
     # target encoding of the string returned, and it defaults to UTF-8
     #
-    # source://rack//lib/rack/utils.rb#58
+    # pkg:gem/rack#lib/rack/utils.rb:58
     def unescape(s, encoding = T.unsafe(nil)); end
 
     # Unescapes the **path** component of a URI.  See Rack::Utils.unescape for
     # unescaping query parameters or form components.
     #
-    # source://rack//lib/rack/utils.rb#52
+    # pkg:gem/rack#lib/rack/utils.rb:52
     def unescape_path(s); end
 
-    # @return [Boolean]
-    #
-    # source://rack//lib/rack/utils.rb#718
+    # pkg:gem/rack#lib/rack/utils.rb:718
     def valid_path?(path); end
   end
 end
 
-# source://rack//lib/rack/utils.rb#149
-Rack::Utils::ALLOWED_FORWARED_PARAMS = T.let(T.unsafe(nil), Hash)
+# pkg:gem/rack#lib/rack/utils.rb:149
+Rack::Utils::ALLOWED_FORWARDED_PARAMS = T.let(T.unsafe(nil), Hash)
 
-# source://rack//lib/rack/utils.rb#25
+# pkg:gem/rack#lib/rack/utils.rb:25
 Rack::Utils::COMMON_SEP = T.let(T.unsafe(nil), Hash)
 
 # Context allows the use of a compatible middleware at different points
@@ -4993,34 +4496,28 @@ Rack::Utils::COMMON_SEP = T.let(T.unsafe(nil), Hash)
 # would be the request environment. The second of which would be the rack
 # application that the request would be forwarded to.
 #
-# source://rack//lib/rack/utils.rb#570
+# pkg:gem/rack#lib/rack/utils.rb:570
 class Rack::Utils::Context
-  # @return [Context] a new instance of Context
-  #
-  # source://rack//lib/rack/utils.rb#573
+  # pkg:gem/rack#lib/rack/utils.rb:573
   def initialize(app_f, app_r); end
 
-  # Returns the value of attribute app.
-  #
-  # source://rack//lib/rack/utils.rb#571
+  # pkg:gem/rack#lib/rack/utils.rb:571
   def app; end
 
-  # source://rack//lib/rack/utils.rb#578
+  # pkg:gem/rack#lib/rack/utils.rb:578
   def call(env); end
 
-  # source://rack//lib/rack/utils.rb#586
+  # pkg:gem/rack#lib/rack/utils.rb:586
   def context(env, app = T.unsafe(nil)); end
 
-  # Returns the value of attribute for.
-  #
-  # source://rack//lib/rack/utils.rb#571
+  # pkg:gem/rack#lib/rack/utils.rb:571
   def for; end
 
-  # source://rack//lib/rack/utils.rb#582
+  # pkg:gem/rack#lib/rack/utils.rb:582
   def recontext(app); end
 end
 
-# source://rack//lib/rack/utils.rb#24
+# pkg:gem/rack#lib/rack/utils.rb:24
 Rack::Utils::DEFAULT_SEP = T.let(T.unsafe(nil), Regexp)
 
 # Every standard HTTP code mapped to the appropriate message.
@@ -5030,46 +4527,46 @@ Rack::Utils::DEFAULT_SEP = T.let(T.unsafe(nil), Regexp)
 #     .reject {|v| v['Description'] == 'Unassigned' or v['Description'].include? '(' } \
 #     .map {|v| %Q/#{v['Value']} => '#{v['Description']}'/ }.join(','+?\n)"
 #
-# source://rack//lib/rack/utils.rb#597
+# pkg:gem/rack#lib/rack/utils.rb:597
 Rack::Utils::HTTP_STATUS_CODES = T.let(T.unsafe(nil), Hash)
 
-# source://rack//lib/rack/utils.rb#22
+# pkg:gem/rack#lib/rack/utils.rb:22
 Rack::Utils::InvalidParameterError = Rack::QueryParser::InvalidParameterError
 
-# source://rack//lib/rack/utils.rb#26
+# pkg:gem/rack#lib/rack/utils.rb:26
 Rack::Utils::KeySpaceConstrainedParams = Rack::QueryParser::Params
 
-# source://rack//lib/rack/utils.rb#716
+# pkg:gem/rack#lib/rack/utils.rb:716
 Rack::Utils::NULL_BYTE = T.let(T.unsafe(nil), String)
 
-# source://rack//lib/rack/utils.rb#667
+# pkg:gem/rack#lib/rack/utils.rb:667
 Rack::Utils::OBSOLETE_SYMBOLS_TO_STATUS_CODES = T.let(T.unsafe(nil), Hash)
 
-# source://rack//lib/rack/utils.rb#675
+# pkg:gem/rack#lib/rack/utils.rb:675
 Rack::Utils::OBSOLETE_SYMBOL_MAPPINGS = T.let(T.unsafe(nil), Hash)
 
-# source://rack//lib/rack/utils.rb#699
+# pkg:gem/rack#lib/rack/utils.rb:699
 Rack::Utils::PATH_SEPS = T.let(T.unsafe(nil), Regexp)
 
-# source://rack//lib/rack/utils.rb#21
+# pkg:gem/rack#lib/rack/utils.rb:21
 Rack::Utils::ParameterTypeError = Rack::QueryParser::ParameterTypeError
 
-# source://rack//lib/rack/utils.rb#23
+# pkg:gem/rack#lib/rack/utils.rb:23
 Rack::Utils::ParamsTooDeepError = Rack::QueryParser::QueryLimitError
 
 # Responses with HTTP status codes that should not have an entity body
 #
-# source://rack//lib/rack/utils.rb#661
+# pkg:gem/rack#lib/rack/utils.rb:661
 Rack::Utils::STATUS_WITH_NO_ENTITY_BODY = T.let(T.unsafe(nil), Hash)
 
-# source://rack//lib/rack/utils.rb#663
+# pkg:gem/rack#lib/rack/utils.rb:663
 Rack::Utils::SYMBOL_TO_STATUS_CODE = T.let(T.unsafe(nil), Hash)
 
-# source://rack//lib/rack/utils.rb#27
+# pkg:gem/rack#lib/rack/utils.rb:27
 Rack::Utils::URI_PARSER = T.let(T.unsafe(nil), URI::RFC2396_Parser)
 
 # A valid cookie key according to RFC2616.
 # A <cookie-name> can be any US-ASCII characters, except control characters, spaces, or tabs. It also must not contain a separator character like the following: ( ) < > @ , ; : \ " / [ ] ? = { }.
 #
-# source://rack//lib/rack/utils.rb#349
+# pkg:gem/rack#lib/rack/utils.rb:349
 Rack::Utils::VALID_COOKIE_KEY = T.let(T.unsafe(nil), Regexp)
