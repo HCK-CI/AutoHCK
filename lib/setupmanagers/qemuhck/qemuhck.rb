@@ -129,6 +129,7 @@ module AutoHCK
         'virtio_vectors' => test_opt.virtio_vectors,
         'virtio_queues' => test_opt.virtio_queues,
         'pcie_spare_root_ports' => test_opt.pcie_spare_root_ports,
+        'cpu_maxcpus' => test_opt.cpu_maxcpus,
         # Do not override the platform's vbs_state when the CLI flag is absent.
         'vbs_state' => test_opt.enable_vbs ? true : nil,
         'ctrl_net_device' => common.client_ctrl_net_dev,

@@ -158,6 +158,7 @@ module AutoHCK
     prop :virtio_vectors, T.nilable(Integer)
     prop :virtio_queues, T.nilable(Integer)
     prop :pcie_spare_root_ports, T.nilable(Integer)
+    prop :cpu_maxcpus, T.nilable(Integer)
     prop :test_params, T::Hash[String, String], default: {}
 
     def apply_discard_granularity(value)
@@ -387,6 +388,9 @@ module AutoHCK
                 'Allocate N extra empty pcie-root-ports at boot for later hotplug (q35 only, default: 0)',
                 'Max N depends on QEMU',
                 &method(:pcie_spare_root_ports=))
+      parser.on('--cpu-maxcpus <N>', Integer,
+                'Set maxcpus for -smp (enables CPU hotplug when N > platform cpus)',
+                &method(:cpu_maxcpus=))
       parser.on('--test-param KEY=VALUE', String,
                 'Set a test parameter (can be repeated, available as @KEY@ in test JSON)') do |kv|
         key, value = kv.split('=', 2)
