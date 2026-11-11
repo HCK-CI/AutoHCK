@@ -11,12 +11,12 @@
   ],
   "clients_options": {
     "ctrl_net_device": "virtio-net-pci",
-    "viommu_state": true
+    "viommu_state": true,
+    "attach_debug_net": true
   },
   "reject_test_names": [
     "__Windows_11_22H2_reject_test_names",
     "Secure Boot Manual Logo Test",
-    "Debug Capability Test (Logo)",
     "BitLocker Tpm+PIN+ USB and Recovery Password tests",
     "TPM 2.0 - Supplemental test",
     "TPM 2.0 TCG Physical Presence Interface 1.3 Test",
@@ -33,7 +33,6 @@
     "UEFI GOP mode test",
     "USB Generic HID Test",
     "Secure Boot Manual Logo Test",
-    "Debug Capability Test (Logo)",
     "LoadGen Server Stress - Run First - Set Machine Policies",
     "LoadGen Server Stress - Run Last - Reset Machine Policies",
     "LoadGen Server Stress - Start Test for Server",
@@ -46,5 +45,31 @@
     "TPM 2.0 UEFI Preboot Interface Test",
     "TPM 2.0 Verify Existence and Device Requirements Test",
     "TPM 2.0 TCG Physical Presence Interface 1.3 Test"
+  ],
+  "tests_config": [
+    {
+      "tests": [
+        "^Debug Capability Test \\(Logo\\)$"
+      ],
+      "parameters": [
+        {
+          "name": "NetHostIP",
+          "value": "192.168.102.3"
+        },
+        {
+          "name": "BusParams",
+          "value": "2.0.0"
+        }
+      ],
+      "pre_test_commands": [
+        {
+          "desc": "Set static IP 192.168.102.3 on the DebugHost debug NIC",
+          "clients": [
+            2
+          ],
+          "guest_run": "$a = Get-NetAdapter | Where-Object { $_.MacAddress -like '*-EE-EE' }; Set-NetIPInterface -InterfaceIndex $a.ifIndex -Dhcp Disabled; Get-NetIPAddress -InterfaceIndex $a.ifIndex -AddressFamily IPv4 -ErrorAction SilentlyContinue | Remove-NetIPAddress -Confirm:$false; New-NetIPAddress -InterfaceIndex $a.ifIndex -IPAddress 192.168.102.3 -PrefixLength 24"
+        }
+      ]
+    }
   ]
 }

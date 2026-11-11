@@ -714,9 +714,9 @@ module AutoHCK
       dev = @nm.control_device_command(device_info, full_replacement_map)
       @device_commands << dev
 
-      process_optional_hck_network
-
       process_generic_hck_network('debug_net_device', :debug_device_command) if option_config('attach_debug_net')
+
+      process_optional_hck_network
 
       return unless @options['client_id'].zero? || option_config('client_world_net')
 
