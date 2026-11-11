@@ -79,7 +79,15 @@ Func PollPopups()
     Local $hChangeUfd2 = WinGetHandle("Change UFD #2 to use msft_test_pressanykey.efi")
     If $hChangeUfd2 <> 0 Then
         If ExpectedPopup($hChangeUfd2, "CHANGE_UFD2_TO_MSFT_TEST") Then
-            ChangeUfd2($hChangeUfd2)
+            ChangeUfd2($hChangeUfd2, "CHANGE_UFD2_TO_MSFT_TEST")
+            Return
+        EndIf
+    EndIf
+
+    Local $hPrepareTest = WinGetHandle("Prepare USB Flash Drive #TEST")
+    If $hPrepareTest <> 0 Then
+        If ExpectedPopup($hPrepareTest, "CHANGE_UFD2_TO_MSFT_TEST") Then
+            ChangeUfd2($hPrepareTest, "CHANGE_UFD2_TO_MSFT_TEST")
             Return
         EndIf
     EndIf
@@ -100,6 +108,14 @@ Func PollPopups()
     If $hUfd2 <> 0 Then
         If ExpectedPopup($hUfd2, "REQUEST_UFD2") Then
             HandlePopup($hUfd2, "REQUEST_UFD2")
+            Return
+        EndIf
+    EndIf
+
+    Local $hTestUfd = WinGetHandle("Insert and boot from UFD#TEST")
+    If $hTestUfd <> 0 Then
+        If ExpectedPopup($hTestUfd, "CHANGE_UFD2_TO_MSFT_TEST") Then
+            ChangeUfd2($hTestUfd, "CHANGE_UFD2_TO_MSFT_TEST")
             Return
         EndIf
     EndIf
@@ -125,6 +141,14 @@ Func PollPopups()
             Return
         EndIf
     EndIf
+
+    Local $hRestore = WinGetHandle("Restore Secure Boot to Default Configuration")
+    If $hRestore <> 0 Then
+        If ExpectedPopup($hRestore, "RESTORE_DEFAULT_CONFIGURATION") Then
+            AcknowledgeLocalPopup($hRestore, "RESTORE_DEFAULT_CONFIGURATION", "OK")
+            Return
+        EndIf
+    EndIf
 EndFunc
 
 Func ExpectedPopup($hWindow, $sEvent)
@@ -133,9 +157,7 @@ Func ExpectedPopup($hWindow, $sEvent)
                 ResultQuestion($hWindow) == ExpectedQuestion($sEvent) And _
                 ResultButton($hWindow, "Yes") <> 0 And ResultButton($hWindow, "No") <> 0
     EndIf
-    ; These distinct insertion titles identify the requested UFD. Do not read
-    ; or match their body text, including when rechecking before the ACK click.
-    ; Require the same OK control that HandlePopup uses after acknowledgement.
+    ; Numbered UFD titles identify the requested drive.
     If $sEvent = "REQUEST_UFD1" Then
         Local $sUfd1Title = WinGetTitle($hWindow)
         Return ($sUfd1Title == "Insert and boot from UFD #1" Or _
@@ -159,6 +181,15 @@ Func ExpectedPopup($hWindow, $sEvent)
         Local $sFinishedBody = "If you want to run other Secure Boot Logo tests then go into the BIOS " & _
                 "Configuration and restore Secure Boot to the default configuration."
         Return WinGetTitle($hWindow) == "Finished Test" And $sFinishedText == $sFinishedBody
+    EndIf
+
+    If $sEvent = "RESTORE_DEFAULT_CONFIGURATION" Then
+        Local $sRestoreText = NormalizeInstructionText($sText)
+        Return WinGetTitle($hWindow) == "Restore Secure Boot to Default Configuration" And _
+                StringInStr($sRestoreText, "The system will reboot when you click OK.", 1) > 0 And _
+                StringInStr($sRestoreText, "If you want to run other Secure Boot Logo tests", 1) > 0 And _
+                StringInStr($sRestoreText, "restore Secure Boot to the default configuration.", 1) > 0 And _
+                PopupButton($hWindow, "OK") <> 0
     EndIf
 
     If $sEvent = "BOOT_ORDER_OPTIONAL_REBOOT" Then
@@ -197,6 +228,27 @@ Func ExpectedPopup($hWindow, $sEvent)
     EndIf
 
     If $sEvent = "CHANGE_UFD2_TO_MSFT_TEST" Then
+        If WinGetTitle($hWindow) == "Insert and boot from UFD#TEST" Then
+            Local $sInsertText = NormalizeInstructionText($sText)
+            Return StringRegExp($sInsertText, 'UFD\s*#TEST') And _
+                    StringInStr($sInsertText, "msft_test_pressanykey.efi", 1) > 0 And _
+                    StringInStr($sInsertText, "restart", 1) > 0 And _
+                    StringInStr($sInsertText, "boot", 1) > 0 And PopupButton($hWindow, "OK") <> 0
+        EndIf
+
+        If WinGetTitle($hWindow) == "Prepare USB Flash Drive #TEST" Then
+            ; HLK can join words at control/line boundaries (for example,
+            ; "drives.Click"). Match the instructions that identify this step.
+            Local $sTestText = NormalizeInstructionText($sText)
+            Return StringInStr($sTestText, "Perform the following steps:", 1) > 0 And _
+                    StringInStr($sTestText, "Format a USB flash drives (UFD) as FAT32", 1) > 0 And _
+                    StringInStr($sTestText, "UefiSecureBootManualTests.zip", 1) > 0 And _
+                    StringInStr($sTestText, "ManualTests\apps\<arch>\msft_test_pressanykey.efi", 1) > 0 And _
+                    StringInStr($sTestText, "<UFD #TEST>:\efi\boot\boot<arch>.efi", 1) > 0 And _
+                    StringInStr($sTestText, "UFD#1 and UFD#2 are no longer required", 1) > 0 And _
+                    StringInStr($sTestText, "Click OK to continue", 1) > 0 And PopupButton($hWindow, "OK") <> 0
+        EndIf
+
         Local $sNormalized = StringRegExpReplace($sText, "\s+", " ")
         Return WinGetTitle($hWindow) = "Change UFD #2 to use msft_test_pressanykey.efi" And _
                 StringInStr($sNormalized, "On UFD #2, delete or move the current") > 0 And _
@@ -284,7 +336,7 @@ Func AcknowledgeFinishedTest($hWindow)
 EndFunc
 
 Func AcknowledgeLocalPopup($hWindow, $sPattern, $sButton)
-    ; Local setup actions never publish requests or change the persisted round.
+    ; Local acknowledgements never publish requests or change the persisted round.
     If Not ExpectedPopup($hWindow, $sPattern) Then Return
     Local $hButton = PopupButton($hWindow, $sButton)
     If $hButton = 0 Then
@@ -355,7 +407,7 @@ Func PrepareTestContent($hWindow, $sPattern)
     AcknowledgeLocalPopup($hWindow, $sPattern, "OK")
 EndFunc
 
-Func ChangeUfd2($hWindow)
+Func ChangeUfd2($hWindow, $sEvent)
     If Not FileExists($g_sChangeUfd2Script) Or Not IsAdmin() Then
         LogMessage("Cannot change UFD #2: missing guest script or watcher is not elevated")
         MarkHandled($hWindow)
@@ -374,15 +426,21 @@ Func ChangeUfd2($hWindow)
         Return
     EndIf
 
-    If Not WinExists($hWindow) Or Not ExpectedPopup($hWindow, "CHANGE_UFD2_TO_MSFT_TEST") Or _
+    If Not WinExists($hWindow) Or Not ExpectedPopup($hWindow, $sEvent) Or _
             WinGetText($hWindow) <> $sPopupText Then
         LogMessage("UFD #2 file change succeeded, but the original popup changed before OK")
         Return
     EndIf
-    ; This popup can reboot directly, without another insertion prompt. Arm
-    ; its own serial observation and select UFD2 before acknowledging it.
+    If WinGetTitle($hWindow) == "Prepare USB Flash Drive #TEST" Then
+        LogMessage("UFD #2 file change verified; acknowledging preparation without boot selection")
+        AcknowledgeLocalPopup($hWindow, $sEvent, "OK")
+        Return
+    EndIf
+
+    ; The Win2025 change popup and Win2019 insertion popup both start the
+    ; Microsoft test boot round after the UFD2 file has been verified.
     LogMessage("UFD #2 file change verified; requesting boot selection and observation")
-    HandlePopup($hWindow, "CHANGE_UFD2_TO_MSFT_TEST")
+    HandlePopup($hWindow, $sEvent)
 EndFunc
 
 Func HandlePopup($hWindow, $sEvent)
