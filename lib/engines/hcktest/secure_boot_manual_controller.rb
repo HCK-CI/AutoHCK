@@ -9,6 +9,7 @@ module AutoHCK
       REQUEST_PATH = "#{DIRECTORY}\\request.json".freeze
       ACK_PATH = "#{DIRECTORY}\\ack.json".freeze
       REQUEST_ID_PATTERN = /\A[a-zA-Z0-9_-]{1,80}\z/
+      GUEST_WINRM_TIMEOUTS = { operation_timeout: 60, receive_timeout: 90 }.freeze
       BOOT_EVENTS = %w[REQUEST_UFD1 REQUEST_UFD2 CHANGE_UFD2_TO_MSFT_TEST].freeze
       QUESTIONS = {
         'RESULT_UFD1' => [1, 'pressanykey1', 'UFD #1 Boot Result',
@@ -387,7 +388,7 @@ module AutoHCK
       def read_guest_file(path)
         command = "if (Test-Path -LiteralPath '#{path}') { Get-Content -LiteralPath '#{path}' -Raw }"
         result = @tools.act_with_tools_on_machine(@client_name) do |tools|
-          tools.run_on_machine(@client_name, command)
+          tools.run_on_machine(@client_name, command, **GUEST_WINRM_TIMEOUTS)
         end
         return '' if result == true
 
@@ -408,7 +409,7 @@ module AutoHCK
                   "Set-Content -LiteralPath '#{ACK_PATH}.tmp' -Value '#{payload}' -Encoding Ascii -NoNewline; " \
                   "Move-Item -LiteralPath '#{ACK_PATH}.tmp' -Destination '#{ACK_PATH}' -Force"
         @tools.act_with_tools_on_machine(@client_name) do |tools|
-          tools.run_on_machine(@client_name, command)
+          tools.run_on_machine(@client_name, command, **GUEST_WINRM_TIMEOUTS)
         end
       end
     end
