@@ -49,6 +49,7 @@ module AutoHCK
         @created_tags = Set.new
         @known_issues = engine.suite&.known_issues || []
         @platform_name = engine.project.options.test.platform
+        @files_transfer_post_test_commands = []
       end
       # rubocop:enable Metrics/AbcSize
 
@@ -182,6 +183,7 @@ module AutoHCK
           result[:status] = 'failed'
           result[:error] = e.message
         end
+        run_files_transfer_post_test_commands
         result[:dump_path] = collect_memory_dumps(test.name)
         end_time = Time.now
         result[:end_time] = end_time.utc.iso8601
@@ -206,6 +208,7 @@ module AutoHCK
       end
 
       def run_test_steps(test, result)
+        @files_transfer_post_test_commands = []
         prepare_test_clients!(test)
         ensure_boot_state!(test)
         run_extension_pre_test_commands(test.name)
@@ -229,7 +232,17 @@ module AutoHCK
 
         @command_execution_manager.scope_to_test(test.clients)
         validate_step_clients!(test)
+        validate_files_transfer_steps!(test)
         validate_parallel_blocks!(test)
+      end
+
+      def validate_files_transfer_steps!(test)
+        extension_post_commands = extension_commands_for(test.name, :post_test_commands)
+        invalid_steps = (test.test_steps + test.cleanup + extension_post_commands)
+                        .select { |step| step.files_transfer.any? }
+        return if invalid_steps.empty?
+
+        raise EngineError, "Test '#{test.name}': files_transfer is only allowed in pre_test_commands"
       end
 
       def all_steps(test)
@@ -447,11 +460,26 @@ module AutoHCK
         desc = nil
         test.pre_test_commands.each do |step|
           desc = @context.substitute_variables(step.desc)
+          post_test_commands = step.files_transfer_cleanup_commands(CommandExecutionManager::FILES_TRANSFER_REMOTE_PATH)
           @step_handler.execute_step(step)
+          @files_transfer_post_test_commands.concat(post_test_commands)
         rescue StandardError => e
           @logger.error("  FAIL: Pre-test command failed (#{desc}): #{e.message}")
           raise
         end
+      end
+
+      def run_files_transfer_post_test_commands
+        return if @files_transfer_post_test_commands.empty?
+
+        @logger.info('Removing automatically uploaded test files...')
+        @files_transfer_post_test_commands.each do |step|
+          @step_handler.execute_step(step)
+        rescue StandardError => e
+          @logger.warn("Failed to remove automatically uploaded test files: #{e.message}")
+        end
+      ensure
+        @files_transfer_post_test_commands = []
       end
 
       def run_cleanup(test)
@@ -506,7 +534,9 @@ module AutoHCK
         desc = nil
         cmds.each_with_index do |step, index|
           desc = @context.substitute_variables("[Extension pre-test step #{index + 1}] #{step.desc}")
+          post_test_commands = step.files_transfer_cleanup_commands(CommandExecutionManager::FILES_TRANSFER_REMOTE_PATH)
           @step_handler.execute_step(step)
+          @files_transfer_post_test_commands.concat(post_test_commands)
         rescue StandardError => e
           @logger.error("  FAIL: Extension pre-test command failed (#{desc}): #{e.message}")
           raise
