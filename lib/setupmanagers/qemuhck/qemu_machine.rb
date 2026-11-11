@@ -327,6 +327,7 @@ module AutoHCK
       apply_drive_aio_state
       validate_drive_aio_state
       apply_cpu_options_config
+      validate_cpu_maxcpus
       validate_vsm_state
       apply_vsm_state
     end
@@ -361,6 +362,18 @@ module AutoHCK
       end
 
       extra.split(',').each { |opt| @cpu_options << opt unless opt.empty? }
+    end
+
+    def validate_cpu_maxcpus
+      maxcpus = option_config('cpu_maxcpus')
+      return unless maxcpus
+
+      raise QemuHCKError, '--cpu-maxcpus must be a positive integer' unless maxcpus.positive?
+
+      cpu_count = option_config('cpu_count')
+      return unless cpu_count
+
+      raise QemuHCKError, "--cpu-maxcpus (#{maxcpus}) must be >= cpu_count (#{cpu_count})" if maxcpus < cpu_count
     end
 
     # This VSM configuration is supported only for 64-bit Windows guests.
@@ -534,15 +547,19 @@ module AutoHCK
       memory_gb = option_config('memory_gb')
       raise "NUMA topology requires at least 2 GB memory (got #{memory_gb})" if memory_gb < 2
 
-      half_cpu = cpu_count / 2
+      total_cpus = option_config('cpu_maxcpus') || cpu_count
+      half_total = total_cpus / 2
       half_mem = memory_gb / 2
 
+      # Every CPU slot through maxcpus-1 must belong to a NUMA node;
+      # QEMU's cpus= accepts only a single contiguous range, so split
+      # all slots (boot + hotplug) evenly across the two nodes.
       {
         '@numa_node0_memory@' => "#{half_mem}G",
         '@numa_node1_memory@' => "#{memory_gb - half_mem}G",
-        '@numa_node0_max_cpu@' => (half_cpu - 1).to_s,
-        '@numa_node1_min_cpu@' => half_cpu.to_s,
-        '@numa_node1_max_cpu@' => (cpu_count - 1).to_s
+        '@numa_node0_max_cpu@' => (half_total - 1).to_s,
+        '@numa_node1_min_cpu@' => half_total.to_s,
+        '@numa_node1_max_cpu@' => (total_cpus - 1).to_s
       }
     end
 
@@ -582,6 +599,7 @@ module AutoHCK
                                                '@cpu@' => option_config('cpu'),
                                                '@cpu_options@' => option_config('cpu_options'),
                                                '@cpu_count@' => option_config('cpu_count'),
+                                               '@cpu_maxcpus@' => option_config('cpu_maxcpus')&.to_s,
                                                '@vnc_id@' => @vnc_id,
                                                '@vnc_port@' => @vnc_port,
                                                '@qemu_monitor_port@' => @monitor_port
@@ -782,6 +800,15 @@ module AutoHCK
       end
     end
 
+    def smp_option
+      maxcpus = option_config('cpu_maxcpus')
+      if maxcpus && maxcpus > option_config('cpu_count').to_i
+        '-smp @cpu_count@,maxcpus=@cpu_maxcpus@,sockets=@cpu_maxcpus@,cores=1,threads=1'
+      else
+        '-smp @cpu_count@,cores=@cpu_count@'
+      end
+    end
+
     # With some Windows versions, we have a problem with the boot order.
     # Add boot menu timeout (splash-time) to allow us to manually workaround
     # this behavior.
@@ -789,7 +816,7 @@ module AutoHCK
     def base_cmd
       [
         '@qemu_bin@ -enable-kvm -machine @machine_options@ ',
-        '-m @memory@,maxmem=@max_memory@@memory_slots@ -smp @cpu_count@,cores=@cpu_count@ ',
+        "-m @memory@,maxmem=@max_memory@@memory_slots@ #{smp_option} ",
         '-cpu @cpu_options@ -boot menu=on,splash-time=10000 ',
         '-nodefaults -no-user-config -usb -vnc :@vnc_id@ ',
         '-global kvm-pit.lost_tick_policy=discard -rtc base=localtime,clock=host,driftfix=slew ',
