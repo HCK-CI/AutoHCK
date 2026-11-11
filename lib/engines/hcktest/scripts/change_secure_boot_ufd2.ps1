@@ -1,4 +1,5 @@
-# Called locally by AutoIt for "Change UFD #2 to use msft_test_pressanykey.efi".
+# Called locally by AutoIt for the Microsoft test-app preparation popups.
+# Reuse the already prepared UFD #2 as UFD #TEST.
 # The existing USB filesystem is reused; this script never formats a disk.
 $ErrorActionPreference = 'Stop'
 $statePath = 'C:\AutoHCK\SecureBootManual\ufd2_msft.json'

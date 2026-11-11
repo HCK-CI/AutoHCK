@@ -16,6 +16,9 @@ module AutoHCK
       APPS = {
         'Welcome to the pressanykey1 efi app' => 'pressanykey1',
         'Welcome to the pressanykey2 efi app' => 'pressanykey2',
+        '** 1 ** pressanykey1.efi' => 'pressanykey1',
+        '** 2 ** pressanykey2.efi' => 'pressanykey2',
+        '** TEST ** msft_test_pressanykey.efi' => 'msft_test_pressanykey',
         'Welcome to the pressanykey MSFT test-signed efi app' => 'msft_test_pressanykey'
       }.freeze
       WAIT_PROMPT = 'Press any key to continue...'
@@ -24,12 +27,13 @@ module AutoHCK
 
       attr_reader :id, :ufd, :app, :session, :state, :reason, :offset, :evidence
 
-      def initialize(id:, ufd:, app:, path:, session:)
-        @id = id
-        @ufd = ufd
-        @app = app
+      def initialize(boot:, path:, session:, boot_menu_recovery: false)
+        @id = boot.fetch(:id)
+        @ufd = boot.fetch(:ufd)
+        @app = boot.fetch(:app)
         @path = path
         @session = session
+        @boot_menu_recovery = boot_menu_recovery
         @state = :armed
         @pending = ''.b
         @evidence = []
@@ -65,6 +69,22 @@ module AutoHCK
         raise Uncertain, 'Key injection outside the observed EFI wait prompt' unless @state == :waiting
 
         @state = :key_sent
+      end
+
+      # Record one attempt to return from the firmware boot menu to Windows.
+      def menu_selection_sent!
+        raise Uncertain, 'Boot menu selection without the expected choices' unless @state == :menu_ready
+
+        @state = :menu_selection_sent
+      end
+
+      # A matching result popup proves Windows returned after the menu selection.
+      def guest_result_confirmed!
+        unless @boot_menu_recovery && @state == :menu_selection_sent
+          raise Uncertain, 'Guest result without a verified firmware boot menu selection'
+        end
+
+        @state = :allowed
       end
 
       def complete?
@@ -116,7 +136,11 @@ module AutoHCK
       def consume_lines
         while (ending = @pending.index(/[\r\n]/))
           line = @pending.slice!(0, ending + 1)
-          consume(clean(line))
+          @state == :boot_menu ? consume_boot_menu(line) : consume(clean(line))
+        end
+        if @state == :boot_menu && @pending.include?('ENTER to select boot device')
+          consume_boot_menu(@pending)
+          @pending.clear
         end
         # Recognize the EFI app's input prompt promptly.
         return unless clean(@pending) == WAIT_PROMPT
@@ -129,17 +153,74 @@ module AutoHCK
       def consume(line)
         return if line.empty?
 
-        if (match = usb_boot_match(line))
-          usb_line(line, match[1].to_i)
-        elsif APPS.key?(line)
-          application_line(line)
-        elsif line == WAIT_PROMPT
-          wait_prompt_line(line)
+        match = usb_boot_match(line)
+        return usb_line(line, match[1].to_i) if match
+        return application_line(line) if APPS.key?(line)
+        return wait_prompt_line(line) if line == WAIT_PROMPT
+
+        consume_boot_status(line)
+      end
+
+      def consume_boot_status(line)
+        if line.match?(/\ABdsDxe: starting .*"BootManagerMenuApp"/)
+          boot_menu_line(line)
         elsif line.match?(/\ABdsDxe: starting .*"Windows Boot Manager"/)
           windows_line(line)
+        elsif @state == :boot_menu
+          consume_boot_menu(line)
         elsif line.start_with?('Welcome to the pressanykey')
           raise Uncertain, "Unrecognized EFI application: #{line}"
         end
+      end
+
+      def boot_menu_line(line)
+        unless @boot_menu_recovery && @state == :key_sent
+          raise Uncertain, 'Unexpected firmware boot menu after the EFI application'
+        end
+
+        @evidence << line
+        @menu_output = ''.b
+        @state = :boot_menu
+      end
+
+      # Require the observed menu to offer the requested UFD first and Windows second.
+      def consume_boot_menu(line)
+        @menu_output << line << "\n"
+        raise Uncertain, 'Firmware boot menu output exceeded the limit' if @menu_output.bytesize > MAX_READ
+        return unless @menu_output.include?('ENTER to select boot device')
+
+        choices = boot_menu_choices
+        expected = "SVVPUFD#{@ufd}"
+        unless choices[0]&.end_with?(expected) && choices[1] == 'Windows Boot Manager'
+          raise Uncertain, "Unexpected firmware boot menu choices: #{choices.inspect}"
+        end
+
+        @evidence << "Boot menu: #{choices.first(2).join(', ')}"
+        @state = :menu_ready
+      end
+
+      def boot_menu_choices
+        header = @menu_output.index('Please select boot device:')
+        raise Uncertain, 'Incomplete firmware boot menu' unless header
+
+        text = @menu_output.byteslice(header..)
+        positioned = positioned_boot_menu_choices(text)
+        return positioned unless positioned.empty?
+
+        border_boot_menu_choices
+      end
+
+      def positioned_boot_menu_choices(text)
+        text.split(/\e\[\d+;\d+H/).drop(1).map { |entry| clean(entry) }.reject(&:empty?)
+      end
+
+      def border_boot_menu_choices
+        first_border = @menu_output.index('├'.b)
+        last_border = @menu_output.index('├'.b, (first_border || 0) + '├'.bytesize)
+        raise Uncertain, 'Incomplete firmware boot menu' unless first_border && last_border
+
+        body = @menu_output.byteslice(first_border...last_border)
+        body.split('│'.b).drop(1).each_slice(2).map { |entry, _| clean(entry) }
       end
 
       def usb_boot_match(line)
@@ -201,7 +282,7 @@ module AutoHCK
         @evidence << line
         @state = case @state
                  when :denied then :blocked
-                 when :key_sent then :allowed
+                 when :key_sent, :menu_selection_sent then :allowed
                  else raise Uncertain, 'Windows started without a complete, correlated EFI outcome'
                  end
       end

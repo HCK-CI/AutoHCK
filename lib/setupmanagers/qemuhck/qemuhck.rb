@@ -347,6 +347,15 @@ module AutoHCK
       secure_boot_qmp(name, 'send-key', { 'keys' => keys, 'hold-time' => 100 }, session:)
     end
 
+    # Win2019 opens this menu after the EFI app; Win2025 boots Windows directly.
+    # Windows Boot Manager is the second menu entry on Win2019.
+    def select_efi_windows_boot_manager(name, session:)
+      down = [{ 'type' => 'qcode', 'data' => 'down' }]
+      secure_boot_qmp(name, 'send-key', { 'keys' => down, 'hold-time' => 100 }, session:)
+      sleep 0.2
+      send_efi_return(name, session:)
+    end
+
     def wait_for_hypervisor_client_event(name, events, timeout: 60)
       @clients_vm_runners[name].qmp.wait_for('event', events, timeout)
     end

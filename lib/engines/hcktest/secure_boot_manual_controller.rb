@@ -241,9 +241,9 @@ module AutoHCK
         session = current_session
         raise EngineError, 'QEMU session not available' unless session
 
-        SecureBootSerialRound.new(id: request.fetch('id'), ufd: ufd,
-                                  app: ufd == 1 ? 'pressanykey1' : @ufd2_app,
-                                  path: @serial_path, session: session)
+        boot = { id: request.fetch('id'), ufd: ufd, app: ufd == 1 ? 'pressanykey1' : @ufd2_app }
+        SecureBootSerialRound.new(boot:, path: @serial_path, session: session,
+                                  boot_menu_recovery: @project.options.test.platform.start_with?('Win2019'))
       end
 
       def reset_round_state(event)
@@ -264,18 +264,26 @@ module AutoHCK
       def observe_round
         return unless @round && !@consumed
 
-        previous_state = @round.state
-        @round.observe(current_session)
-        if @round.state == :waiting
-          respond_to_waiting_round
-        elsif @round.complete? && !@restored
-          restore_bootindex
-        end
-        audit_completed_round(previous_state)
-        report_uncertain
+        observe_active_round
       rescue StandardError => e
         @round.invalidate("Firmware action failed: #{e.class}: #{e.message}")
         report_uncertain
+      end
+
+      def observe_active_round
+        previous_state = @round.state
+        @round.observe(current_session)
+        respond_to_round_state
+        audit_completed_round(previous_state)
+        report_uncertain
+      end
+
+      def respond_to_round_state
+        case @round.state
+        when :waiting then respond_to_waiting_round
+        when :menu_ready then respond_to_boot_menu
+        else restore_bootindex if @round.complete? && !@restored
+        end
       end
 
       def respond_to_waiting_round
@@ -288,6 +296,17 @@ module AutoHCK
         return unless audit('sending_key', app: @round.app, evidence: @round.evidence)
 
         @project.setup_manager.send_efi_return(@client_name, session: @round.session)
+      end
+
+      # Resume Windows when the older firmware returns to its boot menu.
+      def respond_to_boot_menu
+        @round.observe(current_session)
+        raise EngineError, 'EFI boot menu changed before selection' unless @round.state == :menu_ready
+
+        @round.menu_selection_sent!
+        return unless audit('selecting_windows_boot_manager', evidence: @round.evidence)
+
+        @project.setup_manager.select_efi_windows_boot_manager(@client_name, session: @round.session)
       end
 
       def audit_completed_round(previous_state)
@@ -309,7 +328,7 @@ module AutoHCK
       # Answer a popup only from matching, complete boot evidence.
       def result_for(request)
         question = validate_result_request(request)
-        answer = confirmed_result_answer
+        answer = confirmed_result_answer(request)
         audit_answer(request, question, answer)
         { 'round_id' => @round.id, 'question' => question, 'answer' => answer }
       end
@@ -331,13 +350,22 @@ module AutoHCK
         raise EngineError, 'Result popup question/title/application does not match this boot round'
       end
 
-      def confirmed_result_answer
+      def confirmed_result_answer(request)
         observe_round
+        confirm_guest_result(request) if @round.state == :menu_selection_sent && @restored
         unless @round.complete? && @restored
           raise EngineError, "No reliable result for #{@round.id}: #{@round.reason || @round.state}"
         end
 
         @round.state == :allowed ? 'Yes' : 'No'
+      end
+
+      def confirm_guest_result(request)
+        @round.guest_result_confirmed!
+        return if audit('observed', outcome: @round.state, source: 'matching_guest_result_popup',
+                                    request_id: request.fetch('id'), evidence: @round.evidence)
+
+        raise EngineError, @audit_failed
       end
 
       def audit_answer(request, question, answer)
