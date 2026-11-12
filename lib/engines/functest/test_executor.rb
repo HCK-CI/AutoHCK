@@ -181,6 +181,9 @@ module AutoHCK
           @logger.error("Extension post-test command failed: #{e.message}")
           result[:status] = 'failed'
           result[:error] = e.message
+          # If the test body passed but post-test failed, refresh logs.txt before dump.
+          # (If the test already failed, this is redundant but harmless.)
+          update_summary_results_log
         end
         result[:dump_path] = collect_memory_dumps(test.name)
         end_time = Time.now
@@ -218,6 +221,11 @@ module AutoHCK
         result[:status] = 'failed'
         result[:error] = e.message
         @logger.error("FAILED: #{test.name} - #{e.message}")
+      ensure
+        # Main update: record Pass/Fail after the test body, before finalize/dump.
+        # Dump talks to the guest and can abort if WinRM is down, leaving logs.txt
+        # stuck on Running if we only wrote the final status in save_result.
+        update_summary_results_log
       end
 
       # Sets CommandExecutionManager's default machines to this test's own
