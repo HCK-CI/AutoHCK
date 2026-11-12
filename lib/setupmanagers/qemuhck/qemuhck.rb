@@ -1,6 +1,8 @@
 # typed: true
 # frozen_string_literal: true
 
+require 'timeout'
+
 # AutoHCK module
 module AutoHCK
   # QemuHCK class
@@ -15,15 +17,19 @@ module AutoHCK
     attr_reader :kit, :project
 
     QEMUHCK_INFO_LOG_FILE = 'qemuhck.txt'
+    SECURE_BOOT_QMP_TIMEOUT = 10
     OPT_NAMES = %w[viommu_state s3_state s4_state enlightenments_state vhost_state machine_type fw_type cpu
                    ctrl_net_device vbs_state tpm_state numa_state pcie_spare_root_ports vsm_state].freeze
 
     def initialize(project)
       @platform = T.let(project.engine_platform, Models::HLKPlatform)
       initialize_project project
+      check_pending_nvram_transitions
 
       @clients_vm = {}
       @clients_vm_runners = {}
+      @client_vm_ids = {}
+      @firmware_sessions = {}
       @package_manager = PackageManager.new(@logger)
       initialize_studio_vm
       initialize_clients_vm
@@ -107,13 +113,14 @@ module AutoHCK
     # These are just the options that are used for all clients
     # and should be kept together for readability
     # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
-    def client_vm_common_options
+    def client_vm_common_options(client_info)
       common = @project.options.common
       test_opt = @project.options.test
+      role_devices = @platform.clients_options.attach_devices_by_role&.fetch(client_info.role.to_s, []) || []
       {
         'id' => @id.to_i,
         'workspace_path' => @workspace_path,
-        'devices_list' => @devices,
+        'devices_list' => @devices + role_devices,
         'logger' => @logger,
         'iso_path' => @project.config['iso_path'],
         'client_world_net' => common.client_world_net,
@@ -148,7 +155,7 @@ module AutoHCK
         'cpu_count' => client_info.cpus,
         'memory_gb' => client_info.memory_gb,
         'arch' => client_info.arch || @platform.client_arch || Project::DEFAULT_ARCH
-      }.merge(client_vm_common_options))
+      }.merge(client_vm_common_options(client_info)))
     end
 
     def initialize_clients_vm
@@ -156,6 +163,7 @@ module AutoHCK
         vm_options = client_vm_options(v, i)
         @logger.debug("Creating client VM #{v.name} with options: #{vm_options}")
         @clients_vm[v.name] = QemuMachine.new(@project, vm_options)
+        @client_vm_ids[v.name] = vm_options.fetch('client_id')
       end
     end
 
@@ -279,12 +287,74 @@ module AutoHCK
       @clients_vm[name].option_config(option)
     end
 
+    def virt_fw_vars_bin
+      @studio_vm.config.fetch('virt_fw_vars_bin')
+    end
+
     def run_studio(scope, run_opts = nil)
       @studio_vm.run(scope, run_opts)
     end
 
-    def run_hypervisor_client_command(name, cmd, arguments = nil)
-      @clients_vm_runners[name].qmp.run_cmd(cmd, arguments)
+    # Identify the active firmware session without exposing QMP to the test engine.
+    def firmware_session_token(name)
+      current = @clients_vm_runners[name]&.qmp
+      return nil unless current
+
+      state = @firmware_sessions[name]
+      return state[:token] if state && state[:qmp].equal?(current)
+
+      @firmware_sessions[name] = { qmp: current, token: Object.new.freeze, regular_usb_bootindex: nil }
+      @firmware_sessions[name][:token]
+    end
+
+    def run_hypervisor_client_command(name, cmd, arguments = nil, session: nil)
+      current = session ? firmware_session_state(name, session).fetch(:qmp) : @clients_vm_runners[name]&.qmp
+      raise QMPError, 'QEMU session unavailable or replaced' unless current
+
+      current.run_cmd(cmd, arguments)
+    end
+
+    # Give one test UFD priority while keeping the ordinary HLK USB stick out of the boot attempt.
+    def select_secure_boot_ufd(name, number, session:)
+      raise ArgumentError, "Unknown Secure Boot UFD: #{number}" unless [1, 2].include?(number)
+
+      state = firmware_session_state(name, session)
+      inactive = number == 1 ? 2 : 1
+      set_secure_boot_ufd_bootindex(name, inactive, -1, session:)
+      demote_regular_usb(name, state, session:)
+      set_secure_boot_ufd_bootindex(name, number, 0, session:)
+      verify_secure_boot_ufd_bootindex(name, inactive, -1, session:)
+      verify_secure_boot_ufd_bootindex(name, number, 0, session:)
+    end
+
+    # Return both test UFDs to normal priority after an EFI boot attempt.
+    def restore_secure_boot_ufd_priority(name, session:)
+      firmware_session_state(name, session)
+      reset_secure_boot_ufd_bootindexes(name, session:)
+      verify_secure_boot_ufd_bootindexes(name, session:)
+    end
+
+    # Restore the ordinary HLK USB stick when the manual test controller finishes.
+    def restore_secure_boot_boot_priority(name, session:)
+      return false unless session && firmware_session_token(name).equal?(session)
+
+      restore_secure_boot_ufd_priority(name, session:)
+      restore_regular_usb_bootindex(name, session:)
+      true
+    end
+
+    def send_efi_return(name, session:)
+      keys = [{ 'type' => 'qcode', 'data' => 'ret' }]
+      secure_boot_qmp(name, 'send-key', { 'keys' => keys, 'hold-time' => 100 }, session:)
+    end
+
+    # Win2019 opens this menu after the EFI app; Win2025 boots Windows directly.
+    # Windows Boot Manager is the second menu entry on Win2019.
+    def select_efi_windows_boot_manager(name, session:)
+      down = [{ 'type' => 'qcode', 'data' => 'down' }]
+      secure_boot_qmp(name, 'send-key', { 'keys' => down, 'hold-time' => 100 }, session:)
+      sleep 0.2
+      send_efi_return(name, session:)
     end
 
     def wait_for_hypervisor_client_event(name, events, timeout: 60)
@@ -292,13 +362,38 @@ module AutoHCK
     end
 
     def run_client(scope, name, run_opts = nil)
+      check_pending_nvram_transitions
       @clients_vm_runners[name] = @clients_vm[name].run(scope, client_run_opts(run_opts))
+    end
+
+    # Protect the workspace from reuse after an unfinished NVRAM transition.
+    def check_pending_nvram_transitions
+      pending = Dir.glob(File.join(@workspace_path, 'nvram_transition_*.pending.json'))
+      return if pending.empty?
+
+      raise AutoHCKError, "Unfinished NVRAM transition; inspect before reusing this workspace: #{pending.join(', ')}"
+    end
+
+    def client_nvram_path(name)
+      File.expand_path(@clients_vm.fetch(name).fw.fetch('nvram'))
+    end
+
+    # Restart a client with selected NVRAM while preserving its test environment.
+    def restart_client_with_nvram(scope, name, path, temporary_devices: [])
+      machine = @clients_vm.fetch(name)
+      options = machine.run_opts.merge(create_snapshot: false, boot_from_snapshot: true, temporary_devices:)
+      @clients_vm_runners.fetch(name).keep_snapshot
+      stop_client(name)
+      machine.select_nvram(path)
+      # Allow the current NVRAM transition to complete its client restarts.
+      @clients_vm_runners[name] = machine.run(scope, client_run_opts(options))
     end
 
     # Stops the client's VM (if running) and boots a new one with run_opts.
     def power_cycle_client(scope, name, run_opts = nil)
+      check_pending_nvram_transitions
       stop_client(name)
-      @clients_vm_runners[name] = @clients_vm[name].run(scope, client_run_opts(run_opts))
+      run_client(scope, name, run_opts)
     end
 
     def client_run_opts(run_opts)
@@ -349,6 +444,91 @@ module AutoHCK
       $stderr.write "[qemuhck.rb] Entering namespace: #{workspace_path}\n" if ENV['AUTOHCK_NS_VERBOSE']
       T.unsafe(Ns).enter workspace_path, Dir.pwd, 'bin/auto_hck', '-w',
                          workspace_path, *ARGV
+    end
+
+    private
+
+    def firmware_session_state(name, session)
+      current = @clients_vm_runners[name]&.qmp
+      state = @firmware_sessions[name]
+      unless current && state && state[:qmp].equal?(current) && state[:token].equal?(session)
+        raise QMPError, 'QEMU session unavailable or replaced'
+      end
+
+      state
+    end
+
+    def secure_boot_qmp(name, command, arguments, session:)
+      firmware_session_state(name, session)
+      Timeout.timeout(SECURE_BOOT_QMP_TIMEOUT) do
+        run_hypervisor_client_command(name, command, arguments, session:)
+      end
+    end
+
+    def secure_boot_client_id(name)
+      format('%<client>02d', client: @client_vm_ids.fetch(name))
+    end
+
+    def secure_boot_ufd_path(name, number)
+      "/machine/peripheral/svvp_ufd#{number}_#{secure_boot_client_id(name)}"
+    end
+
+    def regular_usb_path(name)
+      "/machine/peripheral/hlk_usb_stick_#{secure_boot_client_id(name)}"
+    end
+
+    def set_secure_boot_ufd_bootindex(name, number, value, session:)
+      arguments = { 'path' => secure_boot_ufd_path(name, number), 'property' => 'bootindex', 'value' => value }
+      secure_boot_qmp(name, 'qom-set', arguments, session:)
+    end
+
+    def reset_secure_boot_ufd_bootindexes(name, session:)
+      [1, 2].each { |number| set_secure_boot_ufd_bootindex(name, number, -1, session:) }
+    end
+
+    def verify_secure_boot_ufd_bootindexes(name, session:)
+      [1, 2].each { |number| verify_secure_boot_ufd_bootindex(name, number, -1, session:) }
+    end
+
+    def verify_secure_boot_ufd_bootindex(name, number, expected, session:)
+      arguments = { 'path' => secure_boot_ufd_path(name, number), 'property' => 'bootindex' }
+      actual = secure_boot_qmp(name, 'qom-get', arguments, session:)
+      return if actual == expected
+
+      raise EngineError, "UFD #{number} bootindex is #{actual.inspect}, expected #{expected}"
+    end
+
+    def demote_regular_usb(name, state, session:)
+      return unless state[:regular_usb_bootindex].nil?
+
+      path = regular_usb_path(name)
+      index = secure_boot_qmp(name, 'qom-get', { 'path' => path, 'property' => 'bootindex' }, session:)
+      unless index.is_a?(Integer) && index.zero?
+        raise EngineError, "General USB stick bootindex is #{index.inspect}, expected 0"
+      end
+
+      state[:regular_usb_bootindex] = index
+      secure_boot_qmp(name, 'qom-set', { 'path' => path, 'property' => 'bootindex', 'value' => -1 }, session:)
+      verify_regular_usb_bootindex(name, -1, session:)
+    end
+
+    def restore_regular_usb_bootindex(name, session:)
+      state = firmware_session_state(name, session)
+      index = state[:regular_usb_bootindex]
+      return if index.nil?
+
+      arguments = { 'path' => regular_usb_path(name), 'property' => 'bootindex', 'value' => index }
+      secure_boot_qmp(name, 'qom-set', arguments, session:)
+      verify_regular_usb_bootindex(name, index, session:)
+      state[:regular_usb_bootindex] = nil
+    end
+
+    def verify_regular_usb_bootindex(name, expected, session:)
+      arguments = { 'path' => regular_usb_path(name), 'property' => 'bootindex' }
+      actual = secure_boot_qmp(name, 'qom-get', arguments, session:)
+      return if actual == expected
+
+      raise EngineError, "General USB stick bootindex is #{actual.inspect}, expected #{expected}"
     end
   end
 end
