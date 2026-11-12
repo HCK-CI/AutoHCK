@@ -213,12 +213,12 @@ module AutoHCK
       retry
     end
 
-    def run_on_machine(machine, desc, cmd)
-      retries ||= 0
+    def run_on_machine(machine, desc, cmd, max_attempts: ACTION_RETRIES)
+      attempts ||= 0
       act_with_tools_on_machine(machine) { _1.run_on_machine(machine, cmd) }
     rescue ToolsHCKError => e
       @logger.warn(e.message)
-      unless (retries += 1) < ACTION_RETRIES
+      unless (attempts += 1) < max_attempts
         raise RunOnMachineError,
               "Running command (#{desc}) on machine #{machine} failed"
       end
