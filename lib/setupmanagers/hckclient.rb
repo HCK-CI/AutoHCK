@@ -10,6 +10,16 @@ module AutoHCK
     # Client cooldown sleep after thread is joined in seconds
     CLIENT_COOLDOWN_SLEEP = 60
 
+    HLK_COMMUNICATION_SERVICE = 'HLKsvc'
+
+    # Deadline for a client to join a pool, in seconds
+    CLIENT_POOL_WAIT_TIMEOUT = 900
+
+    # Grace period before service checks begin, to let boot-time auto-start complete
+    SERVICE_CHECK_GRACE = 120
+
+    SERVICE_CHECK_INTERVAL = 30
+
     attr_reader :name, :kit, :target, :replacement_map
 
     def initialize(setup_manager, scope, studio, name, run_opts)
@@ -164,7 +174,7 @@ module AutoHCK
 
     def recognize_client_wait
       @logger.info("Waiting for client #{@name} to be recognized in Default Pool")
-      sleep 5 until pool == 'Default Pool'
+      wait_for_pool_membership('Default Pool')
       @logger.info("Client #{@name} recognized")
     end
 
@@ -181,8 +191,91 @@ module AutoHCK
 
     def return_when_client_restored
       @logger.info("Waiting for client #{@name} to rejoin pool #{@project.engine_tag}")
-      sleep 5 until pool == @project.engine_tag
+      wait_for_pool_membership(@project.engine_tag)
       @logger.info("Client #{@name} rejoined pool #{@project.engine_tag}")
+    end
+
+    # Waits for the client to join the given pool, bounded by
+    # CLIENT_POOL_WAIT_TIMEOUT. Monitors the HLK communication service while
+    # waiting; the raised ClientRunError lets the setup retry re-boot the client.
+    def wait_for_pool_membership(pool_name)
+      started = monotonic_time
+      deadline = started + CLIENT_POOL_WAIT_TIMEOUT
+      next_service_check = started + SERVICE_CHECK_GRACE
+      last_service_status = nil
+      loop do
+        return if pool == pool_name
+
+        now = monotonic_time
+        raise pool_wait_timeout_error(pool_name, now - started, last_service_status) if now >= deadline
+
+        if now >= next_service_check
+          status = ensure_hlk_communication_service
+          last_service_status = status unless status.nil?
+          next_service_check = now + SERVICE_CHECK_INTERVAL
+        end
+
+        sleep 5
+      end
+    end
+
+    def pool_wait_timeout_error(pool_name, elapsed, last_service_status)
+      ClientRunError.new("Client #{@name} did not join pool '#{pool_name}' after waiting " \
+                         "#{elapsed.to_i} seconds (HLK communication service " \
+                         "'#{HLK_COMMUNICATION_SERVICE}' status: #{last_service_status || 'unknown'})")
+    end
+
+    def monotonic_time
+      Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    end
+
+    # Starts the HLK communication service when stopped. Returns the status,
+    # or nil when the client can not be reached.
+    def ensure_hlk_communication_service
+      status = hlk_communication_service_status
+      if status == 'Missing'
+        raise ClientRunError, "HLK communication service '#{HLK_COMMUNICATION_SERVICE}' " \
+                              "is missing on client #{@name}"
+      end
+      return status unless status == 'Stopped'
+
+      @logger.warn("HLK communication service '#{HLK_COMMUNICATION_SERVICE}' is stopped " \
+                   "on #{@name}, trying to start it")
+      begin
+        @tools.run_on_machine(@name, 'HLK communication service start',
+                              "Start-Service #{HLK_COMMUNICATION_SERVICE} -ErrorAction Stop",
+                              max_attempts: 1)
+      rescue *service_check_transient_errors => e
+        @logger.warn("Starting HLK communication service on #{@name} failed: #{e.message}")
+      end
+      status
+    end
+
+    def hlk_communication_service_status
+      cmd = "$service = Get-Service #{HLK_COMMUNICATION_SERVICE} -ErrorAction SilentlyContinue; " \
+            "if ($null -eq $service) { 'Missing' } else { $service.Status.ToString() }"
+      @tools.run_on_machine(@name, 'HLK communication service status check', cmd, max_attempts: 1).strip
+    rescue *service_check_transient_errors => e
+      @logger.debug("HLK communication service status check failed on #{@name}: #{e.message}")
+      nil
+    end
+
+    # Errors treated as transient by the service checks (client unreachable
+    # or booting); anything else is a real error and propagates. Listed
+    # explicitly because some escape RToolsHCK's SSH_ACTION_ERRORS wrapping.
+    def service_check_transient_errors
+      [
+        Tools::ToolsHCKError,
+        HTTPClient::TimeoutError,
+        HTTPClient::BadResponseError,
+        Errno::ECONNREFUSED,
+        Errno::EHOSTUNREACH,
+        Errno::ETIMEDOUT,
+        Errno::ECONNRESET,
+        Errno::ENETUNREACH,
+        SocketError,
+        Timeout::Error
+      ]
     end
 
     def prepare_machine
