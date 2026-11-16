@@ -127,13 +127,14 @@ module AutoHCK
 
     private
 
-    sig { params(client_id: Integer).returns(String) }
+    sig { params(client_id: T.any(Integer, String)).returns(String) }
     def resolve_client_name(client_id)
-      client = @project.engine_platform.client_for_id(client_id)
-      unless client
-        raise EngineError, "Step targets unknown client id #{client_id} " \
-                           '(not declared in the platform configuration)'
-      end
+      client = if client_id.is_a?(Integer)
+                 @project.engine_platform.client_for_id(client_id)
+               else
+                 @project.engine_platform.clients.values.find { |c| c.role&.strip&.casecmp?(client_id) }
+               end
+      raise EngineError, "Step targets unknown client #{client_id}" unless client
 
       name = client.name
       unless @machines.include?(name)
