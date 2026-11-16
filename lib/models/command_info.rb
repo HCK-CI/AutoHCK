@@ -108,10 +108,10 @@ module AutoHCK
       const :expected_output_matches, T.nilable(String)
       const :expected_output_matches_encoding, T.nilable(String)
 
-      # Client ids (e.g. 1, 2) this step targets, by position in the platform
-      # JSON's clients map. Empty (default) broadcasts to every client in
-      # the current test case.
-      const :clients, T::Array[Integer], default: []
+      # Clients this step targets: 1-based ids by position in the platform JSON's
+      # clients map (e.g. 1, 2), or a unique role name (e.g. "master").
+      # Empty (default) broadcasts to every client in the current test case.
+      const :clients, T::Array[T.any(Integer, String)], default: []
 
       # `dup` is shallow, so array/hash fields would stay shared with the
       # original. Round-tripping through serialize/from_hash rebuilds every
