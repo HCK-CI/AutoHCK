@@ -172,7 +172,6 @@ module AutoHCK
       target_machines(command_info).each do |machine_name|
         @logger.info("Running command (#{desc}) on client #{machine_name}")
         command = resolve_guest_command(command_info, machine_name, replacement)
-        @logger.debug("Running command after replacement (#{desc}) on client #{machine_name}: #{command}")
 
         outputs[machine_name] = @tools.run_on_machine(machine_name, desc, command)
       end
