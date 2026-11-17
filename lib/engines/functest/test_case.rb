@@ -16,7 +16,8 @@ module AutoHCK
       const :extra_software, T::Array[String], default: []
       const :pre_test_commands, T::Array[Models::CommandInfo], default: []
       const :cycles, Integer, default: 1
-      prop :test_steps, T::Array[Models::CommandInfo]
+      # Empty for dynamic tests; JSON-driven cases still supply steps.
+      prop :test_steps, T::Array[Models::CommandInfo], default: []
       const :cleanup, T::Array[Models::CommandInfo], default: []
 
       # Client ids (e.g. 1, 2) this test case needs booted, by position in
@@ -31,6 +32,13 @@ module AutoHCK
       # After the test passes, save the VM's disk as a snapshot that other
       # tests can start from via boot_from_snapshot_tag.
       const :save_snapshot_as, T.nilable(String)
+
+      # When true, AutoHCK loads the sibling .rb (see dynamic_path) and
+      # delegates pre/steps/cleanup to a DynamicTest subclass. Snapshots,
+      # client scoping, and ordering stay under TestExecutor control.
+      const :dynamic, T::Boolean, default: false
+      # Absolute path to the Ruby implementation; set by TestLoader, not JSON.
+      const :dynamic_path, T.nilable(String)
 
       sig { returns(String) }
       def safe_name
