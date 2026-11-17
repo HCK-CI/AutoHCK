@@ -1,0 +1,7 @@
+{
+    "name": "vm_pause_resume",
+    "description": "Pause and resume the VM via QMP, assert query-status transitions, then verify the guest is still responsive. Works with any driver.",
+    "test_system_ref": "",
+    "timeout": 180,
+    "dynamic": true
+}
