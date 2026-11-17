@@ -114,6 +114,8 @@ module AutoHCK
       def capture_value(result, guest_output, step)
         return guest_output.strip unless guest_output.strip.empty?
 
+        return result[:host_output].to_s.strip if result[:host_output]
+
         machine = @command_execution_manager.primary_machine(step)
         return result[:qmp_result][machine].to_json if result[:qmp_result]
         return result[:qmp_event][machine].to_json if result[:qmp_event]
