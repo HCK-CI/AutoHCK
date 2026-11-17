@@ -1,0 +1,28 @@
+{
+    "name": "host_output_capture",
+    "description": "Verify host_run and host_run_file output is captured into variables and can be reused",
+    "test_steps": [
+        {
+            "desc": "Capture numeric output from a host command",
+            "host_run": "echo 1234",
+            "capture_output": "host_number",
+            "expected_output_matches": "^1234$"
+        },
+        {
+            "desc": "Reuse the captured host command output as a variable",
+            "host_run": "test '@host_number@' = 1234 && echo 'PASS: host command output captured'",
+            "expected_output_contains": "PASS:"
+        },
+        {
+            "desc": "Capture numeric output from a host script",
+            "host_run_file": "lib/engines/functest/tests/scripts/dummy_ci/echo_capture.sh",
+            "capture_output": "host_file_value",
+            "expected_output_matches": "^5678$"
+        },
+        {
+            "desc": "Reuse the captured host script output as a variable",
+            "host_run": "test '@host_file_value@' = 5678 && echo 'PASS: host script output captured'",
+            "expected_output_contains": "PASS:"
+        }
+    ]
+}
