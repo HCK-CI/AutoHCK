@@ -290,21 +290,21 @@ See [`lib/engines/functest/tests/cases/driver_sign_check.json`](../lib/engines/f
 
 ## Step Types
 
-> Each step object must have **exactly one** step-type field (`guest_run`, `guest_run_file`, `guest_reboot`, `host_run`, `host_run_file`, `files_action`, `files_transfer`, `qmp_command`, `qmp_wait_event`, `barrier`, `set_variable`, `parallel`). All other fields are optional modifiers.
+> Each step object must have **exactly one** step-type field (`guest_run`, `guest_run_file`, `guest_reboot`, `host_run`, `host_run_file`, `files_action`, `files_transfer`, `files_collect`, `files_publish`, `qmp_command`, `qmp_wait_event`, `barrier`, `set_variable`, `parallel`). All other fields are optional modifiers.
 
 ### Common Step Fields
 
 | Field | Description |
 |---|---|
 | `desc` | Human-readable description; logged and shown in results. |
-| `timeout` | Step timeout in seconds; overrides the engine default of 300s. Not applicable to `files_action` or `files_transfer` steps — file transfers run without a timeout. |
+| `timeout` | Step timeout in seconds; overrides the engine default of 300s. Not applicable to file-transfer or artifact steps — those run without a timeout. |
 | `ignore_errors` | If `true`, a failure in this step does not abort the test. Useful for optional steps in `test_steps`. Default: `false`. |
 | `variables` | Maps `@placeholder@` strings to existing context variable names for extra substitution within this step. |
 | `capture_output` | Name of a variable to store the step's output in, e.g. `"capture_output": "driver_version"` makes it available as `@driver_version@` later. Supported by `guest_run`/`guest_run_file`, `host_run`/`host_run_file`, `qmp_command`, and `qmp_wait_event`. On a multi-client step, only the primary target's output is captured. |
 | `expected_output_contains` | The step fails if the output does not contain this string. Only for `guest_run`/`guest_run_file`/`host_run`/`host_run_file`. Checked against every client the step ran on. |
 | `expected_output_matches` | The step fails if the output does not match this regex. Only for `guest_run`/`guest_run_file`/`host_run`/`host_run_file`. Checked against every client the step ran on. |
 | `expected_output_matches_encoding` | Controls regex encoding options for `expected_output_matches`. Currently only `Regexp::NOENCODING` is supported (binary match). Do not set to use default encoding. |
-| `clients` | Client ids (e.g. `[2]`) this step targets. Applies to `guest_run`/`guest_run_file`, `guest_reboot`, `files_action`, `files_transfer`, `qmp_command`, `qmp_wait_event`; `host_run`/`host_run_file` always run once on the host regardless. Omitted/empty broadcasts to every client booted for the test case. See [Multi-Client Support](#multi-client-support). |
+| `clients` | Client ids (e.g. `[2]`) this step targets. Applies to `guest_run`/`guest_run_file`, `guest_reboot`, `files_action`, `files_transfer`, `files_collect`, `files_publish`, `qmp_command`, `qmp_wait_event`; `host_run`/`host_run_file` always run once on the host regardless. Omitted/empty broadcasts to every client booted for the test case. See [Multi-Client Support](#multi-client-support). |
 
 ---
 
@@ -433,6 +433,57 @@ the test result.
 
 Use `files_action` instead when a test needs a custom destination, download, transfer
 during `test_steps`, or other explicit file-operation behavior.
+
+---
+
+### `files_collect` and `files_publish`
+
+Download diagnostic files from the guest after a test step and remove each file from
+the guest after a successful download. `files_collect` keeps the downloaded file in the
+workspace; `files_publish` also uploads it through the configured result uploader.
+
+```json
+{
+    "desc": "Collect diagnostics before cleanup",
+    "files_collect": [
+        "C:\\AutoHCK\\interactive_work\\worker.log",
+        "C:\\AutoHCK\\interactive_work\\autoit_install.log",
+        "C:\\AutoHCK\\functional-test-results.json"
+    ]
+}
+```
+
+```json
+{
+    "desc": "Publish final logs",
+    "files_publish": [
+        "C:\\AutoHCK\\installer-summary.log",
+        "C:\\AutoHCK\\driver-version-results.json",
+        "C:\\AutoHCK\\validation-results.json"
+    ]
+}
+```
+
+Artifact steps are allowed only in `cleanup`; they are not supported in
+`pre_test_commands`, `test_steps`, extension commands, or `parallel` branches. A step must use one of
+`files_collect` and `files_publish`, never both. Every path is handled independently and
+best-effort: a missing file or a download, guest deletion, or publication failure is
+logged as a warning and does not fail the step or prevent later files from being handled.
+Normal variable substitution and `clients` targeting apply.
+
+Files are stored below the workspace as:
+
+```text
+test_artifacts/<test-name>/<basename>__id-<run-id>__<workspace-timestamp>.<ext>
+```
+
+For example:
+
+```text
+test_artifacts/msi_repair/state-baseline__id-0029__2026_10_14_02_06_15.json
+```
+
+Published files use that same test-specific relative path.
 
 ---
 

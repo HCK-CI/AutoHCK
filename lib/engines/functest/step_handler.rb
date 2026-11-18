@@ -30,8 +30,8 @@ module AutoHCK
 
         return execute_parallel(step, desc, timeout) if step.parallel
 
-        # Skip timeout for file transfer steps
-        return execute_and_handle(step, desc) if step.files_action.any? || step.files_transfer.any?
+        # File transfers run without a step-level timeout.
+        return execute_file_step(step, desc) if file_step?(step)
 
         Timeout.timeout(timeout) { execute_and_handle(step, desc) }
       rescue Timeout::Error
@@ -43,6 +43,62 @@ module AutoHCK
       # rubocop:enable Metrics/AbcSize
 
       private
+
+      def file_step?(step)
+        artifact_step?(step) || step.files_action.any? || step.files_transfer.any?
+      end
+
+      def execute_file_step(step, desc)
+        return execute_artifact_step(step, desc) if artifact_step?(step)
+
+        execute_and_handle(step, desc)
+      end
+
+      def artifact_step?(step)
+        step.files_collect.any? || step.files_publish.any?
+      end
+
+      def execute_artifact_step(step, desc)
+        validate_step_type!(step, desc)
+        publish = step.files_publish.any?
+        paths = publish ? step.files_publish : step.files_collect
+        paths.each { |remote_path| collect_artifact_file(step, remote_path, publish) }
+      end
+
+      def collect_artifact_file(step, remote_path, publish)
+        local_path = artifact_local_path(remote_path, step)
+        action = Models::FileActionConfig.new(
+          remote_path: remote_path,
+          local_path: local_path,
+          direction: Models::FileActionDirection::RemoteToLocal,
+          move: true,
+          allow_missing: true
+        )
+
+        downloaded = @command_execution_manager.execute_best_effort_file_action(
+          step, action, replacement: step_replacement(step)
+        )
+        downloaded.each { |path| publish_artifact(path) } if publish
+      rescue StandardError => e
+        @logger.warn("Artifact collection failed for #{remote_path}: #{e.message}")
+      end
+
+      def artifact_local_path(remote_path, step)
+        replacement = @project.project_replacement_map.merge(step_replacement(step))
+        basename = File.basename(replacement.replace(remote_path).tr('\\', '/'))
+        extension = File.extname(basename)
+        stem = basename.delete_suffix(extension)
+        filename = "#{stem}__id-@run_id@__#{@project.timestamp}#{extension}"
+        test_name = @context.replacement_map['@test_name@'] || 'unknown_test'
+        File.join('@workspace@', 'test_artifacts', test_name, filename)
+      end
+
+      def publish_artifact(local_path)
+        relative_path = Pathname.new(local_path).relative_path_from(Pathname.new(@project.workspace_path)).to_s
+        @project.result_uploader.upload_file(local_path, relative_path)
+      rescue StandardError => e
+        @logger.warn("Artifact publication failed for #{local_path}: #{e.message}")
+      end
 
       def execute_parallel(step, desc, timeout)
         validate_step_type!(step, desc)

@@ -32,7 +32,8 @@ module AutoHCK
     }.freeze, T::Hash[Symbol, T.untyped])
 
     STEP_TYPE_FIELDS = T.let(%i[
-      guest_run guest_run_file guest_reboot files_action files_transfer host_run host_run_file
+      guest_run guest_run_file guest_reboot files_action files_transfer files_collect files_publish
+      host_run host_run_file
       barrier set_variable qmp_command qmp_wait_event engine_setup_manager_action parallel
     ].freeze, T::Array[Symbol])
 
@@ -126,6 +127,28 @@ module AutoHCK
     sig { params(command_info: Models::CommandInfo).returns(T.nilable(String)) }
     def primary_machine(command_info)
       target_machines(command_info).first
+    end
+
+    # Runs one generated artifact download independently on every target.
+    # All transfer failures are warnings; successfully downloaded local paths
+    # are returned so callers can optionally publish them.
+    sig do
+      params(
+        command_info: Models::CommandInfo,
+        files_action: Models::FileActionConfig,
+        replacement: ReplacementMap
+      ).returns(T::Array[String])
+    end
+    def execute_best_effort_file_action(command_info, files_action, replacement: ReplacementMap.new)
+      downloaded_paths = T.let([], T::Array[String])
+      target_machines(command_info).each do |machine_name|
+        action = prepare_file_action(files_action, machine_name, replacement, command_info)
+        transferred = @file_action_handler.handle(machine_name, action, best_effort: true)
+        downloaded_paths << T.must(action.local_path) if transferred
+      rescue StandardError => e
+        @logger.warn("Artifact download failed on #{machine_name}: #{e.message}")
+      end
+      downloaded_paths
     end
 
     private
