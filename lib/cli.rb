@@ -77,8 +77,9 @@ module AutoHCK
                 &method(:client_ctrl_net_dev=))
 
       parser.on('--client-world-net-dev <client-world-net-dev>', String,
-                'Client VM world network device (default: e1000e; make sure that driver is installed).',
-                'Ignored unless --client_world_net. Example: virtio-net-pci (NetKVM world/L3)',
+                'Client VM world NIC model (default: e1000e; ensure its driver is installed).',
+                'Applies to --client_world_net and tests that request world networking.',
+                'Example: virtio-net-pci (NetKVM world/L3)',
                 &method(:client_world_net_dev=))
 
       parser.on('--attach-debug-net', TrueClass,

@@ -206,8 +206,9 @@ module AutoHCK
       role = client['role']
       return if !PRIMARY_ROLES.include?(role) && !@project.options.test.svvp && @drivers.none?(&:support)
 
+      client_opts = run_opts.merge(world_net: run_opts.fetch(:world_net, false) && role == Models::ClientRole::Sut)
       @logger.info("Starting client #{name} (role: #{role})")
-      @clients[name] = @project.setup_manager.run_hck_client(scope, @studio, name, run_opts)
+      @clients[name] = @project.setup_manager.run_hck_client(scope, @studio, name, client_opts)
     end
 
     def post_start_commands
@@ -438,6 +439,7 @@ module AutoHCK
 
     def select_test_config
       tests_config = @config.tests_config +
+                     svvp_tests_config +
                      @drivers.flat_map(&:tests_config) +
                      @extensions.flat_map(&:tests_config)
 
@@ -446,14 +448,35 @@ module AutoHCK
     end
 
     def group_tests_by_config
-      grouped_tests = { secure: [] }
+      # Hash order runs world-network tests after secure tests and their retries.
+      grouped_tests = T.let({ secure: [], world_net: [] }, T::Hash[Symbol, T::Array[Models::HLK::Test]])
 
       select_test_config.each do |test_group|
-        selected_tests = @test_list.select { |test| test_group.tests.include?(test.name) }
-        grouped_tests[:secure] += selected_tests if test_group.secure
+        selected_tests = exact_config_tests(test_group)
+        if test_group.world_net && selected_tests.any? &&
+           @platform_clients.primary_entry&.fetch('role') != Models::ClientRole::Sut
+          raise EngineError, "world_net tests require a SUT primary client: #{selected_tests.map(&:name).join(', ')}"
+        end
+
+        grouped_tests.fetch(:secure).concat(selected_tests) if test_group.secure
+        grouped_tests.fetch(:world_net).concat(selected_tests) if test_group.world_net
       end
 
+      grouped_tests.each_value(&:uniq!)
+      validate_config_test_groups(grouped_tests)
       grouped_tests
+    end
+
+    def exact_config_tests(test_group)
+      @test_list.select { |test| test_group.tests.include?(test.name) }
+    end
+
+    def validate_config_test_groups(grouped_tests)
+      overlapping = grouped_tests[:secure] & grouped_tests[:world_net]
+      return if overlapping.empty?
+
+      names = overlapping.map(&:name).join(', ')
+      raise EngineError, "Tests cannot require both secure and world_net groups: #{names}"
     end
 
     def upload_driver_package_if_needed
