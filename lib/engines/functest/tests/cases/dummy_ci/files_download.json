@@ -1,0 +1,30 @@
+{
+    "name": "files_download",
+    "description": "Exercise cleanup-only guest artifact collection and publication",
+    "test_steps": [
+        {
+            "desc": "Create guest artifacts",
+            "guest_run": "Set-Content -LiteralPath 'C:\\AutoHCK\\collect-worker.log' -Value 'collect worker'; Set-Content -LiteralPath 'C:\\AutoHCK\\collect-autoit.log' -Value 'collect autoit'; Set-Content -LiteralPath 'C:\\AutoHCK\\collect-results.json' -Value '{\"result\":\"collect\"}'; Set-Content -LiteralPath 'C:\\AutoHCK\\publish-worker.log' -Value 'publish worker'; Set-Content -LiteralPath 'C:\\AutoHCK\\publish-autoit.log' -Value 'publish autoit'; Set-Content -LiteralPath 'C:\\AutoHCK\\publish-results.json' -Value '{\"result\":\"publish\"}'; Write-Output 'artifacts-ready'",
+            "expected_output_contains": "artifacts-ready",
+            "timeout": 30
+        }
+    ],
+    "cleanup": [
+        {
+            "desc": "Collect guest artifacts",
+            "files_collect": [
+                "C:\\AutoHCK\\collect-worker.log",
+                "C:\\AutoHCK\\collect-autoit.log",
+                "C:\\AutoHCK\\collect-results.json"
+            ]
+        },
+        {
+            "desc": "Publish guest artifacts",
+            "files_publish": [
+                "C:\\AutoHCK\\publish-worker.log",
+                "C:\\AutoHCK\\publish-autoit.log",
+                "C:\\AutoHCK\\publish-results.json"
+            ]
+        }
+    ]
+}
