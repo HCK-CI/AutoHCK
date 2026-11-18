@@ -156,9 +156,8 @@ module AutoHCK
       def record_test(test)
         start_time = Time.now
         test_name = test.name
-        @current_test = test_name
-        result = @results.find { |r| r[:name] == test_name }
-        raise EngineError, "Result placeholder not found for #{test_name}" unless result
+        activate_test_context(test)
+        result = test_result!(test_name)
 
         result.merge!({ status: 'running', steps: [], start_time: start_time.utc.iso8601 })
         update_summary_results_log
@@ -171,6 +170,16 @@ module AutoHCK
         @current_test = nil
 
         @project.update_test_stats(tests_stats)
+      end
+
+      def activate_test_context(test)
+        @current_test = test.name
+        @context.set_variable('test_name', test.safe_name)
+      end
+
+      def test_result!(test_name)
+        @results.find { |result| result[:name] == test_name } ||
+          raise(EngineError, "Result placeholder not found for #{test_name}")
       end
 
       # rubocop:disable Metrics/AbcSize
@@ -233,6 +242,7 @@ module AutoHCK
         @command_execution_manager.scope_to_test(test.clients)
         validate_step_clients!(test)
         validate_files_transfer_steps!(test)
+        validate_artifact_steps!(test)
         validate_parallel_blocks!(test)
       end
 
@@ -243,6 +253,23 @@ module AutoHCK
         return if invalid_steps.empty?
 
         raise EngineError, "Test '#{test.name}': files_transfer is only allowed in pre_test_commands"
+      end
+
+      def validate_artifact_steps!(test)
+        invalid_steps = disallowed_artifact_steps(test)
+        return if invalid_steps.empty?
+
+        raise EngineError, "Test '#{test.name}': files_collect and files_publish are only allowed in cleanup"
+      end
+
+      def disallowed_artifact_steps(test)
+        extension_commands = extension_commands_for(test.name, :pre_test_commands) +
+                             extension_commands_for(test.name, :post_test_commands)
+        (test.pre_test_commands + test.test_steps + extension_commands).select { |step| artifact_step?(step) }
+      end
+
+      def artifact_step?(step)
+        step.files_collect.any? || step.files_publish.any?
       end
 
       def all_steps(test)

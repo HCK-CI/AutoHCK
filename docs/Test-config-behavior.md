@@ -19,6 +19,9 @@ Test configuration has the following options:
 - **guest_run** - Optional string command to run on each client VM
 - **guest_reboot** - This option is only applicable to post-start commands and is ignored for pre and post test commands. It controls whether the guest VM should be rebooted after certain operations, but has no effect in this context.
 - **files_action** - Array of file operations to perform
+- **files_transfer** - Array of host files to upload to `C:\AutoHCK`; applicable only to pre-test commands
+- **files_collect** - Best-effort guest artifact downloads kept in the workspace
+- **files_publish** - Best-effort guest artifact downloads also sent to the result uploader
 
 ### File Action Configuration Options
 

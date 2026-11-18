@@ -97,6 +97,8 @@ module AutoHCK
       const :guest_reboot, T::Boolean, default: false
       const :files_action, T::Array[FileActionConfig], default: []
       const :files_transfer, T::Array[String], default: []
+      const :files_collect, T::Array[String], default: []
+      const :files_publish, T::Array[String], default: []
       const :host_run, T.nilable(String)
       const :host_run_file, T.nilable(String)
       const :barrier, T.nilable(String)
@@ -152,7 +154,7 @@ module AutoHCK
       def step_type_active?(field)
         value = public_send(field)
         case field
-        when :files_action, :files_transfer then value.any?
+        when :files_action, :files_transfer, :files_collect, :files_publish then value.any?
         when :guest_reboot then value == true
         when :set_variable then value.is_a?(Hash) && !value.empty?
         when :guest_run, :guest_run_file, :host_run, :host_run_file, :barrier
