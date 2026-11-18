@@ -11,6 +11,7 @@
         "dummy_ci/files_transfer",
         "dummy_ci/host_output_capture",
         "dummy_ci/engine_setup_manager_action",
+        "dummy_ci/files_download",
         "dummy_ci/parallel_host_guest"
     ]
 }
