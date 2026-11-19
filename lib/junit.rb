@@ -103,10 +103,26 @@ module AutoHCK
         (%i[canceled running].include?(autohck_project_status) ? 1 : 0)
     end
 
+    # XML 1.0 allows only #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] |
+    # [#x10000-#x10FFFF]: the C0 control characters (except tab/LF/CR) and
+    # U+FFFE/U+FFFF are forbidden. The session log embedded in <system-err>
+    # carries raw tool output, and tools can print arbitrary bytes
+    # (viosocklib-test echoes an uninitialized recv buffer after a 0-byte
+    # recv): a single control character made the whole junit.xml
+    # unparseable, and strict consumers silently dropped such runs.
+    # Erubi's escape covers the XML entities but not control characters,
+    # and forbidden characters have no legal escaped form
+    # (character references like &#x4; are themselves illegal), so strip
+    # them from the rendered document before it is written. String#scrub
+    # also converts invalid UTF-8 bytes to U+FFFD, which is legal.
+    def sanitize_xml(text)
+      text.scrub.gsub(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE-\uFFFF]/, '')
+    end
+
     def generate(file_path)
       @logger.info('Generating JUnit report')
 
-      File.write(file_path, build_xml)
+      File.write(file_path, sanitize_xml(build_xml))
     end
   end
 end
