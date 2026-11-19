@@ -9,7 +9,7 @@ module AutoHCK
       @logger = logger
     end
 
-    def handle(machine_name, files_action)
+    def handle(machine_name, files_action, best_effort: false)
       @logger.info("Running file action on #{machine_name} " \
                    "#{files_action.direction} from #{files_action.remote_path} to #{files_action.local_path}")
 
@@ -17,7 +17,7 @@ module AutoHCK
       when Models::FileActionDirection::LocalToRemote
         run_local_to_remote(machine_name, files_action)
       when Models::FileActionDirection::RemoteToLocal
-        run_remote_to_local(machine_name, files_action)
+        run_remote_to_local(machine_name, files_action, best_effort: best_effort)
       else
         raise EngineError, "Unknown files_action direction: #{files_action.direction}"
       end
@@ -42,13 +42,13 @@ module AutoHCK
       FileUtils.rm_rf(local_path) if files_action.move
     end
 
-    def run_remote_to_local(machine_name, files_action)
+    def run_remote_to_local(machine_name, files_action, best_effort: false)
       remote_path = files_action.remote_path
 
       unless @tools.exists_on_machine?(machine_name, remote_path)
         if files_action.allow_missing
           @logger.warn("Remote file not found, skipping: #{remote_path}")
-          return
+          return false
         end
 
         raise EngineError, "Remote file not found on #{machine_name}: #{remote_path}"
@@ -58,7 +58,17 @@ module AutoHCK
       FileUtils.mkdir_p(File.dirname(local_path))
       @logger.debug("Downloading: #{remote_path} -> #{local_path}")
       @tools.download_from_machine(machine_name, remote_path, local_path)
-      @tools.delete_on_machine(machine_name, remote_path) if files_action.move
+      delete_remote_source(machine_name, remote_path, best_effort) if files_action.move
+      true
+    end
+
+    def delete_remote_source(machine_name, remote_path, best_effort)
+      @tools.delete_on_machine(machine_name, remote_path)
+    rescue StandardError => e
+      raise unless best_effort
+
+      @logger.warn("Downloaded artifact but failed to remove remote file #{remote_path} " \
+                   "on #{machine_name}: #{e.message}")
     end
   end
 end
