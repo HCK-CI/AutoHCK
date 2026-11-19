@@ -51,5 +51,50 @@ describe AutoHCK::ReplacementMap do
     map = AutoHCK::ReplacementMap.new('@x@' => 'y')
     expect(map.replace(:'@x@')).to eq('y')
   end
+
+  describe '#replace_strict' do
+    it 'returns the substituted value when every placeholder is defined' do
+      map = AutoHCK::ReplacementMap.new('@bus@' => 'root5.0', '@drive@' => '01')
+      expect(map.replace_strict('bus=@bus@ drive=@drive@')).to eq('bus=root5.0 drive=01')
+    end
+
+    it 'substitutes and validates nested Hash and Array values' do
+      map = AutoHCK::ReplacementMap.new('@file@' => '/ws/01')
+      args = { 'bus' => 'root5.0', 'drive' => { 'file' => { 'filename' => '@file@' } }, 'tags' => ['@file@'] }
+
+      expect(map.replace_strict(args)).to eq(
+        'bus' => 'root5.0', 'drive' => { 'file' => { 'filename' => '/ws/01' } }, 'tags' => ['/ws/01']
+      )
+    end
+
+    it 'raises naming every placeholder that survived substitution' do
+      map = AutoHCK::ReplacementMap.new('@bus@' => 'root5.0')
+      args = { 'bus' => '@bus@', 'path' => '/machine/@storage_dev_id@_dev' }
+
+      error = begin
+        map.replace_strict(args)
+        nil
+      rescue AutoHCK::AutoHCKError => e
+        e
+      end
+      expect(error).to be_a(AutoHCK::AutoHCKError)
+      expect(error.message).to include('unsubstituted placeholder(s)')
+      expect(error.message).to include('@storage_dev_id@')
+    end
+
+    it 'detects hyphenated placeholder names substitution may define' do
+      map = AutoHCK::ReplacementMap.new
+
+      expect { map.replace_strict('@root-port@') }
+        .to raise_error(AutoHCK::AutoHCKError, /@root-port@/)
+    end
+
+    it 'passes non-String leaf values through without validation errors' do
+      map = AutoHCK::ReplacementMap.new('@queue@' => '4')
+
+      expect(map.replace_strict({ 'queue' => '@queue@', 'flag' => true, 'count' => 2 }))
+        .to eq({ 'queue' => '4', 'flag' => true, 'count' => 2 })
+    end
+  end
 end
 # rubocop:enable Metrics/BlockLength
