@@ -19,5 +19,7 @@ bin/auto_hck --verbose functest \
     --commit "${GITHUB_COMMIT}"
 
 cat "${AUTO_HCK_WORKSPACE_PATH}/latest/functest_results.json"
-# Check that all 8 test cases passed
-grep -e '"passed": 8,' "${AUTO_HCK_WORKSPACE_PATH}/latest/functest_results.json"
+# Check that all 9 test cases passed (bumped from 8 for the new
+# variable_isolation test — this grep must be updated whenever a test
+# is added to the dummy suite)
+grep -e '"passed": 9,' "${AUTO_HCK_WORKSPACE_PATH}/latest/functest_results.json"

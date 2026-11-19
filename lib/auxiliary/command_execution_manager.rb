@@ -280,13 +280,36 @@ module AutoHCK
       outputs = {}
       target_machines(command_info).each do |machine_name|
         map = replacement_map_for(machine_name, replacement, command_info)
-        arguments = qmp.arguments && coerce_numeric_qmp_values(map.replace(qmp.arguments))
+        arguments = build_qmp_arguments(qmp, map, execute, machine_name)
         outputs[machine_name] = run_qmp_command(execute, arguments, machine_name)
       rescue QMPError => e
         raise EngineError, "QMP command '#{execute}' failed on #{machine_name}: #{e.message}"
       end
 
       outputs
+    end
+
+    # Substitutes the command's arguments for one machine, rejecting any
+    # placeholder that survived substitution before it reaches QEMU (e.g. a
+    # test referencing @spare_pcie_root_port_2@ when only two spare ports
+    # are provisioned — QEMU would only reject the literal string with an
+    # opaque "Bus ... not found" error). Validation itself lives in
+    # ReplacementMap#replace_strict so it can be reused by any consumer of
+    # machine-read replacement output.
+    sig do
+      params(
+        qmp: T.untyped,
+        map: ReplacementMap,
+        execute: String,
+        machine_name: String
+      ).returns(T.nilable(T::Hash[T.untyped, T.untyped]))
+    end
+    def build_qmp_arguments(qmp, map, execute, machine_name)
+      return nil unless qmp.arguments
+
+      coerce_numeric_qmp_values(map.replace_strict(qmp.arguments))
+    rescue AutoHCKError => e
+      raise EngineError, "QMP command '#{execute}' on #{machine_name}: #{e.message}"
     end
 
     sig { params(events: T::Array[String], machine_name: String, timeout: Integer).returns(T.untyped) }

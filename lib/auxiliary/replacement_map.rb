@@ -48,6 +48,36 @@ module AutoHCK
       @hash[key]
     end
 
+    # Shape of a placeholder name. Kept deliberately wide (any non-space,
+    # non-@ characters between two @) so it matches everything substitution
+    # may replace — the variables maps in test JSONs accept arbitrary keys,
+    # including hyphenated names like @root-port@.
+    PLACEHOLDER_RE = /@[^@\s]+@/
+
+    # Replaces placeholders exactly like #replace, then raises if any
+    # placeholder-shaped text survived substitution, i.e. the value
+    # referenced variables this map does not define. Use for
+    # machine-consumed values (e.g. QMP command arguments) where an
+    # unresolved placeholder is always a configuration error; script text
+    # that intentionally keeps unsubstituted placeholders (pass-through
+    # defaults) must keep using #replace.
+    def replace_strict(value)
+      result = replace(value)
+      leftovers = collect_placeholders(result)
+      return result if leftovers.empty?
+
+      raise AutoHCKError, "unsubstituted placeholder(s): #{leftovers.uniq.join(', ')}"
+    end
+
+    def collect_placeholders(value)
+      case value
+      when String then value.scan(PLACEHOLDER_RE)
+      when Hash then value.values.flat_map { |v| collect_placeholders(v) }
+      when Array then value.flat_map { |v| collect_placeholders(v) }
+      else []
+      end
+    end
+
     def create_cmd(str)
       result = str.to_s
       @hash.each do |k, v|
