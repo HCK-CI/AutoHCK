@@ -17,7 +17,8 @@ module AutoHCK
       const :machine_options, T::Array[String], default: []
       const :need_pci_bus, T::Boolean, default: false
       const :pluggable_memory_gb, Integer, default: 0
-      const :iommu_device_param, T.nilable(String)
+      const :iommu_platform_support, T::Boolean, default: false
+      const :iommu_device_params, T::Hash[String, T::Boolean], default: {}
     end
   end
 end

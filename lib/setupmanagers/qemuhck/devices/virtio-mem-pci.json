@@ -1,5 +1,6 @@
 {
   "name": "virtio-mem-pci",
+  "iommu_platform_support": true,
   "pluggable_memory_gb": 8,
   "need_pci_bus": true,
   "command_line": [

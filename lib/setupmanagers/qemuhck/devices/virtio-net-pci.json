@@ -1,5 +1,6 @@
 {
   "name": "virtio-net-pci",
+  "iommu_platform_support": true,
   "type": "network",
   "need_pci_bus": true,
   "command_line": [
