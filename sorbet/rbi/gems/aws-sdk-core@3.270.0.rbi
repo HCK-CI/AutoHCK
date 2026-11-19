@@ -3676,40 +3676,40 @@ class Aws::Log::Formatter
   # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:125
   def _client_class(response); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:195
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:196
   def _error_class(response); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:199
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:200
   def _error_message(response); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:173
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:174
   def _http_request_body(response); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:149
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:150
   def _http_request_endpoint(response); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:169
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:170
   def _http_request_headers(response); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:157
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:158
   def _http_request_host(response); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:165
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:166
   def _http_request_method(response); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:161
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:162
   def _http_request_port(response); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:153
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:154
   def _http_request_scheme(response); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:185
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:186
   def _http_response_body(response); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:181
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:182
   def _http_response_headers(response); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:177
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:178
   def _http_response_status_code(response); end
 
   # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:129
@@ -3721,10 +3721,10 @@ class Aws::Log::Formatter
   # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:133
   def _request_params(response); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:145
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:146
   def _retries(response); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:139
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:140
   def _time(response); end
 
   class << self
@@ -3736,7 +3736,7 @@ class Aws::Log::Formatter
     #
     # @return [Formatter]
     #
-    # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:249
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:250
     def colored(options = T.unsafe(nil)); end
 
     # The default log format.
@@ -3747,7 +3747,7 @@ class Aws::Log::Formatter
     #
     # @return [Formatter]
     #
-    # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:212
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:213
     def default(options = T.unsafe(nil)); end
 
     # The short log format.  Similar to default, but it does not
@@ -3759,7 +3759,7 @@ class Aws::Log::Formatter
     #
     # @return [Formatter]
     #
-    # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:232
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/formatter.rb:233
     def short(options = T.unsafe(nil)); end
   end
 end
@@ -3771,19 +3771,41 @@ class Aws::Log::ParamFilter
   # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/param_filter.rb:22
   def initialize(options = T.unsafe(nil)); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/param_filter.rb:27
+  # Returns a copy with sensitive values replaced by "[FILTERED]".
+  #
+  # Uses generated SENSITIVE lists to choose which members to redact.
+  # Nested request hashes also use the global list for backwards compatibility.
+  # A ShapeRef preserves model types while filtering nested request parameters.
+  # Structure classes are also accepted for Structure#to_s and older callers.
+  #
+  # @param [Hash, Struct, Array, Object] values
+  # @param [Seahorse::Model::Shapes::ShapeRef, Class, nil] type
+  #
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/param_filter.rb:36
   def filter(values, type); end
 
   private
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/param_filter.rb:64
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/param_filter.rb:128
   def filter_array(values, type); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/param_filter.rb:45
-  def filter_hash(values, type); end
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/param_filter.rb:88
+  def filter_by_class(values, type); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/param_filter.rb:38
-  def filter_struct(values, type); end
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/param_filter.rb:104
+  def filter_hash(values, type, shape = T.unsafe(nil), use_global_filters: T.unsafe(nil)); end
+
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/param_filter.rb:69
+  def filter_map(values, shape); end
+
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/param_filter.rb:44
+  def filter_ref(value, ref, root: T.unsafe(nil)); end
+
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/param_filter.rb:97
+  def filter_struct(values, type, shape = T.unsafe(nil), use_global_filters: T.unsafe(nil)); end
+
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/log/param_filter.rb:82
+  def member_ref(shape, key); end
 end
 
 # DEPRECATED - This must exist for backwards compatibility. Sensitive
@@ -3853,9 +3875,11 @@ Aws::Log::ParamFormatter::MAX_STRING_SIZE = T.let(T.unsafe(nil), Integer)
 #     ec2 = Aws::EC2::Client.new(credentials: login_credentials)
 #
 # If you omit the `:client` option, a new {Aws::Signin::Client} object will
-# be constructed with additional options that were provided.
+# be constructed with additional options that were provided. When the cached
+# token records a different `signInRegion`, a client for that region is
+# constructed the same way and used to refresh.
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:16
+# pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:18
 class Aws::LoginCredentials
   include ::Aws::CredentialProvider
   include ::Aws::RefreshingCredentials
@@ -3866,60 +3890,70 @@ class Aws::LoginCredentials
   #   PowerShell automatically.
   #
   # @option options [Signin::Client] :client Optional `Signin::Client`.
-  #   If not provided, a client will be constructed.
+  #   If not provided, a client will be constructed. A provided client is
+  #   used for every refresh, so it must be configured for the region the
+  #   login token was issued in.
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:27
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:31
   def initialize(options = T.unsafe(nil)); end
 
-  # @return [Signin::Client]
+  # @return [Signin::Client] The client built from the given options. A refresh
+  #   uses a client for another region when the cached token records a different
+  #   `signInRegion`.
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:42
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:48
   def client; end
 
   private
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:113
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:119
   def attempt_refresh(token_json); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:165
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:180
   def build_header(x_bytes, y_bytes); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:187
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:202
   def build_message(header, payload); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:178
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:193
   def build_payload(htu); end
 
   # Converts DER-encoded ASN.1 signature to JWS
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:194
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:209
   def der_to_jws(der_signature); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:149
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:164
   def dpop_proof(dpop_key, endpoint); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:79
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:85
   def login_cache_file; end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:133
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:139
   def make_request(token_json); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:205
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:220
   def parse_resp(resp, token_json); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:70
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:76
   def read_cached_token; end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:46
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:52
   def refresh; end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:103
+  # Refresh tokens can only be redeemed in the region they were issued in,
+  # which the login tool records in the cached token as `signInRegion`.
+  #
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:157
+  def signin_client(signin_region); end
+
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:109
   def update_creds(access_token); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:216
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:231
   def update_token_cache(token_json); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:85
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/login_credentials.rb:91
   def validate_cached_token(cached_token); end
 end
 
@@ -4413,48 +4447,57 @@ end
 # Wrapper for request body that implements application-layer
 # chunking with Digest computed on chunks + added as a trailer
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:482
+# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:498
 class Aws::Plugins::ChecksumAlgorithm::AwsChunkedTrailerDigestIO
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:486
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:502
   def initialize(options = T.unsafe(nil)); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:540
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:561
   def eof?; end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:521
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:541
   def read(length = T.unsafe(nil), buf = T.unsafe(nil)); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:514
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:534
   def rewind; end
 
   # the size of the application layer aws-chunked + trailer body
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:500
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:520
   def size; end
 
   private
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:546
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:567
   def calculate_overhead(chunk_size); end
+
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:594
+  def chunk_size_hex(bytesize); end
 
   # Returns true if more data needs to be read into the buffer
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:570
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:603
   def fill_data?(length); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:550
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:579
   def fill_encoded_buffer(required_length); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:565
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:571
+  def read_chunk_with_buffer; end
+
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:575
+  def read_chunk_without_buffer; end
+
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:598
   def trailer_string; end
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:483
+# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:499
 Aws::Plugins::ChecksumAlgorithm::AwsChunkedTrailerDigestIO::CHUNK_OVERHEAD = T.let(T.unsafe(nil), Integer)
 
 # "\r\n\r\n"
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:484
+# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:500
 Aws::Plugins::ChecksumAlgorithm::AwsChunkedTrailerDigestIO::HEX_BASE = T.let(T.unsafe(nil), Integer)
 
 # Priority order of checksum algorithms to validate responses against.
@@ -4501,26 +4544,26 @@ class Aws::Plugins::ChecksumAlgorithm::ChecksumHandler < ::Seahorse::Client::Han
   # This prevents the body from being read multiple times
   # verification is done only once a successful response has completed
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:425
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:441
   def add_verify_response_checksum_handlers(context); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:450
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:466
   def add_verify_response_data_handler(context, checksum_context); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:432
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:448
   def add_verify_response_headers_handler(context, checksum_context); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:456
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:472
   def add_verify_response_success_handler(context, checksum_context); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:358
-  def apply_request_checksum(context, headers, checksum_properties); end
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:360
+  def apply_request_checksum(context, headers, checksum_properties, buffer_enabled); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:388
-  def apply_request_trailer_checksum(context, headers, checksum_properties); end
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:403
+  def apply_request_trailer_checksum(context, headers, checksum_properties, buffer_enabled); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:366
-  def calculate_checksum(algorithm, body); end
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:369
+  def calculate_checksum(algorithm, body, buffer_enabled); end
 
   # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:328
   def calculate_request_checksum(context, checksum_properties); end
@@ -4555,7 +4598,7 @@ class Aws::Plugins::ChecksumAlgorithm::ChecksumHandler < ::Seahorse::Client::Han
   # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:257
   def request_validation_mode(context); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:471
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:487
   def response_header_to_verify(headers, validation_list); end
 
   # Determines whether a request checksum should be calculated.
@@ -4565,17 +4608,23 @@ class Aws::Plugins::ChecksumAlgorithm::ChecksumHandler < ::Seahorse::Client::Han
   # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:277
   def should_calculate_request_checksum?(context); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:344
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:346
   def should_fallback_to_header?(context); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:418
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:434
   def should_verify_response_checksum?(context); end
 
   # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:324
   def supports_trailer_checksums?(operation); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:378
-  def update_in_chunks(digest, io); end
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:381
+  def update_in_chunks(digest, io, buffer_enabled); end
+
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:390
+  def update_in_chunks_with_buffer(digest, io); end
+
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:397
+  def update_in_chunks_without_buffer(digest, io); end
 
   # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/checksum_algorithm.rb:202
   def with_metrics(config, algorithm, &block); end
@@ -5289,7 +5338,7 @@ class Aws::Plugins::Retries::ClockSkew
 
   # Whether a response indicates skew large enough to warrant a retry; records nothing.
   # @param context [Seahorse::Client::RequestContext]
-  # @param sent_at [Time, nil] raw (pre-skew) send time, for the midpoint calculation
+  # @param sent_at [Time, nil] raw (pre-skew) send time, to discard slow requests
   #
   # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/clock_skew.rb:43
   def clock_skewed?(context, sent_at = T.unsafe(nil)); end
@@ -5307,7 +5356,7 @@ class Aws::Plugins::Retries::ClockSkew
 
   # Called on every response; records the skew candidate when one can be computed.
   # @param context [Seahorse::Client::RequestContext]
-  # @param sent_at [Time, nil] raw (pre-skew) send time, for the midpoint calculation
+  # @param sent_at [Time, nil] raw (pre-skew) send time, to discard slow requests
   #
   # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/clock_skew.rb:51
   def update_clock_correction(context, sent_at = T.unsafe(nil)); end
@@ -5323,11 +5372,13 @@ class Aws::Plugins::Retries::ClockSkew
   private
 
   # Single source of truth for skew computation; returns a Float skew or nil.
+  # The candidate is the server Date minus the time the response headers were
+  # received (the current time if that was not recorded).
   # @param context [Seahorse::Client::RequestContext]
-  # @param sent_at [Time, nil] raw (pre-skew) send time; midpoint when present, else server - now
+  # @param sent_at [Time, nil] raw (pre-skew) send time; used only to discard slow requests
   # @return [Float, nil]
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/clock_skew.rb:80
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/clock_skew.rb:82
   def candidate_skew(context, sent_at = T.unsafe(nil)); end
 
   # @param endpoint [URI, String]
@@ -5336,19 +5387,19 @@ class Aws::Plugins::Retries::ClockSkew
   # @return [String]
   #     the endpoint's schema, host, and port - without any path or query arguments
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/clock_skew.rb:102
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/clock_skew.rb:101
   def normalized_endpoint(endpoint); end
 
   # @param response [Seahorse::Client::Http::Response:]
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/clock_skew.rb:113
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/clock_skew.rb:112
   def server_time(response); end
 
   # Sets the clock correction for an endpoint
   # @param endpoint [URI / String]
   # @param correction [Number]
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/clock_skew.rb:122
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/clock_skew.rb:121
   def set_clock_correction(endpoint, correction); end
 end
 
@@ -5435,9 +5486,7 @@ Aws::Plugins::Retries::ErrorInspector::THROTTLING_ERRORS = T.let(T.unsafe(nil), 
 #
 # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/retry_quota.rb:9
 class Aws::Plugins::Retries::RetryQuota
-  # TODO: Remove when new retries become default
-  #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/retry_quota.rb:17
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/retry_quota.rb:15
   def initialize(opts = T.unsafe(nil)); end
 
   # check if there is sufficient capacity to retry
@@ -5445,14 +5494,14 @@ class Aws::Plugins::Retries::RetryQuota
   # return 0
   # @return [Integer] The amount of capacity checked out
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/retry_quota.rb:27
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/retry_quota.rb:25
   def checkout_capacity(error_inspector); end
 
   # capacity_amount refers to the amount of capacity requested from
   # the last retry. It can either be RETRY_COST,
-  # THROTTLING_RETRY_COST/TIMEOUT_RETRY_COST, or unset.
+  # THROTTLING_RETRY_COST, or unset.
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/retry_quota.rb:47
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/retry_quota.rb:41
   def release(capacity_amount); end
 end
 
@@ -5460,51 +5509,32 @@ end
 Aws::Plugins::Retries::RetryQuota::INITIAL_RETRY_TOKENS = T.let(T.unsafe(nil), Integer)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/retry_quota.rb:12
-Aws::Plugins::Retries::RetryQuota::LEGACY_RETRY_COST = T.let(T.unsafe(nil), Integer)
-
-# TODO: Remove when new retries become default
-#
-# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/retry_quota.rb:13
 Aws::Plugins::Retries::RetryQuota::NO_RETRY_INCREMENT = T.let(T.unsafe(nil), Integer)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/retry_quota.rb:11
 Aws::Plugins::Retries::RetryQuota::RETRY_COST = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/retry_quota.rb:14
+# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/retry_quota.rb:13
 Aws::Plugins::Retries::RetryQuota::THROTTLING_RETRY_COST = T.let(T.unsafe(nil), Integer)
-
-# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retries/retry_quota.rb:15
-Aws::Plugins::Retries::RetryQuota::TIMEOUT_RETRY_COST = T.let(T.unsafe(nil), Integer)
 
 # @api private
 #
 # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:12
 class Aws::Plugins::RetryErrors < ::Seahorse::Client::Plugin
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:560
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:547
   def add_handlers(handlers, config); end
 
   class << self
     # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:227
     def default_max_attempts(cfg); end
 
-    # TODO: Remove this gate and hardcode new retry behavior once
-    # AWS_NEW_RETRIES_2026 is enabled by default, which includes:
-    # - Default retry_mode to 'standard'
-    # - Default max_attempts to 4 for DynamoDB
-    # - Remove the old retries branch in Handler#call
-    # - Remove the old retries branch in #exponential_backoff
-    # - Remove LEGACY_RETRY_COST and TIMEOUT_RETRY_COST from RetryQuota
-    #
-    # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:187
-    def new_retries?; end
-
-    # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:235
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:232
     def resolve_adaptive_retry_wait_to_fill(cfg); end
 
-    # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:249
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:246
     def resolve_correct_clock_skew(cfg); end
 
-    # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:263
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:260
     def resolve_disable_clock_skew_correction(cfg); end
 
     # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:210
@@ -5512,13 +5542,19 @@ class Aws::Plugins::RetryErrors < ::Seahorse::Client::Plugin
 
     # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:191
     def resolve_retry_mode(cfg); end
+
+    # @api private
+    # HTTP retries preserve the listener, so register it only once.
+    #
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:183
+    def track_response_time(context); end
   end
 end
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:29
 Aws::Plugins::RetryErrors::DEFAULT_BACKOFF = T.let(T.unsafe(nil), Proc)
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:177
+# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:178
 Aws::Plugins::RetryErrors::DYNAMODB_SERVICES = T.let(T.unsafe(nil), Set)
 
 # BEGIN LEGACY OPTIONS
@@ -5529,61 +5565,56 @@ Aws::Plugins::RetryErrors::EQUAL_JITTER = T.let(T.unsafe(nil), Proc)
 # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:15
 Aws::Plugins::RetryErrors::FULL_JITTER = T.let(T.unsafe(nil), Proc)
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:281
+# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:278
 class Aws::Plugins::RetryErrors::Handler < ::Seahorse::Client::Handler
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:294
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:292
   def call(context); end
 
   private
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:462
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:447
   def add_retry_headers(context); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:410
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:399
   def backoff(context, error_inspector, service_id); end
 
   # True when clock skew correction is turned off. The fallback
   # correct_clock_skew option is folded in by the option resolver.
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:357
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:346
   def clock_skew_correction_disabled?(config); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:476
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:461
   def compute_request_ttl(context); end
 
-  # TODO: Remove gate, remove default nil params, keep only new retries branch
-  #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:420
-  def exponential_backoff(retries, error_inspector = T.unsafe(nil), service_id = T.unsafe(nil)); end
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:408
+  def exponential_backoff(retries, error_inspector, service_id); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:366
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:355
   def get_send_token(config); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:402
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:391
   def long_polling_operation?(context); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:351
-  def new_retries?; end
-
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:435
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:419
   def parse_retry_after(context); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:457
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:442
   def refresh_credentials?(context, error); end
 
   # maxsendrate is updated if on adaptive mode and based on response
   # retry quota is updated if the request is successful (both modes)
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:381
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:370
   def request_bookkeeping(context, response, error_inspector); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:449
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:433
   def retry_request(context, error); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:395
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:384
   def retryable?(context, response, error_inspector); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:362
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:351
   def with_metric(retry_mode, &block); end
 end
 
@@ -5591,46 +5622,46 @@ end
 # Hard-coded combination of services and operations as having the
 # longPoll trait. To be removed when trait is enabled.
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:288
+# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:285
 Aws::Plugins::RetryErrors::Handler::LONG_POLLING_OPERATIONS = T.let(T.unsafe(nil), Hash)
 
 # Max backoff (in seconds)
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:283
+# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:280
 Aws::Plugins::RetryErrors::Handler::MAX_BACKOFF = T.let(T.unsafe(nil), Integer)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:18
 Aws::Plugins::RetryErrors::JITTERS = T.let(T.unsafe(nil), Hash)
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:492
+# pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:477
 class Aws::Plugins::RetryErrors::LegacyHandler < ::Seahorse::Client::Handler
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:494
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:479
   def call(context); end
 
   private
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:536
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:523
   def delay_retry(context); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:546
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:533
   def refresh_credentials?(context, error); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:555
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:542
   def response_truncatable?(context); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:518
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:504
   def retry_if_possible(response, error_inspector); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:551
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:538
   def retry_limit(context); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:527
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:513
   def retry_request(context, error); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:540
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:527
   def should_retry?(context, error); end
 
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:514
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-core/plugins/retry_errors.rb:500
   def with_metric(&block); end
 end
 
@@ -7318,7 +7349,8 @@ class Aws::SSO::Client < ::Seahorse::Client::Base
   #     An integer representing the maximum number attempts that will be made for
   #     a single request, including the initial attempt.  For example,
   #     setting this value to 5 will result in a request being retried up to
-  #     4 times. Used in `standard` and `adaptive` retry modes.
+  #     4 times. Used in `standard` and `adaptive` retry modes. Defaults to 3,
+  #     except for DynamoDB and DynamoDB Streams, which default to 4.
   #
   #   @option options [String] :profile ("default")
   #     Used when loading credentials from the shared credentials file at `HOME/.aws/credentials`.
@@ -7381,15 +7413,15 @@ class Aws::SSO::Client < ::Seahorse::Client::Base
   #     used by the default backoff function. This option is only used in the
   #     `legacy` retry mode.
   #
-  #   @option options [String] :retry_mode ("legacy")
+  #   @option options [String] :retry_mode ("standard")
   #     Specifies which retry algorithm to use. Values are:
   #
-  #     * `legacy` - The pre-existing retry behavior. This is the default
-  #       value if no retry mode is provided.
+  #     * `legacy` - The pre-existing retry behavior.
   #
   #     * `standard` - A standardized set of retry rules across the AWS SDKs.
   #       This includes support for retry quotas, which limit the number of
-  #       unsuccessful retries a client can make.
+  #       unsuccessful retries a client can make. This is the default value
+  #       if no retry mode is provided.
   #
   #     * `adaptive` - A retry mode that includes all the functionality of
   #       `standard` mode along with automatic client side throttling.
@@ -7529,13 +7561,13 @@ class Aws::SSO::Client < ::Seahorse::Client::Base
   #   @option options [Boolean] :ssl_verify_peer (true)
   #     When `true`, SSL peer certificates are verified when establishing a connection.
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sso/client.rb:478
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sso/client.rb:479
   def initialize(*args); end
 
   # @param params ({})
   # @api private
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sso/client.rb:692
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sso/client.rb:693
   def build_request(operation_name, params = T.unsafe(nil)); end
 
   # Returns the STS short-term credentials for a given role name that is
@@ -7580,7 +7612,7 @@ class Aws::SSO::Client < ::Seahorse::Client::Base
   # @overload get_role_credentials(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sso/client.rb:525
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sso/client.rb:526
   def get_role_credentials(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Lists all roles that are assigned to the user for a given AWS account.
@@ -7632,7 +7664,7 @@ class Aws::SSO::Client < ::Seahorse::Client::Base
   # @overload list_account_roles(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sso/client.rb:578
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sso/client.rb:579
   def list_account_roles(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Lists all AWS accounts assigned to the user. These AWS accounts are
@@ -7688,7 +7720,7 @@ class Aws::SSO::Client < ::Seahorse::Client::Base
   # @overload list_accounts(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sso/client.rb:635
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sso/client.rb:636
   def list_accounts(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Removes the locally stored SSO tokens from the client-side cache and
@@ -7735,24 +7767,24 @@ class Aws::SSO::Client < ::Seahorse::Client::Base
   # @overload logout(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sso/client.rb:683
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sso/client.rb:684
   def logout(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # @api private
   # @deprecated
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sso/client.rb:712
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sso/client.rb:713
   def waiter_names; end
 
   class << self
     # @api private
     #
-    # pkg:gem/aws-sdk-core#lib/aws-sdk-sso/client.rb:722
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-sso/client.rb:723
     def errors_module; end
 
     # @api private
     #
-    # pkg:gem/aws-sdk-core#lib/aws-sdk-sso/client.rb:719
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-sso/client.rb:720
     def identifier; end
   end
 end
@@ -8721,7 +8753,8 @@ class Aws::SSOOIDC::Client < ::Seahorse::Client::Base
   #     An integer representing the maximum number attempts that will be made for
   #     a single request, including the initial attempt.  For example,
   #     setting this value to 5 will result in a request being retried up to
-  #     4 times. Used in `standard` and `adaptive` retry modes.
+  #     4 times. Used in `standard` and `adaptive` retry modes. Defaults to 3,
+  #     except for DynamoDB and DynamoDB Streams, which default to 4.
   #
   #   @option options [String] :profile ("default")
   #     Used when loading credentials from the shared credentials file at `HOME/.aws/credentials`.
@@ -8784,15 +8817,15 @@ class Aws::SSOOIDC::Client < ::Seahorse::Client::Base
   #     used by the default backoff function. This option is only used in the
   #     `legacy` retry mode.
   #
-  #   @option options [String] :retry_mode ("legacy")
+  #   @option options [String] :retry_mode ("standard")
   #     Specifies which retry algorithm to use. Values are:
   #
-  #     * `legacy` - The pre-existing retry behavior. This is the default
-  #       value if no retry mode is provided.
+  #     * `legacy` - The pre-existing retry behavior.
   #
   #     * `standard` - A standardized set of retry rules across the AWS SDKs.
   #       This includes support for retry quotas, which limit the number of
-  #       unsuccessful retries a client can make.
+  #       unsuccessful retries a client can make. This is the default value
+  #       if no retry mode is provided.
   #
   #     * `adaptive` - A retry mode that includes all the functionality of
   #       `standard` mode along with automatic client side throttling.
@@ -8932,13 +8965,13 @@ class Aws::SSOOIDC::Client < ::Seahorse::Client::Base
   #   @option options [Boolean] :ssl_verify_peer (true)
   #     When `true`, SSL peer certificates are verified when establishing a connection.
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-ssooidc/client.rb:478
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-ssooidc/client.rb:479
   def initialize(*args); end
 
   # @param params ({})
   # @api private
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-ssooidc/client.rb:1075
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-ssooidc/client.rb:1076
   def build_request(operation_name, params = T.unsafe(nil)); end
 
   # Creates and returns access and refresh tokens for clients that are
@@ -9075,7 +9108,7 @@ class Aws::SSOOIDC::Client < ::Seahorse::Client::Base
   # @overload create_token(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-ssooidc/client.rb:617
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-ssooidc/client.rb:618
   def create_token(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Creates and returns access and refresh tokens for authorized client
@@ -9334,7 +9367,7 @@ class Aws::SSOOIDC::Client < ::Seahorse::Client::Base
   # @overload create_token_with_iam(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-ssooidc/client.rb:877
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-ssooidc/client.rb:878
   def create_token_with_iam(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Registers a public client with IAM Identity Center. This allows
@@ -9447,7 +9480,7 @@ class Aws::SSOOIDC::Client < ::Seahorse::Client::Base
   # @overload register_client(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-ssooidc/client.rb:991
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-ssooidc/client.rb:992
   def register_client(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Initiates device authorization by requesting a pair of verification
@@ -9521,24 +9554,24 @@ class Aws::SSOOIDC::Client < ::Seahorse::Client::Base
   # @overload start_device_authorization(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-ssooidc/client.rb:1066
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-ssooidc/client.rb:1067
   def start_device_authorization(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # @api private
   # @deprecated
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-ssooidc/client.rb:1095
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-ssooidc/client.rb:1096
   def waiter_names; end
 
   class << self
     # @api private
     #
-    # pkg:gem/aws-sdk-core#lib/aws-sdk-ssooidc/client.rb:1105
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-ssooidc/client.rb:1106
     def errors_module; end
 
     # @api private
     #
-    # pkg:gem/aws-sdk-core#lib/aws-sdk-ssooidc/client.rb:1102
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-ssooidc/client.rb:1103
     def identifier; end
   end
 end
@@ -11323,7 +11356,8 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #     An integer representing the maximum number attempts that will be made for
   #     a single request, including the initial attempt.  For example,
   #     setting this value to 5 will result in a request being retried up to
-  #     4 times. Used in `standard` and `adaptive` retry modes.
+  #     4 times. Used in `standard` and `adaptive` retry modes. Defaults to 3,
+  #     except for DynamoDB and DynamoDB Streams, which default to 4.
   #
   #   @option options [String] :profile ("default")
   #     Used when loading credentials from the shared credentials file at `HOME/.aws/credentials`.
@@ -11386,15 +11420,15 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #     used by the default backoff function. This option is only used in the
   #     `legacy` retry mode.
   #
-  #   @option options [String] :retry_mode ("legacy")
+  #   @option options [String] :retry_mode ("standard")
   #     Specifies which retry algorithm to use. Values are:
   #
-  #     * `legacy` - The pre-existing retry behavior. This is the default
-  #       value if no retry mode is provided.
+  #     * `legacy` - The pre-existing retry behavior.
   #
   #     * `standard` - A standardized set of retry rules across the AWS SDKs.
   #       This includes support for retry quotas, which limit the number of
-  #       unsuccessful retries a client can make.
+  #       unsuccessful retries a client can make. This is the default value
+  #       if no retry mode is provided.
   #
   #     * `adaptive` - A retry mode that includes all the functionality of
   #       `standard` mode along with automatic client side throttling.
@@ -11539,7 +11573,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   #   @option options [Boolean] :ssl_verify_peer (true)
   #     When `true`, SSL peer certificates are verified when establishing a connection.
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:485
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:486
   def initialize(*args); end
 
   # Returns a set of temporary security credentials that you can use to
@@ -12048,7 +12082,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # @overload assume_role(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:996
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:997
   def assume_role(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns a set of temporary security credentials for users who have
@@ -12419,7 +12453,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # @overload assume_role_with_saml(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:1368
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:1369
   def assume_role_with_saml(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns a set of temporary security credentials for users who have
@@ -12832,7 +12866,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # @overload assume_role_with_web_identity(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:1782
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:1783
   def assume_role_with_web_identity(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns a set of short term credentials you can use to perform
@@ -12971,13 +13005,13 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # @overload assume_root(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:1922
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:1923
   def assume_root(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # @param params ({})
   # @api private
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2796
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2797
   def build_request(operation_name, params = T.unsafe(nil)); end
 
   # Decodes additional information about the authorization status of a
@@ -13057,7 +13091,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # @overload decode_authorization_message(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2003
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2004
   def decode_authorization_message(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns the account identifier for the specified access key ID.
@@ -13117,7 +13151,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # @overload get_access_key_info(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2064
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2065
   def get_access_key_info(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns details about the IAM user or role whose credentials are used
@@ -13200,7 +13234,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # @overload get_caller_identity(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2148
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2149
   def get_caller_identity(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Exchanges a trade-in token for temporary Amazon Web Services
@@ -13239,7 +13273,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # @overload get_delegated_access_token(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2188
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2189
   def get_delegated_access_token(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns a set of temporary security credentials (consisting of an
@@ -13598,7 +13632,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # @overload get_federation_token(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2548
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2549
   def get_federation_token(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns a set of temporary credentials for an Amazon Web Services
@@ -13766,7 +13800,7 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # @overload get_session_token(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2717
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2718
   def get_session_token(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Returns a signed JSON Web Token (JWT) that represents the calling
@@ -13835,24 +13869,24 @@ class Aws::STS::Client < ::Seahorse::Client::Base
   # @overload get_web_identity_token(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2787
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2788
   def get_web_identity_token(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # @api private
   # @deprecated
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2816
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2817
   def waiter_names; end
 
   class << self
     # @api private
     #
-    # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2826
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2827
     def errors_module; end
 
     # @api private
     #
-    # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2823
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-sts/client.rb:2824
     def identifier; end
   end
 end
@@ -16865,7 +16899,7 @@ end
 # structure.
 #
 #     signin = Aws::Signin::Client.new
-#     resp = signin.create_o_auth_2_token(params)
+#     resp = signin.batch_revoke_sessions(params)
 #
 # See {Client} for more information.
 #
@@ -17087,7 +17121,8 @@ class Aws::Signin::Client < ::Seahorse::Client::Base
   #     An integer representing the maximum number attempts that will be made for
   #     a single request, including the initial attempt.  For example,
   #     setting this value to 5 will result in a request being retried up to
-  #     4 times. Used in `standard` and `adaptive` retry modes.
+  #     4 times. Used in `standard` and `adaptive` retry modes. Defaults to 3,
+  #     except for DynamoDB and DynamoDB Streams, which default to 4.
   #
   #   @option options [String] :profile ("default")
   #     Used when loading credentials from the shared credentials file at `HOME/.aws/credentials`.
@@ -17150,15 +17185,15 @@ class Aws::Signin::Client < ::Seahorse::Client::Base
   #     used by the default backoff function. This option is only used in the
   #     `legacy` retry mode.
   #
-  #   @option options [String] :retry_mode ("legacy")
+  #   @option options [String] :retry_mode ("standard")
   #     Specifies which retry algorithm to use. Values are:
   #
-  #     * `legacy` - The pre-existing retry behavior. This is the default
-  #       value if no retry mode is provided.
+  #     * `legacy` - The pre-existing retry behavior.
   #
   #     * `standard` - A standardized set of retry rules across the AWS SDKs.
   #       This includes support for retry quotas, which limit the number of
-  #       unsuccessful retries a client can make.
+  #       unsuccessful retries a client can make. This is the default value
+  #       if no retry mode is provided.
   #
   #     * `adaptive` - A retry mode that includes all the functionality of
   #       `standard` mode along with automatic client side throttling.
@@ -17298,14 +17333,177 @@ class Aws::Signin::Client < ::Seahorse::Client::Base
   #   @option options [Boolean] :ssl_verify_peer (true)
   #     When `true`, SSL peer certificates are verified when establishing a connection.
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:478
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:479
   def initialize(*args); end
+
+  # Revokes up to five sign-in sessions. A revoked session can no longer
+  # be refreshed. Revoking a session that is already revoked succeeds.
+  # Each session must belong to the identity specified by principalArn, or
+  # to the caller if principalArn is omitted. Failures for individual
+  # sessions are returned in the errors list and do not fail the whole
+  # request.
+  #
+  # @option params [String] :principal_arn
+  #   The identity that owns the sessions. Omit to use the caller. Specify
+  #   arn:aws:iam::\{account-id}:* to revoke any session in the account.
+  #
+  # @option params [required, Array<String>] :session_arns
+  #   The ARNs of the sessions to revoke
+  #
+  # @option params [String] :reason
+  #   The reason for revoking the sessions
+  #
+  # @return [Types::BatchRevokeSessionsOutput] Returns a {Seahorse::Client::Response response} object which responds to the following methods:
+  #
+  #   * {Types::BatchRevokeSessionsOutput#revoked_sessions #revoked_sessions} => Array&lt;Types::RevokedSession&gt;
+  #   * {Types::BatchRevokeSessionsOutput#errors #errors} => Array&lt;Types::BatchRevokeSessionError&gt;
+  #
+  #
+  # @example Example: Revoke one of your own sessions
+  #
+  #   # Revokes a session owned by the caller and records the reason.
+  #
+  #   resp = client.batch_revoke_sessions({
+  #     reason: "Signed out of a lost device",
+  #     session_arns: [
+  #       "arn:aws:signin:us-east-1:123456789012:session/3b0a6152-ba23-447d-83cf-b3b3cc7b95f7",
+  #     ],
+  #   })
+  #
+  #   resp.to_h outputs the following:
+  #   {
+  #     errors: [
+  #     ],
+  #     revoked_sessions: [
+  #       {
+  #         session_arn: "arn:aws:signin:us-east-1:123456789012:session/3b0a6152-ba23-447d-83cf-b3b3cc7b95f7",
+  #       },
+  #     ],
+  #   }
+  #
+  # @example Example: Revoke another identity's session as an account administrator
+  #
+  #   # Uses the account wildcard principal ARN to revoke another IAM identity's session.
+  #
+  #   resp = client.batch_revoke_sessions({
+  #     principal_arn: "arn:aws:iam::123456789012:*",
+  #     reason: "Revoked by account administrator",
+  #     session_arns: [
+  #       "arn:aws:signin:us-east-1:123456789012:session/5dbdd43b-4135-4c59-ad06-5ddbcc2c1d77",
+  #     ],
+  #   })
+  #
+  #   resp.to_h outputs the following:
+  #   {
+  #     errors: [
+  #     ],
+  #     revoked_sessions: [
+  #       {
+  #         session_arn: "arn:aws:signin:us-east-1:123456789012:session/5dbdd43b-4135-4c59-ad06-5ddbcc2c1d77",
+  #       },
+  #     ],
+  #   }
+  #
+  # @example Example: Revoke a batch of sessions with a partial failure
+  #
+  #   # Revokes the caller's session and reports a session that was not found in the errors list.
+  #
+  #   resp = client.batch_revoke_sessions({
+  #     session_arns: [
+  #       "arn:aws:signin:us-east-1:123456789012:session/ac148df8-7f37-48eb-b0cf-8987fc4a55a4",
+  #       "arn:aws:signin:us-east-1:123456789012:session/36b6ae9d-4fa9-40d9-8eff-eeeb4d15f79d",
+  #     ],
+  #   })
+  #
+  #   resp.to_h outputs the following:
+  #   {
+  #     errors: [
+  #       {
+  #         code: "ResourceNotFoundException",
+  #         message: "No session found for the given sessionArn",
+  #         session_arn: "arn:aws:signin:us-east-1:123456789012:session/36b6ae9d-4fa9-40d9-8eff-eeeb4d15f79d",
+  #       },
+  #     ],
+  #     revoked_sessions: [
+  #       {
+  #         session_arn: "arn:aws:signin:us-east-1:123456789012:session/ac148df8-7f37-48eb-b0cf-8987fc4a55a4",
+  #       },
+  #     ],
+  #   }
+  #
+  # @example Request syntax with placeholder values
+  #
+  #   resp = client.batch_revoke_sessions({
+  #     principal_arn: "PrincipalArnFilter",
+  #     session_arns: ["SessionArn"], # required
+  #     reason: "RevocationReason",
+  #   })
+  #
+  # @example Response structure
+  #
+  #   resp.revoked_sessions #=> Array
+  #   resp.revoked_sessions[0].session_arn #=> String
+  #   resp.errors #=> Array
+  #   resp.errors[0].session_arn #=> String
+  #   resp.errors[0].code #=> String
+  #   resp.errors[0].message #=> String
+  #
+  # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/BatchRevokeSessions AWS API Documentation
+  #
+  # @overload batch_revoke_sessions(params = {})
+  # @param [Hash] params ({})
+  #
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:601
+  def batch_revoke_sessions(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # @param params ({})
   # @api private
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:980
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:1407
   def build_request(operation_name, params = T.unsafe(nil)); end
+
+  # Creates a bearer token that represents your IAM credentials and can be
+  # used to access a supported AWS service. By default, the token is valid
+  # for 12 hours.
+  #
+  # @option params [required, String] :grant_type
+  #   The grant type. Must be "client\_credentials".
+  #
+  # @option params [required, String] :resource
+  #   The AWS service the bearer token is for. Example: "ecr.amazonaws.com".
+  #
+  # @option params [Integer] :duration_seconds
+  #   The requested token lifetime in seconds, from 300 (5 minutes) up to
+  #   the maximum allowed for the service, currently 43200 (12 hours). If
+  #   omitted, the token is valid for 12 hours.
+  #
+  # @return [Types::CreateBearerTokenResponse] Returns a {Seahorse::Client::Response response} object which responds to the following methods:
+  #
+  #   * {Types::CreateBearerTokenResponse#access_token #access_token} => String
+  #   * {Types::CreateBearerTokenResponse#token_type #token_type} => String
+  #   * {Types::CreateBearerTokenResponse#expires_in #expires_in} => Integer
+  #
+  # @example Request syntax with placeholder values
+  #
+  #   resp = client.create_bearer_token({
+  #     grant_type: "ClientCredentialsGrantType", # required
+  #     resource: "Resource", # required
+  #     duration_seconds: 1,
+  #   })
+  #
+  # @example Response structure
+  #
+  #   resp.access_token #=> String
+  #   resp.token_type #=> String
+  #   resp.expires_in #=> Integer
+  #
+  # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/CreateBearerToken AWS API Documentation
+  #
+  # @overload create_bearer_token(params = {})
+  # @param [Hash] params ({})
+  #
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:645
+  def create_bearer_token(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Exchanges an authorization code or refresh token for an OAuth 2.0
   # access token and refresh token.
@@ -17346,7 +17544,7 @@ class Aws::Signin::Client < ::Seahorse::Client::Base
   # @overload create_o_auth_2_token(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:522
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:688
   def create_o_auth_2_token(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Exchanges client credentials for an OAuth 2.0 access token scoped to a
@@ -17383,15 +17581,16 @@ class Aws::Signin::Client < ::Seahorse::Client::Base
   # @overload create_o_auth_2_token_with_iam(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:560
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:726
   def create_o_auth_2_token_with_iam(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Exchanges a supported token for an OAuth 2.0 access token scoped to a
   # resource, which you can use to access AWS services from applications.
   #
   # @option params [required, String] :grant_type
-  #   The OAuth 2.0 grant type. Currently only supports
-  #   "urn:ietf:params:oauth:grant-type:token-exchange".
+  #   The OAuth 2.0 grant type. Currently supports
+  #   "urn:ietf:params:oauth:grant-type:token-exchange" and
+  #   "urn:ietf:params:oauth:grant-type:jwt-bearer".
   #
   # @option params [String] :subject_token
   #   The subject token that represents the identity of the party on whose
@@ -17403,16 +17602,34 @@ class Aws::Signin::Client < ::Seahorse::Client::Base
   #   "urn:ietf:params:oauth:token-type:jwt". Required when
   #   "grant\_type=urn:ietf:params:oauth:grant-type:token-exchange".
   #
+  # @option params [String] :assertion
+  #   The JWT authorization grant, as defined in RFC 7523. Required when
+  #   "grant\_type=urn:ietf:params:oauth:grant-type:jwt-bearer".
+  #
+  # @option params [String] :client_id
+  #   The OAuth 2.0 client identifier. If provided with
+  #   "grant\_type=urn:ietf:params:oauth:grant-type:jwt-bearer", must match
+  #   the assertion's "client\_id" claim.
+  #
   # @option params [String] :resource
-  #   The OAuth resource for which the access token is requested. Required
-  #   when "grant\_type=urn:ietf:params:oauth:grant-type:token-exchange".
-  #   Example: "glue.amazonaws.com".
+  #   The OAuth resource for which the access token is requested:
+  #
+  #   * "grant\_type=urn:ietf:params:oauth:grant-type:token-exchange":
+  #     Required. Must be a service principal. Example:
+  #     "glue.amazonaws.com".
+  #   * "grant\_type=urn:ietf:params:oauth:grant-type:jwt-bearer": Required
+  #     when the assertion has no "resource" claim, otherwise must match it.
+  #     Must be a URI. Example: "https://aws-mcp.us-east-1.api.aws/mcp".
   #
   # @option params [String] :scope
-  #   IAM managed policy Amazon Resource Names (ARNs) to apply as session
-  #   policies that further scope down the permissions of the issued access
-  #   token, provided as a space-delimited list. Example:
+  #   The IAM managed policy Amazon Resource Names (ARNs) to apply as
+  #   session policies that further scope down the permissions of the issued
+  #   access token, provided as a space-delimited list. Example:
   #   "arn:aws:iam::444455556666:policy/MyPolicy".
+  #
+  #   If provided with
+  #   "grant\_type=urn:ietf:params:oauth:grant-type:jwt-bearer", must match
+  #   the assertion's "scope" claim.
   #
   # @return [Types::CreateOAuth2TokenWithTokenExchangeResponse] Returns a {Seahorse::Client::Response response} object which responds to the following methods:
   #
@@ -17420,6 +17637,8 @@ class Aws::Signin::Client < ::Seahorse::Client::Base
   #   * {Types::CreateOAuth2TokenWithTokenExchangeResponse#issued_token_type #issued_token_type} => String
   #   * {Types::CreateOAuth2TokenWithTokenExchangeResponse#token_type #token_type} => String
   #   * {Types::CreateOAuth2TokenWithTokenExchangeResponse#expires_in #expires_in} => Integer
+  #   * {Types::CreateOAuth2TokenWithTokenExchangeResponse#resource #resource} => String
+  #   * {Types::CreateOAuth2TokenWithTokenExchangeResponse#scope #scope} => String
   #
   # @example Request syntax with placeholder values
   #
@@ -17427,6 +17646,8 @@ class Aws::Signin::Client < ::Seahorse::Client::Base
   #     grant_type: "TokenExchangeGrantType", # required
   #     subject_token: "SubjectToken",
   #     subject_token_type: "SubjectTokenType",
+  #     assertion: "Assertion",
+  #     client_id: "JwtBearerClientId",
   #     resource: "Resource",
   #     scope: "Scope",
   #   })
@@ -17437,13 +17658,15 @@ class Aws::Signin::Client < ::Seahorse::Client::Base
   #   resp.issued_token_type #=> String
   #   resp.token_type #=> String
   #   resp.expires_in #=> Integer
+  #   resp.resource #=> String
+  #   resp.scope #=> String
   #
   # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/CreateOAuth2TokenWithTokenExchange AWS API Documentation
   #
   # @overload create_o_auth_2_token_with_token_exchange(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:621
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:812
   def create_o_auth_2_token_with_token_exchange(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Delete console authorization configuration with automatic scope
@@ -17475,7 +17698,7 @@ class Aws::Signin::Client < ::Seahorse::Client::Base
   # @overload delete_console_authorization_configuration(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:654
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:845
   def delete_console_authorization_configuration(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Remove a permission statement from the account's SignIn
@@ -17504,7 +17727,7 @@ class Aws::Signin::Client < ::Seahorse::Client::Base
   # @overload delete_resource_permission_statement(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:684
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:875
   def delete_resource_permission_statement(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Get console authorization configuration with automatic scope detection
@@ -17535,7 +17758,7 @@ class Aws::Signin::Client < ::Seahorse::Client::Base
   # @overload get_console_authorization_configuration(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:716
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:907
   def get_console_authorization_configuration(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Retrieve the account's consolidated SignIn resource-based policy
@@ -17564,8 +17787,111 @@ class Aws::Signin::Client < ::Seahorse::Client::Base
   # @overload get_resource_policy(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:746
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:937
   def get_resource_policy(params = T.unsafe(nil), options = T.unsafe(nil)); end
+
+  # Returns the details of a single sign-in session. The session must
+  # belong to the identity specified by principalArn, or to the caller if
+  # principalArn is omitted. A session that belongs to a different
+  # identity or account is reported as not found.
+  #
+  # @option params [required, String] :session_arn
+  #   The ARN of the session to retrieve
+  #
+  # @option params [String] :principal_arn
+  #   The identity that owns the session. Omit to use the caller. Specify
+  #   arn:aws:iam::\{account-id}:* to retrieve any session in the account.
+  #
+  # @return [Types::GetSessionOutput] Returns a {Seahorse::Client::Response response} object which responds to the following methods:
+  #
+  #   * {Types::GetSessionOutput#session_arn #session_arn} => String
+  #   * {Types::GetSessionOutput#principal_arn #principal_arn} => String
+  #   * {Types::GetSessionOutput#role #role} => String
+  #   * {Types::GetSessionOutput#status #status} => String
+  #   * {Types::GetSessionOutput#client_id #client_id} => String
+  #   * {Types::GetSessionOutput#client_type #client_type} => String
+  #   * {Types::GetSessionOutput#resource #resource} => String
+  #   * {Types::GetSessionOutput#issued_at #issued_at} => Integer
+  #   * {Types::GetSessionOutput#expires_at #expires_at} => Integer
+  #   * {Types::GetSessionOutput#last_used_at #last_used_at} => Integer
+  #   * {Types::GetSessionOutput#issued_in_region #issued_in_region} => String
+  #   * {Types::GetSessionOutput#origin_session_arn #origin_session_arn} => String
+  #   * {Types::GetSessionOutput#user_agent #user_agent} => String
+  #
+  #
+  # @example Example: Get one of your own sessions
+  #
+  #   # Returns a session owned by the caller when principalArn is omitted.
+  #
+  #   resp = client.get_session({
+  #     session_arn: "arn:aws:signin:us-east-1:123456789012:session/3b0a6152-ba23-447d-83cf-b3b3cc7b95f7",
+  #   })
+  #
+  #   resp.to_h outputs the following:
+  #   {
+  #     client_id: "arn:aws:signin:::devtools/same-device",
+  #     client_type: "CLI",
+  #     expires_at: 1794431207,
+  #     issued_at: 1793825807,
+  #     issued_in_region: "us-east-1",
+  #     principal_arn: "arn:aws:iam::123456789012:role/Developer",
+  #     role: "arn:aws:iam::123456789012:role/Developer",
+  #     session_arn: "arn:aws:signin:us-east-1:123456789012:session/3b0a6152-ba23-447d-83cf-b3b3cc7b95f7",
+  #     status: "ACTIVE",
+  #   }
+  #
+  # @example Example: Get another identity's session as an account administrator
+  #
+  #   # Uses the account wildcard principal ARN to get a session owned by another IAM identity.
+  #
+  #   resp = client.get_session({
+  #     principal_arn: "arn:aws:iam::123456789012:*",
+  #     session_arn: "arn:aws:signin:us-east-1:123456789012:session/5dbdd43b-4135-4c59-ad06-5ddbcc2c1d77",
+  #   })
+  #
+  #   resp.to_h outputs the following:
+  #   {
+  #     client_id: "arn:aws:signin:::devtools/same-device",
+  #     client_type: "CLI",
+  #     expires_at: 1794431214,
+  #     issued_at: 1793826107,
+  #     issued_in_region: "us-east-1",
+  #     principal_arn: "arn:aws:iam::123456789012:role/ReadOnly",
+  #     role: "arn:aws:iam::123456789012:role/ReadOnly",
+  #     session_arn: "arn:aws:signin:us-east-1:123456789012:session/5dbdd43b-4135-4c59-ad06-5ddbcc2c1d77",
+  #     status: "ACTIVE",
+  #   }
+  #
+  # @example Request syntax with placeholder values
+  #
+  #   resp = client.get_session({
+  #     session_arn: "SessionArn", # required
+  #     principal_arn: "PrincipalArnFilter",
+  #   })
+  #
+  # @example Response structure
+  #
+  #   resp.session_arn #=> String
+  #   resp.principal_arn #=> String
+  #   resp.role #=> String
+  #   resp.status #=> String, one of "ACTIVE", "REVOKED"
+  #   resp.client_id #=> String
+  #   resp.client_type #=> String, one of "CLI", "MCP"
+  #   resp.resource #=> String
+  #   resp.issued_at #=> Integer
+  #   resp.expires_at #=> Integer
+  #   resp.last_used_at #=> Integer
+  #   resp.issued_in_region #=> String
+  #   resp.origin_session_arn #=> String
+  #   resp.user_agent #=> String
+  #
+  # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/GetSession AWS API Documentation
+  #
+  # @overload get_session(params = {})
+  # @param [Hash] params ({})
+  #
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:1041
+  def get_session(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Inspects the metadata and active state of an OAuth 2.0 access token or
   # refresh token.
@@ -17629,7 +17955,7 @@ class Aws::Signin::Client < ::Seahorse::Client::Base
   # @overload introspect_o_auth_2_token_with_iam(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:812
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:1107
   def introspect_o_auth_2_token_with_iam(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Retrieve all permission statements in the account's SignIn
@@ -17670,8 +17996,139 @@ class Aws::Signin::Client < ::Seahorse::Client::Base
   # @overload list_resource_permission_statements(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:854
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:1149
   def list_resource_permission_statements(params = T.unsafe(nil), options = T.unsafe(nil)); end
+
+  # Lists sign-in sessions for an IAM identity in your account. If you
+  # omit principalArn, the operation lists the caller's own sessions.
+  # Specify a user or role ARN to list that identity's sessions, or
+  # specify arn:aws:iam::\{account-id}:* to list all sessions in the
+  # account. Filters are combined with a logical AND.
+  #
+  # @option params [String] :principal_arn
+  #   The identity whose sessions to list. Omit to list the caller's own
+  #   sessions. Specify arn:aws:iam::\{account-id}:* to list all sessions
+  #   in the account.
+  #
+  # @option params [Integer] :max_results
+  #   Maximum number of results to return
+  #
+  # @option params [String] :next_token
+  #   Token for pagination
+  #
+  # @option params [String] :status
+  #   Returns only sessions with this status
+  #
+  # @option params [String] :client_id
+  #   Returns only sessions created by this OAuth client
+  #
+  # @option params [Integer] :issued_after
+  #   Returns only sessions created at or after this time, in Unix epoch
+  #   seconds
+  #
+  # @option params [Integer] :issued_before
+  #   Returns only sessions created before this time, in Unix epoch seconds
+  #
+  # @return [Types::ListSessionsOutput] Returns a {Seahorse::Client::Response response} object which responds to the following methods:
+  #
+  #   * {Types::ListSessionsOutput#items #items} => Array&lt;Types::Session&gt;
+  #   * {Types::ListSessionsOutput#next_token #next_token} => String
+  #
+  # The returned {Seahorse::Client::Response response} is a pageable response and is Enumerable. For details on usage see {Aws::PageableResponse PageableResponse}.
+  #
+  #
+  # @example Example: List your own sessions
+  #
+  #   # Lists the caller's sessions when principalArn is omitted.
+  #
+  #   resp = client.list_sessions({
+  #   })
+  #
+  #   resp.to_h outputs the following:
+  #   {
+  #     items: [
+  #       {
+  #         client_id: "arn:aws:signin:::devtools/same-device",
+  #         client_type: "CLI",
+  #         expires_at: 1794431207,
+  #         issued_at: 1793825807,
+  #         principal_arn: "arn:aws:iam::123456789012:role/Developer",
+  #         role: "arn:aws:iam::123456789012:role/Developer",
+  #         session_arn: "arn:aws:signin:us-east-1:123456789012:session/3b0a6152-ba23-447d-83cf-b3b3cc7b95f7",
+  #         status: "ACTIVE",
+  #       },
+  #       {
+  #         client_id: "arn:aws:signin:::devtools/same-device",
+  #         client_type: "CLI",
+  #         expires_at: 1794431212,
+  #         issued_at: 1793824607,
+  #         principal_arn: "arn:aws:iam::123456789012:role/Developer",
+  #         role: "arn:aws:iam::123456789012:role/Developer",
+  #         session_arn: "arn:aws:signin:us-east-1:123456789012:session/4c63f231-2128-42cf-aa83-83589f9a0df2",
+  #         status: "ACTIVE",
+  #       },
+  #     ],
+  #   }
+  #
+  # @example Example: List active sessions one page at a time
+  #
+  #   # Returns one active session and a token to request the next page.
+  #
+  #   resp = client.list_sessions({
+  #     max_results: 1,
+  #     status: "ACTIVE",
+  #   })
+  #
+  #   resp.to_h outputs the following:
+  #   {
+  #     items: [
+  #       {
+  #         client_id: "arn:aws:signin:::devtools/same-device",
+  #         client_type: "CLI",
+  #         expires_at: 1794431207,
+  #         issued_at: 1793825807,
+  #         principal_arn: "arn:aws:iam::123456789012:role/Developer",
+  #         role: "arn:aws:iam::123456789012:role/Developer",
+  #         session_arn: "arn:aws:signin:us-east-1:123456789012:session/3b0a6152-ba23-447d-83cf-b3b3cc7b95f7",
+  #         status: "ACTIVE",
+  #       },
+  #     ],
+  #     next_token: "AAMA-EXAMPLE-NEXT-TOKEN",
+  #   }
+  #
+  # @example Request syntax with placeholder values
+  #
+  #   resp = client.list_sessions({
+  #     principal_arn: "PrincipalArnFilter",
+  #     max_results: 1,
+  #     next_token: "NextToken",
+  #     status: "ACTIVE", # accepts ACTIVE, REVOKED
+  #     client_id: "String",
+  #     issued_after: 1,
+  #     issued_before: 1,
+  #   })
+  #
+  # @example Response structure
+  #
+  #   resp.items #=> Array
+  #   resp.items[0].session_arn #=> String
+  #   resp.items[0].principal_arn #=> String
+  #   resp.items[0].role #=> String
+  #   resp.items[0].status #=> String, one of "ACTIVE", "REVOKED"
+  #   resp.items[0].issued_at #=> Integer
+  #   resp.items[0].expires_at #=> Integer
+  #   resp.items[0].client_id #=> String
+  #   resp.items[0].client_type #=> String, one of "CLI", "MCP"
+  #   resp.items[0].resource #=> String
+  #   resp.next_token #=> String
+  #
+  # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/ListSessions AWS API Documentation
+  #
+  # @overload list_sessions(params = {})
+  # @param [Hash] params ({})
+  #
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:1281
+  def list_sessions(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Enable console authorization configuration with automatic scope
   # detection
@@ -17702,7 +18159,7 @@ class Aws::Signin::Client < ::Seahorse::Client::Base
   # @overload put_console_authorization_configuration(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:887
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:1314
   def put_console_authorization_configuration(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Create a permission statement in the account's SignIn resource-based
@@ -17762,7 +18219,7 @@ class Aws::Signin::Client < ::Seahorse::Client::Base
   # @overload put_resource_permission_statement(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:948
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:1375
   def put_resource_permission_statement(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # Revokes an OAuth 2.0 refresh token and its associated token chain.
@@ -17784,24 +18241,24 @@ class Aws::Signin::Client < ::Seahorse::Client::Base
   # @overload revoke_o_auth_2_token_with_iam(params = {})
   # @param [Hash] params ({})
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:971
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:1398
   def revoke_o_auth_2_token_with_iam(params = T.unsafe(nil), options = T.unsafe(nil)); end
 
   # @api private
   # @deprecated
   #
-  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:1000
+  # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:1427
   def waiter_names; end
 
   class << self
     # @api private
     #
-    # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:1010
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:1437
     def errors_module; end
 
     # @api private
     #
-    # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:1007
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client.rb:1434
     def identifier; end
   end
 end
@@ -17815,7 +18272,7 @@ end
 
 # @api private
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:312
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:420
 Aws::Signin::ClientApi::API = T.let(T.unsafe(nil), Seahorse::Model::Api)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:17
@@ -17828,255 +18285,333 @@ Aws::Signin::ClientApi::AccessToken = T.let(T.unsafe(nil), Seahorse::Model::Shap
 Aws::Signin::ClientApi::AccountId = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:20
-Aws::Signin::ClientApi::AuthorizationCode = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::Assertion = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:21
-Aws::Signin::ClientApi::BearerTokenType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::AuthorizationCode = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:22
-Aws::Signin::ClientApi::Boolean = T.let(T.unsafe(nil), Seahorse::Model::Shapes::BooleanShape)
+Aws::Signin::ClientApi::BatchRevokeSessionError = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:23
-Aws::Signin::ClientApi::ClientCredentialsGrantType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::BatchRevokeSessionErrorList = T.let(T.unsafe(nil), Seahorse::Model::Shapes::ListShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:24
-Aws::Signin::ClientApi::ClientId = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::BatchRevokeSessionsInput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:25
-Aws::Signin::ClientApi::ClientToken = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::BatchRevokeSessionsOutput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:26
-Aws::Signin::ClientApi::CodeVerifier = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::BearerTokenExpiresIn = T.let(T.unsafe(nil), Seahorse::Model::Shapes::IntegerShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:27
-Aws::Signin::ClientApi::Condition = T.let(T.unsafe(nil), Seahorse::Model::Shapes::MapShape)
+Aws::Signin::ClientApi::BearerTokenType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:28
-Aws::Signin::ClientApi::ConditionBlock = T.let(T.unsafe(nil), Seahorse::Model::Shapes::MapShape)
+Aws::Signin::ClientApi::Boolean = T.let(T.unsafe(nil), Seahorse::Model::Shapes::BooleanShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:29
-Aws::Signin::ClientApi::ConditionType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::ClientCredentialsGrantType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:30
-Aws::Signin::ClientApi::ConditionValues = T.let(T.unsafe(nil), Seahorse::Model::Shapes::ListShape)
+Aws::Signin::ClientApi::ClientId = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:31
-Aws::Signin::ClientApi::ConflictException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::ClientToken = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:32
-Aws::Signin::ClientApi::ConsolePermissionMaxResults = T.let(T.unsafe(nil), Seahorse::Model::Shapes::IntegerShape)
+Aws::Signin::ClientApi::ClientType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:33
-Aws::Signin::ClientApi::CreateOAuth2TokenRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::CodeVerifier = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:34
-Aws::Signin::ClientApi::CreateOAuth2TokenRequestBody = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::Condition = T.let(T.unsafe(nil), Seahorse::Model::Shapes::MapShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:35
-Aws::Signin::ClientApi::CreateOAuth2TokenResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::ConditionBlock = T.let(T.unsafe(nil), Seahorse::Model::Shapes::MapShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:36
-Aws::Signin::ClientApi::CreateOAuth2TokenResponseBody = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::ConditionType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:37
-Aws::Signin::ClientApi::CreateOAuth2TokenWithIAMRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::ConditionValues = T.let(T.unsafe(nil), Seahorse::Model::Shapes::ListShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:38
-Aws::Signin::ClientApi::CreateOAuth2TokenWithIAMResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::ConflictException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:39
-Aws::Signin::ClientApi::CreateOAuth2TokenWithTokenExchangeRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::ConsolePermissionMaxResults = T.let(T.unsafe(nil), Seahorse::Model::Shapes::IntegerShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:40
-Aws::Signin::ClientApi::CreateOAuth2TokenWithTokenExchangeResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::CreateBearerTokenRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:41
-Aws::Signin::ClientApi::DeleteConsoleAuthorizationConfigurationInput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::CreateBearerTokenResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:42
-Aws::Signin::ClientApi::DeleteConsoleAuthorizationConfigurationOutput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::CreateOAuth2TokenRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:43
-Aws::Signin::ClientApi::DeleteResourcePermissionStatementInput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::CreateOAuth2TokenRequestBody = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:44
-Aws::Signin::ClientApi::DeleteResourcePermissionStatementOutput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::CreateOAuth2TokenResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:45
-Aws::Signin::ClientApi::ExcludedPrincipal = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::CreateOAuth2TokenResponseBody = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:46
-Aws::Signin::ClientApi::ExpiresIn = T.let(T.unsafe(nil), Seahorse::Model::Shapes::IntegerShape)
+Aws::Signin::ClientApi::CreateOAuth2TokenWithIAMRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:47
-Aws::Signin::ClientApi::GetConsoleAuthorizationConfigurationInput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::CreateOAuth2TokenWithIAMResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:48
-Aws::Signin::ClientApi::GetConsoleAuthorizationConfigurationOutput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::CreateOAuth2TokenWithTokenExchangeRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:49
-Aws::Signin::ClientApi::GetResourcePolicyInput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::CreateOAuth2TokenWithTokenExchangeResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:50
-Aws::Signin::ClientApi::GetResourcePolicyOutput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::DeleteConsoleAuthorizationConfigurationInput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:51
-Aws::Signin::ClientApi::GrantType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::DeleteConsoleAuthorizationConfigurationOutput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:52
-Aws::Signin::ClientApi::IdToken = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::DeleteResourcePermissionStatementInput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:53
-Aws::Signin::ClientApi::InternalServerException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::DeleteResourcePermissionStatementOutput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:54
-Aws::Signin::ClientApi::IntrospectOAuth2TokenWithIAMRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::ExcludedPrincipal = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:55
-Aws::Signin::ClientApi::IntrospectOAuth2TokenWithIAMResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::ExpiresIn = T.let(T.unsafe(nil), Seahorse::Model::Shapes::IntegerShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:56
-Aws::Signin::ClientApi::IntrospectedTokenType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::GetConsoleAuthorizationConfigurationInput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:57
-Aws::Signin::ClientApi::IntrospectionToken = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::GetConsoleAuthorizationConfigurationOutput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:58
-Aws::Signin::ClientApi::InvalidGrantException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::GetResourcePolicyInput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:59
-Aws::Signin::ClientApi::InvalidScopeException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::GetResourcePolicyOutput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:60
-Aws::Signin::ClientApi::IssuedOAuthAccessTokenType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::GetSessionInput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:61
-Aws::Signin::ClientApi::ListResourcePermissionStatementsInput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::GetSessionOutput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:62
-Aws::Signin::ClientApi::ListResourcePermissionStatementsOutput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::GrantType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:63
-Aws::Signin::ClientApi::Long = T.let(T.unsafe(nil), Seahorse::Model::Shapes::IntegerShape)
+Aws::Signin::ClientApi::IdToken = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:64
-Aws::Signin::ClientApi::NextToken = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::InternalServerException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:65
-Aws::Signin::ClientApi::OAuth2ErrorCode = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::IntrospectOAuth2TokenWithIAMRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:66
-Aws::Signin::ClientApi::OAuthAccessToken = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::IntrospectOAuth2TokenWithIAMResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:67
-Aws::Signin::ClientApi::PermissionStatementSummaries = T.let(T.unsafe(nil), Seahorse::Model::Shapes::ListShape)
+Aws::Signin::ClientApi::IntrospectedTokenType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:68
-Aws::Signin::ClientApi::PermissionStatementSummary = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::IntrospectionToken = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:69
-Aws::Signin::ClientApi::PolicyActions = T.let(T.unsafe(nil), Seahorse::Model::Shapes::ListShape)
+Aws::Signin::ClientApi::InvalidGrantException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:70
-Aws::Signin::ClientApi::PolicyStatement = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::InvalidScopeException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:71
-Aws::Signin::ClientApi::PolicyStatements = T.let(T.unsafe(nil), Seahorse::Model::Shapes::ListShape)
+Aws::Signin::ClientApi::IssuedOAuthAccessTokenType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:72
-Aws::Signin::ClientApi::Principal = T.let(T.unsafe(nil), Seahorse::Model::Shapes::MapShape)
+Aws::Signin::ClientApi::JwtBearerClientId = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:73
-Aws::Signin::ClientApi::PutConsoleAuthorizationConfigurationInput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::ListResourcePermissionStatementsInput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:74
-Aws::Signin::ClientApi::PutConsoleAuthorizationConfigurationOutput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::ListResourcePermissionStatementsOutput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:75
-Aws::Signin::ClientApi::PutResourcePermissionStatementInput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::ListSessionsInput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:76
-Aws::Signin::ClientApi::PutResourcePermissionStatementOutput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::ListSessionsOutput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:77
-Aws::Signin::ClientApi::RedirectUri = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::Long = T.let(T.unsafe(nil), Seahorse::Model::Shapes::IntegerShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:78
-Aws::Signin::ClientApi::RefreshToken = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::NextToken = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:79
-Aws::Signin::ClientApi::RequestedRegion = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::OAuth2ErrorCode = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:80
-Aws::Signin::ClientApi::Resource = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::OAuthAccessToken = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:81
-Aws::Signin::ClientApi::ResourceNotFoundException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::PermissionStatementSummaries = T.let(T.unsafe(nil), Seahorse::Model::Shapes::ListShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:82
-Aws::Signin::ClientApi::RevocationToken = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::PermissionStatementSummary = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:83
-Aws::Signin::ClientApi::RevokeOAuth2TokenWithIAMRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::PolicyActions = T.let(T.unsafe(nil), Seahorse::Model::Shapes::ListShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:84
-Aws::Signin::ClientApi::RevokeOAuth2TokenWithIAMResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::PolicyStatement = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:85
-Aws::Signin::ClientApi::Scope = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::PolicyStatements = T.let(T.unsafe(nil), Seahorse::Model::Shapes::ListShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:86
-Aws::Signin::ClientApi::ServiceQuotaExceededException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::Principal = T.let(T.unsafe(nil), Seahorse::Model::Shapes::MapShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:87
-Aws::Signin::ClientApi::ServiceUnavailableException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::PrincipalArn = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:88
-Aws::Signin::ClientApi::SigninResourceBasedPolicy = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::PrincipalArnFilter = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:89
-Aws::Signin::ClientApi::SourceIp = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::PutConsoleAuthorizationConfigurationInput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:90
-Aws::Signin::ClientApi::SourceVpc = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::PutConsoleAuthorizationConfigurationOutput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:91
-Aws::Signin::ClientApi::SourceVpce = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::PutResourcePermissionStatementInput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:92
-Aws::Signin::ClientApi::StatementId = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::PutResourcePermissionStatementOutput = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:93
-Aws::Signin::ClientApi::String = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::RedirectUri = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:94
-Aws::Signin::ClientApi::SubjectToken = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::RefreshToken = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:95
-Aws::Signin::ClientApi::SubjectTokenType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::RequestedRegion = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:96
-Aws::Signin::ClientApi::TargetId = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::Resource = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:97
-Aws::Signin::ClientApi::TokenExchangeGrantType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::ResourceNotFoundException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:98
-Aws::Signin::ClientApi::TokenExpiresIn = T.let(T.unsafe(nil), Seahorse::Model::Shapes::IntegerShape)
+Aws::Signin::ClientApi::RevocationReason = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:99
-Aws::Signin::ClientApi::TokenType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::RevocationToken = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:100
-Aws::Signin::ClientApi::TokenTypeHint = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+Aws::Signin::ClientApi::RevokeOAuth2TokenWithIAMRequest = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:101
-Aws::Signin::ClientApi::TooManyRequestsError = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::RevokeOAuth2TokenWithIAMResponse = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:102
-Aws::Signin::ClientApi::ValidationException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+Aws::Signin::ClientApi::RevokedSession = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:103
+Aws::Signin::ClientApi::RevokedSessionList = T.let(T.unsafe(nil), Seahorse::Model::Shapes::ListShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:104
+Aws::Signin::ClientApi::Scope = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:105
+Aws::Signin::ClientApi::ServiceQuotaExceededException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:106
+Aws::Signin::ClientApi::ServiceUnavailableException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:107
+Aws::Signin::ClientApi::Session = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:108
+Aws::Signin::ClientApi::SessionArn = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:109
+Aws::Signin::ClientApi::SessionArnList = T.let(T.unsafe(nil), Seahorse::Model::Shapes::ListShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:110
+Aws::Signin::ClientApi::SessionStatus = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:111
+Aws::Signin::ClientApi::SessionSummaryList = T.let(T.unsafe(nil), Seahorse::Model::Shapes::ListShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:112
+Aws::Signin::ClientApi::SessionsMaxResults = T.let(T.unsafe(nil), Seahorse::Model::Shapes::IntegerShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:113
+Aws::Signin::ClientApi::SigninResourceBasedPolicy = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:114
+Aws::Signin::ClientApi::SourceIp = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:115
+Aws::Signin::ClientApi::SourceVpc = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:116
+Aws::Signin::ClientApi::SourceVpce = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:117
+Aws::Signin::ClientApi::StatementId = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:118
+Aws::Signin::ClientApi::String = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:119
+Aws::Signin::ClientApi::SubjectToken = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:120
+Aws::Signin::ClientApi::SubjectTokenType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:121
+Aws::Signin::ClientApi::TargetId = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:122
+Aws::Signin::ClientApi::TokenDuration = T.let(T.unsafe(nil), Seahorse::Model::Shapes::IntegerShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:123
+Aws::Signin::ClientApi::TokenExchangeGrantType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:124
+Aws::Signin::ClientApi::TokenExpiresIn = T.let(T.unsafe(nil), Seahorse::Model::Shapes::IntegerShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:125
+Aws::Signin::ClientApi::TokenType = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:126
+Aws::Signin::ClientApi::TokenTypeHint = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:127
+Aws::Signin::ClientApi::TooManyRequestsError = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:128
+Aws::Signin::ClientApi::ValidationException = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StructureShape)
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/client_api.rb:129
 Aws::Signin::ClientApi::VpcSourceIp = T.let(T.unsafe(nil), Seahorse::Model::Shapes::StringShape)
 
 # Endpoint parameters used to influence endpoints per request.
@@ -18186,13 +18721,13 @@ end
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:13
 module Aws::Signin::Endpoints
   class << self
-    # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:115
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:151
     def parameters_for_operation(context); end
   end
 end
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:15
-class Aws::Signin::Endpoints::CreateOAuth2TokenWithIAM
+class Aws::Signin::Endpoints::BatchRevokeSessions
   class << self
     # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:16
     def build(context); end
@@ -18200,7 +18735,7 @@ class Aws::Signin::Endpoints::CreateOAuth2TokenWithIAM
 end
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:24
-class Aws::Signin::Endpoints::CreateOAuth2TokenWithTokenExchange
+class Aws::Signin::Endpoints::CreateBearerToken
   class << self
     # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:25
     def build(context); end
@@ -18208,7 +18743,7 @@ class Aws::Signin::Endpoints::CreateOAuth2TokenWithTokenExchange
 end
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:33
-class Aws::Signin::Endpoints::DeleteConsoleAuthorizationConfiguration
+class Aws::Signin::Endpoints::CreateOAuth2TokenWithIAM
   class << self
     # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:34
     def build(context); end
@@ -18216,7 +18751,7 @@ class Aws::Signin::Endpoints::DeleteConsoleAuthorizationConfiguration
 end
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:42
-class Aws::Signin::Endpoints::DeleteResourcePermissionStatement
+class Aws::Signin::Endpoints::CreateOAuth2TokenWithTokenExchange
   class << self
     # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:43
     def build(context); end
@@ -18224,7 +18759,7 @@ class Aws::Signin::Endpoints::DeleteResourcePermissionStatement
 end
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:51
-class Aws::Signin::Endpoints::GetConsoleAuthorizationConfiguration
+class Aws::Signin::Endpoints::DeleteConsoleAuthorizationConfiguration
   class << self
     # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:52
     def build(context); end
@@ -18232,7 +18767,7 @@ class Aws::Signin::Endpoints::GetConsoleAuthorizationConfiguration
 end
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:60
-class Aws::Signin::Endpoints::GetResourcePolicy
+class Aws::Signin::Endpoints::DeleteResourcePermissionStatement
   class << self
     # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:61
     def build(context); end
@@ -18240,7 +18775,7 @@ class Aws::Signin::Endpoints::GetResourcePolicy
 end
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:69
-class Aws::Signin::Endpoints::IntrospectOAuth2TokenWithIAM
+class Aws::Signin::Endpoints::GetConsoleAuthorizationConfiguration
   class << self
     # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:70
     def build(context); end
@@ -18248,7 +18783,7 @@ class Aws::Signin::Endpoints::IntrospectOAuth2TokenWithIAM
 end
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:78
-class Aws::Signin::Endpoints::ListResourcePermissionStatements
+class Aws::Signin::Endpoints::GetResourcePolicy
   class << self
     # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:79
     def build(context); end
@@ -18256,7 +18791,7 @@ class Aws::Signin::Endpoints::ListResourcePermissionStatements
 end
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:87
-class Aws::Signin::Endpoints::PutConsoleAuthorizationConfiguration
+class Aws::Signin::Endpoints::GetSession
   class << self
     # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:88
     def build(context); end
@@ -18264,7 +18799,7 @@ class Aws::Signin::Endpoints::PutConsoleAuthorizationConfiguration
 end
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:96
-class Aws::Signin::Endpoints::PutResourcePermissionStatement
+class Aws::Signin::Endpoints::IntrospectOAuth2TokenWithIAM
   class << self
     # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:97
     def build(context); end
@@ -18272,9 +18807,41 @@ class Aws::Signin::Endpoints::PutResourcePermissionStatement
 end
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:105
-class Aws::Signin::Endpoints::RevokeOAuth2TokenWithIAM
+class Aws::Signin::Endpoints::ListResourcePermissionStatements
   class << self
     # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:106
+    def build(context); end
+  end
+end
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:114
+class Aws::Signin::Endpoints::ListSessions
+  class << self
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:115
+    def build(context); end
+  end
+end
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:123
+class Aws::Signin::Endpoints::PutConsoleAuthorizationConfiguration
+  class << self
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:124
+    def build(context); end
+  end
+end
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:132
+class Aws::Signin::Endpoints::PutResourcePermissionStatement
+  class << self
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:133
+    def build(context); end
+  end
+end
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:141
+class Aws::Signin::Endpoints::RevokeOAuth2TokenWithIAM
+  class << self
+    # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/endpoints.rb:142
     def build(context); end
   end
 end
@@ -18613,6 +19180,75 @@ end
 # pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:54
 Aws::Signin::Types::AccessToken::SENSITIVE = T.let(T.unsafe(nil), Array)
 
+# A session that could not be revoked
+#
+# @!attribute [rw] session_arn
+#   The session ARN
+#   @return [String]
+#
+# @!attribute [rw] code
+#   The error code
+#   @return [String]
+#
+# @!attribute [rw] message
+#   The error message
+#   @return [String]
+#
+# @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/BatchRevokeSessionError AWS API Documentation
+#
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:77
+class Aws::Signin::Types::BatchRevokeSessionError < ::Struct
+  include ::Aws::Structure
+end
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:78
+Aws::Signin::Types::BatchRevokeSessionError::SENSITIVE = T.let(T.unsafe(nil), Array)
+
+# Input for BatchRevokeSessions operation
+#
+# @!attribute [rw] principal_arn
+#   The identity that owns the sessions. Omit to use the caller. Specify
+#   arn:aws:iam::\{account-id}:* to revoke any session in the account.
+#   @return [String]
+#
+# @!attribute [rw] session_arns
+#   The ARNs of the sessions to revoke
+#   @return [Array<String>]
+#
+# @!attribute [rw] reason
+#   The reason for revoking the sessions
+#   @return [String]
+#
+# @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/BatchRevokeSessionsInput AWS API Documentation
+#
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:102
+class Aws::Signin::Types::BatchRevokeSessionsInput < ::Struct
+  include ::Aws::Structure
+end
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:103
+Aws::Signin::Types::BatchRevokeSessionsInput::SENSITIVE = T.let(T.unsafe(nil), Array)
+
+# Output for BatchRevokeSessions operation
+#
+# @!attribute [rw] revoked_sessions
+#   Sessions that were revoked
+#   @return [Array<Types::RevokedSession>]
+#
+# @!attribute [rw] errors
+#   Sessions that could not be revoked
+#   @return [Array<Types::BatchRevokeSessionError>]
+#
+# @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/BatchRevokeSessionsOutput AWS API Documentation
+#
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:121
+class Aws::Signin::Types::BatchRevokeSessionsOutput < ::Struct
+  include ::Aws::Structure
+end
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:122
+Aws::Signin::Types::BatchRevokeSessionsOutput::SENSITIVE = T.let(T.unsafe(nil), Array)
+
 # Error thrown when request conflicts with current state
 #
 # HTTP Status Code: 409 Conflict
@@ -18630,13 +19266,67 @@ Aws::Signin::Types::AccessToken::SENSITIVE = T.let(T.unsafe(nil), Array)
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/ConflictException AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:77
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:145
 class Aws::Signin::Types::ConflictException < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:78
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:146
 Aws::Signin::Types::ConflictException::SENSITIVE = T.let(T.unsafe(nil), Array)
+
+# Input structure for CreateBearerToken operation
+#
+# @!attribute [rw] grant_type
+#   The grant type. Must be "client\_credentials".
+#   @return [String]
+#
+# @!attribute [rw] resource
+#   The AWS service the bearer token is for. Example:
+#   "ecr.amazonaws.com".
+#   @return [String]
+#
+# @!attribute [rw] duration_seconds
+#   The requested token lifetime in seconds, from 300 (5 minutes) up to
+#   the maximum allowed for the service, currently 43200 (12 hours). If
+#   omitted, the token is valid for 12 hours.
+#   @return [Integer]
+#
+# @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/CreateBearerTokenRequest AWS API Documentation
+#
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:172
+class Aws::Signin::Types::CreateBearerTokenRequest < ::Struct
+  include ::Aws::Structure
+end
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:173
+Aws::Signin::Types::CreateBearerTokenRequest::SENSITIVE = T.let(T.unsafe(nil), Array)
+
+# Output structure for CreateBearerToken operation
+#
+# Contains the bearer token, its type, and its lifetime.
+#
+# @!attribute [rw] access_token
+#   The bearer token. Present it to the AWS service named in the
+#   request.
+#   @return [String]
+#
+# @!attribute [rw] token_type
+#   The token type. Always "Bearer".
+#   @return [String]
+#
+# @!attribute [rw] expires_in
+#   Token lifetime in seconds.
+#   @return [Integer]
+#
+# @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/CreateBearerTokenResponse AWS API Documentation
+#
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:199
+class Aws::Signin::Types::CreateBearerTokenResponse < ::Struct
+  include ::Aws::Structure
+end
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:200
+Aws::Signin::Types::CreateBearerTokenResponse::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Input structure for CreateOAuth2Token operation
 #
@@ -18651,12 +19341,12 @@ Aws::Signin::Types::ConflictException::SENSITIVE = T.let(T.unsafe(nil), Array)
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/CreateOAuth2TokenRequest AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:96
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:218
 class Aws::Signin::Types::CreateOAuth2TokenRequest < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:97
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:219
 Aws::Signin::Types::CreateOAuth2TokenRequest::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # The request body for creating an OAuth 2.0 token. Supports both the
@@ -18700,12 +19390,12 @@ Aws::Signin::Types::CreateOAuth2TokenRequest::SENSITIVE = T.let(T.unsafe(nil), A
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/CreateOAuth2TokenRequestBody AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:148
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:270
 class Aws::Signin::Types::CreateOAuth2TokenRequestBody < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:149
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:271
 Aws::Signin::Types::CreateOAuth2TokenRequestBody::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Output structure for CreateOAuth2Token operation
@@ -18721,12 +19411,12 @@ Aws::Signin::Types::CreateOAuth2TokenRequestBody::SENSITIVE = T.let(T.unsafe(nil
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/CreateOAuth2TokenResponse AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:167
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:289
 class Aws::Signin::Types::CreateOAuth2TokenResponse < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:168
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:290
 Aws::Signin::Types::CreateOAuth2TokenResponse::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # The response body for an OAuth 2.0 token request. The fields returned
@@ -18762,12 +19452,12 @@ Aws::Signin::Types::CreateOAuth2TokenResponse::SENSITIVE = T.let(T.unsafe(nil), 
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/CreateOAuth2TokenResponseBody AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:210
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:332
 class Aws::Signin::Types::CreateOAuth2TokenResponseBody < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:211
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:333
 Aws::Signin::Types::CreateOAuth2TokenResponseBody::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Input structure for CreateOAuth2TokenWithIAM operation
@@ -18783,12 +19473,12 @@ Aws::Signin::Types::CreateOAuth2TokenResponseBody::SENSITIVE = T.let(T.unsafe(ni
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/CreateOAuth2TokenWithIAMRequest AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:230
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:352
 class Aws::Signin::Types::CreateOAuth2TokenWithIAMRequest < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:231
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:353
 Aws::Signin::Types::CreateOAuth2TokenWithIAMRequest::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Output structure for CreateOAuth2TokenWithIAM operation
@@ -18797,7 +19487,7 @@ Aws::Signin::Types::CreateOAuth2TokenWithIAMRequest::SENSITIVE = T.let(T.unsafe(
 # RFC 6749 §5.1.
 #
 # @!attribute [rw] access_token
-#   Access token containing principal identity, resource scope, and
+#   The access token containing principal identity, resource scope, and
 #   session metadata.
 #   @return [String]
 #
@@ -18806,25 +19496,26 @@ Aws::Signin::Types::CreateOAuth2TokenWithIAMRequest::SENSITIVE = T.let(T.unsafe(
 #   @return [String]
 #
 # @!attribute [rw] expires_in
-#   Token lifetime in seconds. Value is the minimum of the caller's
+#   The token lifetime in seconds. Value is the minimum of the caller's
 #   session validity and 1 hour (3600 seconds).
 #   @return [Integer]
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/CreateOAuth2TokenWithIAMResponse AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:259
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:381
 class Aws::Signin::Types::CreateOAuth2TokenWithIAMResponse < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:260
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:382
 Aws::Signin::Types::CreateOAuth2TokenWithIAMResponse::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Input structure for CreateOAuth2TokenWithTokenExchange operation
 #
 # @!attribute [rw] grant_type
-#   The OAuth 2.0 grant type. Currently only supports
-#   "urn:ietf:params:oauth:grant-type:token-exchange".
+#   The OAuth 2.0 grant type. Currently supports
+#   "urn:ietf:params:oauth:grant-type:token-exchange" and
+#   "urn:ietf:params:oauth:grant-type:jwt-bearer".
 #   @return [String]
 #
 # @!attribute [rw] subject_token
@@ -18839,43 +19530,65 @@ Aws::Signin::Types::CreateOAuth2TokenWithIAMResponse::SENSITIVE = T.let(T.unsafe
 #   "grant\_type=urn:ietf:params:oauth:grant-type:token-exchange".
 #   @return [String]
 #
+# @!attribute [rw] assertion
+#   The JWT authorization grant, as defined in RFC 7523. Required when
+#   "grant\_type=urn:ietf:params:oauth:grant-type:jwt-bearer".
+#   @return [String]
+#
+# @!attribute [rw] client_id
+#   The OAuth 2.0 client identifier. If provided with
+#   "grant\_type=urn:ietf:params:oauth:grant-type:jwt-bearer", must
+#   match the assertion's "client\_id" claim.
+#   @return [String]
+#
 # @!attribute [rw] resource
-#   The OAuth resource for which the access token is requested. Required
-#   when "grant\_type=urn:ietf:params:oauth:grant-type:token-exchange".
-#   Example: "glue.amazonaws.com".
+#   The OAuth resource for which the access token is requested:
+#
+#   * "grant\_type=urn:ietf:params:oauth:grant-type:token-exchange":
+#     Required. Must be a service principal. Example:
+#     "glue.amazonaws.com".
+#   * "grant\_type=urn:ietf:params:oauth:grant-type:jwt-bearer":
+#     Required when the assertion has no "resource" claim, otherwise
+#     must match it. Must be a URI. Example:
+#     "https://aws-mcp.us-east-1.api.aws/mcp".
 #   @return [String]
 #
 # @!attribute [rw] scope
-#   IAM managed policy Amazon Resource Names (ARNs) to apply as session
-#   policies that further scope down the permissions of the issued
-#   access token, provided as a space-delimited list. Example:
+#   The IAM managed policy Amazon Resource Names (ARNs) to apply as
+#   session policies that further scope down the permissions of the
+#   issued access token, provided as a space-delimited list. Example:
 #   "arn:aws:iam::444455556666:policy/MyPolicy".
+#
+#   If provided with
+#   "grant\_type=urn:ietf:params:oauth:grant-type:jwt-bearer", must
+#   match the assertion's "scope" claim.
 #   @return [String]
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/CreateOAuth2TokenWithTokenExchangeRequest AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:303
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:449
 class Aws::Signin::Types::CreateOAuth2TokenWithTokenExchangeRequest < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:304
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:450
 Aws::Signin::Types::CreateOAuth2TokenWithTokenExchangeRequest::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Output structure for CreateOAuth2TokenWithTokenExchange operation.
 #
-# Contains the access token, issued token type, token type, and
-# expiration as defined in RFC 6749 §5.1 and RFC 8693 §2.2.1.
+# Contains the access token, token type, and expiration as defined in
+# RFC 6749 §5.1, plus fields specific to the grant type.
 #
 # @!attribute [rw] access_token
-#   Access token containing principal identity, resource scope, and
+#   The access token containing principal identity, resource scope, and
 #   session metadata.
 #   @return [String]
 #
 # @!attribute [rw] issued_token_type
-#   The token type of the issued token. Always
-#   "urn:ietf:params:oauth:token-type:access\_token" as defined in RFC
-#   8693 §2.2.1.
+#   The token type of the issued token. Returned when
+#   "grant\_type=urn:ietf:params:oauth:grant-type:token-exchange". Value
+#   is "urn:ietf:params:oauth:token-type:access\_token" as defined in
+#   RFC 8693 §2.2.1.
 #   @return [String]
 #
 # @!attribute [rw] token_type
@@ -18884,18 +19597,30 @@ Aws::Signin::Types::CreateOAuth2TokenWithTokenExchangeRequest::SENSITIVE = T.let
 #   @return [String]
 #
 # @!attribute [rw] expires_in
-#   Token lifetime in seconds. Value is the minimum of the subject
+#   The token lifetime in seconds. Value is the minimum of the provided
 #   token's validity and 1 hour (3600 seconds).
 #   @return [Integer]
 #
+# @!attribute [rw] resource
+#   The resource the access token is scoped to. Returned when
+#   "grant\_type=urn:ietf:params:oauth:grant-type:jwt-bearer".
+#   @return [String]
+#
+# @!attribute [rw] scope
+#   The IAM managed policy ARNs applied as session policies, as a
+#   space-delimited list. Returned when
+#   "grant\_type=urn:ietf:params:oauth:grant-type:jwt-bearer" and the
+#   assertion has a scope.
+#   @return [String]
+#
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/CreateOAuth2TokenWithTokenExchangeResponse AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:340
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:501
 class Aws::Signin::Types::CreateOAuth2TokenWithTokenExchangeResponse < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:341
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:502
 Aws::Signin::Types::CreateOAuth2TokenWithTokenExchangeResponse::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Input for DeleteConsoleAuthorizationConfiguration operation
@@ -18906,12 +19631,12 @@ Aws::Signin::Types::CreateOAuth2TokenWithTokenExchangeResponse::SENSITIVE = T.le
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/DeleteConsoleAuthorizationConfigurationInput AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:354
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:515
 class Aws::Signin::Types::DeleteConsoleAuthorizationConfigurationInput < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:355
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:516
 Aws::Signin::Types::DeleteConsoleAuthorizationConfigurationInput::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Output for DeleteConsoleAuthorizationConfiguration operation
@@ -18930,12 +19655,12 @@ Aws::Signin::Types::DeleteConsoleAuthorizationConfigurationInput::SENSITIVE = T.
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/DeleteConsoleAuthorizationConfigurationOutput AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:378
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:539
 class Aws::Signin::Types::DeleteConsoleAuthorizationConfigurationOutput < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:379
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:540
 Aws::Signin::Types::DeleteConsoleAuthorizationConfigurationOutput::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Input for DeleteResourcePermissionStatement operation
@@ -18953,19 +19678,19 @@ Aws::Signin::Types::DeleteConsoleAuthorizationConfigurationOutput::SENSITIVE = T
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/DeleteResourcePermissionStatementInput AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:400
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:561
 class Aws::Signin::Types::DeleteResourcePermissionStatementInput < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:401
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:562
 Aws::Signin::Types::DeleteResourcePermissionStatementInput::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Output for DeleteResourcePermissionStatement operation
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/DeleteResourcePermissionStatementOutput AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:409
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:570
 class Aws::Signin::Types::DeleteResourcePermissionStatementOutput < ::Aws::EmptyStructure; end
 
 # Input for GetConsoleAuthorizationConfiguration operation
@@ -18976,12 +19701,12 @@ class Aws::Signin::Types::DeleteResourcePermissionStatementOutput < ::Aws::Empty
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/GetConsoleAuthorizationConfigurationInput AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:420
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:581
 class Aws::Signin::Types::GetConsoleAuthorizationConfigurationInput < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:421
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:582
 Aws::Signin::Types::GetConsoleAuthorizationConfigurationInput::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Output for GetConsoleAuthorizationConfiguration operation
@@ -19000,12 +19725,12 @@ Aws::Signin::Types::GetConsoleAuthorizationConfigurationInput::SENSITIVE = T.let
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/GetConsoleAuthorizationConfigurationOutput AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:444
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:605
 class Aws::Signin::Types::GetConsoleAuthorizationConfigurationOutput < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:445
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:606
 Aws::Signin::Types::GetConsoleAuthorizationConfigurationOutput::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Input for GetResourcePolicy operation
@@ -19014,7 +19739,7 @@ Aws::Signin::Types::GetConsoleAuthorizationConfigurationOutput::SENSITIVE = T.le
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/GetResourcePolicyInput AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:455
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:616
 class Aws::Signin::Types::GetResourcePolicyInput < ::Aws::EmptyStructure; end
 
 # Output for GetResourcePolicy operation
@@ -19025,13 +19750,100 @@ class Aws::Signin::Types::GetResourcePolicyInput < ::Aws::EmptyStructure; end
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/GetResourcePolicyOutput AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:466
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:627
 class Aws::Signin::Types::GetResourcePolicyOutput < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:467
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:628
 Aws::Signin::Types::GetResourcePolicyOutput::SENSITIVE = T.let(T.unsafe(nil), Array)
+
+# Input for GetSession operation
+#
+# @!attribute [rw] session_arn
+#   The ARN of the session to retrieve
+#   @return [String]
+#
+# @!attribute [rw] principal_arn
+#   The identity that owns the session. Omit to use the caller. Specify
+#   arn:aws:iam::\{account-id}:* to retrieve any session in the
+#   account.
+#   @return [String]
+#
+# @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/GetSessionInput AWS API Documentation
+#
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:648
+class Aws::Signin::Types::GetSessionInput < ::Struct
+  include ::Aws::Structure
+end
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:649
+Aws::Signin::Types::GetSessionInput::SENSITIVE = T.let(T.unsafe(nil), Array)
+
+# Output for GetSession operation
+#
+# @!attribute [rw] session_arn
+#   The session ARN
+#   @return [String]
+#
+# @!attribute [rw] principal_arn
+#   The IAM identity that owns the session
+#   @return [String]
+#
+# @!attribute [rw] role
+#   The IAM role for the session, when the owner is a role
+#   @return [String]
+#
+# @!attribute [rw] status
+#   The session status
+#   @return [String]
+#
+# @!attribute [rw] client_id
+#   The OAuth client that created the session
+#   @return [String]
+#
+# @!attribute [rw] client_type
+#   The type of OAuth client that created the session
+#   @return [String]
+#
+# @!attribute [rw] resource
+#   The resource that the session's tokens are bound to
+#   @return [String]
+#
+# @!attribute [rw] issued_at
+#   The time the session was created, in Unix epoch seconds
+#   @return [Integer]
+#
+# @!attribute [rw] expires_at
+#   The time the session expires, in Unix epoch seconds
+#   @return [Integer]
+#
+# @!attribute [rw] last_used_at
+#   The time the session was last refreshed, in Unix epoch seconds
+#   @return [Integer]
+#
+# @!attribute [rw] issued_in_region
+#   The AWS Region where the session was created
+#   @return [String]
+#
+# @!attribute [rw] origin_session_arn
+#   The ARN of the session this session originated from
+#   @return [String]
+#
+# @!attribute [rw] user_agent
+#   The user agent captured when the session was created or last
+#   refreshed
+#   @return [String]
+#
+# @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/GetSessionOutput AWS API Documentation
+#
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:723
+class Aws::Signin::Types::GetSessionOutput < ::Struct
+  include ::Aws::Structure
+end
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:724
+Aws::Signin::Types::GetSessionOutput::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # The request failed because of an internal server error.
 #
@@ -19045,12 +19857,12 @@ Aws::Signin::Types::GetResourcePolicyOutput::SENSITIVE = T.let(T.unsafe(nil), Ar
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/InternalServerException AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:485
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:742
 class Aws::Signin::Types::InternalServerException < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:486
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:743
 Aws::Signin::Types::InternalServerException::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Input structure for IntrospectOAuth2TokenWithIAM operation
@@ -19071,12 +19883,12 @@ Aws::Signin::Types::InternalServerException::SENSITIVE = T.let(T.unsafe(nil), Ar
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/IntrospectOAuth2TokenWithIAMRequest AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:510
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:767
 class Aws::Signin::Types::IntrospectOAuth2TokenWithIAMRequest < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:511
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:768
 Aws::Signin::Types::IntrospectOAuth2TokenWithIAMRequest::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Output structure for IntrospectOAuth2TokenWithIAM operation
@@ -19150,12 +19962,12 @@ Aws::Signin::Types::IntrospectOAuth2TokenWithIAMRequest::SENSITIVE = T.let(T.uns
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/IntrospectOAuth2TokenWithIAMResponse AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:600
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:857
 class Aws::Signin::Types::IntrospectOAuth2TokenWithIAMResponse < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:601
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:858
 Aws::Signin::Types::IntrospectOAuth2TokenWithIAMResponse::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # The request failed because the provided grant is invalid or expired.
@@ -19169,12 +19981,12 @@ Aws::Signin::Types::IntrospectOAuth2TokenWithIAMResponse::SENSITIVE = T.let(T.un
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/InvalidGrantException AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:618
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:875
 class Aws::Signin::Types::InvalidGrantException < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:619
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:876
 Aws::Signin::Types::InvalidGrantException::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # The request failed because the requested scope is invalid or exceeds
@@ -19189,12 +20001,12 @@ Aws::Signin::Types::InvalidGrantException::SENSITIVE = T.let(T.unsafe(nil), Arra
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/InvalidScopeException AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:637
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:894
 class Aws::Signin::Types::InvalidScopeException < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:638
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:895
 Aws::Signin::Types::InvalidScopeException::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Input for ListResourcePermissionStatements operation
@@ -19209,12 +20021,12 @@ Aws::Signin::Types::InvalidScopeException::SENSITIVE = T.let(T.unsafe(nil), Arra
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/ListResourcePermissionStatementsInput AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:656
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:913
 class Aws::Signin::Types::ListResourcePermissionStatementsInput < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:657
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:914
 Aws::Signin::Types::ListResourcePermissionStatementsInput::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Output for ListResourcePermissionStatements operation
@@ -19229,13 +20041,77 @@ Aws::Signin::Types::ListResourcePermissionStatementsInput::SENSITIVE = T.let(T.u
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/ListResourcePermissionStatementsOutput AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:675
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:932
 class Aws::Signin::Types::ListResourcePermissionStatementsOutput < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:676
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:933
 Aws::Signin::Types::ListResourcePermissionStatementsOutput::SENSITIVE = T.let(T.unsafe(nil), Array)
+
+# Input for ListSessions operation
+#
+# @!attribute [rw] principal_arn
+#   The identity whose sessions to list. Omit to list the caller's own
+#   sessions. Specify arn:aws:iam::\{account-id}:* to list all sessions
+#   in the account.
+#   @return [String]
+#
+# @!attribute [rw] max_results
+#   Maximum number of results to return
+#   @return [Integer]
+#
+# @!attribute [rw] next_token
+#   Token for pagination
+#   @return [String]
+#
+# @!attribute [rw] status
+#   Returns only sessions with this status
+#   @return [String]
+#
+# @!attribute [rw] client_id
+#   Returns only sessions created by this OAuth client
+#   @return [String]
+#
+# @!attribute [rw] issued_after
+#   Returns only sessions created at or after this time, in Unix epoch
+#   seconds
+#   @return [Integer]
+#
+# @!attribute [rw] issued_before
+#   Returns only sessions created before this time, in Unix epoch
+#   seconds
+#   @return [Integer]
+#
+# @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/ListSessionsInput AWS API Documentation
+#
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:980
+class Aws::Signin::Types::ListSessionsInput < ::Struct
+  include ::Aws::Structure
+end
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:981
+Aws::Signin::Types::ListSessionsInput::SENSITIVE = T.let(T.unsafe(nil), Array)
+
+# Output for ListSessions operation
+#
+# @!attribute [rw] items
+#   List of session summaries
+#   @return [Array<Types::Session>]
+#
+# @!attribute [rw] next_token
+#   Token for next page of results
+#   @return [String]
+#
+# @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/ListSessionsOutput AWS API Documentation
+#
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:999
+class Aws::Signin::Types::ListSessionsOutput < ::Struct
+  include ::Aws::Structure
+end
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1000
+Aws::Signin::Types::ListSessionsOutput::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Summary of a permission statement
 #
@@ -19249,12 +20125,12 @@ Aws::Signin::Types::ListResourcePermissionStatementsOutput::SENSITIVE = T.let(T.
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/PermissionStatementSummary AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:694
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1018
 class Aws::Signin::Types::PermissionStatementSummary < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:695
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1019
 Aws::Signin::Types::PermissionStatementSummary::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Individual policy statement within a resource-based policy
@@ -19281,12 +20157,12 @@ Aws::Signin::Types::PermissionStatementSummary::SENSITIVE = T.let(T.unsafe(nil),
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/PolicyStatement AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:728
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1052
 class Aws::Signin::Types::PolicyStatement < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:729
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1053
 Aws::Signin::Types::PolicyStatement::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Input for PutConsoleAuthorizationConfiguration operation
@@ -19297,12 +20173,12 @@ Aws::Signin::Types::PolicyStatement::SENSITIVE = T.let(T.unsafe(nil), Array)
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/PutConsoleAuthorizationConfigurationInput AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:742
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1066
 class Aws::Signin::Types::PutConsoleAuthorizationConfigurationInput < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:743
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1067
 Aws::Signin::Types::PutConsoleAuthorizationConfigurationInput::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Output for PutConsoleAuthorizationConfiguration operation
@@ -19321,12 +20197,12 @@ Aws::Signin::Types::PutConsoleAuthorizationConfigurationInput::SENSITIVE = T.let
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/PutConsoleAuthorizationConfigurationOutput AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:766
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1090
 class Aws::Signin::Types::PutConsoleAuthorizationConfigurationOutput < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:767
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1091
 Aws::Signin::Types::PutConsoleAuthorizationConfigurationOutput::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Input for PutResourcePermissionStatement operation
@@ -19369,12 +20245,12 @@ Aws::Signin::Types::PutConsoleAuthorizationConfigurationOutput::SENSITIVE = T.le
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/PutResourcePermissionStatementInput AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:819
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1143
 class Aws::Signin::Types::PutResourcePermissionStatementInput < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:820
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1144
 Aws::Signin::Types::PutResourcePermissionStatementInput::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Output for PutResourcePermissionStatement operation
@@ -19385,12 +20261,12 @@ Aws::Signin::Types::PutResourcePermissionStatementInput::SENSITIVE = T.let(T.uns
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/PutResourcePermissionStatementOutput AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:833
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1157
 class Aws::Signin::Types::PutResourcePermissionStatementOutput < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:834
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1158
 Aws::Signin::Types::PutResourcePermissionStatementOutput::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Error thrown when requested resource is not found
@@ -19411,12 +20287,12 @@ Aws::Signin::Types::PutResourcePermissionStatementOutput::SENSITIVE = T.let(T.un
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/ResourceNotFoundException AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:858
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1182
 class Aws::Signin::Types::ResourceNotFoundException < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:859
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1183
 Aws::Signin::Types::ResourceNotFoundException::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Input structure for RevokeOAuth2TokenWithIAM operation
@@ -19431,12 +20307,12 @@ Aws::Signin::Types::ResourceNotFoundException::SENSITIVE = T.let(T.unsafe(nil), 
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/RevokeOAuth2TokenWithIAMRequest AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:876
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1200
 class Aws::Signin::Types::RevokeOAuth2TokenWithIAMRequest < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:877
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1201
 Aws::Signin::Types::RevokeOAuth2TokenWithIAMRequest::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Output structure for RevokeOAuth2TokenWithIAM operation
@@ -19446,8 +20322,24 @@ Aws::Signin::Types::RevokeOAuth2TokenWithIAMRequest::SENSITIVE = T.let(T.unsafe(
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/RevokeOAuth2TokenWithIAMResponse AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:888
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1212
 class Aws::Signin::Types::RevokeOAuth2TokenWithIAMResponse < ::Aws::EmptyStructure; end
+
+# A session that was revoked
+#
+# @!attribute [rw] session_arn
+#   The revoked session ARN
+#   @return [String]
+#
+# @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/RevokedSession AWS API Documentation
+#
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1223
+class Aws::Signin::Types::RevokedSession < ::Struct
+  include ::Aws::Structure
+end
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1224
+Aws::Signin::Types::RevokedSession::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # Error thrown when service quota is exceeded
 #
@@ -19468,12 +20360,12 @@ class Aws::Signin::Types::RevokeOAuth2TokenWithIAMResponse < ::Aws::EmptyStructu
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/ServiceQuotaExceededException AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:911
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1249
 class Aws::Signin::Types::ServiceQuotaExceededException < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:912
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1250
 Aws::Signin::Types::ServiceQuotaExceededException::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # The request failed because a dependency is temporarily unavailable.
@@ -19488,13 +20380,61 @@ Aws::Signin::Types::ServiceQuotaExceededException::SENSITIVE = T.let(T.unsafe(ni
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/ServiceUnavailableException AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:930
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1268
 class Aws::Signin::Types::ServiceUnavailableException < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:931
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1269
 Aws::Signin::Types::ServiceUnavailableException::SENSITIVE = T.let(T.unsafe(nil), Array)
+
+# Summary of a sign-in session
+#
+# @!attribute [rw] session_arn
+#   The session ARN
+#   @return [String]
+#
+# @!attribute [rw] principal_arn
+#   The IAM identity that owns the session
+#   @return [String]
+#
+# @!attribute [rw] role
+#   The IAM role for the session, when the owner is a role
+#   @return [String]
+#
+# @!attribute [rw] status
+#   The session status
+#   @return [String]
+#
+# @!attribute [rw] issued_at
+#   The time the session was created, in Unix epoch seconds
+#   @return [Integer]
+#
+# @!attribute [rw] expires_at
+#   The time the session expires, in Unix epoch seconds
+#   @return [Integer]
+#
+# @!attribute [rw] client_id
+#   The OAuth client that created the session
+#   @return [String]
+#
+# @!attribute [rw] client_type
+#   The type of OAuth client that created the session
+#   @return [String]
+#
+# @!attribute [rw] resource
+#   The resource that the session's tokens are bound to
+#   @return [String]
+#
+# @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/Session AWS API Documentation
+#
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1322
+class Aws::Signin::Types::Session < ::Struct
+  include ::Aws::Structure
+end
+
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1323
+Aws::Signin::Types::Session::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # SignIn resource-based policy document
 #
@@ -19508,12 +20448,12 @@ Aws::Signin::Types::ServiceUnavailableException::SENSITIVE = T.let(T.unsafe(nil)
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/SigninResourceBasedPolicy AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:949
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1341
 class Aws::Signin::Types::SigninResourceBasedPolicy < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:950
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1342
 Aws::Signin::Types::SigninResourceBasedPolicy::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # The request failed because you exceeded the request rate limit for
@@ -19529,12 +20469,12 @@ Aws::Signin::Types::SigninResourceBasedPolicy::SENSITIVE = T.let(T.unsafe(nil), 
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/TooManyRequestsError AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:969
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1361
 class Aws::Signin::Types::TooManyRequestsError < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:970
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1362
 Aws::Signin::Types::TooManyRequestsError::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # The request failed because it contains a malformed, missing, or
@@ -19550,12 +20490,12 @@ Aws::Signin::Types::TooManyRequestsError::SENSITIVE = T.let(T.unsafe(nil), Array
 #
 # @see http://docs.aws.amazon.com/goto/WebAPI/signin-2023-01-01/ValidationException AWS API Documentation
 #
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:989
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1381
 class Aws::Signin::Types::ValidationException < ::Struct
   include ::Aws::Structure
 end
 
-# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:990
+# pkg:gem/aws-sdk-core#lib/aws-sdk-signin/types.rb:1382
 Aws::Signin::Types::ValidationException::SENSITIVE = T.let(T.unsafe(nil), Array)
 
 # pkg:gem/aws-sdk-core#lib/aws-sdk-core/static_token_provider.rb:4
@@ -21712,7 +22652,7 @@ end
 class Seahorse::Client::Configuration
   # @api private
   #
-  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:77
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:144
   def initialize; end
 
   # Adds a getter method that returns the named option or a default
@@ -21743,7 +22683,7 @@ class Seahorse::Client::Configuration
   #
   # @return [self]
   #
-  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:108
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:175
   def add_option(name, default = T.unsafe(nil), &block); end
 
   # Constructs and returns a configuration structure.
@@ -21782,46 +22722,46 @@ class Seahorse::Client::Configuration
   # @param [Hash] options ({}) A hash of configuration options.
   # @return [Struct] Returns a frozen configuration `Struct`.
   #
-  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:149
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:216
   def build!(options = T.unsafe(nil)); end
 
   private
 
-  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:173
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:240
   def apply_defaults(struct, options); end
 
-  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:162
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:229
   def apply_options(struct, options); end
 
-  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:158
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:225
   def empty_struct; end
 end
 
 # @api private
 #
-# pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:183
+# pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:250
 class Seahorse::Client::Configuration::DefaultResolver
-  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:185
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:252
   def initialize(struct); end
 
-  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:198
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:265
   def override_config(k, v); end
 
-  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:190
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:257
   def resolve; end
 
-  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:194
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:261
   def respond_to?(method_name, *args); end
 
   private
 
-  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:222
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:289
   def method_missing(method_name, *args); end
 
-  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:213
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:280
   def resolve_defaults(opt_name, defaults); end
 
-  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:204
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:271
   def value_at(opt_name); end
 end
 
@@ -21848,6 +22788,43 @@ class Seahorse::Client::Configuration::DynamicDefault
 
   # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:71
   def call(*args); end
+end
+
+# @api private
+#
+# pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:77
+class Seahorse::Client::Configuration::DynamicStruct
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:80
+  def initialize(members); end
+
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:85
+  def [](name); end
+
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:94
+  def []=(name, value); end
+
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:103
+  def each_pair; end
+
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:78
+  def members; end
+
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:121
+  def read_attribute(name); end
+
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:120
+  def write_attribute(name, value); end
+
+  private
+
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:112
+  def initialize_copy(source); end
+
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:123
+  def method_missing(name, *args, **kwargs, &block); end
+
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/configuration.rb:138
+  def respond_to_missing?(name, include_private = T.unsafe(nil)); end
 end
 
 # @api private
@@ -22448,13 +23425,18 @@ class Seahorse::Client::Http::Request
 
   # @param [#read, #size, #rewind] io
   #
-  # pkg:gem/aws-sdk-core#lib/seahorse/client/http/request.rb:59
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/http/request.rb:66
   def body=(io); end
 
   # @return [String]
   #
   # pkg:gem/aws-sdk-core#lib/seahorse/client/http/request.rb:51
   def body_contents; end
+
+  # @api private
+  #
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/http/request.rb:59
+  def buffer_supported?; end
 
   # @return [URI::HTTP, URI::HTTPS, nil]
   #
@@ -22485,6 +23467,13 @@ class Seahorse::Client::Http::Request
   #
   # pkg:gem/aws-sdk-core#lib/seahorse/client/http/request.rb:23
   def http_method=(_arg0); end
+
+  private
+
+  # Only probe ArgumentError falls back. Payload errors must propagate.
+  #
+  # pkg:gem/aws-sdk-core#lib/seahorse/client/http/request.rb:78
+  def detect_read_buffer_support; end
 end
 
 # pkg:gem/aws-sdk-core#lib/seahorse/client/http/response.rb:6
