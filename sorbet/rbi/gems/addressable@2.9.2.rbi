@@ -13,56 +13,56 @@ module Addressable; end
 # pkg:gem/addressable#lib/addressable/idna/pure.rb:21
 module Addressable::IDNA
   class << self
-    # pkg:gem/addressable#lib/addressable/idna/pure.rb:164
+    # pkg:gem/addressable#lib/addressable/idna/pure.rb:170
     def _deprecated_unicode_normalize_kc(value); end
 
     # Converts from a Unicode internationalized domain name to an ASCII
     # domain name as described in RFC 3490.
     #
-    # pkg:gem/addressable#lib/addressable/idna/pure.rb:95
+    # pkg:gem/addressable#lib/addressable/idna/pure.rb:101
     def to_ascii(input); end
 
     # Converts from an ASCII domain name to a Unicode internationalized
     # domain name as described in RFC 3490.
     #
-    # pkg:gem/addressable#lib/addressable/idna/pure.rb:121
+    # pkg:gem/addressable#lib/addressable/idna/pure.rb:127
     def to_unicode(input); end
 
     # @deprecated Use {String#unicode_normalize(:nfkc)} instead
     #
-    # pkg:gem/addressable#lib/addressable/idna/pure.rb:159
+    # pkg:gem/addressable#lib/addressable/idna/pure.rb:165
     def unicode_normalize_kc(*args, **, &block); end
 
     private
 
-    # pkg:gem/addressable#lib/addressable/idna/pure.rb:182
+    # pkg:gem/addressable#lib/addressable/idna/pure.rb:188
     def lookup_unicode_lowercase(codepoint); end
 
     # Bias adaptation method
     #
-    # pkg:gem/addressable#lib/addressable/idna/pure.rb:4740
+    # pkg:gem/addressable#lib/addressable/idna/pure.rb:4742
     def punycode_adapt(delta, numpoints, firsttime); end
 
-    # pkg:gem/addressable#lib/addressable/idna/pure.rb:4708
+    # pkg:gem/addressable#lib/addressable/idna/pure.rb:4710
     def punycode_basic?(codepoint); end
 
-    # pkg:gem/addressable#lib/addressable/idna/pure.rb:4586
+    # pkg:gem/addressable#lib/addressable/idna/pure.rb:4588
     def punycode_decode(punycode); end
 
     # Returns the numeric value of a basic codepoint
     # (for use in representing integers) in the range 0 to
     # base - 1, or PUNYCODE_BASE if codepoint does not represent a value.
     #
-    # pkg:gem/addressable#lib/addressable/idna/pure.rb:4726
+    # pkg:gem/addressable#lib/addressable/idna/pure.rb:4728
     def punycode_decode_digit(codepoint); end
 
-    # pkg:gem/addressable#lib/addressable/idna/pure.rb:4713
+    # pkg:gem/addressable#lib/addressable/idna/pure.rb:4715
     def punycode_delimiter?(codepoint); end
 
-    # pkg:gem/addressable#lib/addressable/idna/pure.rb:4465
+    # pkg:gem/addressable#lib/addressable/idna/pure.rb:4471
     def punycode_encode(unicode); end
 
-    # pkg:gem/addressable#lib/addressable/idna/pure.rb:4718
+    # pkg:gem/addressable#lib/addressable/idna/pure.rb:4720
     def punycode_encode_digit(d); end
 
     # Unicode aware downcase method.
@@ -72,12 +72,12 @@ module Addressable::IDNA
     #   The input string.
     # @return [String] The downcased result.
     #
-    # pkg:gem/addressable#lib/addressable/idna/pure.rb:174
+    # pkg:gem/addressable#lib/addressable/idna/pure.rb:180
     def unicode_downcase(input); end
   end
 end
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:4435
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:4441
 Addressable::IDNA::ACE_MAX_LENGTH = T.let(T.unsafe(nil), Integer)
 
 # This module is loosely based on idn_actionmailer by Mick Staugaard,
@@ -100,92 +100,98 @@ Addressable::IDNA::ACE_PREFIX = T.let(T.unsafe(nil), String)
 # themselves: controls, format characters such as bidi overrides and
 # isolates, and default ignorable code points. libidn rejects most of
 # them, but not those added to Unicode after the version it checks
-# against, such as U+2066 to U+2069.
+# against, such as U+2066 to U+2069. Format characters that are also
+# default ignorable are left out of the second set, since Ruby warns about
+# a duplicated range in a character class.
 # Characters that change how a label displays without being visible
 # themselves: controls, format characters such as bidi overrides and
 # isolates, and default ignorable code points, including those added to
-# Unicode after the version nameprep is based on.
+# Unicode after the version nameprep is based on. Format characters that
+# are also default ignorable are left out of the second set, since Ruby
+# warns about a duplicated range in a character class.
 #
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:89
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:95
 Addressable::IDNA::DISPLAY_CHANGING = T.let(T.unsafe(nil), Regexp)
 
 # Characters that nameprep doesn't allow in a label (Section 5 of
 # RFC 3491), or that it maps to nothing, so they can't be in a label that
-# toASCII produces.
+# toASCII produces. Some code points are in more than one table; they're
+# listed only under the first, since Ruby warns about a duplicated range
+# in a character class.
 #
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:61
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:63
 Addressable::IDNA::NAMEPREP_PROHIBITED = T.let(T.unsafe(nil), Regexp)
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:4437
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:4443
 Addressable::IDNA::PUNYCODE_BASE = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:4441
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:4447
 Addressable::IDNA::PUNYCODE_DAMP = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:4444
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:4450
 Addressable::IDNA::PUNYCODE_DELIMITER = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:4442
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:4448
 Addressable::IDNA::PUNYCODE_INITIAL_BIAS = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:4443
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:4449
 Addressable::IDNA::PUNYCODE_INITIAL_N = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:4446
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:4452
 Addressable::IDNA::PUNYCODE_MAXINT = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:4448
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:4454
 Addressable::IDNA::PUNYCODE_PRINT_ASCII = T.let(T.unsafe(nil), String)
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:4440
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:4446
 Addressable::IDNA::PUNYCODE_SKEW = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:4439
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:4445
 Addressable::IDNA::PUNYCODE_TMAX = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:4438
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:4444
 Addressable::IDNA::PUNYCODE_TMIN = T.let(T.unsafe(nil), Integer)
 
 # Input is invalid.
 #
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:4459
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:4465
 class Addressable::IDNA::PunycodeBadInput < ::StandardError; end
 
 # Output would exceed the space provided.
 #
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:4461
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:4467
 class Addressable::IDNA::PunycodeBigOutput < ::StandardError; end
 
 # Input needs wider integers to process.
 #
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:4463
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:4469
 class Addressable::IDNA::PunycodeOverflow < ::StandardError; end
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:198
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:204
 Addressable::IDNA::UNICODE_DATA = T.let(T.unsafe(nil), Hash)
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:192
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:198
 Addressable::IDNA::UNICODE_DATA_CANONICAL = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:190
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:196
 Addressable::IDNA::UNICODE_DATA_COMBINING_CLASS = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:193
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:199
 Addressable::IDNA::UNICODE_DATA_COMPATIBILITY = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:191
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:197
 Addressable::IDNA::UNICODE_DATA_EXCLUSION = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:195
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:201
 Addressable::IDNA::UNICODE_DATA_LOWERCASE = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:196
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:202
 Addressable::IDNA::UNICODE_DATA_TITLECASE = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:194
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:200
 Addressable::IDNA::UNICODE_DATA_UPPERCASE = T.let(T.unsafe(nil), Integer)
 
-# pkg:gem/addressable#lib/addressable/idna/pure.rb:4434
+# pkg:gem/addressable#lib/addressable/idna/pure.rb:4440
 Addressable::IDNA::UNICODE_MAX_LENGTH = T.let(T.unsafe(nil), Integer)
 
 # pkg:gem/addressable#lib/addressable/idna/pure.rb:37
@@ -884,7 +890,7 @@ class Addressable::URI
   # pkg:gem/addressable#lib/addressable/uri.rb:830
   def initialize(options = T.unsafe(nil)); end
 
-  # pkg:gem/addressable#lib/addressable/uri.rb:1986
+  # pkg:gem/addressable#lib/addressable/uri.rb:1991
   def +(uri); end
 
   # Returns <code>true</code> if the URI objects are equal. This method
@@ -896,7 +902,7 @@ class Addressable::URI
   #   <code>true</code> if the URIs are equivalent, <code>false</code>
   #   otherwise.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2248
+  # pkg:gem/addressable#lib/addressable/uri.rb:2253
   def ==(uri); end
 
   # Returns <code>true</code> if the URI objects are equal. This method
@@ -909,7 +915,7 @@ class Addressable::URI
   #   <code>true</code> if the URIs are equivalent, <code>false</code>
   #   otherwise.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2226
+  # pkg:gem/addressable#lib/addressable/uri.rb:2231
   def ===(uri); end
 
   # Determines if the URI is absolute.
@@ -918,7 +924,7 @@ class Addressable::URI
   #   <code>true</code> if the URI is absolute. <code>false</code>
   #   otherwise.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1883
+  # pkg:gem/addressable#lib/addressable/uri.rb:1888
   def absolute?; end
 
   # The authority component for this URI.
@@ -926,21 +932,21 @@ class Addressable::URI
   #
   # @return [String] The authority component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1234
+  # pkg:gem/addressable#lib/addressable/uri.rb:1241
   def authority; end
 
   # Sets the authority component for this URI.
   #
   # @param [String, #to_str] new_authority The new authority component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1274
+  # pkg:gem/addressable#lib/addressable/uri.rb:1281
   def authority=(new_authority); end
 
   # The basename, if any, of the file in the path component.
   #
   # @return [String] The path's basename.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1592
+  # pkg:gem/addressable#lib/addressable/uri.rb:1599
   def basename; end
 
   # The default port for this URI's scheme.
@@ -949,7 +955,7 @@ class Addressable::URI
   #
   # @return [Integer] The default port.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1458
+  # pkg:gem/addressable#lib/addressable/uri.rb:1465
   def default_port; end
 
   # This method allows you to make several changes to a URI simultaneously,
@@ -960,7 +966,7 @@ class Addressable::URI
   # @param [Proc] block
   #   A set of operations to perform on a given URI.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2405
+  # pkg:gem/addressable#lib/addressable/uri.rb:2410
   def defer_validation; end
 
   # Creates a URI suitable for display to users. If semantic attacks are
@@ -970,7 +976,7 @@ class Addressable::URI
   #
   # @return [Addressable::URI] A URI suitable for display purposes.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2210
+  # pkg:gem/addressable#lib/addressable/uri.rb:2215
   def display_uri; end
 
   # Returns the public suffix domain for this host.
@@ -978,14 +984,14 @@ class Addressable::URI
   # @example
   #   Addressable::URI.parse("http://www.example.co.uk").domain # => "example.co.uk"
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1225
+  # pkg:gem/addressable#lib/addressable/uri.rb:1232
   def domain; end
 
   # Clones the URI object.
   #
   # @return [Addressable::URI] The cloned URI.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2280
+  # pkg:gem/addressable#lib/addressable/uri.rb:2285
   def dup; end
 
   # Determines if the URI is an empty string.
@@ -993,10 +999,10 @@ class Addressable::URI
   # @return [TrueClass, FalseClass]
   #   Returns <code>true</code> if empty, <code>false</code> otherwise.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2342
+  # pkg:gem/addressable#lib/addressable/uri.rb:2347
   def empty?; end
 
-  # pkg:gem/addressable#lib/addressable/uri.rb:2416
+  # pkg:gem/addressable#lib/addressable/uri.rb:2422
   def encode_with(coder); end
 
   # Returns <code>true</code> if the URI objects are equal. This method
@@ -1008,7 +1014,7 @@ class Addressable::URI
   #   <code>true</code> if the URIs are equivalent, <code>false</code>
   #   otherwise.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2262
+  # pkg:gem/addressable#lib/addressable/uri.rb:2267
   def eql?(uri); end
 
   # The extname, if any, of the file in the path component.
@@ -1016,21 +1022,21 @@ class Addressable::URI
   #
   # @return [String] The path's extname.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1602
+  # pkg:gem/addressable#lib/addressable/uri.rb:1609
   def extname; end
 
   # The fragment component for this URI.
   #
   # @return [String] The fragment component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1814
+  # pkg:gem/addressable#lib/addressable/uri.rb:1819
   def fragment; end
 
   # Sets the fragment component for this URI.
   #
   # @param [String, #to_str] new_fragment The new fragment component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1839
+  # pkg:gem/addressable#lib/addressable/uri.rb:1844
   def fragment=(new_fragment); end
 
   # Freeze URI, initializing instance variables.
@@ -1045,21 +1051,21 @@ class Addressable::URI
   #
   # @return [Integer] A hash of the URI.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2272
+  # pkg:gem/addressable#lib/addressable/uri.rb:2277
   def hash; end
 
   # The host component for this URI.
   #
   # @return [String] The host component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1120
+  # pkg:gem/addressable#lib/addressable/uri.rb:1127
   def host; end
 
   # Sets the host component for this URI.
   #
   # @param [String, #to_str] new_host The new host component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1156
+  # pkg:gem/addressable#lib/addressable/uri.rb:1163
   def host=(new_host); end
 
   # This method is same as URI::Generic#host except
@@ -1069,7 +1075,7 @@ class Addressable::URI
   #
   # @return [String] The hostname for this URI.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1178
+  # pkg:gem/addressable#lib/addressable/uri.rb:1185
   def hostname; end
 
   # This method is same as URI::Generic#host= except
@@ -1079,7 +1085,7 @@ class Addressable::URI
   #
   # @param [String, #to_str] new_hostname The new hostname for this URI.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1190
+  # pkg:gem/addressable#lib/addressable/uri.rb:1197
   def hostname=(new_hostname); end
 
   # The inferred port component for this URI.
@@ -1088,17 +1094,17 @@ class Addressable::URI
   #
   # @return [Integer] The inferred port component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1444
+  # pkg:gem/addressable#lib/addressable/uri.rb:1451
   def inferred_port; end
 
-  # pkg:gem/addressable#lib/addressable/uri.rb:2427
+  # pkg:gem/addressable#lib/addressable/uri.rb:2433
   def init_with(coder); end
 
   # Returns a <code>String</code> representation of the URI object's state.
   #
   # @return [String] The URI object's state, as a <code>String</code>.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2393
+  # pkg:gem/addressable#lib/addressable/uri.rb:2398
   def inspect; end
 
   # Determines if the scheme indicates an IP-based protocol.
@@ -1107,7 +1113,7 @@ class Addressable::URI
   #   <code>true</code> if the scheme indicates an IP-based protocol.
   #   <code>false</code> otherwise.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1859
+  # pkg:gem/addressable#lib/addressable/uri.rb:1864
   def ip_based?; end
 
   # Joins two URIs together.
@@ -1116,7 +1122,7 @@ class Addressable::URI
   #
   # @return [Addressable::URI] The joined URI.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1893
+  # pkg:gem/addressable#lib/addressable/uri.rb:1898
   def join(uri); end
 
   # Destructive form of <code>join</code>.
@@ -1127,7 +1133,7 @@ class Addressable::URI
   #
   # @see Addressable::URI#join
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1996
+  # pkg:gem/addressable#lib/addressable/uri.rb:2001
   def join!(uri); end
 
   # Merges a URI with a <code>Hash</code> of components.
@@ -1141,7 +1147,7 @@ class Addressable::URI
   #
   # @see Hash#merge
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2011
+  # pkg:gem/addressable#lib/addressable/uri.rb:2016
   def merge(hash); end
 
   # Destructive form of <code>merge</code>.
@@ -1152,7 +1158,7 @@ class Addressable::URI
   #
   # @see Addressable::URI#merge
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2076
+  # pkg:gem/addressable#lib/addressable/uri.rb:2081
   def merge!(uri); end
 
   # Returns a normalized URI object.
@@ -1165,7 +1171,7 @@ class Addressable::URI
   #
   # @return [Addressable::URI] The normalized URI.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2173
+  # pkg:gem/addressable#lib/addressable/uri.rb:2178
   def normalize; end
 
   # Destructively normalizes this URI object.
@@ -1174,56 +1180,56 @@ class Addressable::URI
   #
   # @see Addressable::URI#normalize
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2199
+  # pkg:gem/addressable#lib/addressable/uri.rb:2204
   def normalize!; end
 
   # The authority component for this URI, normalized.
   #
   # @return [String] The authority component, normalized.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1252
+  # pkg:gem/addressable#lib/addressable/uri.rb:1259
   def normalized_authority; end
 
   # The fragment component for this URI, normalized.
   #
   # @return [String] The fragment component, normalized.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1820
+  # pkg:gem/addressable#lib/addressable/uri.rb:1825
   def normalized_fragment; end
 
   # The host component for this URI, normalized.
   #
   # @return [String] The host component, normalized.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1126
+  # pkg:gem/addressable#lib/addressable/uri.rb:1133
   def normalized_host; end
 
   # The password component for this URI, normalized.
   #
   # @return [String] The password component, normalized.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1002
+  # pkg:gem/addressable#lib/addressable/uri.rb:1008
   def normalized_password; end
 
   # The path component for this URI, normalized.
   #
   # @return [String] The path component, normalized.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1539
+  # pkg:gem/addressable#lib/addressable/uri.rb:1546
   def normalized_path; end
 
   # The port component for this URI, normalized.
   #
   # @return [Integer] The port component, normalized.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1396
+  # pkg:gem/addressable#lib/addressable/uri.rb:1403
   def normalized_port; end
 
   # The query component for this URI, normalized.
   #
   # @return [String] The query component, normalized.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1617
+  # pkg:gem/addressable#lib/addressable/uri.rb:1624
   def normalized_query(*flags); end
 
   # The scheme component for this URI, normalized.
@@ -1242,21 +1248,21 @@ class Addressable::URI
   #
   # @return [String] The normalized components that identify a site.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1489
+  # pkg:gem/addressable#lib/addressable/uri.rb:1496
   def normalized_site; end
 
   # The user component for this URI, normalized.
   #
   # @return [String] The user component, normalized.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:947
+  # pkg:gem/addressable#lib/addressable/uri.rb:952
   def normalized_user; end
 
   # The userinfo component for this URI, normalized.
   #
   # @return [String] The userinfo component, normalized.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1068
+  # pkg:gem/addressable#lib/addressable/uri.rb:1075
   def normalized_userinfo; end
 
   # Omits components from a URI.
@@ -1271,7 +1277,7 @@ class Addressable::URI
   #   uri.omit(:scheme, :authority)
   #   #=> #<Addressable::URI:0xcc4d86 URI:/path?query>
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2306
+  # pkg:gem/addressable#lib/addressable/uri.rb:2311
   def omit(*components); end
 
   # Destructive form of omit.
@@ -1282,7 +1288,7 @@ class Addressable::URI
   #
   # @see Addressable::URI#omit
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2333
+  # pkg:gem/addressable#lib/addressable/uri.rb:2338
   def omit!(*components); end
 
   # The origin for this URI, serialized to ASCII, as per
@@ -1290,7 +1296,7 @@ class Addressable::URI
   #
   # @return [String] The serialized origin.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1314
+  # pkg:gem/addressable#lib/addressable/uri.rb:1321
   def origin; end
 
   # Sets the origin for this URI, serialized to ASCII, as per
@@ -1299,35 +1305,35 @@ class Addressable::URI
   #
   # @param [String, #to_str] new_origin The new origin component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1333
+  # pkg:gem/addressable#lib/addressable/uri.rb:1340
   def origin=(new_origin); end
 
   # The password component for this URI.
   #
   # @return [String] The password component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:996
+  # pkg:gem/addressable#lib/addressable/uri.rb:1002
   def password; end
 
   # Sets the password component for this URI.
   #
   # @param [String, #to_str] new_password The new password component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1025
+  # pkg:gem/addressable#lib/addressable/uri.rb:1031
   def password=(new_password); end
 
   # The path component for this URI.
   #
   # @return [String] The path component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1532
+  # pkg:gem/addressable#lib/addressable/uri.rb:1539
   def path; end
 
   # Sets the path component for this URI.
   #
   # @param [String, #to_str] new_path The new path component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1571
+  # pkg:gem/addressable#lib/addressable/uri.rb:1578
   def path=(new_path); end
 
   # The port component for this URI.
@@ -1336,28 +1342,28 @@ class Addressable::URI
   #
   # @return [Integer] The port component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1390
+  # pkg:gem/addressable#lib/addressable/uri.rb:1397
   def port; end
 
   # Sets the port component for this URI.
   #
   # @param [String, Integer, #to_s] new_port The new port component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1412
+  # pkg:gem/addressable#lib/addressable/uri.rb:1419
   def port=(new_port); end
 
   # The query component for this URI.
   #
   # @return [String] The query component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1611
+  # pkg:gem/addressable#lib/addressable/uri.rb:1618
   def query; end
 
   # Sets the query component for this URI.
   #
   # @param [String, #to_str] new_query The new query component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1645
+  # pkg:gem/addressable#lib/addressable/uri.rb:1650
   def query=(new_query); end
 
   # Converts the query component to a Hash value.
@@ -1380,7 +1386,7 @@ class Addressable::URI
   #   Addressable::URI.parse("").query_values
   #   #=> nil
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1676
+  # pkg:gem/addressable#lib/addressable/uri.rb:1681
   def query_values(return_type = T.unsafe(nil)); end
 
   # Sets the query component for this URI from a Hash object.
@@ -1402,7 +1408,7 @@ class Addressable::URI
   #   uri.query
   #   # => "flag&key=value"
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1727
+  # pkg:gem/addressable#lib/addressable/uri.rb:1732
   def query_values=(new_query_values); end
 
   # Determines if the URI is relative.
@@ -1411,7 +1417,7 @@ class Addressable::URI
   #   <code>true</code> if the URI is relative. <code>false</code>
   #   otherwise.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1873
+  # pkg:gem/addressable#lib/addressable/uri.rb:1878
   def relative?; end
 
   # The HTTP request URI for this URI.  This is the path and the
@@ -1419,14 +1425,14 @@ class Addressable::URI
   #
   # @return [String] The request URI required for an HTTP request.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1778
+  # pkg:gem/addressable#lib/addressable/uri.rb:1783
   def request_uri; end
 
   # Sets the HTTP request URI for this URI.
   #
   # @param [String, #to_str] new_request_uri The new HTTP request URI.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1790
+  # pkg:gem/addressable#lib/addressable/uri.rb:1795
   def request_uri=(new_request_uri); end
 
   # Returns the shortest normalized relative form of this URI that uses the
@@ -1438,7 +1444,7 @@ class Addressable::URI
   # @return [Addressable::URI]
   #   The normalized relative URI that is equivalent to the original URI.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2089
+  # pkg:gem/addressable#lib/addressable/uri.rb:2094
   def route_from(uri); end
 
   # Returns the shortest normalized relative form of the supplied URI that
@@ -1450,7 +1456,7 @@ class Addressable::URI
   # @return [Addressable::URI]
   #   The normalized relative URI that is equivalent to the supplied URI.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2159
+  # pkg:gem/addressable#lib/addressable/uri.rb:2164
   def route_to(uri); end
 
   # The scheme component for this URI.
@@ -1476,14 +1482,14 @@ class Addressable::URI
   #
   # @return [String] The components that identify a site.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1471
+  # pkg:gem/addressable#lib/addressable/uri.rb:1478
   def site; end
 
   # Sets the site value for this URI.
   #
   # @param [String, #to_str] new_site The new site value.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1510
+  # pkg:gem/addressable#lib/addressable/uri.rb:1517
   def site=(new_site); end
 
   # Returns the top-level domain for this host.
@@ -1491,47 +1497,47 @@ class Addressable::URI
   # @example
   #   Addressable::URI.parse("http://www.example.co.uk").tld # => "co.uk"
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1207
+  # pkg:gem/addressable#lib/addressable/uri.rb:1214
   def tld; end
 
   # Sets the top-level domain for this URI.
   #
   # @param [String, #to_str] new_tld The new top-level domain.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1215
+  # pkg:gem/addressable#lib/addressable/uri.rb:1222
   def tld=(new_tld); end
 
   # Returns a Hash of the URI components.
   #
   # @return [Hash] The URI as a <code>Hash</code> of components.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2376
+  # pkg:gem/addressable#lib/addressable/uri.rb:2381
   def to_hash; end
 
   # Converts the URI to a <code>String</code>.
   #
   # @return [String] The URI's <code>String</code> representation.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2350
+  # pkg:gem/addressable#lib/addressable/uri.rb:2355
   def to_s; end
 
   # URI's are glorified <code>Strings</code>. Allow implicit conversion.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2370
+  # pkg:gem/addressable#lib/addressable/uri.rb:2375
   def to_str; end
 
   # The user component for this URI.
   #
   # @return [String] The user component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:941
+  # pkg:gem/addressable#lib/addressable/uri.rb:946
   def user; end
 
   # Sets the user component for this URI.
   #
   # @param [String, #to_str] new_user The new user component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:970
+  # pkg:gem/addressable#lib/addressable/uri.rb:975
   def user=(new_user); end
 
   # The userinfo component for this URI.
@@ -1539,14 +1545,14 @@ class Addressable::URI
   #
   # @return [String] The userinfo component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1052
+  # pkg:gem/addressable#lib/addressable/uri.rb:1059
   def userinfo; end
 
   # Sets the userinfo component for this URI.
   #
   # @param [String, #to_str] new_userinfo The new userinfo component.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:1091
+  # pkg:gem/addressable#lib/addressable/uri.rb:1098
   def userinfo=(new_userinfo); end
 
   protected
@@ -1555,14 +1561,14 @@ class Addressable::URI
   #
   # @api private
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2590
+  # pkg:gem/addressable#lib/addressable/uri.rb:2599
   def force_utf8_encoding_if_needed(str); end
 
   # Resets composite values for the entire URI
   #
   # @api private
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2581
+  # pkg:gem/addressable#lib/addressable/uri.rb:2587
   def remove_composite_values; end
 
   # Replaces the internal state of self with the specified URI's state.
@@ -1572,7 +1578,7 @@ class Addressable::URI
   #
   # @return [Addressable::URI] <code>self</code>.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2548
+  # pkg:gem/addressable#lib/addressable/uri.rb:2554
   def replace_self(uri); end
 
   # Splits path string with "/" (slash).
@@ -1583,21 +1589,24 @@ class Addressable::URI
   #
   # @return [Array<String>] An array of parts of path.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2571
+  # pkg:gem/addressable#lib/addressable/uri.rb:2577
   def split_path(path); end
 
   # Ensures that the URI is valid.
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2505
+  # pkg:gem/addressable#lib/addressable/uri.rb:2511
   def validate; end
 
   private
+
+  # pkg:gem/addressable#lib/addressable/uri.rb:2607
+  def initialize_copy(other); end
 
   # Resets instance variables
   #
   # @api private
   #
-  # pkg:gem/addressable#lib/addressable/uri.rb:2602
+  # pkg:gem/addressable#lib/addressable/uri.rb:2619
   def reset_ivs; end
 
   class << self
@@ -1747,7 +1756,7 @@ class Addressable::URI
     # use a similar URI form:
     # <code>//<user>:<password>@<host>:<port>/<url-path></code>
     #
-    # pkg:gem/addressable#lib/addressable/uri.rb:1373
+    # pkg:gem/addressable#lib/addressable/uri.rb:1380
     def ip_based_schemes; end
 
     # Joins several URIs together.
@@ -1820,7 +1829,7 @@ class Addressable::URI
     #
     # @return [String] The normalized path.
     #
-    # pkg:gem/addressable#lib/addressable/uri.rb:2454
+    # pkg:gem/addressable#lib/addressable/uri.rb:2460
     def normalize_path(path); end
 
     # Normalizes the encoding of a URI. Characters within a hostname are
@@ -1859,7 +1868,7 @@ class Addressable::URI
     # numbers. Adding new schemes to this hash, as necessary, will allow
     # for better URI normalization.
     #
-    # pkg:gem/addressable#lib/addressable/uri.rb:1380
+    # pkg:gem/addressable#lib/addressable/uri.rb:1387
     def port_mapping; end
 
     # Unencodes any percent encoded characters within a URI component.
@@ -1991,10 +2000,10 @@ Addressable::URI::EMPTY_STR = T.let(T.unsafe(nil), String)
 # pkg:gem/addressable#lib/addressable/uri.rb:34
 class Addressable::URI::InvalidURIError < ::StandardError; end
 
-# pkg:gem/addressable#lib/addressable/uri.rb:2627
+# pkg:gem/addressable#lib/addressable/uri.rb:2646
 module Addressable::URI::NONE; end
 
-# pkg:gem/addressable#lib/addressable/uri.rb:1534
+# pkg:gem/addressable#lib/addressable/uri.rb:1541
 Addressable::URI::NORMPATH = T.let(T.unsafe(nil), Regexp)
 
 # pkg:gem/addressable#lib/addressable/uri.rb:63
@@ -2018,7 +2027,7 @@ Addressable::URI::NormalizeCharacterClasses::SCHEME = T.let(T.unsafe(nil), Regex
 # pkg:gem/addressable#lib/addressable/uri.rb:65
 Addressable::URI::NormalizeCharacterClasses::UNRESERVED = T.let(T.unsafe(nil), Regexp)
 
-# pkg:gem/addressable#lib/addressable/uri.rb:2437
+# pkg:gem/addressable#lib/addressable/uri.rb:2443
 Addressable::URI::PARENT = T.let(T.unsafe(nil), String)
 
 # pkg:gem/addressable#lib/addressable/uri.rb:89
@@ -2026,19 +2035,19 @@ Addressable::URI::PORT_MAPPING = T.let(T.unsafe(nil), Hash)
 
 # Deprecated. No longer used by normalize_path; will be removed in 2.10.0.
 #
-# pkg:gem/addressable#lib/addressable/uri.rb:2440
+# pkg:gem/addressable#lib/addressable/uri.rb:2446
 Addressable::URI::RULE_2A = T.let(T.unsafe(nil), Regexp)
 
-# pkg:gem/addressable#lib/addressable/uri.rb:2441
+# pkg:gem/addressable#lib/addressable/uri.rb:2447
 Addressable::URI::RULE_2B_2C = T.let(T.unsafe(nil), Regexp)
 
-# pkg:gem/addressable#lib/addressable/uri.rb:2442
+# pkg:gem/addressable#lib/addressable/uri.rb:2448
 Addressable::URI::RULE_2D = T.let(T.unsafe(nil), Regexp)
 
-# pkg:gem/addressable#lib/addressable/uri.rb:2443
+# pkg:gem/addressable#lib/addressable/uri.rb:2449
 Addressable::URI::RULE_PREFIXED_PARENT = T.let(T.unsafe(nil), Regexp)
 
-# pkg:gem/addressable#lib/addressable/uri.rb:2436
+# pkg:gem/addressable#lib/addressable/uri.rb:2442
 Addressable::URI::SELF_REF = T.let(T.unsafe(nil), String)
 
 # Tables used to optimize encoding operations in `self.encode_component`

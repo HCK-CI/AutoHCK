@@ -1631,13 +1631,13 @@ class HTTPClient
   # !! CAUTION !!
   #   Method 'do_get*' runs under MT conditon. Be careful to change.
   #
-  # pkg:gem/httpclient#lib/httpclient.rb:1233
+  # pkg:gem/httpclient#lib/httpclient.rb:1249
   def do_get_block(req, proxy, conn, &block); end
 
-  # pkg:gem/httpclient#lib/httpclient.rb:1302
+  # pkg:gem/httpclient#lib/httpclient.rb:1314
   def do_get_header(req, res, sess); end
 
-  # pkg:gem/httpclient#lib/httpclient.rb:1271
+  # pkg:gem/httpclient#lib/httpclient.rb:1285
   def do_get_stream(req, proxy, conn); end
 
   # pkg:gem/httpclient#lib/httpclient.rb:1002
@@ -1646,11 +1646,18 @@ class HTTPClient
   # pkg:gem/httpclient#lib/httpclient.rb:1040
   def do_request_async(method, uri, query, body, header); end
 
-  # pkg:gem/httpclient#lib/httpclient.rb:1312
+  # pkg:gem/httpclient#lib/httpclient.rb:1324
   def dump_dummy_request_response(req, res); end
 
   # pkg:gem/httpclient#lib/httpclient.rb:1198
   def file_in_form_data?(body); end
+
+  # Proxy authentication is only for forwarding requests. HTTPS authenticates
+  # CONNECT separately in Session#connect_ssl_proxy, not the origin request
+  # inside the tunnel. Use the same filters for the request and its response.
+  #
+  # pkg:gem/httpclient#lib/httpclient.rb:1234
+  def filter_request(req, proxy); end
 
   # pkg:gem/httpclient#lib/httpclient.rb:1092
   def follow_redirect(method, uri, query, body, header, &block); end
@@ -1673,13 +1680,13 @@ class HTTPClient
   # pkg:gem/httpclient#lib/httpclient.rb:1135
   def protect_keep_alive_disconnected; end
 
-  # pkg:gem/httpclient#lib/httpclient.rb:1319
+  # pkg:gem/httpclient#lib/httpclient.rb:1331
   def set_encoding(str, encoding); end
 
   # pkg:gem/httpclient#lib/httpclient.rb:1127
   def success_content(res); end
 
-  # pkg:gem/httpclient#lib/httpclient.rb:1323
+  # pkg:gem/httpclient#lib/httpclient.rb:1335
   def to_resource_url(uri); end
 
   class << self
@@ -2119,17 +2126,17 @@ HTTPClient::LIB_NAME = T.let(T.unsafe(nil), String)
 
 # Dummy Socket for emulating loopback test.
 #
-# pkg:gem/httpclient#lib/httpclient/session.rb:414
+# pkg:gem/httpclient#lib/httpclient/session.rb:415
 class HTTPClient::LoopBackSocket
   include ::HTTPClient::SocketWrap
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:417
+  # pkg:gem/httpclient#lib/httpclient/session.rb:418
   def initialize(host, port, response); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:423
+  # pkg:gem/httpclient#lib/httpclient/session.rb:424
   def <<(str); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:427
+  # pkg:gem/httpclient#lib/httpclient/session.rb:428
   def peer_cert; end
 end
 
@@ -2931,207 +2938,207 @@ class HTTPClient::SendTimeoutError < ::HTTPClient::TimeoutError; end
 # Deprecated.  just for backward compatibility
 # Manages a HTTP session with a Site.
 #
-# pkg:gem/httpclient#lib/httpclient/session.rb:434
+# pkg:gem/httpclient#lib/httpclient/session.rb:435
 class HTTPClient::Session
   include ::HTTPClient::Timeout
   include ::HTTPClient::Util
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:468
+  # pkg:gem/httpclient#lib/httpclient/session.rb:469
   def initialize(client, dest, agent_name, from); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:543
+  # pkg:gem/httpclient#lib/httpclient/session.rb:544
   def close; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:552
+  # pkg:gem/httpclient#lib/httpclient/session.rb:553
   def closed?; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:452
+  # pkg:gem/httpclient#lib/httpclient/session.rb:453
   def connect_retry; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:452
+  # pkg:gem/httpclient#lib/httpclient/session.rb:453
   def connect_retry=(_arg0); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:644
+  # pkg:gem/httpclient#lib/httpclient/session.rb:645
   def connect_ssl_proxy(socket, uri); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:451
+  # pkg:gem/httpclient#lib/httpclient/session.rb:452
   def connect_timeout; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:451
+  # pkg:gem/httpclient#lib/httpclient/session.rb:452
   def connect_timeout=(_arg0); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:630
+  # pkg:gem/httpclient#lib/httpclient/session.rb:631
   def create_loopback_socket(host, port, str); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:605
+  # pkg:gem/httpclient#lib/httpclient/session.rb:606
   def create_socket(host, port); end
 
   # Device for dumping log for debugging
   #
-  # pkg:gem/httpclient#lib/httpclient/session.rb:449
+  # pkg:gem/httpclient#lib/httpclient/session.rb:450
   def debug_dev; end
 
   # Device for dumping log for debugging
   #
-  # pkg:gem/httpclient#lib/httpclient/session.rb:449
+  # pkg:gem/httpclient#lib/httpclient/session.rb:450
   def debug_dev=(_arg0); end
 
   # Destination site
   #
-  # pkg:gem/httpclient#lib/httpclient/session.rb:439
+  # pkg:gem/httpclient#lib/httpclient/session.rb:440
   def dest; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:569
+  # pkg:gem/httpclient#lib/httpclient/session.rb:570
   def eof?; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:577
+  # pkg:gem/httpclient#lib/httpclient/session.rb:578
   def get_body(&block); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:556
+  # pkg:gem/httpclient#lib/httpclient/session.rb:557
   def get_header; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:466
+  # pkg:gem/httpclient#lib/httpclient/session.rb:467
   def last_used; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:456
+  # pkg:gem/httpclient#lib/httpclient/session.rb:457
   def protocol_retry_count; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:456
+  # pkg:gem/httpclient#lib/httpclient/session.rb:457
   def protocol_retry_count=(_arg0); end
 
   # Proxy site
   #
-  # pkg:gem/httpclient#lib/httpclient/session.rb:441
+  # pkg:gem/httpclient#lib/httpclient/session.rb:442
   def proxy; end
 
   # Proxy site
   #
-  # pkg:gem/httpclient#lib/httpclient/session.rb:441
+  # pkg:gem/httpclient#lib/httpclient/session.rb:442
   def proxy=(_arg0); end
 
   # Send a request to the server
   #
-  # pkg:gem/httpclient#lib/httpclient/session.rb:510
+  # pkg:gem/httpclient#lib/httpclient/session.rb:511
   def query(req); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:455
+  # pkg:gem/httpclient#lib/httpclient/session.rb:456
   def read_block_size; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:455
+  # pkg:gem/httpclient#lib/httpclient/session.rb:456
   def read_block_size=(_arg0); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:454
+  # pkg:gem/httpclient#lib/httpclient/session.rb:455
   def receive_timeout; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:454
+  # pkg:gem/httpclient#lib/httpclient/session.rb:455
   def receive_timeout=(_arg0); end
 
   # Requested protocol version
   #
-  # pkg:gem/httpclient#lib/httpclient/session.rb:447
+  # pkg:gem/httpclient#lib/httpclient/session.rb:448
   def requested_version; end
 
   # Requested protocol version
   #
-  # pkg:gem/httpclient#lib/httpclient/session.rb:447
+  # pkg:gem/httpclient#lib/httpclient/session.rb:448
   def requested_version=(_arg0); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:453
+  # pkg:gem/httpclient#lib/httpclient/session.rb:454
   def send_timeout; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:453
+  # pkg:gem/httpclient#lib/httpclient/session.rb:454
   def send_timeout=(_arg0); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:459
+  # pkg:gem/httpclient#lib/httpclient/session.rb:460
   def socket_local; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:459
+  # pkg:gem/httpclient#lib/httpclient/session.rb:460
   def socket_local=(_arg0); end
 
   # Boolean value for Socket#sync
   #
-  # pkg:gem/httpclient#lib/httpclient/session.rb:443
+  # pkg:gem/httpclient#lib/httpclient/session.rb:444
   def socket_sync; end
 
   # Boolean value for Socket#sync
   #
-  # pkg:gem/httpclient#lib/httpclient/session.rb:443
+  # pkg:gem/httpclient#lib/httpclient/session.rb:444
   def socket_sync=(_arg0); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:461
+  # pkg:gem/httpclient#lib/httpclient/session.rb:462
   def ssl_config; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:461
+  # pkg:gem/httpclient#lib/httpclient/session.rb:462
   def ssl_config=(_arg0); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:462
+  # pkg:gem/httpclient#lib/httpclient/session.rb:463
   def ssl_peer_cert; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:458
+  # pkg:gem/httpclient#lib/httpclient/session.rb:459
   def strict_response_size_check; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:458
+  # pkg:gem/httpclient#lib/httpclient/session.rb:459
   def strict_response_size_check=(_arg0); end
 
   # Boolean value to send TCP keepalive packets; no timing settings exist at present
   #
-  # pkg:gem/httpclient#lib/httpclient/session.rb:445
+  # pkg:gem/httpclient#lib/httpclient/session.rb:446
   def tcp_keepalive; end
 
   # Boolean value to send TCP keepalive packets; no timing settings exist at present
   #
-  # pkg:gem/httpclient#lib/httpclient/session.rb:445
+  # pkg:gem/httpclient#lib/httpclient/session.rb:446
   def tcp_keepalive=(_arg0); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:463
+  # pkg:gem/httpclient#lib/httpclient/session.rb:464
   def test_loopback_http_response; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:463
+  # pkg:gem/httpclient#lib/httpclient/session.rb:464
   def test_loopback_http_response=(_arg0); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:465
+  # pkg:gem/httpclient#lib/httpclient/session.rb:466
   def transparent_gzip_decompression; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:465
+  # pkg:gem/httpclient#lib/httpclient/session.rb:466
   def transparent_gzip_decompression=(_arg0); end
 
   private
 
   # Connect to the server
   #
-  # pkg:gem/httpclient#lib/httpclient/session.rb:744
+  # pkg:gem/httpclient#lib/httpclient/session.rb:745
   def connect; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:700
+  # pkg:gem/httpclient#lib/httpclient/session.rb:701
   def content_inflater_block(content_encoding, block); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:952
+  # pkg:gem/httpclient#lib/httpclient/session.rb:953
   def empty_bin_str; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:848
+  # pkg:gem/httpclient#lib/httpclient/session.rb:849
   def no_message_body?(status); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:853
+  # pkg:gem/httpclient#lib/httpclient/session.rb:854
   def parse_content_header(key, value); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:800
+  # pkg:gem/httpclient#lib/httpclient/session.rb:801
   def parse_header(socket); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:903
+  # pkg:gem/httpclient#lib/httpclient/session.rb:904
   def read_body_chunked(&block); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:875
+  # pkg:gem/httpclient#lib/httpclient/session.rb:876
   def read_body_length(&block); end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:927
+  # pkg:gem/httpclient#lib/httpclient/session.rb:928
   def read_body_rest; end
 
   # Read status block.
   #
-  # pkg:gem/httpclient#lib/httpclient/session.rb:779
+  # pkg:gem/httpclient#lib/httpclient/session.rb:780
   def read_header; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:720
+  # pkg:gem/httpclient#lib/httpclient/session.rb:721
   def set_header(req); end
 end
 
@@ -3140,24 +3147,24 @@ HTTPClient::Session::BadResponse = HTTPClient::BadResponseError
 
 # This inflater allows deflate compression with/without zlib header
 #
-# pkg:gem/httpclient#lib/httpclient/session.rb:672
+# pkg:gem/httpclient#lib/httpclient/session.rb:673
 class HTTPClient::Session::LenientInflater
-  # pkg:gem/httpclient#lib/httpclient/session.rb:673
+  # pkg:gem/httpclient#lib/httpclient/session.rb:674
   def initialize; end
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:678
+  # pkg:gem/httpclient#lib/httpclient/session.rb:679
   def inflate(body); end
 
   private
 
-  # pkg:gem/httpclient#lib/httpclient/session.rb:688
+  # pkg:gem/httpclient#lib/httpclient/session.rb:689
   def first_inflate(body); end
 end
 
-# pkg:gem/httpclient#lib/httpclient/session.rb:902
+# pkg:gem/httpclient#lib/httpclient/session.rb:903
 HTTPClient::Session::RS = T.let(T.unsafe(nil), String)
 
-# pkg:gem/httpclient#lib/httpclient/session.rb:799
+# pkg:gem/httpclient#lib/httpclient/session.rb:800
 HTTPClient::Session::StatusParseRegexp = T.let(T.unsafe(nil), Regexp)
 
 # Manages sessions for a HTTPClient instance.
