@@ -50,8 +50,31 @@ module AutoHCK
       }
     end
 
+    # Record what this invocation was asked to run. The category / testcase
+    # selection identifies the invocation structurally (each per-case
+    # invocation passes a distinct --testcase list), so consumers can tell
+    # invocations apart without inferring it from the executed test names.
+    # When auto_hck runs as a tmt test child, TMT_TEST_NAME carries the
+    # originating test path and is recorded as fmf_node, and TMT_JOB_ID,
+    # when the environment provides it, is recorded as tmt_job_id; both are
+    # absent for manual invocations. TESTING_FARM_REQUEST_ID is exported
+    # by testing-farm to the test environment and is recorded as
+    # testing_farm_request_id so reports can be correlated with their
+    # request without parsing the whiteboard.
+    def invocation_properties
+      test_options = @project.options.test
+      {
+        'category' => test_options&.category,
+        'testcase' => test_options&.testcase,
+        'fmf_node' => ENV.fetch('TMT_TEST_NAME', nil),
+        'tmt_job_id' => ENV.fetch('TMT_JOB_ID', nil),
+        'testing_farm_request_id' => ENV.fetch('TESTING_FARM_REQUEST_ID', nil)
+      }.compact
+    end
+
     def run_properties
       project_properties.merge(setup_manager_properties).merge(engine_properties)
+                        .merge(invocation_properties)
     end
 
     def tag
