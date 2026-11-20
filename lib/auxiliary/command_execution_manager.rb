@@ -18,6 +18,9 @@ module AutoHCK
       String
     )
 
+    # Shape of functest placeholders (@workspace@, @spare_pcie_root_port_2@, ...).
+    QMP_PLACEHOLDER_RE = T.let(/@[A-Za-z0-9_]+@/, Regexp)
+
     RebootStrategy = T.let({
       FixedSleep: :fixed_sleep,
       WinrmPoll: :winrm_poll
@@ -280,13 +283,53 @@ module AutoHCK
       outputs = {}
       target_machines(command_info).each do |machine_name|
         map = replacement_map_for(machine_name, replacement, command_info)
-        arguments = qmp.arguments && coerce_numeric_qmp_values(map.replace(qmp.arguments))
+        arguments = build_qmp_arguments(qmp, map, execute, machine_name)
         outputs[machine_name] = run_qmp_command(execute, arguments, machine_name)
       rescue QMPError => e
         raise EngineError, "QMP command '#{execute}' failed on #{machine_name}: #{e.message}"
       end
 
       outputs
+    end
+
+    # Substitutes the command's arguments for one machine and rejects any
+    # placeholder that survived substitution before it reaches QEMU.
+    sig do
+      params(
+        qmp: T.untyped,
+        map: ReplacementMap,
+        execute: String,
+        machine_name: String
+      ).returns(T.nilable(T::Hash[T.untyped, T.untyped]))
+    end
+    def build_qmp_arguments(qmp, map, execute, machine_name)
+      arguments = qmp.arguments && coerce_numeric_qmp_values(map.replace(qmp.arguments))
+      validate_qmp_placeholders!(execute, arguments, machine_name)
+      arguments
+    end
+
+    # A '@name@' placeholder that survives substitution in a QMP command is
+    # always a configuration error — most often a test referencing a spare
+    # root port that was not provisioned (e.g. '@spare_pcie_root_port_2@'
+    # with --pcie-spare-root-ports 2). QEMU would only reject the literal
+    # string later with an opaque error ("Bus '@spare_pcie_root_port_2@' not
+    # found"), so fail up front with an actionable message instead.
+    sig do
+      params(
+        execute: String,
+        arguments: T.nilable(T::Hash[T.untyped, T.untyped]),
+        machine_name: String
+      ).void
+    end
+    def validate_qmp_placeholders!(execute, arguments, machine_name)
+      return if arguments.nil?
+
+      # Hash#to_s (inspect) renders nested values, so one scan covers them.
+      leftover = arguments.to_s.scan(QMP_PLACEHOLDER_RE).flatten.uniq
+      return if leftover.empty?
+
+      raise EngineError, "QMP command '#{execute}' on #{machine_name} has unsubstituted " \
+                         "placeholder(s): #{leftover.join(', ')}"
     end
 
     sig { params(events: T::Array[String], machine_name: String, timeout: Integer).returns(T.untyped) }

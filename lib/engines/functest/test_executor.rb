@@ -54,7 +54,10 @@ module AutoHCK
 
       def execute_test(test)
         log_section("Starting test: #{test.name}")
-        @logger.info("Description: #{@context.substitute_variables(test.description)}") if test.description
+        # Start each test from the engine-level variable baseline so earlier
+        # tests' captured variables cannot leak into this test's steps.
+        @context.reset_test_variables!
+        log_test_description(test)
 
         if @results.none? { |r| r[:name] == test.name }
           @results << empty_test_result(test.name, test.description,
@@ -65,6 +68,9 @@ module AutoHCK
 
       def execute_tests(tests)
         @logger.info("Executing #{tests.length} test(s)")
+        # Everything set on the context so far (client maps + setup_test_context
+        # + test params) is the baseline every test starts from.
+        @context.lock_baseline!
         @results += tests.map do |test|
           empty_test_result(test.name, test.description,
                             display_name: test.display_name, timeout: test.timeout)
@@ -91,6 +97,10 @@ module AutoHCK
       end
 
       private
+
+      def log_test_description(test)
+        @logger.info("Description: #{@context.substitute_variables(test.description)}") if test.description
+      end
 
       def summary_results_entries
         @results.map do |result|

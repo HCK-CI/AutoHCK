@@ -1,0 +1,22 @@
+{
+    "name": "variable_isolation",
+    "description": "Engine validation: variables set by an earlier test must not leak into this test (per-test variable scoping)",
+    "test_steps": [
+        {
+            "desc": "Set a sentinel only this test should see",
+            "set_variable": { "isolation_sentinel": "isolation_ok" }
+        },
+        {
+            "desc": "Confirm this test own variable is substituted",
+            "guest_run": "if ('@isolation_sentinel@' -eq 'isolation_ok') { Write-Output 'PASS: own variable substituted' } else { Write-Output 'FAIL: own variable not substituted'; exit 1 }",
+            "expected_output_contains": "PASS:",
+            "timeout": 30
+        },
+        {
+            "desc": "Confirm the earlier test variable did NOT leak (placeholder stays literal)",
+            "guest_run": "$ph = '@test_' + 'value@'; if ('@test_value@' -eq $ph) { Write-Output 'PASS: previous test variable isolated' } else { Write-Output ('FAIL: leaked previous variable: ' + '@test_value@'); exit 1 }",
+            "expected_output_contains": "PASS:",
+            "timeout": 30
+        }
+    ]
+}
