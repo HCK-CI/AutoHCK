@@ -17,6 +17,7 @@ module AutoHCK
 
       const :tests, T::Array[String]
       const :secure, T.nilable(T::Boolean)
+      const :world_net, T::Boolean, default: false
       const :kits, T::Array[String], default: []
       const :parameters, T::Array[Parameter], default: []
       const :skip_retry, T::Boolean, default: false

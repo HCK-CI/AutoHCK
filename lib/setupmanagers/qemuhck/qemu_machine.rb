@@ -178,7 +178,8 @@ module AutoHCK
       boot_from_tag: nil,
       attach_iso_list: [],
       dump_only: false,
-      secure: false
+      secure: false,
+      world_net: false
     }.freeze
 
     MACHINE_JSON = 'lib/setupmanagers/qemuhck/machine.json'
@@ -736,7 +737,7 @@ module AutoHCK
 
       process_optional_hck_network
 
-      return unless @options['client_id'].zero? || option_config('client_world_net')
+      return unless @options['client_id'].zero? || option_config('client_world_net') || @run_opts[:world_net]
 
       process_generic_hck_network('world_net_device', :world_device_command)
     end
