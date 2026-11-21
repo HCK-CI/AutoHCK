@@ -1,0 +1,47 @@
+{
+    "name": "fpr_optin_hold",
+    "display_name": "FPR opt-in holds free memory at the gate",
+    "description": "Feature contract: after EnableFpr=1 and a device restart the hold settles inside the floor/gate contract window - the observable effect of the feature being active. What is asserted is the counter window; negotiation and held-page ownership are outside this suite's scope.",
+    "test_system_ref": "virtio-win/kvm-guest-drivers-windows#1657",
+    "timeout": 300,
+    "test_steps": [
+        {
+            "desc": "Enable FPR (opt-in)",
+            "guest_run": "$k='HKLM:\\SYSTEM\\CurrentControlSet\\Services\\BALLOON\\Parameters'; if (-not (Test-Path $k)) { New-Item $k -Force | Out-Null }; Set-ItemProperty -Path $k -Name EnableFpr -Value 1 -Type DWord; Write-Output 'PASS: EnableFpr=1 set'",
+            "expected_output_contains": "PASS:"
+        },
+        {
+            "desc": "Restart balloon device to negotiate the feature",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_restart_device.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 60
+        },
+        {
+            "desc": "Give the hold cycles time to settle at the gate (soft early-exit window; the verdict is the next step)",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_wait_hold.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 120
+        },
+        {
+            "desc": "Verify available settled in the contract window",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_check_hold.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 60
+        }
+    ],
+    "cleanup": [
+        {
+            "desc": "Restore the default (off) state for whatever runs next",
+            "guest_run": "$k='HKLM:\\SYSTEM\\CurrentControlSet\\Services\\BALLOON\\Parameters'; if (-not (Test-Path $k)) { New-Item $k -Force | Out-Null }; Set-ItemProperty -Path $k -Name EnableFpr -Value 0 -Type DWord; Write-Output 'cleanup: EnableFpr=0 set'",
+            "ignore_errors": true,
+            "expected_output_contains": "cleanup:"
+        },
+        {
+            "desc": "Restart the balloon device so the runtime state matches the registry",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_restart_device.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 60,
+            "ignore_errors": true
+        }
+    ]
+}
