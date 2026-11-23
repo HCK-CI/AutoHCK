@@ -1,0 +1,27 @@
+{
+    "name": "files_transfer",
+    "description": "Upload multiple test scripts with files_transfer and verify their basenames in C:\\AutoHCK",
+    "pre_test_commands": [
+        {
+            "desc": "Upload test scripts with files_transfer",
+            "files_transfer": [
+                "lib/engines/functest/tests/scripts/check_driver_installed.ps1",
+                "lib/engines/functest/tests/scripts/verify_driver_signed.ps1"
+            ]
+        }
+    ],
+    "test_steps": [
+        {
+            "desc": "Verify check_driver_installed.ps1 was uploaded",
+            "guest_run": "Test-Path 'C:\\AutoHCK\\check_driver_installed.ps1'",
+            "expected_output_contains": "True",
+            "timeout": 30
+        },
+        {
+            "desc": "Verify verify_driver_signed.ps1 was uploaded",
+            "guest_run": "Test-Path 'C:\\AutoHCK\\verify_driver_signed.ps1'",
+            "expected_output_contains": "True",
+            "timeout": 30
+        }
+    ]
+}

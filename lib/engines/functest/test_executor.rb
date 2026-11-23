@@ -49,6 +49,7 @@ module AutoHCK
         @created_tags = Set.new
         @known_issues = engine.suite&.known_issues || []
         @platform_name = engine.project.options.test.platform
+        @files_transfer_post_test_commands = []
       end
       # rubocop:enable Metrics/AbcSize
 
@@ -155,9 +156,8 @@ module AutoHCK
       def record_test(test)
         start_time = Time.now
         test_name = test.name
-        @current_test = test_name
-        result = @results.find { |r| r[:name] == test_name }
-        raise EngineError, "Result placeholder not found for #{test_name}" unless result
+        activate_test_context(test)
+        result = test_result!(test_name)
 
         result.merge!({ status: 'running', steps: [], start_time: start_time.utc.iso8601 })
         update_summary_results_log
@@ -172,6 +172,16 @@ module AutoHCK
         @project.update_test_stats(tests_stats)
       end
 
+      def activate_test_context(test)
+        @current_test = test.name
+        @context.set_variable('test_name', test.safe_name)
+      end
+
+      def test_result!(test_name)
+        @results.find { |result| result[:name] == test_name } ||
+          raise(EngineError, "Result placeholder not found for #{test_name}")
+      end
+
       # rubocop:disable Metrics/AbcSize
       def finalize_result(result, test, start_time)
         run_cleanup(test)
@@ -182,6 +192,7 @@ module AutoHCK
           result[:status] = 'failed'
           result[:error] = e.message
         end
+        run_files_transfer_post_test_commands
         result[:dump_path] = collect_memory_dumps(test.name)
         end_time = Time.now
         result[:end_time] = end_time.utc.iso8601
@@ -206,6 +217,7 @@ module AutoHCK
       end
 
       def run_test_steps(test, result)
+        @files_transfer_post_test_commands = []
         prepare_test_clients!(test)
         ensure_boot_state!(test)
         run_extension_pre_test_commands(test.name)
@@ -229,7 +241,35 @@ module AutoHCK
 
         @command_execution_manager.scope_to_test(test.clients)
         validate_step_clients!(test)
+        validate_files_transfer_steps!(test)
+        validate_artifact_steps!(test)
         validate_parallel_blocks!(test)
+      end
+
+      def validate_files_transfer_steps!(test)
+        extension_post_commands = extension_commands_for(test.name, :post_test_commands)
+        invalid_steps = (test.test_steps + test.cleanup + extension_post_commands)
+                        .select { |step| step.files_transfer.any? }
+        return if invalid_steps.empty?
+
+        raise EngineError, "Test '#{test.name}': files_transfer is only allowed in pre_test_commands"
+      end
+
+      def validate_artifact_steps!(test)
+        invalid_steps = disallowed_artifact_steps(test)
+        return if invalid_steps.empty?
+
+        raise EngineError, "Test '#{test.name}': files_collect and files_publish are only allowed in cleanup"
+      end
+
+      def disallowed_artifact_steps(test)
+        extension_commands = extension_commands_for(test.name, :pre_test_commands) +
+                             extension_commands_for(test.name, :post_test_commands)
+        (test.pre_test_commands + test.test_steps + extension_commands).select { |step| artifact_step?(step) }
+      end
+
+      def artifact_step?(step)
+        step.files_collect.any? || step.files_publish.any?
       end
 
       def all_steps(test)
@@ -447,11 +487,26 @@ module AutoHCK
         desc = nil
         test.pre_test_commands.each do |step|
           desc = @context.substitute_variables(step.desc)
+          post_test_commands = step.files_transfer_cleanup_commands(CommandExecutionManager::FILES_TRANSFER_REMOTE_PATH)
           @step_handler.execute_step(step)
+          @files_transfer_post_test_commands.concat(post_test_commands)
         rescue StandardError => e
           @logger.error("  FAIL: Pre-test command failed (#{desc}): #{e.message}")
           raise
         end
+      end
+
+      def run_files_transfer_post_test_commands
+        return if @files_transfer_post_test_commands.empty?
+
+        @logger.info('Removing automatically uploaded test files...')
+        @files_transfer_post_test_commands.each do |step|
+          @step_handler.execute_step(step)
+        rescue StandardError => e
+          @logger.warn("Failed to remove automatically uploaded test files: #{e.message}")
+        end
+      ensure
+        @files_transfer_post_test_commands = []
       end
 
       def run_cleanup(test)
@@ -506,7 +561,9 @@ module AutoHCK
         desc = nil
         cmds.each_with_index do |step, index|
           desc = @context.substitute_variables("[Extension pre-test step #{index + 1}] #{step.desc}")
+          post_test_commands = step.files_transfer_cleanup_commands(CommandExecutionManager::FILES_TRANSFER_REMOTE_PATH)
           @step_handler.execute_step(step)
+          @files_transfer_post_test_commands.concat(post_test_commands)
         rescue StandardError => e
           @logger.error("  FAIL: Extension pre-test command failed (#{desc}): #{e.message}")
           raise
