@@ -8,7 +8,8 @@ module AutoHCK
     class TestExecutor
       include Helper
 
-      attr_reader :results, :context
+      attr_reader :results, :context, :project, :clients, :tools,
+                  :command_execution_manager, :step_handler
 
       def test_results
         @results.map { |r| Models::TestResult.from_functest(r) }
@@ -88,6 +89,19 @@ module AutoHCK
 
         { total: total, passed: passed, failed: failed,
           passed_with_known_issue: passed_with_known_issue, results: @results }
+      end
+
+      # Public so DynamicTest#execute_and_record can share step result formatting.
+      def execute_test_step(step, index)
+        desc = @context.substitute_variables(step.desc)
+        start_time = Time.now
+        step_result = { index: index, description: desc, status: 'running', start_time: start_time.utc.iso8601 }
+        run_step(step, step_result, desc)
+        step_result
+      ensure
+        end_time = Time.now
+        step_result[:end_time] = end_time.utc.iso8601
+        step_result[:duration] = end_time - start_time
       end
 
       private
@@ -224,10 +238,13 @@ module AutoHCK
       # clients, then fails the test right away if any step (including
       # pre_test_commands, cleanup, and parallel branches) targets an
       # undeclared client or violates a parallel execution constraint.
+      # Dynamic tests own their steps in Ruby, so JSON step validation is skipped.
       def prepare_test_clients!(test)
         raise EngineError, "Test '#{test.name}' has an empty clients list" if test.clients.empty?
 
         @command_execution_manager.scope_to_test(test.clients)
+        return if test.dynamic
+
         validate_step_clients!(test)
         validate_parallel_blocks!(test)
       end
@@ -369,6 +386,8 @@ module AutoHCK
       end
 
       def execute_test_steps(test, result)
+        return dynamic_impl_for(test).execute_test_steps(test, result) if test.dynamic
+
         test.test_steps.each_with_index { |step, index| result[:steps] << execute_test_step(step, index) }
       end
 
@@ -408,18 +427,6 @@ module AutoHCK
         @created_tags << tag
       end
 
-      def execute_test_step(step, index)
-        desc = @context.substitute_variables(step.desc)
-        start_time = Time.now
-        step_result = { index: index, description: desc, status: 'running', start_time: start_time.utc.iso8601 }
-        run_step(step, step_result, desc)
-        step_result
-      ensure
-        end_time = Time.now
-        step_result[:end_time] = end_time.utc.iso8601
-        step_result[:duration] = end_time - start_time
-      end
-
       def run_step(step, step_result, desc)
         @step_handler.execute_step(step)
         step_result[:status] = 'passed'
@@ -441,6 +448,7 @@ module AutoHCK
       end
 
       def run_pre_test_commands(test)
+        return dynamic_impl_for(test).run_pre_test_commands(test) if test.dynamic
         return if test.pre_test_commands.empty?
 
         @logger.info('Running pre-test commands...')
@@ -455,6 +463,7 @@ module AutoHCK
       end
 
       def run_cleanup(test)
+        return run_dynamic_cleanup(test) if test.dynamic
         return if test.cleanup.empty?
 
         @logger.info('Running cleanup steps...')
@@ -463,6 +472,18 @@ module AutoHCK
         rescue StandardError => e
           @logger.warn("Cleanup step failed (ignoring): #{e.message}")
         end
+      end
+
+      def run_dynamic_cleanup(test)
+        @logger.info('Running dynamic test cleanup...')
+        dynamic_impl_for(test).run_cleanup(test)
+      rescue StandardError => e
+        @logger.warn("Dynamic cleanup failed (ignoring): #{e.message}")
+      end
+
+      def dynamic_impl_for(test)
+        @dynamic_impls ||= {}
+        @dynamic_impls[test.name] ||= TestLoader.load_dynamic_test_class(test).new(self)
       end
 
       def collect_memory_dumps(test_name)

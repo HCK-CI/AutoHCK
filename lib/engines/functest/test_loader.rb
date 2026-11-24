@@ -31,6 +31,7 @@ module AutoHCK
         @logger.info("Loading test case: #{test_path}")
         definition = AutoHCK::Helper::Json.read_json(test_path, @logger)
         resolve_test_paths(definition)
+        attach_dynamic_path!(definition, test_path)
         TestCase.from_hash(definition)
       end
 
@@ -39,7 +40,47 @@ module AutoHCK
         suite.tests.map { |test_name| load_test(test_name) }
       end
 
+      # Resolves and validates the DynamicTest subclass for a dynamic case.
+      # Named after the JSON basename (e.g. vm_pause_resume), matching how
+      # QemuHCK dynamic devices expose factory methods.
+      def self.load_dynamic_test_class(test)
+        raise EngineError, "Test '#{test.name}' is not dynamic" unless test.dynamic
+
+        path = test.dynamic_path
+        raise InvalidConfigFile, "Dynamic test path missing for '#{test.name}'" if path.nil? || path.empty?
+
+        require path
+
+        method_name = File.basename(path, '.rb')
+        unless DynamicTests.respond_to?(method_name)
+          raise InvalidConfigFile, "DynamicTests.#{method_name} not defined in #{path}"
+        end
+
+        klass = DynamicTests.public_send(method_name)
+        unless klass.is_a?(Class) && klass < DynamicTest
+          raise InvalidConfigFile, "DynamicTests.#{method_name} must return a DynamicTest subclass"
+        end
+
+        klass
+      end
+
+      def load_dynamic_test_class(test)
+        self.class.load_dynamic_test_class(test)
+      end
+
       private
+
+      def attach_dynamic_path!(definition, test_path)
+        return unless definition['dynamic']
+
+        ruby_path = test_path.sub(/\.json\z/, '.rb')
+        unless File.exist?(ruby_path)
+          raise InvalidConfigFile, "Dynamic test '#{definition['name']}' requires #{ruby_path}"
+        end
+
+        definition['dynamic_path'] = File.expand_path(ruby_path)
+        @logger.info("Dynamic test Ruby implementation: #{definition['dynamic_path']}")
+      end
 
       def resolve_test_paths(definition)
         STEP_COLLECTIONS.each do |collection|

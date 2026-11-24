@@ -4,6 +4,8 @@ module AutoHCK
   module Functest
     extend AutoloadExtension
 
+    autoload_relative :DynamicTest, 'dynamic_test'
+    autoload_relative :DynamicTests, 'dynamic_test'
     autoload_relative :KnownIssue, 'known_issue'
     autoload_relative :Suite, 'suite'
     autoload_relative :TestCase, 'test_case'
