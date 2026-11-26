@@ -22,6 +22,14 @@ describe AutoHCK::CmdRun, :linux_process do
     end
   end
 
+  # Commands are spawned with pgroup: 0, so -pid addresses the whole group,
+  # including processes left behind by the command.
+  def kill_process_group(pid)
+    Process.kill('KILL', -pid)
+  rescue Errno::ESRCH
+    nil
+  end
+
   describe '#initialize and #close' do
     it 'runs a successful argv-style command and reports exit 0' do
       AutoHCK::ResourceScope.open([]) do |scope|
@@ -71,6 +79,54 @@ describe AutoHCK::CmdRun, :linux_process do
         expect { cmd.close }.to raise_error(AutoHCK::CmdRunError)
         expect(cmd.close.exitstatus).to eq(1)
       end
+    end
+
+    it 'drains all stdout before close returns' do
+      AutoHCK::ResourceScope.open([]) do |scope|
+        cmd = new_cmd(scope, '/bin/bash', '-c',
+                      'for i in $(seq 1 50); do echo "line $i"; sleep 0.01; done; echo PASS: done')
+        cmd.close
+
+        expect(cmd.stddata['stdout']).to include('PASS: done')
+        expect(cmd.stddata['stdout'].size).to be >= 51
+      end
+    end
+
+    it 'captures output produced after the command process exits' do
+      AutoHCK::ResourceScope.open([]) do |scope|
+        cmd = new_cmd(scope, '/bin/sh', '-c',
+                      "echo start; (sleep 0.25; echo 'PASS: done') & exit 0")
+        expect(cmd.close.exitstatus).to be_zero
+        expect(cmd.stddata['stdout']).to include('PASS: done')
+      end
+    end
+
+    it 'returns the same status when close is called concurrently' do
+      AutoHCK::ResourceScope.open([]) do |scope|
+        cmd = new_cmd(scope, '/bin/true')
+        statuses = Array.new(2) { Thread.new { cmd.close } }.map(&:value)
+        expect(statuses.uniq.size).to eq(1)
+      end
+    end
+
+    # bin/unix_spawn (used by the qemuhck pre-start commands to start swtpm and
+    # virtiofsd) daemonizes a long-lived child which inherits CmdRun's pipes and
+    # keeps them open after the command itself has exited. #close must not wait
+    # for EOF on such pipes, otherwise it hangs and trips the 60s timeout that
+    # guards QemuMachine#run_pre_start_commands.
+    it 'does not block on pipes held open by a background process' do
+      status = nil
+      elapsed = nil
+      AutoHCK::ResourceScope.open([]) do |scope|
+        cmd = new_cmd(scope, '/bin/sh', '-c', 'sleep 60 &')
+        started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        status = cmd.close
+        elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - started
+        kill_process_group(cmd.pid)
+      end
+      expect(status.exitstatus).to be_zero
+      expect(elapsed).to be < (described_class::PIPE_DRAIN_TIMEOUT + 5)
+      wait_for_log_substring('finished with code 0')
     end
   end
 
