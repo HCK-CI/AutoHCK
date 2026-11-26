@@ -62,6 +62,7 @@ module AutoHCK
   class RToolsHCK
     WINRM_OPERATION_TIMEOUT = 9_999
     WINRM_RECIEVE_TIMEOUT = 99_999
+    WINRM_RECEIVE_TIMEOUT_MARGIN = 30
     WINRM_RETRY_INTERVAL = 60
     WINRM_DEFAULT_PORT = 5985
     ETHER_DEFAULT_PORT = 4000
@@ -342,7 +343,7 @@ module AutoHCK
       run_output.stdout
     end
 
-    def machine_connection(machine)
+    def machine_connection(machine, operation_timeout: nil)
       clients_addr = @clients_addrs[machine]
       if clients_addr.nil?
         raise RToolsHCKError.new('machine_connection'),
@@ -353,12 +354,23 @@ module AutoHCK
         clients_addr[:addr], clients_addr[:port] || WINRM_DEFAULT_PORT,
         @user, @pass
       )
+      apply_machine_timeout(options, operation_timeout)
       WinRM::Connection.new(options)
     end
 
-    def machine_run(machine, cmd)
+    def apply_machine_timeout(options, operation_timeout)
+      return if operation_timeout.nil?
+
+      raise ArgumentError, 'operation_timeout must be a positive integer' \
+        unless operation_timeout.is_a?(Integer) && operation_timeout.positive?
+
+      options[:operation_timeout] = operation_timeout
+      options[:receive_timeout] = operation_timeout + WINRM_RECEIVE_TIMEOUT_MARGIN
+    end
+
+    def machine_run(machine, cmd, operation_timeout: nil)
       where = "#{machine}/winrm/run"
-      machine_connection(machine).shell(:powershell) do |ps_shell|
+      machine_connection(machine, operation_timeout:).shell(:powershell) do |ps_shell|
         run_output = ps_shell.run(cmd)
 
         check_run_output(run_output, where, cmd)
@@ -366,6 +378,8 @@ module AutoHCK
       end
     rescue HTTPClient::KeepAliveDisconnected
       raise WinrmPSRunError.new(where), "Machine #{machine} reset connection."
+    rescue HTTPClient::ReceiveTimeoutError
+      raise WinrmPSRunError.new(where), "Machine #{machine} WinRM response timed out."
     end
 
     def ssh_logger_proc
@@ -1285,9 +1299,9 @@ module AutoHCK
     # +machine+::      The name of the machine as registered with the HCK\HLK
     #                  controller
     # +cmd+::          The command to run as a string
-    def run_on_machine(machine, cmd)
+    def run_on_machine(machine, cmd, operation_timeout: nil)
       handle_action_exceptions(__method__) do
-        ret = machine_run(machine, cmd)
+        ret = machine_run(machine, cmd, operation_timeout:)
         @json ? { 'result' => 'Success', 'content' => ret } : true
       end
     end
