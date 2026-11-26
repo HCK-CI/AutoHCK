@@ -9,5 +9,8 @@
     "smm=on",
     "kernel-irqchip=split"
   ],
-  "iommu_device_param": ",iommu_platform=on,ats=on"
+  "iommu_device_params": {
+    "iommu_platform": true,
+    "ats": true
+  }
 }

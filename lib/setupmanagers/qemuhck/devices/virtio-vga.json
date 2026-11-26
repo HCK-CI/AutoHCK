@@ -1,5 +1,6 @@
 {
   "name": "virtio-vga",
+  "iommu_platform_support": true,
   "type": "vga",
   "need_pci_bus": true,
   "command_line": ["-device virtio-vga@device_options@@virtio_vectors_param@@iommu_device_param@,edid=off,bus=@bus_name@.0"]

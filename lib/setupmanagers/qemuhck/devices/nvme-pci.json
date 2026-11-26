@@ -1,5 +1,6 @@
 {
   "name": "nvme-pci",
+  "iommu_platform_support": true,
   "type": "storage",
   "define_variables": {
     "@nvme_qmp_socket@": "nvme_qmp_@run_id@_@client_id@_sock"

@@ -215,6 +215,7 @@ module AutoHCK
       @run_opts = {}
       @configured = false
       @spare_pcie_root_ports = []
+      @iommu_device_arguments = {}
     end
 
     sig { returns(T::Array[Models::CommandInfo]) }
@@ -448,7 +449,7 @@ module AutoHCK
       {
         '@machine_options@' => (@machine_options + device_machine_options).join(','),
         '@device_options@' => '',
-        '@iommu_device_param@' => device_iommu_device_param.join,
+        '@iommu_device_param@' => iommu_device_param,
         '@cpu_options@' => @cpu_options.join(','),
         '@drive_cache_options@' => @drive_cache_options.join
       }
@@ -588,9 +589,27 @@ module AutoHCK
       @device_infos.map(&:machine_options).flatten.compact
     end
 
-    sig { returns(T::Array[String]) }
-    def device_iommu_device_param
-      @device_infos.filter_map(&:iommu_device_param)
+    sig { returns(T::Hash[String, T::Boolean]) }
+    def iommu_device_params
+      @device_infos.each_with_object({}) do |device_info, params|
+        params.merge!(device_info.iommu_device_params)
+      end
+    end
+
+    sig { returns(String) }
+    def iommu_device_param
+      iommu_device_params.map do |param, enabled|
+        ",#{param}=#{enabled ? 'on' : 'off'}"
+      end.join
+    end
+
+    sig { params(device_name: String).returns(T::Hash[String, T::Boolean]) }
+    def iommu_device_arguments(device_name)
+      return @iommu_device_arguments[device_name] if @iommu_device_arguments.key?(device_name)
+
+      device_info = read_optional_device(device_name)
+      arguments = device_info&.iommu_platform_support ? iommu_device_params : {}
+      @iommu_device_arguments[device_name] = arguments
     end
 
     def full_replacement_map
@@ -638,6 +657,14 @@ module AutoHCK
       return dynamic_device if dynamic_device
 
       Models::QemuHCKDevice.from_json_file("#{DEVICES_JSON_DIR}/#{device}.json", @logger)
+    end
+
+    sig { params(device: String).returns(T.nilable(Models::QemuHCKDevice)) }
+    def read_optional_device(device)
+      device = device.sub(/-(?:non-)?transitional\z/, '')
+      definition = %w[rb json].any? { |extension| File.exist?("#{DEVICES_JSON_DIR}/#{device}.#{extension}") }
+
+      read_device(device) if definition
     end
 
     def normalize_lists
