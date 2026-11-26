@@ -1,6 +1,6 @@
 {
   "download_url": "https://go.microsoft.com/fwlink/?linkid=2364011",
-  "sha256": "f09bf1bde8b4bec37e6525d42e4bf62165386c6de55a2b09bf590a869395267f",
+  "sha256": "701ce5f9e3ad0fda678b2c932f63df9f5a8a9e33e7395875c779e8faa4468bc3",
   "extra_software": [
     "Test-NETHLK",
     "winfsp",
