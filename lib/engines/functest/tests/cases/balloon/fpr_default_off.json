@@ -1,0 +1,30 @@
+{
+    "name": "fpr_default_off",
+    "display_name": "FPR stays off without opt-in",
+    "description": "Default-off contract: with EnableFpr at its installed default (0) the traditional balloon behavior is kept - no hold runs. This case verifies the runtime behavior at that default; it does not validate the installer's registry output.",
+    "test_system_ref": "virtio-win/kvm-guest-drivers-windows#1657",
+    "timeout": 180,
+    "test_steps": [
+        {
+            "desc": "Set EnableFpr to the installed default (0, feature off)",
+            "guest_run": "$k='HKLM:\\SYSTEM\\CurrentControlSet\\Services\\BALLOON\\Parameters'; if (-not (Test-Path $k)) { New-Item $k -Force | Out-Null }; Set-ItemProperty -Path $k -Name EnableFpr -Value 0 -Type DWord; Write-Output 'PASS: EnableFpr=0 set'",
+            "expected_output_contains": "PASS:"
+        },
+        {
+            "desc": "Restart balloon device to re-negotiate features",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_restart_device.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 60
+        },
+        {
+            "desc": "Give a stray hold time to become visible",
+            "guest_run": "Start-Sleep -Seconds 20; Write-Output 'PASS: waited'"
+        },
+        {
+            "desc": "Verify no hold is running (available stays high)",
+            "guest_run_file": "lib/engines/functest/tests/scripts/balloon/fpr_check_no_hold.ps1",
+            "expected_output_contains": "PASS:",
+            "timeout": 60
+        }
+    ]
+}

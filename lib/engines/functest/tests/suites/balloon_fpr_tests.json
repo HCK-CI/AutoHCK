@@ -1,0 +1,23 @@
+{
+    "name": "balloon_fpr_tests",
+    "description": "Functional tests for balloon free page reporting (VIRTIO_BALLOON_F_PAGE_REPORTING). The balloon device template offers the FPR feature bit and the feature is opt-in on the driver side (EnableFpr). All thresholds are derived from the guest RAM size observed at runtime (floor = max(RAM/16, 128 MB), hysteresis band = clamp(RAM/32, 256 MB, 1 GB)), so the suite runs unchanged across guest sizes at the driver's default derivation (the pressure case still needs RAM enough for its allocation). Explicit registry overrides (MinFreeMb/MinCommitMb/HysteresisMb) are not accounted for. These are behavioral assertions on guest-visible memory counters; feature negotiation and held-page ownership are outside this suite's scope.",
+    "test_system_ref": "virtio-win/kvm-guest-drivers-windows#1657",
+    "tests": [
+        "balloon/fpr_default_off",
+        "balloon/fpr_optin_hold",
+        "balloon/fpr_release_under_pressure",
+        "balloon/fpr_opt_out",
+        "balloon/fpr_classic_balloon_compat"
+    ],
+    "requirements": {
+        "drivers": [
+            "Balloon"
+        ],
+        "platforms": [
+            "Win10x64",
+            "Win2019x64",
+            "Win2022x64",
+            "Win2025x64"
+        ]
+    }
+}
