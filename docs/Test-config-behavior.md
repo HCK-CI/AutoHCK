@@ -8,6 +8,7 @@ Test configuration has the following options:
 
 - **tests** - List of tests where config should be applied (string parsed as a regex)
 - **secure** - Optional boolean to run guest in Secure Boot
+- **world_net** - Optional boolean to run matching SVVP tests in a final phase with the SUT connected to the world network
 - **parameters** - Array of HLK test parameter name/value pairs
 - **pre_test_commands** - Array of commands to run before test execution
 - **post_test_commands** - Array of commands to run after test execution

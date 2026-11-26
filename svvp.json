@@ -47,6 +47,12 @@
   "tests_config": [
     {
       "tests": [
+        "Crashdump Support Test (LOGO)"
+      ],
+      "world_net": true
+    },
+    {
+      "tests": [
         "^Debug Capability Test \\(Logo\\)$"
       ],
       "parameters": [
