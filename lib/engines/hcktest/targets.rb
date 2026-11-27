@@ -54,5 +54,15 @@ module AutoHCK
 
       raise SearchTargetError, "Target #{@name} not found on #{@machine}"
     end
+
+    # Confirm the original target remains available in its HLK project after a client restart.
+    def verify_original_target(expected)
+      expected_key = expected.fetch('key')
+      found = search_target
+      raise TargetError, 'Original HLK target changed' unless found['key'] == expected_key
+
+      tag = @project.engine_tag
+      @tools.act_with_tools { _1.list_tests(expected_key, tag, @machine, tag) }
+    end
   end
 end
