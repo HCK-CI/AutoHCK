@@ -18,6 +18,7 @@ module AutoHCK
       @studio = studio
       @name = name
       @kit = setup_manager.kit
+      @run_opts = run_opts
       @logger.info("Starting client #{name}")
       @runner = setup_manager.run_client(scope, @name, run_opts)
       scope << self
@@ -200,8 +201,25 @@ module AutoHCK
       search_target unless pool_only_client?
     end
 
+    # A client that boots from the snapshot of a prepared setup has the driver
+    # installed and is in the project pool already. Any other client starts
+    # from a fresh image, even if the studio still lists it in the project
+    # pool: a failed attempt of this setup may have moved it there.
+    def prepared?
+      @run_opts[:boot_from_snapshot] && pool == @project.engine_tag
+    end
+
+    def return_to_default_pool
+      current = pool
+      return unless current.is_a?(String) && current != 'Default Pool'
+
+      @logger.info("Moving #{@name} from #{current} back to Default Pool")
+      @tools.move_machine(@name, current, 'Default Pool')
+    end
+
     def configure_fresh(run_only:)
-      unless pool == @project.engine_tag
+      unless prepared?
+        return_to_default_pool
         return_when_client_up
         if run_only
           @logger.info("Preparing client skipped #{@name}...")
