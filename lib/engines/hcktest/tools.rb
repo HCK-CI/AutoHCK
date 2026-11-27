@@ -339,7 +339,23 @@ module AutoHCK
 
     def move_machine(machine, from, to)
       retry_tools_command(__method__) do
+        # HLK's MoveMachineTo commits the new pool before it sets the machine's
+        # WHCK\CrashDumpControllerSetting property. When that second step fails
+        # ("Could not set this property on machine"), the machine is in the new
+        # pool already, and moving it from the old pool again fails with
+        # "Provided machine's name is not valid". Move it back first, so that
+        # the retry makes the whole move again.
+        if machine_in_pool?(machine, to)
+          @logger.warn("Machine #{machine} is in pool #{to} already, moving it back to #{from} first")
+          act_with_tools { _1.move_machine(machine, to, from) }
+        end
         act_with_tools { _1.move_machine(machine, from, to) }
+      end
+    end
+
+    def machine_in_pool?(machine, pool)
+      act_with_tools(&:list_pools).any? do |entry|
+        entry['name'] == pool && entry['machines'].any? { _1['name']&.casecmp?(machine) }
       end
     end
 
